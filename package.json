@@ -1,0 +1,14 @@
+{
+  "name": "ssh2-sftp-client",
+  "version": "1.0.0",
+  "description": "ssh2 sftp client for node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "见见",
+  "license": "ISC",
+  "dependencies": {
+    "ssh2": "^0.4.13"
+  }
+}
