@@ -15,7 +15,7 @@ sftp.connect(config)
     //     return sftp.put('/Library/WebServer/Documents/nodejs/ssh2-sftp-client/test.html', BASIC_URL + 'bb/a1.html');
     // })
     // .then(() => {
-    //     return sftp.mkdir(BASIC_URL + 'bb/sub', true);
+    //     return sftp.mkdir(BASIC_URL + 'bb/aa', true);
     // })
 
     // .then((data) => sftp.list(BASIC_URL))
@@ -49,9 +49,9 @@ sftp.connect(config)
     //     return sftp.rename(BASIC_URL + 'h5.html', BASIC_URL + 'bb/ooo.html');
     // })
 
-    .then(() => {
-        // return sftp.rmdir(BASIC_URL + 'bb', true);
-    })
+    // .then(() => {
+    //     return sftp.rmdir(BASIC_URL + 'aa', true);
+    // })
 
     .then((data) => {
         console.log(data, 'end data');

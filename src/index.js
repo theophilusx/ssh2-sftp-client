@@ -169,14 +169,14 @@ SftpClient.prototype.mkdir = function(path, recursive) {
     });
 };
 
-SftpClient.prototype._rmdir = function(sftp, path) {
-    sftp.rmdir(path, (err) => {
-        if (err) {
-            reject(err);
-        }
-        resolve();
-    });
-};
+// SftpClient.prototype._rmdir = function(sftp, path) {
+//     sftp.rmdir(path, (err) => {
+//         if (err) {
+//             reject(err);
+//         }
+//         resolve();
+//     });
+// };
 
 SftpClient.prototype.rmdir = function(path, recursive) {
     recursive = recursive || false;
@@ -188,149 +188,70 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                 return false;
             }
 
-            // this.list(path).then(list => {
-            //     console.log(list, typeof(list));
-            //     if (list.length > 0) {
-            //         console.log(list[0], list[0].name);
-            //     }
-
-            // }).catch((err) => reject(err));
-
             if (!recursive) {
                 console.log('single');
-                // resolve('delete dir ' + path + ' success');
-                this._rmdir(sftp, path);
-                return false;
-            }
-
-            // path;
-            // let p = path;
-            let rmdir = (p) => {
-                // p = path + p;
-                // console.log(p)
-                // return new Promise((resolve, reject) => {
-                    return this.list(p).then((list) => {
-                        if (list.length > 0) {
-                            list.forEach((item) => {
-                                let name = item.name;
-                                var subPath = null;
-
-                                if (name[0] === '/') {
-                                    subPath = name;
-                                } else {
-                                    if (p[p.length - 1] === '/') {
-                                        subPath = p + name;
-                                    } else {
-                                        subPath = p + '/' + name;
-                                    }
-                                }
-
-                                // console.log('the list file name', name, '|', item, '|', subPath);
-                                console.log('the list file name', name, '|', subPath);
-
-                                if (item.type === 'd') {
-                                    if (name !== '.' || name !== '..') {
-                                        // rmdir(p + '/' + item.name).then(() => {
-                                        //     console.log('delete dir' + p + '/' + item.name);
-                                        // });
-                                        return rmdir(subPath);//.then(() => r1());
-                                    }
-                                } else {
-                                    this.delete(subPath);
-                                    console.log('delete file', subPath);
-                                }
-                            });
-                        } else {
-                            this._rmdir(sftp, p);
-                            console.log('delete dir' + p);
-                        }
-                    }).then(() => {
-                        resolve();
-                    }).catch((err) => {
-                        reject(err);
-                        console.log(err, 'err')
-                    });
-                // });
-            };
-            return rmdir(path);
-            // rmdir(path).then(() => {
-            //     console.log('delete dir' + path);
-            // });
-
-            return false;
-            let rmDirRecursive = function(path, deep, cb) {
-                this.list(path).then((list) => {
-                    let idx = 0;
-                    deep = deep + 1;
-
-                    let deleteNextEntry = function(err){
-                        if (typeof list === 'object' && idx >= list.length) {
-                            // ??
-                            if (list[0] && list[0].name === path) {
-                                // cb(null);
-                            } else {
-                                sftp.rmdir(path, function(err) {
-                                    if (err) {
-                                        reject(err);
-                                    }
-                                    if (deep - 1 === 1) {
-                                        resolve();
-                                    }
-                                    // ?????
-                                    // cb();
-                                    // deleteNextEntry();
-                                });
-                            }
-                        } else {
-                            let entry = list[idx++];
-                            // get the path to the file
-                            let subPath = null;
-
-                            if (entry.name[0] === '/') {
-                                // this will be the case when you call deleteRecursively() and pass
-                                // the path to a plain file
-                                subPath = entry.name;
-                            } else {
-                                if (path[path.length - 1] === '/') {
-                                    subPath = path + entry.name;
-                                } else {
-                                    subPath = path + '/' + entry.name;
-                                }
-                            }
-
-                            // delete the entry (recursively) according to its type
-                            if (entry.type === 'd') {
-                                if( entry.name === '.' || entry.name === '..' ){
-                                    return deleteNextEntry();
-                                }else{
-                                    rmDirRecursive(subPath, deep, deleteNextEntry);
-                                }
-                            } else {
-                                sftp.unlink(subPath, function(err) {
-                                    if( err ){
-                                        // cb(err);
-                                    }
-                                    return deleteNextEntry();
-                                });
-                            }
-                        }
-                    };
-                    deleteNextEntry();
-                });
-            };
-
-            if (!recursive) {
-                sftp.rmdir(path, (err) => {
+                return sftp.rmdir(path, (err) => {
                     if (err) {
                         reject(err);
-                        return false;
                     }
                     resolve();
                 });
-                return false;
+                // return false;
             }
+            console.log('recursive');
+            let rmdir = (p) => {
+                return this.list(p).then((list) => {
+                    if (list.length > 0) {
+                        let promises = [];
 
-            rmDirRecursive(path, 1);
+                        list.forEach((item) => {
+                            let name = item.name;
+                            let promise;
+                            var subPath;
+
+                            if (name[0] === '/') {
+                                subPath = name;
+                            } else {
+                                if (p[p.length - 1] === '/') {
+                                    subPath = p + name;
+                                } else {
+                                    subPath = p + '/' + name;
+                                }
+                            }
+
+                            console.log('the list file name', name, '|', subPath);
+
+                            if (item.type === 'd') {
+                                if (name !== '.' || name !== '..') {
+                                    promise = rmdir(subPath);
+                                    // rmdir(p + '/' + item.name).then(() => {
+                                    //     console.log('delete dir' + p + '/' + item.name);
+                                    // });
+                                    // return rmdir(subPath);//.then(() => r1());
+                                }
+                            } else {
+                                console.log('delete file', subPath);
+                                promise = this.delete(subPath);
+                            }
+                            promises.push(promise);
+                        });
+                        if (promises.length) {
+                            return Promise.all(promises).then(() => {
+                                rmdir(p);
+                            });
+                        }
+                    } else {
+                        console.log('delete dir' + p);
+                        return sftp.rmdir(p, (err) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            // resolve();
+                        });
+                    }
+                });
+            };
+            return rmdir(path).then(() => {resolve('success')});
         });
     });
 };
