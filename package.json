@@ -4,11 +4,16 @@
   "description": "ssh2 sftp client for node",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/index.js"
   },
   "author": "见见",
   "license": "ISC",
   "dependencies": {
     "ssh2": "^0.4.13"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-subset": "^1.2.1",
+    "mocha": "2.4.5"
   }
 }

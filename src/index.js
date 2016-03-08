@@ -12,10 +12,6 @@ let SftpClient = function(){
     this.client = new Client();
 };
 
-SftpClient.prototype.sayHello = function() {
-    console.log('hello');
-};
-
 /**
  * Retrieves a directory listing
  *
@@ -139,7 +135,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
             }
 
             if (!recursive) {
-                this.client.mkdir(path, (err) => {
+                sftp.mkdir(path, (err) => {
                     if (err) {
                         reject(err);
                         return false;
@@ -163,7 +159,6 @@ SftpClient.prototype.mkdir = function(path, recursive) {
                 p = p + token;
                 sftp.mkdir(p, (err) => {
                     if (err && err.code !== 4) {
-                        // ???
                         reject(err);
                     }
                     mkdir();
@@ -173,6 +168,15 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         });
     });
 };
+
+// SftpClient.prototype._rmdir = function(sftp, path) {
+//     sftp.rmdir(path, (err) => {
+//         if (err) {
+//             reject(err);
+//         }
+//         resolve();
+//     });
+// };
 
 SftpClient.prototype.rmdir = function(path, recursive) {
     recursive = recursive || false;
@@ -184,79 +188,66 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                 return false;
             }
 
-            let rmDirRecursive = function(path, deep, cb) {
-                this.list(path).then((list) => {
-                    let idx = 0;
-                    deep = deep + 1;
-
-                    let deleteNextEntry = function(err){
-                        if (typeof list === 'object' && idx >= list.length) {
-                            // ??
-                            if (list[0] && list[0].name === path) {
-                                // cb(null);
-                            } else {
-                                sftp.rmdir(path, function(err) {
-                                    if (err) {
-                                        reject(err);
-                                    }
-                                    if (deep - 1 === 1) {
-                                        resolve();
-                                    }
-                                    // ?????
-                                    // cb();
-                                    // deleteNextEntry();
-                                });
-                            }
-                        } else {
-                            let entry = list[idx++];
-                            // get the path to the file
-                            let subPath = null;
-
-                            if (entry.name[0] === '/') {
-                                // this will be the case when you call deleteRecursively() and pass
-                                // the path to a plain file
-                                subPath = entry.name;
-                            } else {
-                                if (path[path.length - 1] === '/') {
-                                    subPath = path + entry.name;
-                                } else {
-                                    subPath = path + '/' + entry.name;
-                                }
-                            }
-
-                            // delete the entry (recursively) according to its type
-                            if (entry.type === 'd') {
-                                if( entry.name === '.' || entry.name === '..' ){
-                                    return deleteNextEntry();
-                                }else{
-                                    rmDirRecursive(subPath, deep, deleteNextEntry);
-                                }
-                            } else {
-                                sftp.unlink(subPath, function(err) {
-                                    if( err ){
-                                        // cb(err);
-                                    }
-                                    return deleteNextEntry();
-                                });
-                            }
-                        }
-                    };
-                    deleteNextEntry();
-                });
-            };
-
             if (!recursive) {
-                sftp.rmdir(path, (err) => {
+                console.log('single');
+                return sftp.rmdir(path, (err) => {
                     if (err) {
                         reject(err);
-                        return false;
                     }
                     resolve();
                 });
-                return false;
             }
+            console.log('recursive');
+            let rmdir = (p) => {
+                return this.list(p).then((list) => {
+                    if (list.length > 0) {
+                        let promises = [];
 
-            rmDirRecursive(path, 1);
+                        list.forEach((item) => {
+                            let name = item.name;
+                            let promise;
+                            var subPath;
+
+                            if (name[0] === '/') {
+                                subPath = name;
+                            } else {
+                                if (p[p.length - 1] === '/') {
+                                    subPath = p + name;
+                                } else {
+                                    subPath = p + '/' + name;
+                                }
+                            }
+
+                            console.log('the list file name', name, '|', subPath);
+
+                            if (item.type === 'd') {
+                                if (name !== '.' || name !== '..') {
+                                    promise = rmdir(subPath);
+                                }
+                            } else {
+                                console.log('delete file', subPath);
+                                promise = this.delete(subPath);
+                            }
+                            promises.push(promise);
+                        });
+                        if (promises.length) {
+                            return Promise.all(promises).then(() => {
+                                return rmdir(p);
+                            });
+                        }
+                    } else {
+                        console.log('delete dir' + p);
+                        return sftp.rmdir(p, (err) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            // resolve();
+                        });
+                    }
+                });
+            };
+            return rmdir(path).then(() => {resolve()})
+                        .catch((err) => {reject(err)});
         });
     });
 };
@@ -286,7 +277,8 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
                 reject(err);
                 return false;
             }
-            sftp.rename(src, dest, (err) => {
+            sftp.rename(srcPath, remotePath, (err) => {
+                console.log(err)
                 if (err) {
                     reject(err);
                     return false;
@@ -314,10 +306,13 @@ SftpClient.prototype.connect = function(config) {
     });
 };
 
+// @TODO: promise
 SftpClient.prototype.end = function() {
-    this.client.end();
-    console.log('end connect');
-    // this.closed = true;
+    return new Promise((resolve) => {
+        this.client.end();
+        console.log('end connect');
+        resolve();
+    });
 };
 
 module.exports = SftpClient;
