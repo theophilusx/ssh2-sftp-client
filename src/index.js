@@ -196,7 +196,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                     }
                     resolve();
                 });
-                // return false;
             }
             console.log('recursive');
             let rmdir = (p) => {
@@ -224,10 +223,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                             if (item.type === 'd') {
                                 if (name !== '.' || name !== '..') {
                                     promise = rmdir(subPath);
-                                    // rmdir(p + '/' + item.name).then(() => {
-                                    //     console.log('delete dir' + p + '/' + item.name);
-                                    // });
-                                    // return rmdir(subPath);//.then(() => r1());
                                 }
                             } else {
                                 console.log('delete file', subPath);
@@ -237,7 +232,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                         });
                         if (promises.length) {
                             return Promise.all(promises).then(() => {
-                                rmdir(p);
+                                return rmdir(p);
                             });
                         }
                     } else {
@@ -251,7 +246,8 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                     }
                 });
             };
-            return rmdir(path).then(() => {resolve('success')});
+            return rmdir(path).then(() => {resolve()})
+                        .catch((err) => {reject(err)});
         });
     });
 };
@@ -282,6 +278,7 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
                 return false;
             }
             sftp.rename(srcPath, remotePath, (err) => {
+                console.log(err)
                 if (err) {
                     reject(err);
                     return false;
@@ -309,10 +306,13 @@ SftpClient.prototype.connect = function(config) {
     });
 };
 
+// @TODO: promise
 SftpClient.prototype.end = function() {
-    this.client.end();
-    console.log('end connect');
-    // this.closed = true;
+    return new Promise((resolve) => {
+        this.client.end();
+        console.log('end connect');
+        resolve();
+    });
 };
 
 module.exports = SftpClient;

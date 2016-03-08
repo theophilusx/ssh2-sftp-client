@@ -49,9 +49,9 @@ sftp.connect(config)
     //     return sftp.rename(BASIC_URL + 'h5.html', BASIC_URL + 'bb/ooo.html');
     // })
 
-    // .then(() => {
-    //     return sftp.rmdir(BASIC_URL + 'aa', true);
-    // })
+    .then(() => {
+        return sftp.rmdir(BASIC_URL + 'mocha-rmdir', true);
+    })
 
     .then((data) => {
         console.log(data, 'end data');
