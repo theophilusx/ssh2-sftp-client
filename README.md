@@ -2,11 +2,11 @@
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
 ### Installation
-`npm install XXX`
+`npm install ssh2-sftp-client`
 
 ### Usage
 ```
-let Client = require('sftp-client');
+let Client = require('ssh2-sftp-client');
 let sftp = new Client();
 sftp.connect({
     host: '127.0.0.1',
