@@ -99,5 +99,9 @@ sftp.remove(remoteSourcePath, remoteDestPath);
 
 ### FAQ
 
+### Log
+* 2016.05.19:
+    - fix: multi image upload
+    - change: remove `this.client.sftp` to `connect` function
+
 ### TODO
-to do...

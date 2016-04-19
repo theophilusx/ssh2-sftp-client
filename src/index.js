@@ -22,11 +22,9 @@ SftpClient.prototype.list = function(path) {
     let reg = /-/gi;
 
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
+
+        if (sftp) {
             sftp.readdir(path, (err, list) => {
                 if (err) {
                     reject(err);
@@ -52,7 +50,9 @@ SftpClient.prototype.list = function(path) {
                 // console.log('new list: ', list, new Date());
                 resolve(list);
             });
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
@@ -67,17 +67,17 @@ SftpClient.prototype.get = function(path, useCompression) {
     useCompression = Object.assign({}, {encoding: 'utf8'}, useCompression);
 
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
+
+        if (sftp) {
             try {
                 resolve(sftp.createReadStream(path, useCompression));
             } catch(err) {
                 reject(err);
             }
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
@@ -93,11 +93,9 @@ SftpClient.prototype.put = function(input, remotePath, useCompression) {
     useCompression = Object.assign({}, {encoding: 'utf8'}, useCompression);
 
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
+
+        if (sftp) {
             if (typeof input === 'string') {
                 sftp.fastPut(input, remotePath, useCompression, (err) => {
                     if (err) {
@@ -120,7 +118,9 @@ SftpClient.prototype.put = function(input, remotePath, useCompression) {
                 return false;
             }
             data = input.pipe(stream);
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
@@ -128,12 +128,9 @@ SftpClient.prototype.mkdir = function(path, recursive) {
     recursive = recursive || false;
 
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
 
+        if (sftp) {
             if (!recursive) {
                 sftp.mkdir(path, (err) => {
                     if (err) {
@@ -165,7 +162,9 @@ SftpClient.prototype.mkdir = function(path, recursive) {
                 });
             };
             return mkdir();
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
@@ -182,12 +181,9 @@ SftpClient.prototype.rmdir = function(path, recursive) {
     recursive = recursive || false;
 
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
 
+        if (sftp) {
             if (!recursive) {
                 console.log('single');
                 return sftp.rmdir(path, (err) => {
@@ -197,7 +193,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                     resolve();
                 });
             }
-            console.log('recursive');
             let rmdir = (p) => {
                 return this.list(p).then((list) => {
                     if (list.length > 0) {
@@ -248,17 +243,17 @@ SftpClient.prototype.rmdir = function(path, recursive) {
             };
             return rmdir(path).then(() => {resolve()})
                         .catch((err) => {reject(err)});
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
 SftpClient.prototype.delete = function(path) {
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
+
+        if (sftp) {
             sftp.unlink(path, (err) => {
                 if (err) {
                     reject(err);
@@ -266,17 +261,17 @@ SftpClient.prototype.delete = function(path) {
                 }
                 resolve();
             });
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 };
 
 SftpClient.prototype.rename = function(srcPath, remotePath) {
     return new Promise((resolve, reject) => {
-        this.client.sftp((err, sftp) => {
-            if (err) {
-                reject(err);
-                return false;
-            }
+        let sftp = this.sftp;
+
+        if (sftp) {
             sftp.rename(srcPath, remotePath, (err) => {
                 console.log(err)
                 if (err) {
@@ -285,7 +280,9 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
                 }
                 resolve();
             });
-        });
+        } else {
+            reject('sftp connect error');
+        }
     });
 }
 
@@ -293,12 +290,18 @@ SftpClient.prototype.connect = function(config) {
     var c = this.client;
     console.log('this is connect');
 
-    // return new Promise(this.client.connect(config))
     return new Promise((resolve, reject) => {
         this.client.on('ready', () => {
             console.log('the ready');
-            resolve(this.client.sftp);
-            // c.sftp(cb);
+
+            this.client.sftp((err, sftp) => {
+                if (err) {
+                    console.log(err, 'sftp reject');
+                    reject(err);
+                }
+                this.sftp = sftp;
+                resolve(sftp);
+            });
         }).on('error', (err) => {
             console.log(err, 'on ready reject')
             reject(err);
@@ -306,7 +309,6 @@ SftpClient.prototype.connect = function(config) {
     });
 };
 
-// @TODO: promise
 SftpClient.prototype.end = function() {
     return new Promise((resolve) => {
         this.client.end();
