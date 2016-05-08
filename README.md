@@ -11,8 +11,8 @@ let sftp = new Client();
 sftp.connect({
     host: '127.0.0.1',
     port: '8080',
-    username: 'xx'
-    passphrase: 'xxx'
+    username: 'username'
+    password: '******'
 }).then(() => {
     return sftp.list('/pathname');
 }).then((data) => {
@@ -97,6 +97,9 @@ rename/remove remoteSourcePath to remoteDestPath.
 sftp.remove(remoteSourcePath, remoteDestPath);
 ```
 
+#### Connect
+connection config you will see [here](https://github.com/mscdex/ssh2#user-content-client-methods)
+
 ### FAQ
 
 ### Log
@@ -104,4 +107,3 @@ sftp.remove(remoteSourcePath, remoteDestPath);
     - fix: multi image upload
     - change: remove `this.client.sftp` to `connect` function
 
-### TODO
