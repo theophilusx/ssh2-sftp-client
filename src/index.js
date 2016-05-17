@@ -5,10 +5,7 @@
 
 let Client = require('ssh2').Client;
 
-// client.connect = config;
-
 let SftpClient = function(){
-    // this.closed = true;
     this.client = new Client();
 };
 
@@ -47,7 +44,6 @@ SftpClient.prototype.list = function(path) {
                         group: item.attrs.gid
                     }
                 });
-                // console.log('new list: ', list, new Date());
                 resolve(list);
             });
         } else {
@@ -168,15 +164,6 @@ SftpClient.prototype.mkdir = function(path, recursive) {
     });
 };
 
-// SftpClient.prototype._rmdir = function(sftp, path) {
-//     sftp.rmdir(path, (err) => {
-//         if (err) {
-//             reject(err);
-//         }
-//         resolve();
-//     });
-// };
-
 SftpClient.prototype.rmdir = function(path, recursive) {
     recursive = recursive || false;
 
@@ -185,7 +172,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
 
         if (sftp) {
             if (!recursive) {
-                console.log('single');
                 return sftp.rmdir(path, (err) => {
                     if (err) {
                         reject(err);
@@ -213,14 +199,11 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                                 }
                             }
 
-                            console.log('the list file name', name, '|', subPath);
-
                             if (item.type === 'd') {
                                 if (name !== '.' || name !== '..') {
                                     promise = rmdir(subPath);
                                 }
                             } else {
-                                console.log('delete file', subPath);
                                 promise = this.delete(subPath);
                             }
                             promises.push(promise);
@@ -231,7 +214,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                             });
                         }
                     } else {
-                        console.log('delete dir' + p);
                         return sftp.rmdir(p, (err) => {
                             if (err) {
                                 reject(err);
@@ -273,7 +255,6 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
 
         if (sftp) {
             sftp.rename(srcPath, remotePath, (err) => {
-                console.log(err)
                 if (err) {
                     reject(err);
                     return false;
@@ -288,22 +269,18 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
 
 SftpClient.prototype.connect = function(config) {
     var c = this.client;
-    console.log('this is connect');
 
     return new Promise((resolve, reject) => {
         this.client.on('ready', () => {
-            console.log('the ready');
 
             this.client.sftp((err, sftp) => {
                 if (err) {
-                    console.log(err, 'sftp reject');
                     reject(err);
                 }
                 this.sftp = sftp;
                 resolve(sftp);
             });
         }).on('error', (err) => {
-            console.log(err, 'on ready reject')
             reject(err);
         }).connect(config);
     });
@@ -312,7 +289,6 @@ SftpClient.prototype.connect = function(config) {
 SftpClient.prototype.end = function() {
     return new Promise((resolve) => {
         this.client.end();
-        console.log('end connect');
         resolve();
     });
 };
