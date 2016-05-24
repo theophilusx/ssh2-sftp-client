@@ -218,7 +218,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                             if (err) {
                                 reject(err);
                             }
-                            // resolve();
                         });
                     }
                 });
