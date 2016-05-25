@@ -214,10 +214,15 @@ SftpClient.prototype.rmdir = function(path, recursive) {
                             });
                         }
                     } else {
-                        return sftp.rmdir(p, (err) => {
-                            if (err) {
-                                reject(err);
-                            }
+                        return new Promise((resolve, reject) => {
+                            return sftp.rmdir(p, (err) => {
+                                if (err) {
+                                    reject(err);
+                                }
+                                else {
+                                    resolve();
+                                }
+                            });
                         });
                     }
                 });
