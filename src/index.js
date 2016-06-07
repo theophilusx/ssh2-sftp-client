@@ -67,7 +67,11 @@ SftpClient.prototype.get = function(path, useCompression) {
 
         if (sftp) {
             try {
-                resolve(sftp.createReadStream(path, useCompression));
+                let stream = sftp.createReadStream(path, useCompression);
+
+                stream.on('error', reject);
+
+                resolve(stream);
             } catch(err) {
                 reject(err);
             }
@@ -105,9 +109,8 @@ SftpClient.prototype.put = function(input, remotePath, useCompression) {
             let stream = sftp.createWriteStream(remotePath, useCompression);
             let data;
 
-            stream.on('close', () => {
-                resolve();
-            });
+            stream.on('error', reject);
+            stream.on('close', resolve);
 
             if (input instanceof Buffer) {
                 data = stream.end(input);
