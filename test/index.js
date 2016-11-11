@@ -260,3 +260,22 @@ describe('rename', () => {
         });
     });
 });
+
+describe('getOptions', () => {
+
+    it('encoding should be utf8 if undefined', () => {
+        return expect(sftp.getOptions(false)).to.have.property('encoding', 'utf8')
+    });
+    
+    it('encoding should be utf8 if undefined 2', () => {
+        return expect(sftp.getOptions(false, undefined)).to.have.property('encoding', 'utf8')
+    });
+    
+    it('encoding should be null if null', () => {
+        return expect(sftp.getOptions(false, null)).to.have.property('encoding', null)
+    });
+    
+    it('encoding should be hex', () => {
+        return expect(sftp.getOptions(false, 'hex')).to.have.property('encoding', 'hex')
+    });
+});
