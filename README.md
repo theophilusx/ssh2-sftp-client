@@ -52,19 +52,19 @@ group: // group ID
 ```
 
 #### Get
-get a new readable stream for path. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Defaults to 'utf8'.
+get a new readable stream for path.
 
 ```
-sftp.get(remoteFilePath, [useCompression], [encoding]);
+sftp.get(romoteFilePath, [useCompression]);
 ```
 
 #### Put
 upload a file. it can be `localPath` or `Buffer` or `Stream`.
 
 ```
-sftp.put(localFilePath, remoteFilePath, [useCompression], [encoding]);
-sftp.put(Buffer, remoteFilePath, [useCompression], [encoding]);
-sftp.put(Stream, remoteFilePath, [useCompression], [encoding]);
+sftp.put(localFilePath, remoteFilePath, [useCompression]);
+sftp.put(Buffer, remoteFilePath, [useCompression]);
+sftp.put(Stream, remoteFilePath, [useCompression]);
 ```
 
 #### Mkdir
