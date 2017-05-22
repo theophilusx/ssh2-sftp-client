@@ -103,7 +103,11 @@ connection config you will see [here](https://github.com/mscdex/ssh2#user-conten
 ### FAQ
 
 ### Log
-* 2016.05.19:
+#### V1.1.0
+    - fix: add encoding control support for binary stream
+
+#### V1.0.5:
+
     - fix: multi image upload
     - change: remove `this.client.sftp` to `connect` function
 
