@@ -47,7 +47,7 @@ SftpClient.prototype.list = function(path) {
                 resolve(list);
             });
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -77,7 +77,7 @@ SftpClient.prototype.get = function(path, useCompression, encoding) {
                 reject(err);
             }
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -120,7 +120,7 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding)
             }
             data = input.pipe(stream);
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -164,7 +164,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
             };
             return mkdir();
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -235,7 +235,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
             return rmdir(path).then(() => {resolve()})
                         .catch((err) => {reject(err)});
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -253,7 +253,7 @@ SftpClient.prototype.delete = function(path) {
                 resolve();
             });
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 };
@@ -271,7 +271,7 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
                 resolve();
             });
         } else {
-            reject('sftp connect error');
+            reject(Error('sftp connect error'));
         }
     });
 }
