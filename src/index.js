@@ -276,6 +276,24 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
     });
 }
 
+SftpClient.prototype.chmod = function(remotePath, mode) {
+    return new Promise((resolve, reject) => {
+        let sftp = this.sftp;
+
+        if (sftp) {
+            sftp.chmod(remotePath, mode, (err) => {
+                if (err) {
+                    reject(err);
+                    return false;
+                }
+                resolve();
+            });
+        } else {
+            reject(Error('sftp connect error'));
+        }
+    });
+}
+
 SftpClient.prototype.connect = function(config) {
     var c = this.client;
 

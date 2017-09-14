@@ -283,3 +283,30 @@ describe('getOptions', () => {
         return expect(sftp.getOptions(false, 'hex')).to.have.property('encoding', 'hex')
     });
 });
+
+describe('chmod', () => {
+    chai.use(chaiSubset);
+
+    before(() => {
+        return sftp.connect(config).then(() => {
+            return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-chmod.txt', true);
+        });
+    });
+    after(() => {
+        return sftp.delete(BASIC_URL + 'mocha-chmod.txt').then(() => {
+            sftp.end();
+        });
+    });
+
+    it('return should be a promise', () => {
+        return expect(sftp.chmod(BASIC_URL + 'mocha-chmod.txt', 0777)).to.be.a('promise');
+    });
+
+    it('chmod file', () => {
+        return sftp.chmod(BASIC_URL + 'mocha-chmod.txt', 0777).then(() => {
+            return sftp.list(BASIC_URL);
+        }).then((list) => {
+            return expect(list).to.containSubset([{'name': 'mocha-chmod.txt', 'rights': { 'user': 'rwx', 'group': 'rwx', 'other': 'rwx' }}]);
+        });
+    });
+});

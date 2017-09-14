@@ -97,6 +97,13 @@ rename remoteSourcePath to remoteDestPath (removes remoteSourcePath).
 sftp.rename(remoteSourcePath, remoteDestPath);
 ```
 
+#### Chmod
+modify rights to remoteDestPath file
+
+```
+sftp.chmod(remoteDestPath, mode);
+```
+
 #### Connect
 connection config you will see [here](https://github.com/mscdex/ssh2#user-content-client-methods)
 
