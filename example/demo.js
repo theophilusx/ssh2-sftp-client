@@ -3,7 +3,7 @@
 let fs = require('fs');
 let Client = require('../src/index.js');
 
-let config = require('../tmp/ftp_config');
+let config = require('../config/ftp_config_example');
 let sftp = new Client();
 
 const BASIC_URL = '/sftp/edm/xucj/';
@@ -51,6 +51,10 @@ sftp.connect(config)
     .then(() => {
         return sftp.rmdir(BASIC_URL + 'mocha-rmdir', true);
     })
+
+    // .then(() => {
+    //     return sftp.chmod(BASIC_URL + 'hello1.html', 0777);
+    // })
 
     .then((data) => {
         console.log(data, 'end data');
