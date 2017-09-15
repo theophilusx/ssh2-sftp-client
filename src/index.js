@@ -70,9 +70,12 @@ SftpClient.prototype.get = function(path, useCompression, encoding) {
             try {
                 let stream = sftp.createReadStream(path, options);
 
-                stream.on('error', reject);
-
-                resolve(stream);
+                stream.on('error', (err) => {
+                    reject(err);
+                });
+                stream.on('readable', () => {
+                    resolve(stream);
+                });
             } catch(err) {
                 reject(err);
             }
@@ -299,7 +302,6 @@ SftpClient.prototype.connect = function(config) {
 
     return new Promise((resolve, reject) => {
         this.client.on('ready', () => {
-
             this.client.sftp((err, sftp) => {
                 if (err) {
                     reject(err);

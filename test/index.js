@@ -1,4 +1,3 @@
-'use strict';
 let stream = require('stream');
 
 let chai = require('chai');
@@ -8,7 +7,8 @@ let chaiSubset = require('chai-subset');
 let config = require('../tmp/ftp_config.js');
 let Client = require('../src/index.js');
 let sftp = new Client();
-const BASIC_URL = '/sftp/edm/xucj/';
+// @TODO: change to local path
+const BASIC_URL = '/Library/WebServer/Documents/nodejs/sftp-server/';
 
 after(() => {
     sftp.end();
@@ -77,6 +77,11 @@ describe('get', () => {
             data.on('end', () => {
                 expect(body).to.equal('hello');
             });
+        });
+    });
+    it('get file faild', () => {
+        return sftp.get(BASIC_URL + 'mocha-file1.md').catch((err) => {
+            expect(err.message).to.equal('No such file');
         });
     });
 });
@@ -262,7 +267,7 @@ describe('rename', () => {
 });
 
 describe('getOptions', () => {
-    
+
     it('encoding should be utf8 if undefined', () => {
         return expect(sftp.getOptions()).to.have.property('encoding', 'utf8')
     });
@@ -270,15 +275,15 @@ describe('getOptions', () => {
     it('encoding should be utf8 if undefined 1', () => {
         return expect(sftp.getOptions(false)).to.have.property('encoding', 'utf8')
     });
-    
+
     it('encoding should be utf8 if undefined 2', () => {
         return expect(sftp.getOptions(false, undefined)).to.have.property('encoding', 'utf8')
     });
-    
+
     it('encoding should be null if null', () => {
         return expect(sftp.getOptions(false, null)).to.have.property('encoding', null)
     });
-    
+
     it('encoding should be hex', () => {
         return expect(sftp.getOptions(false, 'hex')).to.have.property('encoding', 'hex')
     });
