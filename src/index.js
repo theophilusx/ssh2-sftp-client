@@ -297,11 +297,12 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
     });
 }
 
-SftpClient.prototype.connect = function(config) {
+SftpClient.prototype.connect = function(config, connectMethod) {
+    connectMethod = connectMethod || 'on'
     var c = this.client;
 
     return new Promise((resolve, reject) => {
-        this.client.on('ready', () => {
+        this.client[connectMethod]('ready', () => {
             this.client.sftp((err, sftp) => {
                 if (err) {
                     reject(err);

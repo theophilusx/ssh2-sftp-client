@@ -1,14 +1,18 @@
-let stream = require('stream');
+const stream = require('stream');
+const chai = require('chai');
+const path = require('path');
+const expect = chai.expect;
+const chaiSubset = require('chai-subset');
+const Client = require('../src/index.js');
+const sftp = new Client();
 
-let chai = require('chai');
-let expect = chai.expect;
-let chaiSubset = require('chai-subset');
-
-let config = require('../tmp/ftp_config.js');
-let Client = require('../src/index.js');
-let sftp = new Client();
-// @TODO: change to local path
-const BASIC_URL = '/Library/WebServer/Documents/nodejs/sftp-server/';
+// use your test ssh server config
+const config = {
+    host: '172.29.84.8',
+    username: 'jyu213',
+    password: '**'
+};
+const BASIC_URL = path.resolve(__dirname, '../testServer/') + '/';
 
 after(() => {
     sftp.end();
@@ -18,7 +22,7 @@ describe('list', () => {
     chai.use(chaiSubset);
 
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.mkdir(BASIC_URL + 'mocha-list/dir1', true);
         }).then(() => {
             return sftp.mkdir(BASIC_URL + 'mocha-list/dir2/sub1', true);
@@ -29,7 +33,7 @@ describe('list', () => {
         });
     });
     after(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.rmdir(BASIC_URL + 'mocha-list', true)
                 .then(() => {
                     return sftp.end();
@@ -53,12 +57,12 @@ describe('list', () => {
 
 describe('get', () => {
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-file.md', true);
         });
     });
     after(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             sftp.delete(BASIC_URL + 'mocha-file.md');
         }).then(() => {
             return sftp.end();
@@ -88,7 +92,7 @@ describe('get', () => {
 
 describe('put', () => {
     before(() => {
-        return sftp.connect(config);
+        return sftp.connect(config, 'once');
     });
     after(() => {
         return sftp.delete(BASIC_URL + 'mocha-put-string.md').then(() => {
@@ -141,7 +145,7 @@ describe('mkdir', () => {
     chai.use(chaiSubset);
 
     before(() => {
-        return sftp.connect(config);
+        return sftp.connect(config, 'once');
     });
     after(() => {
         return sftp.rmdir(BASIC_URL + 'mocha', true).then(() => {
@@ -172,10 +176,10 @@ describe('rmdir', () => {
     chai.use(chaiSubset);
 
     // beforeEach(() => {
-    //     return sftp.connect(config);
+    //     return sftp.connect(config, 'once');
     // });
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.mkdir(BASIC_URL + 'mocha-rmdir/dir1', true);
         }).then(() => {
             return sftp.mkdir(BASIC_URL + 'mocha-rmdir/dir2', true);
@@ -204,7 +208,7 @@ describe('rmdir', () => {
     });
 
     it('remove directory recursive', () => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             sftp.rmdir(BASIC_URL + 'mocha-rmdir', true).then(() => {
                 return sftp.list(BASIC_URL);
             }).then((list) => {
@@ -218,7 +222,7 @@ describe('delete', () => {
     chai.use(chaiSubset);
 
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-delete.md', true);
         });
     });
@@ -243,7 +247,7 @@ describe('rename', () => {
     chai.use(chaiSubset);
 
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-rename.md', true);
         });
     });
@@ -293,7 +297,7 @@ describe('chmod', () => {
     chai.use(chaiSubset);
 
     before(() => {
-        return sftp.connect(config).then(() => {
+        return sftp.connect(config, 'once').then(() => {
             return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-chmod.txt', true);
         });
     });
