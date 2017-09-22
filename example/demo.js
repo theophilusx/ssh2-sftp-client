@@ -1,62 +1,80 @@
 'use strict';
 
-let fs = require('fs');
-let Client = require('../src/index.js');
+const fs = require('fs');
+const Client = require('../src/index.js');
+const sftp = new Client();
+const BASIC_URL = '/sftp-test/';
 
-let config = require('../config/ftp_config_example');
-let sftp = new Client();
+const config = {
+    host: '127.0.0.1',
+    port: '8080',
+    username: 'username',
+    password: '******'
+};
 
-const BASIC_URL = '/sftp/edm/xucj/';
+// get connect
+const connect = () => {
+    sftp.connect(config);
+};
 
-sftp.connect(config)
-    // add test delete
-    // .then(() => {
-    //     return sftp.put('/Library/WebServer/Documents/nodejs/ssh2-sftp-client/test.html', BASIC_URL + 'bb/a1.html');
-    // })
-    // .then(() => {
-    //     return sftp.mkdir(BASIC_URL + 'bb/aa', true);
-    // })
+// get list
+const list = () => {
+    sftp.connect(config).then(() => {
+        return sftp.list(BASIC_URL);
+    }).then((data) => {
+        let body = data.on('data', (chunk) => {
+            body += chunk;
+        });
 
-    // .then((data) => sftp.list(BASIC_URL))
-    // .then(() => {
-    //     let str = '<body>string html</body>';
-    //     let filePath = '/Library/WebServer/Documents/nodejs/ssh2-sftp-client/test.html';
-    //     let buffer = new Buffer('this is the bufffffer test');
-    //     let stream = fs.createReadStream(filePath);
-
-    //     // test ok.
-    //     // return sftp.put(filePath, BASIC_URL + 'hello1.html');
-    //     // test ok.
-    //     // sftp.put(buffer, BASIC_URL + 'hello3.html');
-    //     // test ok.
-    //     // sftp.put(stream, BASIC_URL + 'h5.html');
-    // })
-
-    // .then(() => {
-    //     return sftp.get(BASIC_URL + 'hello1.html');
-    // })
-
-    // .then(() => {
-    //     return sftp.mkdir(BASIC_URL + 'qq1/tt/a1.html', true);
-    // })
-
-    // .then(() => {
-    //     return sftp.delete(BASIC_URL + 'hello1.html');
-    // })
-
-    // .then(() => {
-    //     return sftp.rename(BASIC_URL + 'h5.html', BASIC_URL + 'bb/ooo.html');
-    // })
-
-    .then(() => {
-        return sftp.rmdir(BASIC_URL + 'mocha-rmdir', true);
+        data.on('end', () => {
+            console.log(body)
+        });
     })
+};
 
-    // .then(() => {
-    //     return sftp.chmod(BASIC_URL + 'hello1.html', 0777);
-    // })
+// get file
+const get = () => {
+    sftp.connect(config).then(() => {
+        return sftp.get(BASIC_URL + 'a.js');
+    });
+};
 
-    .then((data) => {
-        console.log(data, 'end data');
-    })
-    .catch((err) => console.log(err, 'catch error'));
+// put file
+const put1 = () => {
+    sftp.connect(config).then(() => {
+        return sftp.put(BASIC_URL + 'localpath.js', BASIC_URL + 'remotepath.js');
+    });
+};
+const put2 = () => {
+    sftp.connect(config).then(() => {
+        return sftp.put(new Buffer('hello'), BASIC_URL + 'file.js', true, 'utf-8');
+    });
+};
+
+// mkdir
+const mkdir = () => {
+    sftp.connect(config).then(() => {
+        return sftp.mkdir(BASIC_URL + 'change/log', true);
+    });
+};
+
+// rmdir
+const rmdir = () => {
+    sftp.connect(config).then(() => {
+        return sftp.rmdir(BASIC_URL + 'change/log', true);
+    });
+};
+
+// delete
+const deleteFile = () => {
+    sftp.connect(config).then(() => {
+        return sftp.delete(BASIC_URL + 'file.js');
+    });
+}
+
+// rename
+const rename = () => {
+    sftp.connect(config).then(() => {
+        return sftp.rename(BASIC_URL + 'source.js', BASIC_URL + 'remote.js');
+    });
+}
