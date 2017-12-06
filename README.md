@@ -31,7 +31,7 @@ all the methods will return a Promise;
 Retrieves a directory listing.
 
 ```
-sftp.list(romoteFilePath)
+sftp.list(remoteFilePath)
 ```
 
 directory info:
