@@ -60,8 +60,8 @@ SftpClient.prototype.list = function(path) {
  * @param {String} encoding. Encoding for the ReadStream, can be any value supported by node streams. Use 'null' for binary (https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding)
  * @return {Promise} stream, readable stream
  */
-SftpClient.prototype.get = function(path, useCompression, encoding) {
-    let options = this.getOptions(useCompression, encoding)
+SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions) {
+    let options = this.getOptions(useCompression, encoding, otherOptions)
 
     return new Promise((resolve, reject) => {
         let sftp = this.sftp;
@@ -94,8 +94,8 @@ SftpClient.prototype.get = function(path, useCompression, encoding) {
  * @param  {String} encoding. Encoding for the WriteStream, can be any value supported by node streams.
  * @return {[type]}                [description]
  */
-SftpClient.prototype.put = function(input, remotePath, useCompression, encoding) {
-    let options = this.getOptions(useCompression, encoding)
+SftpClient.prototype.put = function(input, remotePath, useCompression, encoding, otherOptions) {
+    let options = this.getOptions(useCompression, encoding, otherOptions)
 
     return new Promise((resolve, reject) => {
         let sftp = this.sftp;
@@ -323,11 +323,11 @@ SftpClient.prototype.end = function() {
     });
 };
 
-SftpClient.prototype.getOptions = function(useCompression, encoding){
+SftpClient.prototype.getOptions = function(useCompression, encoding, otherOptions){
     if(encoding === undefined){
         encoding = 'utf8';
     }
-    let options = Object.assign({}, {encoding: encoding}, useCompression);
+    let options = Object.assign({}, otherOptions || {}, {encoding: encoding}, useCompression);
     return options;
 };
 
