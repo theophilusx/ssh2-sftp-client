@@ -1,0 +1,109 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/jyu213/.nvm/versions/node/v4.8.4/bin/node',
+1 verbose cli   '/Users/jyu213/.nvm/versions/node/v4.8.4/bin/npm',
+1 verbose cli   'publish' ]
+2 info using npm@2.15.11
+3 info using node@v4.8.4
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Library/WebServer/Documents/nodejs/ssh2-sftp-client',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package.tgz not in flight; packing
+9 verbose correctMkdir /Users/jyu213/.npm correctMkdir not in flight; initializing
+10 verbose tar pack [ '/Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package.tgz',
+10 verbose tar pack   '/Library/WebServer/Documents/nodejs/ssh2-sftp-client' ]
+11 verbose tarball /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package.tgz
+12 verbose folder /Library/WebServer/Documents/nodejs/ssh2-sftp-client
+13 info prepublish ssh2-sftp-client@2.0.1
+14 verbose addLocalTarball adding from inside cache /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package.tgz
+15 verbose correctMkdir /Users/jyu213/.npm correctMkdir not in flight; initializing
+16 silly cache afterAdd ssh2-sftp-client@2.0.1
+17 verbose afterAdd /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package/package.json not in flight; writing
+18 verbose correctMkdir /Users/jyu213/.npm correctMkdir not in flight; initializing
+19 verbose afterAdd /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package/package.json written
+20 silly publish { name: 'ssh2-sftp-client',
+20 silly publish   version: '2.0.1',
+20 silly publish   description: 'ssh2 sftp client for node',
+20 silly publish   main: 'src/index.js',
+20 silly publish   repository:
+20 silly publish    { type: 'git',
+20 silly publish      url: 'git+https://github.com/jyu213/ssh2-sftp-client.git' },
+20 silly publish   keywords: [ 'sftp', 'nodejs' ],
+20 silly publish   scripts: { test: 'mocha test/index.js' },
+20 silly publish   author: { name: '见见' },
+20 silly publish   email: 'jyu213@gmail.com',
+20 silly publish   license: 'MIT',
+20 silly publish   dependencies: { ssh2: '^0.5.5' },
+20 silly publish   devDependencies: { chai: '^3.5.0', 'chai-subset': '^1.2.1', mocha: '2.4.5' },
+20 silly publish   readme: '## SSH2 SFTP Client\na SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)\n\n### Installation\n`npm install ssh2-sftp-client`\n\n### Usage\n```\nlet Client = require(\'ssh2-sftp-client\');\nlet sftp = new Client();\nsftp.connect({\n    host: \'127.0.0.1\',\n    port: \'8080\',\n    username: \'username\',\n    password: \'******\'\n}).then(() => {\n    return sftp.list(\'/pathname\');\n}).then((data) => {\n    console.log(data, \'the data info\');\n}).catch((err) => {\n    console.log(err, \'catch error\');\n});\n```\n\n### Documentation\nthe connection to server config pls see [ssh2 client event](https://github.com/mscdex/ssh2#user-content-client-methods).\n\nlist of methods:\nall the methods will return a Promise;\n#### List\nRetrieves a directory listing.\n\n```\nsftp.list(remoteFilePath)\n```\n\ndirectory info:\n\n```\ntype: // file type(-, d, l)\nname: // file name\nsize: // file size\nmodifyTime: // file timestamp of modified time\naccessTime: // file timestamp of access time\nrights: {\n    user:\n    group:\n    other:\n},\nowner: // user ID\ngroup: // group ID\n```\n\n#### Get\nget a new readable stream for path. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, \'null\' should be passed (check node stream documentation). Defaults to \'utf8\'.\n\n```\nsftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);\n```\n\n#### Put\nupload a file. it can be `localPath` or `Buffer` or `Stream`.\n\n```\nsftp.put(localFilePath, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);\nsftp.put(Buffer, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);\nsftp.put(Stream, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);\n```\n\n#### Mkdir\ncreate a new directory.\n\n```\n// recursive default is false, if true, it will create directory recursive\nsftp.mkdir(remoteFilePath, recursive);\n```\n\n#### Rmdir\nremove the directory or file.\n\n```\n// recursive default is false, if true, it will remove directory recursive even if is not empty\nsftp.rmdir(localPath, recursive);\n```\n\n#### Delete\ndelete file.\n\n```\nsftp.delete(remoteFilePath);\n```\n\n#### Rename\nrename remoteSourcePath to remoteDestPath (removes remoteSourcePath).\n\n```\nsftp.rename(remoteSourcePath, remoteDestPath);\n```\n\n#### Chmod\nmodify rights to remoteDestPath file\n\n```\nsftp.chmod(remoteDestPath, mode);\n```\n\n#### Connect\nconnection config you will see [here](https://github.com/mscdex/ssh2#user-content-client-methods)\n\n### FAQ\n\n### Log\n#### V1.1.0\n    - fix: add encoding control support for binary stream\n\n#### V1.0.5:\n\n    - fix: multi image upload\n    - change: remove `this.client.sftp` to `connect` function\n\n',
+20 silly publish   readmeFilename: 'README.md',
+20 silly publish   gitHead: 'ba98d7d853acd157a1d544674b160f82bf93bc9b',
+20 silly publish   bugs: { url: 'https://github.com/jyu213/ssh2-sftp-client/issues' },
+20 silly publish   homepage: 'https://github.com/jyu213/ssh2-sftp-client#readme',
+20 silly publish   _id: 'ssh2-sftp-client@2.0.1',
+20 silly publish   _shasum: 'a4c81f8af22998a73cf7311111338506fa292cdc',
+20 silly publish   _from: '.' }
+21 verbose getPublishConfig undefined
+22 silly mapToRegistry name ssh2-sftp-client
+23 silly mapToRegistry using default registry
+24 silly mapToRegistry registry https://registry.npmjs.org/
+25 silly mapToRegistry data Result {
+25 silly mapToRegistry   raw: 'ssh2-sftp-client',
+25 silly mapToRegistry   scope: null,
+25 silly mapToRegistry   name: 'ssh2-sftp-client',
+25 silly mapToRegistry   rawSpec: '',
+25 silly mapToRegistry   spec: 'latest',
+25 silly mapToRegistry   type: 'tag' }
+26 silly mapToRegistry uri https://registry.npmjs.org/ssh2-sftp-client
+27 verbose publish registryBase https://registry.npmjs.org/
+28 silly publish uploading /Users/jyu213/.npm/ssh2-sftp-client/2.0.1/package.tgz
+29 verbose request uri https://registry.npmjs.org/ssh2-sftp-client
+30 verbose request sending authorization for write operation
+31 info attempt registry request try #1 at 10:43:00
+32 verbose request using bearer token for auth
+33 verbose request id 513efb5f8e15a109
+34 http request PUT https://registry.npmjs.org/ssh2-sftp-client
+35 http 403 https://registry.npmjs.org/ssh2-sftp-client
+36 verbose headers { 'content-type': 'application/json',
+36 verbose headers   'cache-control': 'max-age=300',
+36 verbose headers   'content-length': '93',
+36 verbose headers   'accept-ranges': 'bytes',
+36 verbose headers   date: 'Tue, 13 Mar 2018 02:43:11 GMT',
+36 verbose headers   via: '1.1 varnish',
+36 verbose headers   connection: 'keep-alive',
+36 verbose headers   'x-served-by': 'cache-nrt6140-NRT',
+36 verbose headers   'x-cache': 'MISS',
+36 verbose headers   'x-cache-hits': '0',
+36 verbose headers   'x-timer': 'S1520908991.816787,VS0,VE448',
+36 verbose headers   vary: 'Accept-Encoding, Accept' }
+37 verbose request invalidating /Users/jyu213/.npm/registry.npmjs.org/ssh2-sftp-client on PUT
+38 error publish Failed PUT 403
+39 verbose stack Error: You cannot publish over the previously published versions: 2.0.1. : ssh2-sftp-client
+39 verbose stack     at makeError (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:302:12)
+39 verbose stack     at CachingRegistryClient.<anonymous> (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:290:14)
+39 verbose stack     at Request._callback (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:210:14)
+39 verbose stack     at Request.self.callback (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/request/request.js:187:22)
+39 verbose stack     at emitTwo (events.js:87:13)
+39 verbose stack     at Request.emit (events.js:172:7)
+39 verbose stack     at Request.<anonymous> (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/request/request.js:1044:10)
+39 verbose stack     at emitOne (events.js:77:13)
+39 verbose stack     at Request.emit (events.js:169:7)
+39 verbose stack     at IncomingMessage.<anonymous> (/Users/jyu213/.nvm/versions/node/v4.8.4/lib/node_modules/npm/node_modules/request/request.js:965:12)
+40 verbose statusCode 403
+41 verbose pkgid ssh2-sftp-client
+42 verbose cwd /Library/WebServer/Documents/nodejs/ssh2-sftp-client
+43 error Darwin 17.4.0
+44 error argv "/Users/jyu213/.nvm/versions/node/v4.8.4/bin/node" "/Users/jyu213/.nvm/versions/node/v4.8.4/bin/npm" "publish"
+45 error node v4.8.4
+46 error npm  v2.15.11
+47 error code E403
+48 error You cannot publish over the previously published versions: 2.0.1. : ssh2-sftp-client
+49 error If you need help, you may report this error at:
+49 error     <https://github.com/npm/npm/issues>
+50 verbose exit [ 1, true ]
