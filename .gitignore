@@ -3,3 +3,4 @@ node_modules
 testServer
 tmp
 .npmignore
+npm-debug.log
