@@ -107,6 +107,13 @@ sftp.chmod(remoteDestPath, mode);
 #### Connect
 connection config you will see [here](https://github.com/mscdex/ssh2#user-content-client-methods)
 
+#### End
+close the sftp connection. when you need it, you can call it in `then()` or `catch()`.
+
+```
+sftp.end();
+```
+
 ### FAQ
 
 ### Log

@@ -28,6 +28,8 @@ const list = () => {
 
         data.on('end', () => {
             console.log(body)
+            // close connection
+            sftp.end()
         });
     })
 };
