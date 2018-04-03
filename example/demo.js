@@ -72,11 +72,20 @@ const deleteFile = () => {
     sftp.connect(config).then(() => {
         return sftp.delete(BASIC_URL + 'file.js');
     });
-}
+};
 
 // rename
 const rename = () => {
     sftp.connect(config).then(() => {
         return sftp.rename(BASIC_URL + 'source.js', BASIC_URL + 'remote.js');
     });
-}
+};
+
+// trigger on event
+sftp.connect(config);
+sftp.on('end', () => {
+    console.log('end event');
+});
+sftp.on('close', () => {
+    console.log('close event');
+});

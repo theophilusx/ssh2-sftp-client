@@ -295,11 +295,10 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
             reject(Error('sftp connect error'));
         }
     });
-}
+};
 
 SftpClient.prototype.connect = function(config, connectMethod) {
-    connectMethod = connectMethod || 'on'
-    var c = this.client;
+    connectMethod = connectMethod || 'on';
 
     return new Promise((resolve, reject) => {
         this.client[connectMethod]('ready', () => {
@@ -311,6 +310,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
                 resolve(sftp);
             });
         }).on('error', (err) => {
+            console.log('connect error event')
             reject(err);
         }).connect(config);
     });
@@ -323,7 +323,7 @@ SftpClient.prototype.end = function() {
     });
 };
 
-SftpClient.prototype.getOptions = function(useCompression, encoding, otherOptions){
+SftpClient.prototype.getOptions = function(useCompression, encoding, otherOptions) {
     if(encoding === undefined){
         encoding = 'utf8';
     }
@@ -331,4 +331,16 @@ SftpClient.prototype.getOptions = function(useCompression, encoding, otherOption
     return options;
 };
 
+// add Event type support
+SftpClient.prototype.on = function(eventType, callback) {
+    this.client.on(eventType, callback);
+};
+
+
 module.exports = SftpClient;
+
+// sftp = new SftpClient()
+// sftp.client.on('event')
+//
+// sftp.on('end', ()=>{})   => this.client.on('event', callback)
+// sftp.on('error', () => {})

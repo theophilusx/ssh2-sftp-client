@@ -319,3 +319,17 @@ describe('chmod', () => {
         });
     });
 });
+
+// describe('event', () => {
+//     chai.use(chaiSubset);
+//     before(() => {
+//         return sftp.connect(config, 'once');
+//     })
+
+//     it('it should be trigger end event', () => {
+//         sftp.on('end', () => {
+//             return expect('ok')
+//         })
+//         sftp.end();
+//     })
+// });

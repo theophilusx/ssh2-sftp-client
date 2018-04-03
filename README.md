@@ -114,10 +114,47 @@ close the sftp connection. when you need it, you can call it in `then()` or `cat
 sftp.end();
 ```
 
+### Event
+add client event handle. you can find more [here](https://github.com/mscdex/ssh2#client-events)
+
+#### close
+The socket was closed. hadError is set to true if this was due to error.
+
+```
+sftp.on('close', callbackFn)
+```
+
+#### end
+The socket was disconnected.
+
+```
+sftp.on('end', callbackFn)
+```
+
+#### error
+An error occurred. A 'level' property indicates 'client-socket' for socket-level errors and 'client-ssh' for SSH disconnection messages. In the case of 'client-ssh' messages, there may be a 'description' property that provides more detail.
+
+```
+sftp.on('error', callbackFn)
+```
+
 ### FAQ
 
 ### Log
+#### V2.1.1
+
+    - add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
+    - add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
+
+#### V2.0.1
+
+    - add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
+    - update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
+    - fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
+    - fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
+
 #### V1.1.0
+
     - fix: add encoding control support for binary stream
 
 #### V1.0.5:
