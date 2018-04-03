@@ -2,10 +2,12 @@
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
 ### Installation
-`npm install ssh2-sftp-client`
+```shell
+npm install ssh2-sftp-client
+```
 
 ### Usage
-```
+```javascript
 let Client = require('ssh2-sftp-client');
 let sftp = new Client();
 sftp.connect({
@@ -30,7 +32,7 @@ all the methods will return a Promise;
 #### List
 Retrieves a directory listing.
 
-```
+```javascript
 sftp.list(remoteFilePath)
 ```
 
@@ -54,14 +56,14 @@ group: // group ID
 #### Get
 get a new readable stream for path. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Defaults to 'utf8'.
 
-```
+```javascript
 sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 ```
 
 #### Put
 upload a file. it can be `localPath` or `Buffer` or `Stream`.
 
-```
+```javascript
 sftp.put(localFilePath, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 sftp.put(Buffer, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 sftp.put(Stream, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
@@ -70,7 +72,7 @@ sftp.put(Stream, remoteFilePath, [useCompression], [encoding], [addtionalOptions
 #### Mkdir
 create a new directory.
 
-```
+```javascript
 // recursive default is false, if true, it will create directory recursive
 sftp.mkdir(remoteFilePath, recursive);
 ```
@@ -78,7 +80,7 @@ sftp.mkdir(remoteFilePath, recursive);
 #### Rmdir
 remove the directory or file.
 
-```
+```javascript
 // recursive default is false, if true, it will remove directory recursive even if is not empty
 sftp.rmdir(localPath, recursive);
 ```
@@ -86,21 +88,21 @@ sftp.rmdir(localPath, recursive);
 #### Delete
 delete file.
 
-```
+```javascript
 sftp.delete(remoteFilePath);
 ```
 
 #### Rename
 rename remoteSourcePath to remoteDestPath (removes remoteSourcePath).
 
-```
+```javascript
 sftp.rename(remoteSourcePath, remoteDestPath);
 ```
 
 #### Chmod
 modify rights to remoteDestPath file
 
-```
+```javascript
 sftp.chmod(remoteDestPath, mode);
 ```
 
@@ -134,7 +136,7 @@ sftp.on('end', callbackFn)
 #### error
 An error occurred. A 'level' property indicates 'client-socket' for socket-level errors and 'client-ssh' for SSH disconnection messages. In the case of 'client-ssh' messages, there may be a 'description' property that provides more detail.
 
-```
+``` javascript
 sftp.on('error', callbackFn)
 ```
 
