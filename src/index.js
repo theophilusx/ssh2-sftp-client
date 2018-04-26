@@ -74,7 +74,10 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
                     reject(err);
                 });
                 stream.on('readable', () => {
-                    resolve(stream);
+                    let chunk;
+                    while((chunk = stream.read()) !== null) {
+                        resolve(stream);
+                    }
                 });
             } catch(err) {
                 reject(err);
