@@ -54,14 +54,14 @@ group: // group ID
 ```
 
 #### Get
-get a new readable stream for path. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Defaults to 'utf8'.
+get a new readable stream for path. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'utf8'.
 
 ```javascript
 sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 ```
 
 #### Put
-upload a file. it can be `localPath` or `Buffer` or `Stream`.
+upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'.
 
 ```javascript
 sftp.put(localFilePath, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
@@ -143,6 +143,9 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
+#### V2.2.0
+    - fix: get readable not emitting data events in node 10.0.0
+
 #### V2.1.1
 
     - add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
