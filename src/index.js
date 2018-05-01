@@ -89,6 +89,61 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
 };
 
 /**
+ * Use SSH2 fastGet for downloading the file.
+ * Downloads a file at remotePath to localPath using parallel reads for faster throughput.
+ * See 'fastGet' at https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
+ * @param {String} remotePath 
+ * @param {String} localPath 
+ * @param {Object} options 
+ * @return {Promise} the result of downloading the file
+ */
+SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
+    options = options || {};
+    return new Promise((resolve, reject) => {
+        let sftp = this.sftp;
+
+        if (sftp) {
+            sftp.fastGet(remotePath, localPath, options, function (err) {
+                if (err){
+                    return reject(err);
+                }
+                return resolve(`${remotePath} was successfully download to ${localPath}!`);
+            });
+        } else {
+            reject(Error('sftp connect error'));
+        }
+    });
+};
+
+/**
+ * Use SSH2 fastPut for uploading the file.
+ * Uploads a file from localPath to remotePath using parallel reads for faster throughput.
+ * See 'fastPut' at https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
+ * @param {String} localPath
+ * @param {String} remotePath
+ * @param {Object} options 
+ * @return {Promise} the result of downloading the file
+ */
+SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
+    options = options || {};
+    return new Promise((resolve, reject) => {
+        let sftp = this.sftp;
+
+        if (sftp) {
+            sftp.fastPut(localPath, remotePath, options, function (err) {
+                if (err){
+                    return reject(err);
+                }
+                return resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+            });
+        } else {
+            reject(Error('sftp connect error'));
+        }
+    });
+};
+
+
+/**
  * Create file
  *
  * @param  {String|Buffer|stream} input
