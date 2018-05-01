@@ -73,14 +73,8 @@ describe('get', () => {
         return expect(sftp.get(BASIC_URL + 'mocha-file.md')).to.be.a('promise');
     });
     it('get the file content', () => {
-        return sftp.get(BASIC_URL + 'mocha-file.md').then((data) => {
-            let body = data.on('data', (chunk) => {
-                body += chunk;
-            });
-
-            data.on('end', () => {
-                expect(body).to.equal('hello');
-            });
+        return sftp.get(BASIC_URL + 'mocha-file.md').then((chunk) => {
+            expect(chunk).to.equal('hello');
         });
     });
     it('get file faild', () => {

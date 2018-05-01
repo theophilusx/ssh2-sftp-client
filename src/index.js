@@ -73,10 +73,12 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
                 stream.on('error', (err) => {
                     reject(err);
                 });
+                // after V10.0.0, 'readable' takes precedence in controlling the flow,
+                // i.e. 'data' will be emitted only when stream.read() is called
                 stream.on('readable', () => {
                     let chunk;
                     while((chunk = stream.read()) !== null) {
-                        resolve(stream);
+                        resolve(chunk)
                     }
                 });
             } catch(err) {
