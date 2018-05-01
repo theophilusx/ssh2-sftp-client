@@ -143,8 +143,6 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
-#### V2.2.0
-    - fix: get readable not emitting data events in node 10.0.0
 
 #### V2.1.1
 
