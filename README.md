@@ -1,14 +1,16 @@
 ## SSH2 SFTP Client
+Fork of https://github.com/jyu213/ssh2-sftp-client
+Added `fastGet` and `fastPut` methods
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
 ### Installation
 ```shell
-npm install ssh2-sftp-client
+npm install ssh2-sftp-client-fast
 ```
 
 ### Usage
 ```javascript
-let Client = require('ssh2-sftp-client');
+let Client = require('ssh2-sftp-client-fast');
 let sftp = new Client();
 sftp.connect({
     host: '127.0.0.1',

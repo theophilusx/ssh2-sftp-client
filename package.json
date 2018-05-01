@@ -1,11 +1,11 @@
 {
-  "name": "ssh2-sftp-client",
+  "name": "ssh2-sftp-client-fast",
   "version": "2.2.0",
-  "description": "ssh2 sftp client for node",
+  "description": "Fork of ssh2-sftp-client. Ssh2 sftp client for node. Added fastGet, fastPut.",
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jyu213/ssh2-sftp-client"
+    "url": "https://github.com/motorina0/ssh2-sftp-client-fast"
   },
   "keywords": [
     "sftp",
@@ -14,8 +14,8 @@
   "scripts": {
     "test": "mocha test/index.js"
   },
-  "author": "见见",
-  "email": "jyu213@gmail.com",
+  "author": "Vlad STAN",
+  "email": "stan.v.vlad@gmail.com",
   "license": "MIT",
   "dependencies": {
     "ssh2": "^0.5.5"
