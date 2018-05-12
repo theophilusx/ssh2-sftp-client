@@ -22,6 +22,9 @@ SftpClient.prototype.list = function(path) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
             sftp.readdir(path, (err, list) => {
                 if (err) {
                     reject(err);
@@ -68,6 +71,10 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
 
         if (sftp) {
             try {
+                this.client.on('error', (err) => {
+                    reject(err);
+                });
+
                 let stream = sftp.createReadStream(path, options);
 
                 stream.on('error', (err) => {
@@ -106,6 +113,10 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             if (typeof input === 'string') {
                 sftp.fastPut(input, remotePath, options, (err) => {
                     if (err) {
@@ -140,6 +151,10 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             if (!recursive) {
                 sftp.mkdir(path, (err) => {
                     if (err) {
@@ -184,6 +199,10 @@ SftpClient.prototype.rmdir = function(path, recursive) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             if (!recursive) {
                 return sftp.rmdir(path, (err) => {
                     if (err) {
@@ -253,6 +272,10 @@ SftpClient.prototype.delete = function(path) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             sftp.unlink(path, (err) => {
                 if (err) {
                     reject(err);
@@ -271,6 +294,10 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             sftp.rename(srcPath, remotePath, (err) => {
                 if (err) {
                     reject(err);
@@ -289,6 +316,10 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
         let sftp = this.sftp;
 
         if (sftp) {
+            this.client.on('error', (err) => {
+                reject(err);
+            });
+
             sftp.chmod(remotePath, mode, (err) => {
                 if (err) {
                     reject(err);
