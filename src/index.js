@@ -77,9 +77,11 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
                 // i.e. 'data' will be emitted only when stream.read() is called
                 stream.on('readable', () => {
                     let chunk;
+                    let accumulator = '';
                     while((chunk = stream.read()) !== null) {
-                        resolve(chunk)
+                        accumulator += chunk;
                     }
+                    resolve(accumulator)
                 });
             } catch(err) {
                 reject(err);
