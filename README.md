@@ -1,4 +1,5 @@
 ## SSH2 SFTP Client
+Added `fastGet` and `fastPut` methods
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
 ### Installation
