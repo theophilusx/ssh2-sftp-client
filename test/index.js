@@ -84,6 +84,33 @@ describe('get', () => {
     });
 });
 
+describe('fast get', () => {
+    chai.use(chaiSubset);
+    before(() => {
+        return sftp.connect(config, 'once').then(() => {
+            return sftp.put(new Buffer('fast get'), BASIC_URL + 'mocha-fastget.md', true);
+        });
+    });
+    after(() => {
+        return sftp.connect(config, 'once').then(async function () {
+            await sftp.delete(BASIC_URL + 'mocha-fastget.md');
+            await sftp.delete(BASIC_URL + 'local.md');
+            return sftp
+        }).then(() => {
+            return sftp.end();
+        });
+    });
+
+    it('get file content', () => {
+        console.log('get file content')
+        return sftp.fastGet(BASIC_URL + 'mocha-fastget.md', BASIC_URL + 'local.md').then(() => {
+            return sftp.get(BASIC_URL + 'local.md')
+        }).then((chunk) => {
+            expect(chunk).to.equal('fast get');
+        });
+    });
+});
+
 describe('put', () => {
     before(() => {
         return sftp.connect(config, 'once');
@@ -131,6 +158,31 @@ describe('put', () => {
             return sftp.get(BASIC_URL + 'mocha-put-stream.md');
         }).then((data) => {
             return expect(data).to.not.empty;
+        });
+    });
+});
+
+describe('fast put', () => {
+    before(() => {
+        return sftp.connect(config, 'once').then(() => {
+            return sftp.put(new Buffer('fast put'), BASIC_URL + 'mocha-fastput.md', true);
+        })
+    });
+    after(() => {
+        return sftp.connect(config, 'once').then(async function() {
+            await sftp.delete(BASIC_URL + 'mocha-fastput.md');
+            await sftp.delete(BASIC_URL + 'remote.md');
+            return sftp;
+        }).then(() => {
+            return sftp.end();
+        });
+    });
+
+    it('fastput file', () => {
+        return sftp.fastGet(BASIC_URL + 'mocha-fastput.md', BASIC_URL + 'remote.md').then(() => {
+            return sftp.get(BASIC_URL + 'remote.md')
+        }).then((chunk) => {
+            expect(chunk).to.equal('fast put');
         });
     });
 });
