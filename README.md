@@ -1,5 +1,4 @@
 ## SSH2 SFTP Client
-Added `fastGet` and `fastPut` methods
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
 ### Installation
@@ -63,6 +62,13 @@ Get a Chunk from remotePath. The encoding is passed to Node Stream (https://node
 sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 ```
 
+#### FastGet
+Downloads a file at remotePath to localPath using parallel reads for faster throughput. [options properties](https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md) you can find `fastGet` method here.
+
+```javascript
+sftp.fastGet(remotePath, localPath, [options]);
+```
+
 #### Put
 upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'.
 
@@ -70,6 +76,13 @@ upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.Th
 sftp.put(localFilePath, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 sftp.put(Buffer, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 sftp.put(Stream, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
+```
+
+#### FastPut
+Uploads a file from localPath to remotePath using parallel reads for faster throughput. [options properties](https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md) you can find `fastPut` method here.
+
+```javascript
+sftp.fastPut(localPath, remotePath, [options]);
 ```
 
 #### Mkdir
@@ -146,7 +159,10 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
-#### V3.0.0
+#### V2.2.0
+    - add `fastGet` and `fastPut` method.
+
+#### V3.0.0 -- deprecate this version
     - change: `sftp.get` will return chunk not stream anymore
     - fix: get readable not emitting data events in node 10.0.0
 
