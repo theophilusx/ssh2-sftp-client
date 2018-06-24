@@ -75,7 +75,7 @@ describe('stat', () => {
     it('return should be a promise', () => {
         return expect(sftp.stat(BASIC_URL + 'mocha-stat.md')).to.be.a('promise');
     });
-    it.only('get the file stats', () => {
+    it('get the file stats', () => {
         return sftp.stat(BASIC_URL + 'mocha-stat.md').then((stats) => {
             expect(stats).to.containSubset([{mode: 23}]);
         });
