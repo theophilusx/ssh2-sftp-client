@@ -234,7 +234,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
                 token += '/';
                 p = p + token;
                 sftp.mkdir(p, (err) => {
-                    if (err && err.code !== 4) {
+                    if (err && ![4, 11].includes(err.code)) {
                         reject(err);
                     }
                     mkdir();
