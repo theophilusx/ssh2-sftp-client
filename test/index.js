@@ -55,6 +55,38 @@ describe('list', () => {
     });
 });
 
+
+describe('stat', () => {
+    chai.use(chaiSubset);
+
+    before(() => {
+        return sftp.connect(config, 'once').then(() => {
+            return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', true);
+        });
+    });
+    after(() => {
+        return sftp.connect(config, 'once').then(() => {
+            sftp.delete(BASIC_URL + 'mocha-stat.md');
+        }).then(() => {
+            return sftp.end();
+        });
+    });
+
+    it('return should be a promise', () => {
+        return expect(sftp.stat(BASIC_URL + 'mocha-stat.md')).to.be.a('promise');
+    });
+    it('get the file stats', () => {
+        return sftp.stat(BASIC_URL + 'mocha-stat.md').then((stats) => {
+            expect(stats).to.containSubset([{mode: 23}]);
+        });
+    });
+    it('stat file faild', () => {
+        return sftp.stat(BASIC_URL + 'mocha-stat1.md').catch((err) => {
+            expect(err.message).to.equal('The file does not exist.');
+        });
+    });
+});
+
 describe('get', () => {
     before(() => {
         return sftp.connect(config, 'once').then(() => {

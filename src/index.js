@@ -56,6 +56,41 @@ SftpClient.prototype.list = function(path) {
 };
 
 /**
+ * Retrieves attributes for path
+ *
+ * @param {String} path, a string containing the path to a file
+ * @return {Promise} stats, attributes info
+ */
+SftpClient.prototype.stat = function(remotePath) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    if (sftp) {
+      sftp.stat(remotePath, function (err, stats) {
+        if (err){
+          return reject(err);
+        }
+        
+        // format output similarly to sftp.list()
+        stats = {
+          mode: stats.mode,
+          permissions: stats.permissions,
+          owner: stats.uid,
+          group: stats.guid,
+          size: stats.size,
+          accessTime: stats.atime * 1000,
+          modifyTime: stats.mtime * 1000
+        }
+        
+        return resolve(stats);
+      });
+    } else {
+      reject(Error('sftp connect error'));
+    }
+  });
+};
+
+/**
  * get file
  *
  * @param {String} path, path
