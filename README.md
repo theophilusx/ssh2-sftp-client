@@ -159,8 +159,10 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
-#### V2.2.0
+#### V2.3.0
+    - add: `stat` method
     - add `fastGet` and `fastPut` method.
+    - fix: `mkdir` file exists decision logic
 
 #### V3.0.0 -- deprecate this version
     - change: `sftp.get` will return chunk not stream anymore
