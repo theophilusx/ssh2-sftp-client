@@ -70,7 +70,7 @@ SftpClient.prototype.stat = function(remotePath) {
         if (err){
           return reject(err);
         }
-        
+
         // format output similarly to sftp.list()
         stats = {
           mode: stats.mode,
@@ -81,7 +81,7 @@ SftpClient.prototype.stat = function(remotePath) {
           accessTime: stats.atime * 1000,
           modifyTime: stats.mtime * 1000
         }
-        
+
         return resolve(stats);
       });
     } else {
@@ -136,9 +136,9 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
  * Use SSH2 fastGet for downloading the file.
  * Downloads a file at remotePath to localPath using parallel reads for faster throughput.
  * See 'fastGet' at https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
- * @param {String} remotePath 
- * @param {String} localPath 
- * @param {Object} options 
+ * @param {String} remotePath
+ * @param {String} localPath
+ * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
 SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
@@ -165,7 +165,7 @@ SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
  * See 'fastPut' at https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
  * @param {String} localPath
  * @param {String} remotePath
- * @param {Object} options 
+ * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
 SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
@@ -436,7 +436,6 @@ SftpClient.prototype.connect = function(config, connectMethod) {
                 resolve(sftp);
             });
         }).on('error', (err) => {
-            console.log('connect error event')
             reject(err);
         }).connect(config);
     });
