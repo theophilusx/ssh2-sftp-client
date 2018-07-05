@@ -61,7 +61,7 @@ describe('stat', () => {
 
     before(() => {
         return sftp.connect(config, 'once').then(() => {
-            return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', true);
+            return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', {mode: 0o777});
         });
     });
     after(() => {
@@ -77,12 +77,12 @@ describe('stat', () => {
     });
     it('get the file stats', () => {
         return sftp.stat(BASIC_URL + 'mocha-stat.md').then((stats) => {
-            expect(stats).to.containSubset([{mode: 23}]);
+            expect(stats).to.containSubset({mode: 33279});
         });
     });
     it('stat file faild', () => {
         return sftp.stat(BASIC_URL + 'mocha-stat1.md').catch((err) => {
-            expect(err.message).to.equal('The file does not exist.');
+            expect(err.message).to.equal('No such file');
         });
     });
 });
@@ -105,8 +105,14 @@ describe('get', () => {
         return expect(sftp.get(BASIC_URL + 'mocha-file.md')).to.be.a('promise');
     });
     it('get the file content', () => {
-        return sftp.get(BASIC_URL + 'mocha-file.md').then((chunk) => {
-            expect(chunk).to.equal('hello');
+        return sftp.get(BASIC_URL + 'mocha-file.md').then((data) => {
+            let body;
+            data.on('data', (chunk) => {
+                body += chunk;
+            });
+            data.on('end', () => {
+                expect(body).to.equal('hello');
+            });
         });
     });
     it('get file faild', () => {
@@ -127,7 +133,7 @@ describe('fast get', () => {
         return sftp.connect(config, 'once').then(async function () {
             await sftp.delete(BASIC_URL + 'mocha-fastget.md');
             await sftp.delete(BASIC_URL + 'local.md');
-            return sftp
+            return sftp;
         }).then(() => {
             return sftp.end();
         });
@@ -137,8 +143,14 @@ describe('fast get', () => {
         console.log('get file content')
         return sftp.fastGet(BASIC_URL + 'mocha-fastget.md', BASIC_URL + 'local.md').then(() => {
             return sftp.get(BASIC_URL + 'local.md')
-        }).then((chunk) => {
-            expect(chunk).to.equal('fast get');
+        }).then((data) => {
+            let body;
+            data.on('data', (chunk) => {
+                body += chunk;
+            });
+            data.on('end', () => {
+                expect(body).to.equal('fast get');
+            });
         });
     });
 });
@@ -213,8 +225,14 @@ describe('fast put', () => {
     it('fastput file', () => {
         return sftp.fastGet(BASIC_URL + 'mocha-fastput.md', BASIC_URL + 'remote.md').then(() => {
             return sftp.get(BASIC_URL + 'remote.md')
-        }).then((chunk) => {
-            expect(chunk).to.equal('fast put');
+        }).then((data) => {
+            let body;
+            data.on('data', (chunk) => {
+                body += chunk;
+            });
+            data.on('end', () => {
+                expect(body).to.equal('fast put');
+            });
         });
     });
 });

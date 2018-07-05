@@ -56,8 +56,6 @@ group: // group ID
 #### Get
 Get a Chunk from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'utf8'.
 
-> Before V3.0.0, `get` method will return new readable stream from remotePath.
-
 ```javascript
 sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
 ```
