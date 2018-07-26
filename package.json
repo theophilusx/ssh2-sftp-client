@@ -1,6 +1,6 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "2.3.1",
+  "version": "3.1.0",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
@@ -18,7 +18,7 @@
   "email": "jyu213@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "ssh2": "^0.5.5"
+    "ssh2": "^0.6.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

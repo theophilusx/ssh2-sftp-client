@@ -157,6 +157,9 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
+#### V3.1.0
+    - update: upgrade `ssh2` to `0.6.1`
+
 #### V2.3.0
     - add: `stat` method
     - add `fastGet` and `fastPut` method.
