@@ -362,11 +362,9 @@ SftpClient.prototype.delete = function(path) {
     let sftp = this.sftp;
 
     if (sftp) {
-      console.log('delete adding listener');
       this.client.on('error', reject);
 
       sftp.unlink(path, (err) => {
-        console.log('delete removing listener');
         this.client.removeListener('error', reject);
         if (err) {
           reject(err);
@@ -427,6 +425,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
   return new Promise((resolve, reject) => {
     this.client[connectMethod]('ready', () => {
       this.client.sftp((err, sftp) => {
+        this.client.removeListener('error', reject);
         if (err) {
           reject(err);
         }
@@ -434,14 +433,13 @@ SftpClient.prototype.connect = function(config, connectMethod) {
         resolve(sftp);
       });
     })
-      .once('error', reject)
+      .on('error', reject)
       .connect(config);
   });
 };
 
 SftpClient.prototype.end = function() {
-  return new Promise((resolve, reject) => {
-    this.client.removeListener('error', reject);
+  return new Promise((resolve) => {
     this.client.end();
     resolve();
   });
