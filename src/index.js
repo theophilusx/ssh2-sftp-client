@@ -93,7 +93,9 @@ SftpClient.prototype.stat = function(remotePath) {
  *
  * @param {String} path, path
  * @param {Object} useCompression, config options
- * @param {String} encoding. Encoding for the ReadStream, can be any value supported by node streams. Use 'null' for binary (https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding)
+ * @param {String} encoding. Encoding for the ReadStream, can be any value
+ * supported by node streams. Use 'null' for binary
+ * (https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding)
  * @return {Promise} stream, readable stream
  */
 SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions) {
@@ -105,23 +107,23 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
     if (sftp) {
       try {
         this.client.on('error', reject);
-        
+       
         let stream = sftp.createReadStream(path, options);
         
         stream.on('error', (err) => {
           this.client.removeListener('error', reject);
-          reject(err);
+          return reject(new Error(`Failed get for ${path}: ${err.message}`));
         });
         stream.on('readable', () => {
           this.client.removeListener('error', reject);
-          resolve(stream);
+          return resolve(stream);
         });
       } catch(err) {
         this.client.removeListener('error', reject);
-        reject(err);
+        return reject(new Error(`Failed get on ${path}: ${err.message}`));
       }
     } else {
-      reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };

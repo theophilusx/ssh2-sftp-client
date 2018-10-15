@@ -162,46 +162,46 @@ describe('stat', function() {
   });
 });
 
-// describe('get', function() {
-//   before(() => {
-//     return hookSftp.connect(config, 'once')
-//       .then(() => {
-//         return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-file.md', true);
-//       })
-//       .catch(err => {
-//         throw new Error(`Before all hook error: ${err.message}`);
-//       });
-//   });
+describe('get', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-file.md'), true);
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
 
-//   after(() => {
-//     return hookSftp.connect(config, 'once')
-//       .then(() => {
-//         return hookSftp.delete(BASIC_URL + 'mocha-file.md');
-//       })
-//       .then(() => {
-//         return hookSftp.end();
-//       });
-//   });
+  after(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-file.md'));
+      })
+      .then(() => {
+        return hookSftp.end();
+      });
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.get(BASIC_URL + 'mocha-file.md')).to.be.a('promise');
-//   });
-//   it('get the file content', function() {
-//     return sftp.get(BASIC_URL + 'mocha-file.md')
-//       .then((data) => {
-//         let body;
-//         data.on('data', (chunk) => {
-//           body += chunk;
-//         });
-//         data.on('end', () => {
-//           return expect(body).to.equal('hello');
-//         });
-//       });
-//   });
-//   it('get file faild', function() {
-//     return expect(sftp.get(BASIC_URL + 'mocha-file1.md')).to.be.rejectedWith('No such file');
-//   });
-// });
+  it('return should be a promise', function() {
+    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file.md'))).to.be.a('promise');
+  });
+  it('get the file content', function() {
+    return sftp.get(path.join(SFTP_URL, 'mocha-file.md'))
+      .then((data) => {
+        let body;
+        data.on('data', (chunk) => {
+          body += chunk;
+        });
+        data.on('end', () => {
+          return expect(body).to.equal('hello');
+        });
+      });
+  });
+  it('get file faild', function() {
+    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file1.md'))).to.be.rejectedWith('No such file');
+  });
+});
 
 // describe('fast get', function() {
 //   before(() => {
