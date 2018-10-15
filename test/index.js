@@ -128,40 +128,39 @@ describe('list', () => {
   });
 });
 
-// describe('stat', function() {
-//   chai.use(chaiSubset);
+describe('stat', function() {
 
-//   before(() => {
-//     return hookSftp.connect(config, 'once')
-//       .then(() => {
-//         return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', {mode: 0o777});
-//       })
-//       .catch(err => {
-//         throw new Error(`Before all hook error: ${err.message}`);
-//       });
-//   });
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-stat.md'), {mode: 0o777});
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
 
-//   after(() => {
-//     return hookSftp.delete(BASIC_URL + 'mocha-stat.md')
-//       .then(() => {
-//         return hookSftp.end();
-//       })
-//       .catch(err => {
-//         throw new Error(`After all hook error: ${err.message}`);
-//       });
-//   });
+  after(() => {
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-stat.md'))
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.stat(BASIC_URL + 'mocha-stat.md')).to.be.a('promise');
-//   });
-//   it('get the file stats', async function() {
-//     let stats = await sftp.stat(BASIC_URL + 'mocha-stat.md');
-//     return expect(stats).to.containSubset({mode: 33279});
-//   });
-//   it('stat file faild', function() {
-//     return expect(sftp.stat(BASIC_URL + 'mocha-stat1.md')).to.be.rejectedWith('No such file');
-//   });
-// });
+  it('return should be a promise', function() {
+    return expect(sftp.stat(path.join(SFTP_URL, 'mocha-stat.md'))).to.be.a('promise');
+  });
+  it('get the file stats', async function() {
+    let stats = await sftp.stat(path.join(SFTP_URL, 'mocha-stat.md'));
+    return expect(stats).to.containSubset({mode: 33279, size: 5});
+  });
+  it('stat file faild', function() {
+    return expect(sftp.stat(path.join(SFTP_URL, 'mocha-stat1.md'))).to.be.rejectedWith('No such file');
+  });
+});
 
 // describe('get', function() {
 //   before(() => {

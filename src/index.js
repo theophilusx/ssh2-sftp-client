@@ -69,11 +69,10 @@ SftpClient.prototype.stat = function(remotePath) {
     if (sftp) {
       sftp.stat(remotePath, function (err, stats) {
         if (err){
-          return reject(err);
+          return reject(new Error(`Failed to stat ${remotePath}: ${err.message}`));
         }
-
-        // format output similarly to sftp.list()
-        stats = {
+        // format similarly to sftp.list
+        return resolve({
           mode: stats.mode,
           permissions: stats.permissions,
           owner: stats.uid,
@@ -81,9 +80,7 @@ SftpClient.prototype.stat = function(remotePath) {
           size: stats.size,
           accessTime: stats.atime * 1000,
           modifyTime: stats.mtime * 1000
-        };
-
-        return resolve(stats);
+        });
       });
     } else {
       reject(Error('sftp connect error'));
