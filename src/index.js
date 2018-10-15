@@ -172,12 +172,12 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
     if (sftp) {
       sftp.fastPut(localPath, remotePath, options, function (err) {
         if (err) {
-          return reject(new Error(`Failure: Could not upload ${localPath} to ${remotePath}`));
+          return reject(new Error(`Failed to upload ${localPath} to ${remotePath}: ${err.message}`));
         }
         return resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };
@@ -205,24 +205,30 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
         sftp.fastPut(input, remotePath, options, (err) => {
           this.client.removeListener('error', reject);
           if (err) {
-            reject(err);
-            return false;
+            return reject(new Error(`Failed to upload ${input} to ${remotePath}: ${err.message}`));
           }
-          resolve();
+          return resolve(`Uploaded ${input} to ${remotePath}`);
         });
         return false;
       }
       let stream = sftp.createWriteStream(remotePath, options);
-      let data;
+      // let data;
 
-      stream.on('error', reject);
-      stream.on('close', resolve);
+      stream.on('error', err => {
+        return reject(new Error(`Failed to upload data stream to ${remotePath}: ${err.message}`));
+      });
+      
+      stream.on('close', () => {
+        return resolve(`Uploaded data stream to ${remotePath}`);
+      });
       
       if (input instanceof Buffer) {
-        data = stream.end(input);
+        //data = stream.end(input);
+        stream.end(input);
         return false;
       }
-      data = input.pipe(stream);
+      //data = input.pipe(stream);
+      input.pipe(stream);
     } else {
       reject(Error('sftp connect error'));
     }

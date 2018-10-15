@@ -292,56 +292,76 @@ describe('fast get', function() {
   });
 });
 
-// describe('put', function() {
-//   before(() => {
-//     return sftp.connect(config, 'once');
-//   });
-//   after(() => {
-//     return sftp.delete(BASIC_URL + 'mocha-put-string.md').then(() => {
-//       return sftp.delete(BASIC_URL + 'mocha-put-buffer.md');
-//     }).then(() => {
-//       return sftp.delete(BASIC_URL + 'mocha-put-stream.md');
-//     }).then(() => {
-//       return sftp.end();
-//     });
-//   });
+describe('put', function() {
+  // before(() => {
+  //   return sftp.connect(config, 'once');
+  // });
+  after(() => {
+    return sftp.connect(config, 'once')
+      .then(() => {
+        return sftp.delete(path.join(SFTP_URL, 'mocha-put-string.md'));
+      })
+      .then(() => {
+        return sftp.delete(path.join(SFTP_URL, 'mocha-put-buffer.md'));
+      }).then(() => {
+        return sftp.delete(path.join(SFTP_URL, 'mocha-put-stream.md'));
+      }).then(() => {
+        return sftp.end();
+      });
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.put(new Buffer(''), BASIC_URL + 'mocha-put-buffer.md')).to.be.a('promise');
-//   });
+  it('return should be a promise', function() {
+    return expect(sftp.put(new Buffer(''), path.join(SFTP_URL, 'mocha-put-buffer.md'))).to.be.a('promise');
+  });
 
-//   it('put local path file', function() {
-//     let path = __dirname + '/mocha.opts';
-//     return sftp.put(path, BASIC_URL + 'mocha-put-string.md').then(() => {
-//       return sftp.get(BASIC_URL + 'mocha-put-string.md');
-//     }).then((list) => {
-//       return expect(list).to.not.empty;
-//     });
-//   });
+  it('put local path file', function() {
+    return sftp.put(path.join(LOCAL_URL, 'test-file1.txt'), path.join(SFTP_URL, 'mocha-put-string.md'))
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'mocha-put-string.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 3235});
+      });
+  });
 
-//   it('put buffer file', function() {
-//     let str = new Buffer('hello');
+  it('put buffer file', function() {
+    return sftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-put-buffer.md'))
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'mocha-put-buffer.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 5});
+      });
+  });
 
-//     return sftp.put(str, BASIC_URL + 'mocha-put-buffer.md').then(() => {
-//       return sftp.get(BASIC_URL + 'mocha-put-buffer.md');
-//     }).then((data) => {
-//       return expect(data).to.not.empty;
-//     });
-//   });
-
-//   it('put stream file', function() {
-//     var str2 = new stream.Readable();
-//     str2._read = function noop() {};
-//     str2.push('your text here');
-//     str2.push(null);
+  it('put stream file', function() {
+    var str2 = new stream.Readable();
+    str2._read = function noop() {};
+    str2.push('your text here');
+    str2.push(null);
     
-//     return sftp.put(str2, BASIC_URL + 'mocha-put-stream.md').then(() => {
-//       return sftp.get(BASIC_URL + 'mocha-put-stream.md');
-//     }).then((data) => {
-//       return expect(data).to.not.empty;
-//     });
-//   });
-// });
+    return sftp.put(str2, path.join(SFTP_URL, 'mocha-put-stream.md'))
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'mocha-put-stream.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 14});
+      });
+  });
+
+  it('Put with no src file', function() {
+    return expect(sftp.put(
+      path.join(LOCAL_URL, 'no-such-file.txt'),
+      path.join(SFTP_URL, 'mocha-put-no-file.txt')
+    )).to.be.rejectedWith('Failed to upload');
+  });
+  it('Put with bad dst path', function() {
+    return expect(sftp.put(
+      path.join(LOCAL_URL, 'test-file1.txt'),
+      path.join(SFTP_URL, 'bad-directory', 'bad-file.txt')
+    )).to.be.rejectedWith('Failed to upload');
+  });
+});
 
 // describe('fast put', function() {
 //   before(() => {
