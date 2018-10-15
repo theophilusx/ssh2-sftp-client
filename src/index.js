@@ -6,7 +6,7 @@
 let Client = require('ssh2').Client;
 
 let SftpClient = function(){
-    this.client = new Client();
+  this.client = new Client();
 };
 
 /**
@@ -51,7 +51,7 @@ SftpClient.prototype.list = function(path) {
         return resolve(newList);
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };
@@ -83,7 +83,7 @@ SftpClient.prototype.stat = function(remotePath) {
         });
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };
@@ -145,12 +145,12 @@ SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
     if (sftp) {
       sftp.fastGet(remotePath, localPath, options, function (err) {
         if (err){
-          return reject(err);
+          return reject(new Error(`Failed to get ${remotePath}: ${err.message}`));
         }
         return resolve(`${remotePath} was successfully download to ${localPath}!`);
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };

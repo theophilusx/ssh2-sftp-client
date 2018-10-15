@@ -153,11 +153,11 @@ describe('stat', function() {
   it('return should be a promise', function() {
     return expect(sftp.stat(path.join(SFTP_URL, 'mocha-stat.md'))).to.be.a('promise');
   });
-  it('get the file stats', async function() {
+  it('get the file stats for existing file', async function() {
     let stats = await sftp.stat(path.join(SFTP_URL, 'mocha-stat.md'));
     return expect(stats).to.containSubset({mode: 33279, size: 5});
   });
-  it('stat file faild', function() {
+  it('stat on non-existent file fails', function() {
     return expect(sftp.stat(path.join(SFTP_URL, 'mocha-stat1.md'))).to.be.rejectedWith('No such file');
   });
 });
@@ -199,55 +199,98 @@ describe('get', function() {
       });
   });
   it('get file faild', function() {
-    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file1.md'))).to.be.rejectedWith('No such file');
+    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file-not-exist.md'))).to.be.rejectedWith('No such file');
   });
 });
 
-// describe('fast get', function() {
-//   before(() => {
-//     return hookSftp.connect(config, 'once')
-//       .then(() => {
-//         return hookSftp.put(new Buffer('fast get'), BASIC_URL + 'mocha-fastget.md', true);
-//       })
-//       .then(() => {
-//         return hookSftp.end();
-//       })
-//       .catch(err => {
-//         throw new Error(`Before all hook error: ${err.message}`);
-//       });
-//   });
+describe('fast get', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.put(new Buffer('fast get'), path.join(SFTP_URL, 'mocha-fastget1.md'), true);
+      })
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file1.txt'),
+          path.join(SFTP_URL, 'mocha-fastget2.txt')
+        );
+      })
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file2.txt.gz'),
+          path.join(SFTP_URL, 'mocha-fastget3.txt.gz')
+        );
+      })
+      .then(() => {
+        return fs.mkdirSync(path.join(LOCAL_URL, 'fastGet'));
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
   
-//   after(() => {
-//     return hookSftp.connect(config, 'once')
-//       .then(() => {
-//         return hookSftp.delete(BASIC_URL + 'mocha-fastget.md');
-//       })
-//       .then(() => {
-//         return hookSftp.delete(BASIC_URL + 'local.md');
-//       })
-//       .then(() => {
-//         return hookSftp.end();
-//       })
-//       .catch(err => {
-//         throw new Error(`After all hook error: ${err.message}`);
-//       });
-//   });
+  after(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget1.md'));
+      })
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget2.txt'));
+      })
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget3.txt.gz'));
+      })
+      .then(() => {
+        fs.unlinkSync(path.join(LOCAL_URL, 'fastGet', 'local1.md'));
+        fs.unlinkSync(path.join(LOCAL_URL, 'fastGet', 'local2.txt'));
+        fs.unlinkSync(path.join(LOCAL_URL, 'fastGet', 'local3.txt.gz'));
+        return fs.rmdirSync(path.join(LOCAL_URL, 'fastGet'));
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
 
-//   it('get file content', function() {
-//     return sftp.fastGet(BASIC_URL + 'mocha-fastget.md', BASIC_URL + 'local.md')
-//       .then(() => {
-//         return sftp.get(BASIC_URL + 'local.md');
-//       }).then((data) => {
-//         let body;
-//         data.on('data', (chunk) => {
-//           body += chunk;
-//         });
-//         data.on('end', () => {
-//           return expect(body).to.equal('fast get');
-//         });
-//       });
-//   });
-// });
+  it('get file 1', function() {
+    return sftp.fastGet(
+      path.join(SFTP_URL, 'mocha-fastget1.md'),
+      path.join(LOCAL_URL, 'fastGet', 'local1.md')
+    )
+      .then(() => {
+        return expect(fs.statSync(path.join(LOCAL_URL, 'fastGet', 'local1.md'))).to.containSubset({size: 8});
+      });
+  });
+  it('get file 2', function() {
+    return sftp.fastGet(
+      path.join(SFTP_URL, 'mocha-fastget2.txt'),
+      path.join(LOCAL_URL, 'fastGet', 'local2.txt')
+    )
+      .then(() => {
+        return expect(fs.statSync(path.join(LOCAL_URL, 'fastGet', 'local2.txt'))).to.containSubset({size: 3235});
+      });
+  });
+  it('get file 3', function() {
+    return sftp.fastGet(
+      path.join(SFTP_URL, 'mocha-fastget3.txt.gz'),
+      path.join(LOCAL_URL, 'fastGet', 'local3.txt.gz')
+    )
+      .then(() => {
+        return expect(fs.statSync(path.join(LOCAL_URL, 'fastGet', 'local3.txt.gz'))).to.containSubset({size: 646});
+      });
+  });
+  it('get on non-existent file fails', function() {
+    return expect(sftp.fastGet(
+      path.join(SFTP_URL, 'mocha-fastget-not-exist.txt'),
+      path.join(LOCAL_URL, 'fastGet', 'not-exist.txt')
+    )).to.be.rejectedWith('No such file');
+  });
+});
 
 // describe('put', function() {
 //   before(() => {
