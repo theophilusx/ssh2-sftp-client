@@ -1,3 +1,9 @@
+'use strict';
+
+const dotenvPath = __dirname + '/../.env';
+
+require('dotenv').config({path: dotenvPath});
+
 const stream = require('stream');
 const chai = require('chai');
 const path = require('path');
@@ -10,20 +16,25 @@ const fs = require("fs");
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
+// Using separate openssh sftp server rather than server
+// provided by ssh2 module to ensure compatibility with
+// general sftp server
+const SFTP_URL = process.env['SFTP_URL'];
+
+// Extending tests for put/get with larger data sets, so
+// maintain directory of test data (including binary files). 
+const LOCAL_URL = path.join(__dirname, "testData");
+
 
 const sftp = new Client();
 const hookSftp = new Client();
 
 // use your test ssh server config
 const config = {
-  host: 'xxxx',
-  username: 'yyyyy',
-  password: 'zzzz'
+  host: process.env['SFTP_SERVER'],
+  username: process.env['SFTP_USER'],
+  password: process.env['SFTP_PASSWORD']
 };
-
-//const BASIC_URL = path.resolve(__dirname, '../testServer/') + '/';
-
-const BASIC_URL = '/home/tcross8/testServer/';
 
 before(() => {
   return sftp.connect(config, 'once')
@@ -40,21 +51,36 @@ after(() => {
 });
 
 describe('list', () => {
-  chai.use(chaiSubset);
-
+  // should really be using something other than ssh2-sftp-client to setup
+  // and tear down testing environment. 
   before(function() {
     return hookSftp.connect(config, 'once')
       .then(() => {
-        return hookSftp.mkdir(BASIC_URL + 'mocha-list/dir1', true);
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/dir1'), true);
       })
       .then(() => {
-        return hookSftp.mkdir(BASIC_URL + 'mocha-list/dir2/sub1', true);
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/dir2/sub1'), true);
       })
       .then(() => {
-        return hookSftp.put(new Buffer('hello file1'), BASIC_URL + 'mocha-list/file1.html', true);
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/empty'), true);
       })
       .then(() => {
-        return hookSftp.put(new Buffer('hello file2'), BASIC_URL + 'mocha-list/file2.md', true);
+        return hookSftp.put(new Buffer('hello file1'), path.join(SFTP_URL, 'mocha-list/file1.html'), true);
+      })
+      .then(() => {
+        return hookSftp.put(new Buffer('hello file2'), path.join(SFTP_URL, 'mocha-list/file2.md'), true);
+      })
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file1.txt'),
+          path.join(SFTP_URL, 'mocha-list/test-file1.txt')
+        );
+      })
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file2.txt.gz'),
+          path.join(SFTP_URL, 'mocha-list/test-file2.txt.gz')
+        );
       })
       .then(() => {
         return hookSftp.end();
@@ -67,7 +93,7 @@ describe('list', () => {
   after(function() {
     return hookSftp.connect(config, 'once')
       .then(() => {
-        return hookSftp.rmdir(BASIC_URL + 'mocha-list', true);
+        return hookSftp.rmdir(path.join(SFTP_URL, 'mocha-list'), true);
       })
       .then(() => {
         return hookSftp.end();
@@ -80,139 +106,147 @@ describe('list', () => {
   // don't use arrow functions as it screws with the context, which
   // causes issues with chai
   it('list return should be a promise', function() {
-    return expect(sftp.list(BASIC_URL + 'mocha-list')).to.be.a('promise');
+    return expect(sftp.list(path.join(SFTP_URL, 'mocha-list'))).to.be.a('promise');
   });
   it('list return should be empty', function() {
-    return expect(sftp.list(BASIC_URL + 'mocha-list/empty')).to.be.rejectedWith('No such file');
+    return expect(sftp.list(path.join(SFTP_URL, 'mocha-list/empty'))).to.become([]);
   });
-  it('should return the list name of each', function() {
-    return sftp.list(BASIC_URL + 'mocha-list')
-      .then(list => {
-        return expect(list).to.containSubset([
-          {'name': 'dir1'},
-          {'name': 'dir2'},
-          {'name': 'file1.html'},
-          {'name': 'file2.md'}
-        ]);
-      });
+  it('list non-existent directory', function() {
+    return expect(sftp.list(path.join(SFTP_URL, 'mocha-list/not-exist'))).to.be.rejectedWith('No such file');
   });
   it('should return the list name of each', async function() {
-    let list = await sftp.list(BASIC_URL + 'mocha-list');
+    let list = await sftp.list(path.join(SFTP_URL, 'mocha-list'));
     return expect(list).to.containSubset([
-      {'name': 'dir1'},
-      {'name': 'dir2'},
-      {'name': 'file1.html'},
-      {'name': 'file2.md'}
+      {'type': 'd', 'name': 'dir1'},
+      {'type': 'd', 'name': 'dir2'},
+      {'type': 'd', 'name': 'empty'},
+      {'type': '-', 'name': 'file1.html', 'size': 11},
+      {'type': '-', 'name': 'file2.md', 'size': 11},
+      {'type': '-', 'name': 'test-file1.txt', 'size': 3235},
+      {'type': '-', 'name': 'test-file2.txt.gz', 'size': 646}
     ]);
   });
 });
 
-describe('stat', function() {
-  chai.use(chaiSubset);
+// describe('stat', function() {
+//   chai.use(chaiSubset);
 
-  before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', {mode: 0o777});
-      })
-      .catch(err => {
-        throw new Error(`Before all hook error: ${err.message}`);
-      });
-  });
+//   before(() => {
+//     return hookSftp.connect(config, 'once')
+//       .then(() => {
+//         return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-stat.md', {mode: 0o777});
+//       })
+//       .catch(err => {
+//         throw new Error(`Before all hook error: ${err.message}`);
+//       });
+//   });
 
-  after(() => {
-    return hookSftp.delete(BASIC_URL + 'mocha-stat.md')
-      .then(() => {
-        return hookSftp.end();
-      })
-      .catch(err => {
-        throw new Error(`After all hook error: ${err.message}`);
-      });
-  });
+//   after(() => {
+//     return hookSftp.delete(BASIC_URL + 'mocha-stat.md')
+//       .then(() => {
+//         return hookSftp.end();
+//       })
+//       .catch(err => {
+//         throw new Error(`After all hook error: ${err.message}`);
+//       });
+//   });
 
-  it('return should be a promise', function() {
-    return expect(sftp.stat(BASIC_URL + 'mocha-stat.md')).to.be.a('promise');
-  });
-  it('get the file stats', async function() {
-    let stats = await sftp.stat(BASIC_URL + 'mocha-stat.md');
-    return expect(stats).to.containSubset({mode: 33279});
-  });
-  it('stat file faild', function() {
-    return expect(sftp.stat(BASIC_URL + 'mocha-stat1.md')).to.be.rejectedWith('No such file');
-  });
-});
+//   it('return should be a promise', function() {
+//     return expect(sftp.stat(BASIC_URL + 'mocha-stat.md')).to.be.a('promise');
+//   });
+//   it('get the file stats', async function() {
+//     let stats = await sftp.stat(BASIC_URL + 'mocha-stat.md');
+//     return expect(stats).to.containSubset({mode: 33279});
+//   });
+//   it('stat file faild', function() {
+//     return expect(sftp.stat(BASIC_URL + 'mocha-stat1.md')).to.be.rejectedWith('No such file');
+//   });
+// });
 
-describe('get', function() {
-  before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-file.md', true);
-      })
-      .catch(err => {
-        throw new Error(`Before all hook error: ${err.message}`);
-      });
-  });
+// describe('get', function() {
+//   before(() => {
+//     return hookSftp.connect(config, 'once')
+//       .then(() => {
+//         return hookSftp.put(new Buffer('hello'), BASIC_URL + 'mocha-file.md', true);
+//       })
+//       .catch(err => {
+//         throw new Error(`Before all hook error: ${err.message}`);
+//       });
+//   });
 
-  after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(BASIC_URL + 'mocha-file.md');
-      })
-      .then(() => {
-        return hookSftp.end();
-      });
-  });
+//   after(() => {
+//     return hookSftp.connect(config, 'once')
+//       .then(() => {
+//         return hookSftp.delete(BASIC_URL + 'mocha-file.md');
+//       })
+//       .then(() => {
+//         return hookSftp.end();
+//       });
+//   });
 
-  it('return should be a promise', function() {
-    return expect(sftp.get(BASIC_URL + 'mocha-file.md')).to.be.a('promise');
-  });
-  it('get the file content', function() {
-    return sftp.get(BASIC_URL + 'mocha-file.md')
-      .then((data) => {
-        let body;
-        data.on('data', (chunk) => {
-          body += chunk;
-        });
-        data.on('end', () => {
-          expect(body).to.equal('hello');
-        });
-      });
-  });
-  it('get file faild', function() {
-    return expect(sftp.get(BASIC_URL + 'mocha-file1.md')).to.be.rejectedWith('No such file');
-  });
-});
+//   it('return should be a promise', function() {
+//     return expect(sftp.get(BASIC_URL + 'mocha-file.md')).to.be.a('promise');
+//   });
+//   it('get the file content', function() {
+//     return sftp.get(BASIC_URL + 'mocha-file.md')
+//       .then((data) => {
+//         let body;
+//         data.on('data', (chunk) => {
+//           body += chunk;
+//         });
+//         data.on('end', () => {
+//           return expect(body).to.equal('hello');
+//         });
+//       });
+//   });
+//   it('get file faild', function() {
+//     return expect(sftp.get(BASIC_URL + 'mocha-file1.md')).to.be.rejectedWith('No such file');
+//   });
+// });
 
 // describe('fast get', function() {
-//   chai.use(chaiSubset);
 //   before(() => {
-//     return sftp.connect(config, 'once').then(() => {
-//       return sftp.put(new Buffer('fast get'), BASIC_URL + 'mocha-fastget.md', true);
-//     });
+//     return hookSftp.connect(config, 'once')
+//       .then(() => {
+//         return hookSftp.put(new Buffer('fast get'), BASIC_URL + 'mocha-fastget.md', true);
+//       })
+//       .then(() => {
+//         return hookSftp.end();
+//       })
+//       .catch(err => {
+//         throw new Error(`Before all hook error: ${err.message}`);
+//       });
 //   });
+  
 //   after(() => {
-//     return sftp.connect(config, 'once').then(async function () {
-//       await sftp.delete(BASIC_URL + 'mocha-fastget.md');
-//       await sftp.delete(BASIC_URL + 'local.md');
-//       return sftp;
-//     }).then(() => {
-//       return sftp.end();
-//     });
+//     return hookSftp.connect(config, 'once')
+//       .then(() => {
+//         return hookSftp.delete(BASIC_URL + 'mocha-fastget.md');
+//       })
+//       .then(() => {
+//         return hookSftp.delete(BASIC_URL + 'local.md');
+//       })
+//       .then(() => {
+//         return hookSftp.end();
+//       })
+//       .catch(err => {
+//         throw new Error(`After all hook error: ${err.message}`);
+//       });
 //   });
 
 //   it('get file content', function() {
-//     console.log('get file content')
-//     return sftp.fastGet(BASIC_URL + 'mocha-fastget.md', BASIC_URL + 'local.md').then(() => {
-//       return sftp.get(BASIC_URL + 'local.md')
-//     }).then((data) => {
-//       let body;
-//       data.on('data', (chunk) => {
-//         body += chunk;
+//     return sftp.fastGet(BASIC_URL + 'mocha-fastget.md', BASIC_URL + 'local.md')
+//       .then(() => {
+//         return sftp.get(BASIC_URL + 'local.md');
+//       }).then((data) => {
+//         let body;
+//         data.on('data', (chunk) => {
+//           body += chunk;
+//         });
+//         data.on('end', () => {
+//           return expect(body).to.equal('fast get');
+//         });
 //       });
-//       data.on('end', () => {
-//         expect(body).to.equal('fast get');
-//       });
-//     });
 //   });
 // });
 
