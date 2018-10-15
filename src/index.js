@@ -170,8 +170,8 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
 
     if (sftp) {
       sftp.fastPut(localPath, remotePath, options, function (err) {
-        if (err){
-          return reject(err);
+        if (err) {
+          return reject(new Error(`Failure: Could not upload ${localPath} to ${remotePath}`));
         }
         return resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
       });
