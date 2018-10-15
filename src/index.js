@@ -26,27 +26,29 @@ SftpClient.prototype.list = function(path) {
       sftp.readdir(path, (err, list) => {
         this.client.removeListener('error', reject);
         if (err) {
-          reject(err);
-          return false;
+          return reject(new Error(`Failed to list ${path}: ${err.message}`));
         }
+        let newList = [];
         // reset file info
-        list.forEach((item, i) => {
-          list[i] = {
-            type: item.longname.substr(0, 1),
-            name: item.filename,
-            size: item.attrs.size,
-            modifyTime: item.attrs.mtime * 1000,
-            accessTime: item.attrs.atime * 1000,
-            rights: {
-              user: item.longname.substr(1, 3).replace(reg, ''),
-              group: item.longname.substr(4,3).replace(reg, ''),
-              other: item.longname.substr(7, 3).replace(reg, '')
-            },
-            owner: item.attrs.uid,
-            group: item.attrs.gid
-          };
-        });
-        resolve(list);
+        if (list) {
+          newList = list.map(item => {
+            return {
+              type: item.longname.substr(0, 1),
+              name: item.filename,
+              size: item.attrs.size,
+              modifyTime: item.attrs.mtime * 1000,
+              accessTime: item.attrs.atime * 1000,
+              rights: {
+                user: item.longname.substr(1, 3).replace(reg, ''),
+                group: item.longname.substr(4,3).replace(reg, ''),
+                other: item.longname.substr(7, 3).replace(reg, '')
+              },
+              owner: item.attrs.uid,
+              group: item.attrs.gid
+            };
+          });
+        }
+        return resolve(newList);
       });
     } else {
       reject(Error('sftp connect error'));
