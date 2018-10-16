@@ -245,12 +245,10 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         sftp.mkdir(path, (err) => {
           this.client.removeListener('error', reject);
           if (err) {
-            reject(err);
-            return false;
+            return reject(new Error(`Failed to create directory ${path}: ${err.message}`));
           }
-          resolve();
+          return resolve(`${path} directory created`);
         });
-        return false;
       }
       
       let tokens = path.split(/\//g);
@@ -261,22 +259,21 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         
         if (!token && !tokens.length) {
           this.client.removeListener('error', reject);
-          resolve();
-          return false;
+          return resolve(`${path} directory created`);
         }
-        token += '/';
-        p = p + token;
+        p = p + `${token}/`;
         sftp.mkdir(p, (err) => {
           if (err && ![4, 11].includes(err.code)) {
             this.client.removeListener('error', reject);
-            reject(err);
+            return reject(new Error(`Failed to create directory ${path}: ${p} ${err.message}`));
           }
-          mkdir();
+          return mkdir();
         });
+        return false;
       };
       return mkdir();
     } else {
-      reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };

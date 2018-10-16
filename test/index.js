@@ -455,36 +455,41 @@ describe('fast put', function() {
   });
 });
 
-// describe('mkdir', function() {
-//   chai.use(chaiSubset);
+describe('mkdir', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once');
+  });
+  after(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.rmdir(path.join(SFTP_URL, 'mocha'), true);
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
 
-//   before(() => {
-//     return sftp.connect(config, 'once');
-//   });
-//   after(() => {
-//     return sftp.rmdir(BASIC_URL + 'mocha', true).then(() => {
-//       return sftp.end();
-//     });
-//   });
+  it('return should be a promise', function() {
+    return expect(sftp.mkdir(path.join(SFTP_URL, 'mocha'))).to.be.a('promise');
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.mkdir(BASIC_URL + 'mocha')).to.be.a('promise');
-//   });
+  it('mkdir with bad path', function() {
+    return expect(sftp.mkdir(path.join(SFTP_URL, 'mocha3/mm')))
+      .to.be.rejectedWith('Failed to create directory');
+  });
 
-//   it('mkdir', function() {
-//     return sftp.mkdir(BASIC_URL + 'mocha3/mm').catch((err) => {
-//       return expect(err.toString()).to.contain('Error');
-//     });
-//   });
-
-//   it('mkdir force', function() {
-//     return sftp.mkdir(BASIC_URL + 'mocha/mocha-dir-force', true).then(() => {
-//       return sftp.list(BASIC_URL + 'mocha');
-//     }).then((list) => {
-//       return expect(list).to.containSubset([{'name': 'mocha-dir-force'}]);
-//     });
-//   });
-// });
+  it('mkdir force', function() {
+    return sftp.mkdir(path.join(SFTP_URL, 'mocha/mocha-dir-force'), true)
+      .then(() => {
+        return sftp.list(path.join(SFTP_URL, 'mocha'));
+      }).then(list => {
+        return expect(list).to.containSubset([{'name': 'mocha-dir-force'}]);
+      });
+  });
+});
 
 // describe('rmdir', function() {
 //   chai.use(chaiSubset);
