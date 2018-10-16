@@ -542,65 +542,104 @@ describe('rmdir', function() {
   });
 });
 
-// describe('delete', function() {
-//   chai.use(chaiSubset);
+describe('delete', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-delete.md'), true);
+      })
+      .then(() => {
+        return hookSftp.put(new Buffer('promise'), path.join(SFTP_URL, 'mocha-delete-promise.md'), true);
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
 
-//   before(() => {
-//     return sftp.connect(config, 'once').then(() => {
-//       sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-delete.md', true);
-//     }).catch(err => {
-//       console.error(err.message);
-//     });
-//   });
-//   after(() => {
-//     return sftp.end();
-//   });
+  it('return should be a promise', function() {
+    return expect(sftp.delete(path.join(SFTP_URL, 'mocha-delete-promise.md')))
+      .to.be.a('promise');
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.delete(BASIC_URL + 'mocha').catch(err => undefined)).to.be.a('promise');
-//   });
+  it('delete file', function() {
+    return expect(sftp.delete(path.join(SFTP_URL, 'mocha-delete.md')))
+      .to.eventually.equal('Successfully deleted file');
+  });
 
-//   it('delete single file test', function() {
-//     sftp.delete(BASIC_URL + 'mocha-delete.md').then(() => {
-//       return sftp.list(BASIC_URL);
-//     }).then((list) => {
-//       return expect(list).to.not.containSubset([{'name': 'mocha-delete.md'}]);
-//     });
-//   });
-// });
+  it('delete non-existent file', function() {
+    return expect(sftp.delete(path.join(SFTP_URL, 'no-such-file.txt')))
+      .to.be.rejectedWith('Failed to delete file');
+  });
+});
 
-// describe('rename', function() {
-//   chai.use(chaiSubset);
+describe('rename', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-rename.md'), true);
+      })
+      .then(() => {
+        return hookSftp.put(new Buffer('conflict file'), path.join(SFTP_URL, 'mocha-conflict.md'), true);
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
+  
+  after(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-rename-new.md'));
+      })
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'mocha-conflict.md'));
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
 
-//   before(() => {
-//     return sftp.connect(config, 'once').then(() => {
-//       return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-rename.md', true);
-//     }).catch(err => {
-//       console.error(err.message);
-//     });
-//   });
-//   after(() => {
-//     return sftp.delete(BASIC_URL + 'mocha-rename-new.md').then(() => {
-//       sftp.end();
-//     }).catch(err => {
-//       console.error(err.message);
-//     });
-//   });
+  it('return should be a promise', function() {
+    return expect(sftp.rename(
+      path.join(SFTP_URL, 'mocha-rename.md'),
+      path.join(SFTP_URL, 'mocha-rename.txt'))).to.be.a('promise');
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.rename(BASIC_URL + 'mocha1', BASIC_URL + 'mocha').catch(e => undefined)).to.be.a('promise');
-//   });
+  it('rename file', function() {
+    return sftp.rename(
+      path.join(SFTP_URL, 'mocha-rename.txt'),
+      path.join(SFTP_URL, 'mocha-rename-new.md'))
+      .then(() => {
+        return sftp.list(SFTP_URL);
+      })
+      .then(list => {
+        return expect(list).to.containSubset([{'name': 'mocha-rename-new.md'}]);
+      });
+  });
 
-//   it('rename file', function() {
-//     return sftp.rename(BASIC_URL + 'mocha-rename.md', BASIC_URL + 'mocha-rename-new.md').then(() => {
-//       return sftp.list(BASIC_URL);
-//     }).then((list) => {
-//       return expect(list).to.containSubset([{'name': 'mocha-rename-new.md'}]);
-//     }).catch(err => {
-//       console.error(err.message);
-//     });
-//   });
-// });
+  it('rename non-existent file', function() {
+    return expect(sftp.rename(
+      path.join(SFTP_URL, 'no-such-file.txt'),
+      path.join(SFTP_URL, 'dummy.md')
+    )).to.be.rejectedWith('No such file');
+  });
+
+  it('rename with conflicting destination', function() {
+    return expect(sftp.rename(
+      path.join(SFTP_URL, 'mocha-rename-new.md'),
+      path.join(SFTP_URL, 'mocha-conflict.md')
+    )).to.be.rejectedWith('Failed to rename file');
+  });
+});
 
 // describe('getOptions', function() {
 

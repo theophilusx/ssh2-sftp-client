@@ -197,11 +197,8 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
     let sftp = this.sftp;
 
     if (sftp) {
-      this.client.on('error', reject);
-
       if (typeof input === 'string') {
         sftp.fastPut(input, remotePath, options, (err) => {
-          this.client.removeListener('error', reject);
           if (err) {
             return reject(new Error(`Failed to upload ${input} to ${remotePath}: ${err.message}`));
           }
@@ -372,12 +369,12 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
     if (sftp) {
       sftp.rename(srcPath, remotePath, (err) => {
         if (err) {
-          return reject(err);
+          return reject(new Error(`Failed to rename file ${srcPath} to ${remotePath}: ${err.message}`));
         }
-        return resolve();
+        return resolve(`Successfully renamed ${srcPath} to ${remotePath}`);
       });
     } else {
-      return reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };
