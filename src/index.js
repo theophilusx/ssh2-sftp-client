@@ -22,9 +22,7 @@ SftpClient.prototype.list = function(path) {
     let sftp = this.sftp;
 
     if (sftp) {
-      this.client.on('error', reject);
       sftp.readdir(path, (err, list) => {
-        this.client.removeListener('error', reject);
         if (err) {
           return reject(new Error(`Failed to list ${path}: ${err.message}`));
         }
@@ -239,11 +237,8 @@ SftpClient.prototype.mkdir = function(path, recursive) {
     let sftp = this.sftp;
     
     if (sftp) {
-      this.client.on('error', reject);
-      
       if (!recursive) {
         sftp.mkdir(path, (err) => {
-          this.client.removeListener('error', reject);
           if (err) {
             return reject(new Error(`Failed to create directory ${path}: ${err.message}`));
           }
@@ -258,13 +253,11 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         let token = tokens.shift();
         
         if (!token && !tokens.length) {
-          this.client.removeListener('error', reject);
           return resolve(`${path} directory created`);
         }
         p = p + `${token}/`;
         sftp.mkdir(p, (err) => {
           if (err && ![4, 11].includes(err.code)) {
-            this.client.removeListener('error', reject);
             return reject(new Error(`Failed to create directory ${path}: ${p} ${err.message}`));
           }
           return mkdir();
@@ -285,15 +278,12 @@ SftpClient.prototype.rmdir = function(path, recursive) {
     let sftp = this.sftp;
     
     if (sftp) {
-      this.client.on('error', reject);
-
       if (!recursive) {
         return sftp.rmdir(path, (err) => {
-          this.client.removeListener('error', reject);
           if (err) {
             return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
           }
-          return resolve(`Successfully removed directory`);
+          return resolve('Successfully removed directory');
         });
       }
       let rmdir = p => {
@@ -304,7 +294,6 @@ SftpClient.prototype.rmdir = function(path, recursive) {
             
               list.forEach(item => {
                 let name = item.name;
-                let promise;
                 var subPath;
               
                 if (name[0] === '/') {
@@ -337,11 +326,10 @@ SftpClient.prototype.rmdir = function(path, recursive) {
             } else {
               return new Promise((resolve, reject) => {
                 return sftp.rmdir(p, (err) => {
-                  this.client.removeListener('error', reject);
                   if (err) {
                     return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
                   }
-                  return resolve(`Successfully removed directory`);
+                  return resolve('Successfully removed directory');
                 });
               });
             }
@@ -349,7 +337,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
       };
       return rmdir(path)
         .then(() => {
-          return resolve(`Successfully removed directory`);
+          return resolve('Successfully removed directory');
         })
         .catch((err) => {
           return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
@@ -365,17 +353,14 @@ SftpClient.prototype.delete = function(path) {
     let sftp = this.sftp;
 
     if (sftp) {
-      this.client.on('error', reject);
-
       sftp.unlink(path, (err) => {
-        this.client.removeListener('error', reject);
         if (err) {
-          reject(err);
+          return reject(new Error(`Failed to delete file ${path}: ${err.message}`));
         }
-        resolve();
+        return resolve('Successfully deleted file');
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };
@@ -385,18 +370,14 @@ SftpClient.prototype.rename = function(srcPath, remotePath) {
     let sftp = this.sftp;
 
     if (sftp) {
-      this.client.on('error', reject);
-
       sftp.rename(srcPath, remotePath, (err) => {
-        this.client.removveListener('error', reject);
         if (err) {
-          reject(err);
-          return false;
+          return reject(err);
         }
-        resolve();
+        return resolve();
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };
@@ -406,18 +387,14 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
     let sftp = this.sftp;
 
     if (sftp) {
-      this.client.on('error', reject);
-
       sftp.chmod(remotePath, mode, (err) => {
-        this.client.removeListener('error', reject);
         if (err) {
-          reject(err);
-          return false;
+          return reject(err);
         }
-        resolve();
+        return resolve();
       });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };
@@ -428,7 +405,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
   return new Promise((resolve, reject) => {
     this.client[connectMethod]('ready', () => {
       this.client.sftp((err, sftp) => {
-        this.client.removeListener('error', reject);
+        //this.client.removeListener('error', reject);
         if (err) {
           return reject(new Error(`Failed to connect to server: ${err.message}`));
         }
@@ -436,7 +413,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
         return resolve(sftp);
       });
     })
-      .on('error', reject)
+      //.on('error', reject)
       .connect(config);
   });
 };
