@@ -38,6 +38,9 @@ const config = {
 
 before(() => {
   return sftp.connect(config, 'once')
+    .then(() => {
+      return hookSftp.connect(config, 'once');
+    })
     .catch(err => {
       throw new Error(`Global before all hook error: ${err.message}`);
     });
@@ -45,6 +48,9 @@ before(() => {
 
 after(() => {
   return sftp.end()
+    .then(() => {
+      return hookSftp.end();
+    })
     .catch(err => {
       throw new Error(`Global after all hook error: ${err.message}`);
     });
@@ -54,10 +60,7 @@ describe('list', () => {
   // should really be using something other than ssh2-sftp-client to setup
   // and tear down testing environment. 
   before(function() {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/dir1'), true);
-      })
+    return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/dir1'), true)
       .then(() => {
         return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-list/dir2/sub1'), true);
       })
@@ -82,22 +85,13 @@ describe('list', () => {
           path.join(SFTP_URL, 'mocha-list/test-file2.txt.gz')
         );
       })
-      .then(() => {
-        return hookSftp.end();
-      })
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
   
   after(function() {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.rmdir(path.join(SFTP_URL, 'mocha-list'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.rmdir(path.join(SFTP_URL, 'mocha-list'), true)
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
       });
@@ -134,26 +128,14 @@ describe('list', () => {
 describe('stat', function() {
 
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-stat.md'), {mode: 0o777});
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-stat.md'), {mode: 0o777})
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
 
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'mocha-stat.md'));
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-stat.md'))
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
       });
@@ -175,26 +157,14 @@ describe('stat', function() {
 
 describe('get', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-file.md'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-file.md'), true)
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
 
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'mocha-file.md'));
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-file.md'))
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
       });
@@ -224,10 +194,7 @@ describe('get', function() {
 
 describe('fast get', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('fast get'), path.join(SFTP_URL, 'mocha-fastget1.md'), true);
-      })
+    return hookSftp.put(new Buffer('fast get'), path.join(SFTP_URL, 'mocha-fastget1.md'), true)
       .then(() => {
         return hookSftp.fastPut(
           path.join(LOCAL_URL, 'test-file1.txt'),
@@ -243,19 +210,13 @@ describe('fast get', function() {
       .then(() => {
         return fs.mkdirSync(path.join(LOCAL_URL, 'fastGet'));
       })
-      .then(() => {
-        return hookSftp.end();
-      })
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
   
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget1.md'));
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget1.md'))
       .then(() => {
         return hookSftp.delete(path.join(SFTP_URL, 'mocha-fastget2.txt'));
       })
@@ -267,9 +228,6 @@ describe('fast get', function() {
         fs.unlinkSync(path.join(LOCAL_URL, 'fastGet', 'local2.txt'));
         fs.unlinkSync(path.join(LOCAL_URL, 'fastGet', 'local3.txt.gz'));
         return fs.rmdirSync(path.join(LOCAL_URL, 'fastGet'));
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
@@ -316,16 +274,12 @@ describe('fast get', function() {
 
 describe('put', function() {
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'mocha-put-string.md'));
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-put-string.md'))
       .then(() => {
         return hookSftp.delete(path.join(SFTP_URL, 'mocha-put-buffer.md'));
-      }).then(() => {
+      })
+      .then(() => {
         return hookSftp.delete(path.join(SFTP_URL, 'mocha-put-stream.md'));
-      }).then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
@@ -388,28 +342,16 @@ describe('put', function() {
 
 describe('fast put', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('fast put'), path.join(SFTP_URL, 'mocha-fastput.md'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.put(new Buffer('fast put'), path.join(SFTP_URL, 'mocha-fastput.md'), true)
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
   
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'remote2.md.gz'));
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'remote2.md.gz'))
       .then(() => {
         return hookSftp.delete(path.join(SFTP_URL, 'remote.md'));
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
@@ -456,17 +398,8 @@ describe('fast put', function() {
 });
 
 describe('mkdir', function() {
-  before(() => {
-    return hookSftp.connect(config, 'once');
-  });
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.rmdir(path.join(SFTP_URL, 'mocha'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
-      })
+    return hookSftp.rmdir(path.join(SFTP_URL, 'mocha'), true)
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
       });
@@ -493,10 +426,7 @@ describe('mkdir', function() {
 
 describe('rmdir', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha'));
-      })
+    return hookSftp.mkdir(path.join(SFTP_URL, 'mocha'))
       .then(() => {
         return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-rmdir/dir1'), true);
       })
@@ -508,9 +438,6 @@ describe('rmdir', function() {
       })
       .then(() => {
         return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-rmdir/file1.md'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
@@ -544,15 +471,9 @@ describe('rmdir', function() {
 
 describe('delete', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-delete.md'), true);
-      })
+    return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-delete.md'), true)
       .then(() => {
         return hookSftp.put(new Buffer('promise'), path.join(SFTP_URL, 'mocha-delete-promise.md'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
@@ -577,15 +498,9 @@ describe('delete', function() {
 
 describe('rename', function() {
   before(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-rename.md'), true);
-      })
+    return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-rename.md'), true)
       .then(() => {
         return hookSftp.put(new Buffer('conflict file'), path.join(SFTP_URL, 'mocha-conflict.md'), true);
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
@@ -593,15 +508,9 @@ describe('rename', function() {
   });
   
   after(() => {
-    return hookSftp.connect(config, 'once')
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'mocha-rename-new.md'));
-      })
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-rename-new.md'))
       .then(() => {
         return hookSftp.delete(path.join(SFTP_URL, 'mocha-conflict.md'));
-      })
-      .then(() => {
-        return hookSftp.end();
       })
       .catch(err => {
         throw new Error(`After all hook error: ${err.message}`);
@@ -641,55 +550,70 @@ describe('rename', function() {
   });
 });
 
-// describe('getOptions', function() {
+describe('getOptions', function() {
 
-//   it('encoding should be utf8 if undefined', function() {
-//     return expect(sftp.getOptions()).to.have.property('encoding', 'utf8');
-//   });
+  it('encoding should be utf8 if undefined', function() {
+    return expect(sftp.getOptions()).to.have.property('encoding', 'utf8');
+  });
 
-//   it('encoding should be utf8 if undefined 1', function() {
-//     return expect(sftp.getOptions(false)).to.have.property('encoding', 'utf8');
-//   });
+  it('encoding should be utf8 if undefined 1', function() {
+    return expect(sftp.getOptions(false)).to.have.property('encoding', 'utf8');
+  });
 
-//   it('encoding should be utf8 if undefined 2', function() {
-//     return expect(sftp.getOptions(false, undefined)).to.have.property('encoding', 'utf8');
-//   });
+  it('encoding should be utf8 if undefined 2', function() {
+    return expect(sftp.getOptions(false, undefined)).to.have.property('encoding', 'utf8');
+  });
 
-//   it('encoding should be null if null', function() {
-//     return expect(sftp.getOptions(false, null)).to.have.property('encoding', null);
-//   });
+  it('encoding should be null if null', function() {
+    return expect(sftp.getOptions(false, null)).to.have.property('encoding', null);
+  });
 
-//   it('encoding should be hex', function() {
-//     return expect(sftp.getOptions(false, 'hex')).to.have.property('encoding', 'hex');
-//   });
-// });
+  it('encoding should be hex', function() {
+    return expect(sftp.getOptions(false, 'hex')).to.have.property('encoding', 'hex');
+  });
+});
 
-// describe('chmod', function() {
-//   chai.use(chaiSubset);
+describe('chmod', function() {
+  before(() => {
+    return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-chmod.txt'), true)
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
+  
+  after(() => {
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-chmod.txt'))
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
 
-//   before(() => {
-//     return sftp.connect(config, 'once').then(() => {
-//       return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-chmod.txt', true);
-//     });
-//   });
-//   after(() => {
-//     return sftp.delete(BASIC_URL + 'mocha-chmod.txt').then(() => {
-//       sftp.end();
-//     });
-//   });
+  it('return should be a promise', function() {
+    return expect(sftp.chmod(path.join(SFTP_URL, 'mocha-chmod.txt'), 0o444)).to.be.a('promise');
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.chmod(BASIC_URL + 'mocha-chmod.txt', 0777)).to.be.a('promise');
-//   });
+  it('chmod file', function() {
+    return sftp.chmod(path.join(SFTP_URL, 'mocha-chmod.txt'), 0o777)
+      .then(() => {
+        return sftp.list(SFTP_URL);
+      })
+      .then((list) => {
+        return expect(list).to.containSubset([{
+          'name': 'mocha-chmod.txt',
+          'rights': {
+            'user': 'rwx',
+            'group': 'rwx',
+            'other': 'rwx'
+          }
+        }]);
+      });
+  });
 
-//   it('chmod file', function() {
-//     return sftp.chmod(BASIC_URL + 'mocha-chmod.txt', 0777).then(() => {
-//       return sftp.list(BASIC_URL);
-//     }).then((list) => {
-//       return expect(list).to.containSubset([{'name': 'mocha-chmod.txt', 'rights': { 'user': 'rwx', 'group': 'rwx', 'other': 'rwx' }}]);
-//     });
-//   });
-// });
+  it('chmod on non-existent file', function() {
+    return expect(sftp.chmod(path.join(SFTP_URL, 'does-not-exist.txt'), 0o777))
+      .to.be.rejectedWith('No such file');
+  });
+});
 
 // // describe('event', () => {
 // //     chai.use(chaiSubset);

@@ -386,12 +386,12 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
     if (sftp) {
       sftp.chmod(remotePath, mode, (err) => {
         if (err) {
-          return reject(err);
+          return reject(new Error(`Failed to change mode for ${remotePath}: ${err.message}`));
         }
-        return resolve();
+        return resolve('Successfully change file mode');
       });
     } else {
-      return reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };
