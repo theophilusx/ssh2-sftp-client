@@ -291,69 +291,71 @@ SftpClient.prototype.rmdir = function(path, recursive) {
         return sftp.rmdir(path, (err) => {
           this.client.removeListener('error', reject);
           if (err) {
-            reject(err);
+            return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
           }
-          resolve();
+          return resolve(`Successfully removed directory`);
         });
       }
-      let rmdir = (p) => {
-        return this.list(p).then((list) => {
-          if (list.length > 0) {
-            let promises = [];
+      let rmdir = p => {
+        return this.list(p)
+          .then(list => {
+            if (list.length > 0) {
+              let promises = [];
             
-            list.forEach((item) => {
-              let name = item.name;
-              let promise;
-              var subPath;
+              list.forEach(item => {
+                let name = item.name;
+                let promise;
+                var subPath;
               
-              if (name[0] === '/') {
-                subPath = name;
-              } else {
-                if (p[p.length - 1] === '/') {
-                  subPath = p + name;
+                if (name[0] === '/') {
+                  subPath = name;
                 } else {
-                  subPath = p + '/' + name;
+                  if (p[p.length - 1] === '/') {
+                    subPath = p + name;
+                  } else {
+                    subPath = p + '/' + name;
+                  }
                 }
-              }
               
-              if (item.type === 'd') {
-                if (name !== '.' || name !== '..') {
-                  promise = rmdir(subPath);
+                if (item.type === 'd') {
+                  if (name !== '.' || name !== '..') {
+                    promises.push(rmdir(subPath));
+                  }
+                } else {
+                  promises.push(this.delete(subPath));
                 }
-              } else {
-                promise = this.delete(subPath);
+              });
+              if (promises.length) {
+                return Promise.all(promises)
+                  .then(() => {
+                    return rmdir(p);
+                  })
+                  .catch(err => {
+                    return reject(`Failed to remove directory ${path}: ${err.message}`);
+                  });
               }
-              promises.push(promise);
-            });
-            if (promises.length) {
-              return Promise.all(promises).then(() => {
-                return rmdir(p);
+            } else {
+              return new Promise((resolve, reject) => {
+                return sftp.rmdir(p, (err) => {
+                  this.client.removeListener('error', reject);
+                  if (err) {
+                    return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
+                  }
+                  return resolve(`Successfully removed directory`);
+                });
               });
             }
-          } else {
-            return new Promise((resolve, reject) => {
-              return sftp.rmdir(p, (err) => {
-                this.client.removeListener('error', reject);
-                if (err) {
-                  reject(err);
-                }
-                else {
-                  resolve();
-                }
-              });
-            });
-          }
-        });
+          });
       };
       return rmdir(path)
         .then(() => {
-          resolve();
+          return resolve(`Successfully removed directory`);
         })
         .catch((err) => {
-          reject(err);
+          return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
         });
     } else {
-      reject(Error('sftp connect error'));
+      return reject(new Error('sftp connect error'));
     }
   });
 };

@@ -491,54 +491,56 @@ describe('mkdir', function() {
   });
 });
 
-// describe('rmdir', function() {
-//   chai.use(chaiSubset);
+describe('rmdir', function() {
+  before(() => {
+    return hookSftp.connect(config, 'once')
+      .then(() => {
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha'));
+      })
+      .then(() => {
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-rmdir/dir1'), true);
+      })
+      .then(() => {
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-rmdir/dir2'), true);
+      })
+      .then(() => {
+        return hookSftp.mkdir(path.join(SFTP_URL, 'mocha-rmdir/dir3/subdir'), true);
+      })
+      .then(() => {
+        return hookSftp.put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-rmdir/file1.md'), true);
+      })
+      .then(() => {
+        return hookSftp.end();
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
 
-//     // beforeEach(() => {
-//     //     return sftp.connect(config, 'once');
-//     // });
-//   before(() => {
-//     return sftp.connect(config, 'once').then(() => {
-//       return sftp.mkdir(BASIC_URL + 'mocha-rmdir/dir1', true);
-//     }).then(() => {
-//       return sftp.mkdir(BASIC_URL + 'mocha-rmdir/dir2', true);
-//     }).then(() => {
-//       return sftp.put(new Buffer('hello'), BASIC_URL + 'mocha-rmdir/file1.md', true);
-//     })
-//       .catch(err => {
-//         console.log(err.message);
-//       });
-//   });
-//   // afterEach(() => {
-//   //     return sftp.end();
-//   // });
+  it('return should be a promise', function() {
+    return expect(sftp.rmdir(path.join(SFTP_URL, 'mocha'))).to.be.a('promise');
+  });
 
-//   it('return should be a promise', function() {
-//     return expect(sftp.rmdir(BASIC_URL + 'mocha').catch(err => undefined)).to.be.a('promise');
-//   });
+  it('rmdir directory not exisit', function() {
+    return expect(sftp.rmdir(path.join(SFTP_URL, 'mocha-rmdir2'), true))
+      .to.be.rejectedWith('No such file');
+  });
 
-//   it('remove directory is not exisit', function() {
-//     return sftp.rmdir(BASIC_URL + 'mocha-rmdir2', true).catch((err) => {
-//       return expect(err.toString()).to.contain('Error');
-//     });
-//   });
+  it('remove directory without recursion', function() {
+    return expect(sftp.rmdir(path.join(SFTP_URL, 'mocha-rmdir', 'dir1')))
+      .to.eventually.equal('Successfully removed directory');
+  });
 
-//   it('remove directory without recursive', function() {
-//     return sftp.rmdir(BASIC_URL + 'mocha-rmdir').catch((err) => {
-//       return expect(err.toString()).to.contain('Error');
-//     });
-//   });
+  it('remove directory recursively', function() {
+    return expect(sftp.rmdir(path.join(SFTP_URL, 'mocha-rmdir', 'dir3'), true))
+      .to.eventually.equal('Successfully removed directory');
+  });
 
-//   it('remove directory recursive', function() {
-//     return sftp.connect(config, 'once').then(() => {
-//       sftp.rmdir(BASIC_URL + 'mocha-rmdir', true).then(() => {
-//         return sftp.list(BASIC_URL);
-//       }).then((list) => {
-//         return expect(list).to.not.containSubset([{'name': 'mocha-rmdir'}]);
-//       });
-//     });
-//   });
-// });
+  it('remove dir and file recursively', function() {
+    return expect(sftp.rmdir(path.join(SFTP_URL, 'mocha-rmdir'), true))
+      .to.eventually.equal('Successfully removed directory');
+  });
+});
 
 // describe('delete', function() {
 //   chai.use(chaiSubset);
