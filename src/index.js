@@ -212,7 +212,6 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
         return false;
       }
       let stream = sftp.createWriteStream(remotePath, options);
-      // let data;
 
       stream.on('error', err => {
         return reject(new Error(`Failed to upload data stream to ${remotePath}: ${err.message}`));
@@ -223,14 +222,12 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
       });
       
       if (input instanceof Buffer) {
-        //data = stream.end(input);
         stream.end(input);
         return false;
       }
-      //data = input.pipe(stream);
       input.pipe(stream);
     } else {
-      reject(Error('sftp connect error'));
+      return reject(Error('sftp connect error'));
     }
   });
 };
@@ -434,10 +431,10 @@ SftpClient.prototype.connect = function(config, connectMethod) {
       this.client.sftp((err, sftp) => {
         this.client.removeListener('error', reject);
         if (err) {
-          reject(err);
+          return reject(new Error(`Failed to connect to server: ${err.message}`));
         }
         this.sftp = sftp;
-        resolve(sftp);
+        return resolve(sftp);
       });
     })
       .on('error', reject)
