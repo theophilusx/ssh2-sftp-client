@@ -1,9 +1,11 @@
 /**
  * ssh2 sftp client for node
  */
+
 'use strict';
 
-let Client = require('ssh2').Client;
+const Client = require('ssh2').Client;
+const osPath = require('path');
 
 let SftpClient = function(){
   this.client = new Client();
@@ -16,16 +18,18 @@ let SftpClient = function(){
  * @return {Promise} data, list info
  */
 SftpClient.prototype.list = function(path) {
-  let reg = /-/gi;
+  const reg = /-/gi;
 
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (sftp) {
-      sftp.readdir(path, (err, list) => {
-        if (err) {
-          return reject(new Error(`Failed to list ${path}: ${err.message}`));
-        }
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));
+    }
+    sftp.readdir(path, (err, list) => {
+      if (err) {
+        reject(new Error(`Failed to list ${path}: ${err.message}`));
+      } else {
         let newList = [];
         // reset file info
         if (list) {
@@ -46,11 +50,40 @@ SftpClient.prototype.list = function(path) {
             };
           });
         }
-        return resolve(newList);
-      });
-    } else {
-      return reject(Error('sftp connect error'));
+        resolve(newList);
+      }
+    });
+    return undefined;
+  });
+};
+
+SftpClient.prototype.exists = function(path) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));
     }
+    let {dir, base} = osPath.parse(path);
+    sftp.readdir(dir, (err, list) => {
+      if (err) {
+        console.log(err.code);
+        console.log(err.message);
+        if (err.code === 2) {
+          resolve(false);
+        } else {
+          reject(new Error(`Error listing ${dir}: code: ${err.code} ${err.message}`));          
+        }
+      } else {
+        let [type] = list.filter(item => item.filename === base).map(item => item.longname.substr(0, 1));
+        if (type) {
+          resolve(type);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+    return undefined;
   });
 };
 
@@ -64,13 +97,15 @@ SftpClient.prototype.stat = function(remotePath) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (sftp) {
-      sftp.stat(remotePath, function (err, stats) {
-        if (err){
-          return reject(new Error(`Failed to stat ${remotePath}: ${err.message}`));
-        }
-        // format similarly to sftp.list
-        return resolve({
+    if (!sftp) {
+      return reject(Error('sftp connect error'));      
+    }
+    sftp.stat(remotePath, function (err, stats) {
+      if (err){
+        reject(new Error(`Failed to stat ${remotePath}: ${err.message}`));
+      } else {
+      // format similarly to sftp.list
+        resolve({
           mode: stats.mode,
           permissions: stats.permissions,
           owner: stats.uid,
@@ -79,10 +114,9 @@ SftpClient.prototype.stat = function(remotePath) {
           accessTime: stats.atime * 1000,
           modifyTime: stats.mtime * 1000
         });
-      });
-    } else {
-      return reject(Error('sftp connect error'));
-    }
+      }
+    });
+    return undefined;
   });
 };
 
@@ -136,20 +170,20 @@ SftpClient.prototype.get = function(path, useCompression, encoding, otherOptions
  * @return {Promise} the result of downloading the file
  */
 SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
-  options = options || {};
+  options = options || {concurrency: 64, chunkSize: 32768};
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
-    
-    if (sftp) {
-      sftp.fastGet(remotePath, localPath, options, function (err) {
-        if (err){
-          return reject(new Error(`Failed to get ${remotePath}: ${err.message}`));
-        }
-        return resolve(`${remotePath} was successfully download to ${localPath}!`);
-      });
-    } else {
-      return reject(Error('sftp connect error'));
+
+    if (!sftp) {
+      return reject(Error('sftp connect error'));      
     }
+    sftp.fastGet(remotePath, localPath, options, function (err) {
+      if (err){
+        reject(new Error(`Failed to get ${remotePath}: ${err.message}`));
+      }
+      resolve(`${remotePath} was successfully download to ${localPath}!`);
+    });
+    return undefined;
   });
 };
 
@@ -167,16 +201,16 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (sftp) {
-      sftp.fastPut(localPath, remotePath, options, function (err) {
-        if (err) {
-          return reject(new Error(`Failed to upload ${localPath} to ${remotePath}: ${err.message}`));
-        }
-        return resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
-      });
-    } else {
-      return reject(new Error('sftp connect error'));
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));      
     }
+    sftp.fastPut(localPath, remotePath, options, function (err) {
+      if (err) {
+        reject(new Error(`Failed to upload ${localPath} to ${remotePath}: ${err.message}`));
+      }
+      resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+    });
+    return undefined;
   });
 };
 
@@ -232,17 +266,18 @@ SftpClient.prototype.mkdir = function(path, recursive) {
 
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
-    
-    if (sftp) {
-      if (!recursive) {
-        sftp.mkdir(path, (err) => {
-          if (err) {
-            return reject(new Error(`Failed to create directory ${path}: ${err.message}`));
-          }
-          return resolve(`${path} directory created`);
-        });
-      }
-      
+
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));      
+    }
+    if (!recursive) {
+      sftp.mkdir(path, (err) => {
+        if (err) {
+          reject(new Error(`Failed to create directory ${path}: ${err.message}`));
+        }
+        resolve(`${path} directory created`);
+      });
+    } else {
       let tokens = path.split(/\//g);
       let p = '';
       
@@ -250,21 +285,20 @@ SftpClient.prototype.mkdir = function(path, recursive) {
         let token = tokens.shift();
         
         if (!token && !tokens.length) {
-          return resolve(`${path} directory created`);
+          resolve(`${path} directory created`);
+        } else {
+          p = p + `${token}/`;
+          sftp.mkdir(p, (err) => {
+            if (err && ![4, 11].includes(err.code)) {
+              reject(new Error(`Failed to create directory ${path}: ${p} ${err.message}`));
+            }
+            mkdir();
+          });
         }
-        p = p + `${token}/`;
-        sftp.mkdir(p, (err) => {
-          if (err && ![4, 11].includes(err.code)) {
-            return reject(new Error(`Failed to create directory ${path}: ${p} ${err.message}`));
-          }
-          return mkdir();
-        });
-        return false;
       };
       return mkdir();
-    } else {
-      return reject(new Error('sftp connect error'));
     }
+    return undefined;
   });
 };
 
@@ -402,15 +436,15 @@ SftpClient.prototype.connect = function(config, connectMethod) {
   return new Promise((resolve, reject) => {
     this.client[connectMethod]('ready', () => {
       this.client.sftp((err, sftp) => {
-        //this.client.removeListener('error', reject);
+        this.client.removeListener('error', reject);
         if (err) {
-          return reject(new Error(`Failed to connect to server: ${err.message}`));
+          reject(new Error(`Failed to connect to server: ${err.message}`));
         }
         this.sftp = sftp;
-        return resolve(sftp);
+        resolve(sftp);
       });
     })
-      //.on('error', reject)
+      .on('error', reject)
       .connect(config);
   });
 };
