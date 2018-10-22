@@ -125,6 +125,52 @@ describe('list', () => {
   });
 });
 
+describe('exists', function() {
+  before(() => {
+    return hookSftp.mkdir(path.join(SFTP_URL, 'exist-dir'))
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file1.txt'),
+          path.join(SFTP_URL, 'exist-file.txt')
+        );
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
+
+  after(() => {
+    return hookSftp.delete(path.join(SFTP_URL, 'exist-file.txt'))
+      .then(() => {
+        return hookSftp.rmdir(path.join(SFTP_URL, 'exist-dir'));
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
+  
+  it('return should be a promise', function() {
+    return expect(sftp.exists(SFTP_URL)).to.be.a('promise');
+  });
+
+  it('return true - directory', function() {
+    return expect(sftp.exists(path.join(SFTP_URL, 'exist-dir'))).to.eventually.equal('d');
+  });
+
+  it('return true - file', function() {
+    return expect(sftp.exists(path.join(SFTP_URL, 'exist-file.txt'))).to.eventually.equal('-');
+  });
+
+  it('return false - no such object', function() {
+    return expect(sftp.exists(path.join(SFTP_URL, 'no-such-dir/subdir'))).to.eventually.equal(false);
+  });
+
+  it('return false for bad path', function() {
+    return expect(sftp.exists('just/a/really/bad/path'))
+      .to.eventually.equal(false);
+  });
+});
+
 describe('stat', function() {
 
   before(() => {
@@ -177,7 +223,7 @@ describe('get', function() {
   it('get the file content', function() {
     return sftp.get(path.join(SFTP_URL, 'mocha-file.md'))
       .then((data) => {
-        let body;
+        let body = '';
         data.on('data', (chunk) => {
           body += chunk;
         });
@@ -410,16 +456,26 @@ describe('mkdir', function() {
   });
 
   it('mkdir with bad path', function() {
-    return expect(sftp.mkdir(path.join(SFTP_URL, 'mocha3/mm')))
+    return expect(sftp.mkdir(path.join(SFTP_URL, 'mocha3', 'mm')))
       .to.be.rejectedWith('Failed to create directory');
   });
 
-  it('mkdir force', function() {
-    return sftp.mkdir(path.join(SFTP_URL, 'mocha/mocha-dir-force'), true)
+  it('mkdir recursive', function() {
+    return sftp.mkdir(path.join(SFTP_URL, 'mocha', 'mocha-dir-force', 'subdir'), true)
+      .then(() => {
+        return sftp.list(path.join(SFTP_URL, 'mocha', 'mocha-dir-force'));
+      }).then(list => {
+        return expect(list).to.containSubset([{'name': 'subdir'}]);
+      });
+  });
+
+  it('mkdir non-recursinve', function() {
+    return sftp.mkdir(path.join(SFTP_URL, 'mocha', 'mocha-non-recursive'), false)
       .then(() => {
         return sftp.list(path.join(SFTP_URL, 'mocha'));
-      }).then(list => {
-        return expect(list).to.containSubset([{'name': 'mocha-dir-force'}]);
+      })
+      .then(list => {
+        return expect(list).to.containSubset([{'name': 'mocha-non-recursive'}]);
       });
   });
 });

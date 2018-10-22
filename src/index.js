@@ -57,6 +57,17 @@ SftpClient.prototype.list = function(path) {
   });
 };
 
+/**
+ * @async
+ 
+ * Tests to see if an object exists. If it does, return the type of that object
+ * (in the format returned by list). If it does not exist, return false.
+ *
+ * @param {string} path - path to the object on the sftp server.
+ *
+ * @return {boolean} returns false if object does not exist. Returns type of
+ *                   object if it does
+ */
 SftpClient.prototype.exists = function(path) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
@@ -67,8 +78,6 @@ SftpClient.prototype.exists = function(path) {
     let {dir, base} = osPath.parse(path);
     sftp.readdir(dir, (err, list) => {
       if (err) {
-        console.log(err.code);
-        console.log(err.message);
         if (err.code === 2) {
           resolve(false);
         } else {
@@ -261,175 +270,178 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
   });
 };
 
-SftpClient.prototype.mkdir = function(path, recursive) {
-  recursive = recursive || false;
+SftpClient.prototype.mkdir = function(path, recursive = false) {
+  let sftp = this.sftp;
 
+  let doMkdir = p => {
+    return new Promise((resolve, reject) => {
+
+
+      if (!sftp) {
+        return reject(new Error('sftp connect error'));
+      }
+      sftp.mkdir(p, err => {
+        if (err) {
+          reject(new Error(`Failed to create directory ${p}: ${err.message}`));
+        }
+        resolve(`${p} directory created`);
+      });
+      return undefined;
+    });
+  };
+
+  if (!recursive) {
+    return doMkdir(path);
+  }
+  let mkdir = async p => {
+    try {
+      let {dir} = osPath.parse(p);
+      let type = await this.exists(dir);
+      if (!type) {
+        await mkdir(dir);
+      }
+      return doMkdir(p);
+    } catch (err) {
+      throw err;
+    }
+  };
+  return mkdir(path);
+};
+
+SftpClient.prototype.rmdir = function(path, recursive = false) {
+  let sftp = this.sftp;
+
+  let doRmdir = p => {
+    return new Promise((resolve, reject) => {
+
+      if (!sftp) {
+        return reject(new Error('sftp connect error'));
+      }
+      sftp.rmdir(p, err => {
+        if (err) {
+          reject(new Error(`Failed to remove directory ${p}: ${err.message}`));
+        }
+        resolve('Successfully removed directory');
+      });
+      return undefined;
+    });
+  };
+
+  if (!recursive) {
+    return doRmdir(path);
+  }
+
+  let rmdir = async p => {
+    try {
+      let list = await this.list(p);
+      let files = list.filter(item => item.type === '-');
+      let dirs = list.filter(item => item.type === 'd');
+      for (let f of files) {
+        await this.delete(osPath.join(p, f.name));
+      }
+      for (let d of dirs) {
+        await rmdir(osPath.join(p, d.name));
+      }
+      return doRmdir(p);
+    } catch (err) {
+      throw err;
+    }
+  };
+  return rmdir(path);
+};
+
+/**
+ * @async
+ *
+ * Delete a file on the remote SFTP server
+ *
+ * @param {string} path - path to the file to delete
+ * @return {Promise} with string 'Successfully deleeted file' once resolved
+ * 
+ */
+SftpClient.prototype.delete = function(path) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
     if (!sftp) {
       return reject(new Error('sftp connect error'));      
     }
-    if (!recursive) {
-      sftp.mkdir(path, (err) => {
-        if (err) {
-          reject(new Error(`Failed to create directory ${path}: ${err.message}`));
-        }
-        resolve(`${path} directory created`);
-      });
-    } else {
-      let tokens = path.split(/\//g);
-      let p = '';
-      
-      let mkdir = () => {
-        let token = tokens.shift();
-        
-        if (!token && !tokens.length) {
-          resolve(`${path} directory created`);
-        } else {
-          p = p + `${token}/`;
-          sftp.mkdir(p, (err) => {
-            if (err && ![4, 11].includes(err.code)) {
-              reject(new Error(`Failed to create directory ${path}: ${p} ${err.message}`));
-            }
-            mkdir();
-          });
-        }
-      };
-      return mkdir();
-    }
+    sftp.unlink(path, (err) => {
+      if (err) {
+        reject(new Error(`Failed to delete file ${path}: ${err.message}`));
+      }
+      resolve('Successfully deleted file');
+    });
     return undefined;
   });
 };
 
-SftpClient.prototype.rmdir = function(path, recursive) {
-  recursive = recursive || false;
-
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-    
-    if (sftp) {
-      if (!recursive) {
-        return sftp.rmdir(path, (err) => {
-          if (err) {
-            return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
-          }
-          return resolve('Successfully removed directory');
-        });
-      }
-      let rmdir = p => {
-        return this.list(p)
-          .then(list => {
-            if (list.length > 0) {
-              let promises = [];
-            
-              list.forEach(item => {
-                let name = item.name;
-                var subPath;
-              
-                if (name[0] === '/') {
-                  subPath = name;
-                } else {
-                  if (p[p.length - 1] === '/') {
-                    subPath = p + name;
-                  } else {
-                    subPath = p + '/' + name;
-                  }
-                }
-              
-                if (item.type === 'd') {
-                  if (name !== '.' || name !== '..') {
-                    promises.push(rmdir(subPath));
-                  }
-                } else {
-                  promises.push(this.delete(subPath));
-                }
-              });
-              if (promises.length) {
-                return Promise.all(promises)
-                  .then(() => {
-                    return rmdir(p);
-                  })
-                  .catch(err => {
-                    return reject(`Failed to remove directory ${path}: ${err.message}`);
-                  });
-              }
-            } else {
-              return new Promise((resolve, reject) => {
-                return sftp.rmdir(p, (err) => {
-                  if (err) {
-                    return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
-                  }
-                  return resolve('Successfully removed directory');
-                });
-              });
-            }
-          });
-      };
-      return rmdir(path)
-        .then(() => {
-          return resolve('Successfully removed directory');
-        })
-        .catch((err) => {
-          return reject(new Error(`Failed to remove directory ${path}: ${err.message}`));
-        });
-    } else {
-      return reject(new Error('sftp connect error'));
-    }
-  });
-};
-
-SftpClient.prototype.delete = function(path) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    if (sftp) {
-      sftp.unlink(path, (err) => {
-        if (err) {
-          return reject(new Error(`Failed to delete file ${path}: ${err.message}`));
-        }
-        return resolve('Successfully deleted file');
-      });
-    } else {
-      return reject(new Error('sftp connect error'));
-    }
-  });
-};
-
+/**
+ * @async
+ *
+ * Rename a file on the remote SFTP repository
+ *
+ * @param {sring} srcPath - path to the file to be renamced.
+ * @param {string} remotePath - path to the new name.
+ *
+ * @return {Promise}
+ * 
+ */
 SftpClient.prototype.rename = function(srcPath, remotePath) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (sftp) {
-      sftp.rename(srcPath, remotePath, (err) => {
-        if (err) {
-          return reject(new Error(`Failed to rename file ${srcPath} to ${remotePath}: ${err.message}`));
-        }
-        return resolve(`Successfully renamed ${srcPath} to ${remotePath}`);
-      });
-    } else {
-      return reject(new Error('sftp connect error'));
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));      
     }
+    sftp.rename(srcPath, remotePath, (err) => {
+      if (err) {
+        reject(new Error(`Failed to rename file ${srcPath} to ${remotePath}: ${err.message}`));
+      }
+      resolve(`Successfully renamed ${srcPath} to ${remotePath}`);
+    });
+    return undefined;
   });
 };
 
+/**
+ * @async
+ *
+ * Change the mode of a remote file on the SFTP repository
+ *
+ * @param {string} remotePath - path to the remote target object.
+ * @param {Octal} mode - the new mode to set
+ *
+ * @return {Promise}.
+ */
 SftpClient.prototype.chmod = function(remotePath, mode) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (sftp) {
-      sftp.chmod(remotePath, mode, (err) => {
-        if (err) {
-          return reject(new Error(`Failed to change mode for ${remotePath}: ${err.message}`));
-        }
-        return resolve('Successfully change file mode');
-      });
-    } else {
-      return reject(new Error('sftp connect error'));
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));      
     }
+    sftp.chmod(remotePath, mode, (err) => {
+      if (err) {
+        reject(new Error(`Failed to change mode for ${remotePath}: ${err.message}`));
+      }
+      resolve('Successfully change file mode');
+    });
+    return undefined;
   });
 };
 
+/**
+ * @async
+ *
+ * Create a new SFTP connection to a remote SFTP server
+ *
+ * @param {Object} config - an SFTP configuration object
+ * @param {string} connectMethod - ???
+ *
+ * @return {Promise} which will resolve to an sftp client object
+ * 
+ */
 SftpClient.prototype.connect = function(config, connectMethod) {
   connectMethod = connectMethod || 'on';
 
@@ -449,6 +461,12 @@ SftpClient.prototype.connect = function(config, connectMethod) {
   });
 };
 
+/**
+ * @async
+ *
+ * Close the SFTP connection
+ * 
+ */
 SftpClient.prototype.end = function() {
   return new Promise((resolve) => {
     this.client.end();
