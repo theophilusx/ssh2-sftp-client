@@ -6,6 +6,7 @@
 
 const Client = require('ssh2').Client;
 const osPath = require('path');
+const BluebirdPromise = require('bluebird');
 
 let SftpClient = function(){
   this.client = new Client();
@@ -293,17 +294,15 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   if (!recursive) {
     return doMkdir(path);
   }
-  let mkdir = async p => {
-    try {
+  let mkdir = p => {
       let {dir} = osPath.parse(p);
-      let type = await this.exists(dir);
-      if (!type) {
-        await mkdir(dir);
-      }
-      return doMkdir(p);
-    } catch (err) {
-      throw err;
-    }
+      return this.exists(dir).then((type) => {
+        if (!type) {
+          return mkdir(dir);
+        }
+      }).then(() => {
+        return doMkdir(p);
+      });
   };
   return mkdir(path);
 };
@@ -331,21 +330,24 @@ SftpClient.prototype.rmdir = function(path, recursive = false) {
     return doRmdir(path);
   }
 
-  let rmdir = async p => {
-    try {
-      let list = await this.list(p);
-      let files = list.filter(item => item.type === '-');
-      let dirs = list.filter(item => item.type === 'd');
-      for (let f of files) {
-        await this.delete(osPath.join(p, f.name));
-      }
-      for (let d of dirs) {
-        await rmdir(osPath.join(p, d.name));
-      }
+  let rmdir = p => {
+    let list;
+    let files;
+    let dirs;
+    return this.list(p).then((res) => {
+      list = res;
+      files = list.filter(item => item.type === '-');
+      dirs = list.filter(item => item.type === 'd');
+      return BluebirdPromise.each(files, (f) => {
+        return this.delete(osPath.join(p, f.name));
+      });
+    }).then(() => {
+      return BluebirdPromise.each(dirs, (d) => {
+        return rmdir(osPath.join(p, d.name));
+      });
+    }).then(() => {
       return doRmdir(p);
-    } catch (err) {
-      throw err;
-    }
+    });
   };
   return rmdir(path);
 };

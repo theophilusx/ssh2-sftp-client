@@ -18,6 +18,7 @@
   "email": "jyu213@gmail.com",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.5.2",
     "ssh2": "^0.6.1"
   },
   "devDependencies": {
