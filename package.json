@@ -18,11 +18,13 @@
   "email": "jyu213@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "ssh2": "^0.5.5"
+    "ssh2": "^0.6.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-subset": "^1.2.1",
-    "mocha": "2.4.5"
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset": "^1.6.0",
+    "dotenv": "^6.1.0",
+    "mocha": "^5.2.0"
   }
 }
