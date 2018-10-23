@@ -5,3 +5,4 @@ tmp
 .npmignore
 npm-debug.log
 package-lock.json
+.env

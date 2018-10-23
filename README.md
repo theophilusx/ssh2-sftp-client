@@ -157,6 +157,14 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
+#### V2.4.0
+    - merge pr #97, thanks for @theophilusx
+        - Remove emmitter.maxListener warnings
+        - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
+        - Enhanced error messages to provide more context and to be more consistent
+        - re-factored test
+        - Added new 'exists' method and re-factored mkdir/rmdir
+
 #### V2.3.0
     - add: `stat` method
     - add `fastGet` and `fastPut` method.
