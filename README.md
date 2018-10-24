@@ -158,6 +158,8 @@ sftp.on('error', callbackFn)
 
 ### Log
 #### V2.4.0
+Requires node.js v6 or above.
+
     - merge pr #97, thanks for @theophilusx
         - Remove emmitter.maxListener warnings
         - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
