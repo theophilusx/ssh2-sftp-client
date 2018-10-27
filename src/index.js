@@ -6,7 +6,7 @@
 
 const Client = require('ssh2').Client;
 const osPath = require('path');
-const BluebirdPromise = require('bluebird');
+const utils = require('./utils');
 
 let SftpClient = function(){
   this.client = new Client();
@@ -338,11 +338,11 @@ SftpClient.prototype.rmdir = function(path, recursive = false) {
       list = res;
       files = list.filter(item => item.type === '-');
       dirs = list.filter(item => item.type === 'd');
-      return BluebirdPromise.each(files, (f) => {
+      return utils.forEachPromise(files, (f) => {
         return this.delete(osPath.join(p, f.name));
       });
     }).then(() => {
-      return BluebirdPromise.each(dirs, (d) => {
+      return utils.forEachPromise(dirs, (d) => {
         return rmdir(osPath.join(p, d.name));
       });
     }).then(() => {
