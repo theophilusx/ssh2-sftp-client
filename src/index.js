@@ -338,11 +338,11 @@ SftpClient.prototype.rmdir = function(path, recursive = false) {
       list = res;
       files = list.filter(item => item.type === '-');
       dirs = list.filter(item => item.type === 'd');
-      return utils.forEachPromise(files, (f) => {
+      return utils.forEachAsync(files, (f) => {
         return this.delete(osPath.join(p, f.name));
       });
     }).then(() => {
-      return utils.forEachPromise(dirs, (d) => {
+      return utils.forEachAsync(dirs, (d) => {
         return rmdir(osPath.join(p, d.name));
       });
     }).then(() => {
