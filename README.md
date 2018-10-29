@@ -158,7 +158,7 @@ sftp.on('error', callbackFn)
 
 ### Log
 #### V2.4.0
-Requires node.js v6 or above.
+Requires node.js v7.5.0 or above.
 
     - merge pr #97, thanks for @theophilusx
         - Remove emmitter.maxListener warnings
