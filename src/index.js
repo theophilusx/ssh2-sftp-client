@@ -5,7 +5,7 @@
 'use strict';
 
 const Client = require('ssh2').Client;
-const osPath = require('path');
+const osPath = require('path').posix;
 const utils = require('./utils');
 
 let SftpClient = function(){
