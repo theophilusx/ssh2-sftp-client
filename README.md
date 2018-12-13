@@ -157,6 +157,18 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
+### V2.4.3
+    - merge #108, #110
+      - fix connect promise if connection ends
+
+### V2.4.2
+    - merge #105
+      - fix windows path
+
+### V2.4.1
+    - merge pr #99, #100
+      - bug fix
+
 #### V2.4.0
 Requires node.js v7.5.0 or above.
 
