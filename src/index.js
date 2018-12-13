@@ -451,6 +451,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
     this.client[connectMethod]('ready', () => {
       this.client.sftp((err, sftp) => {
         this.client.removeListener('error', reject);
+        this.client.removeListener('end', reject);
         if (err) {
           reject(new Error(`Failed to connect to server: ${err.message}`));
         }
@@ -458,6 +459,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
         resolve(sftp);
       });
     })
+      .on('end', reject)
       .on('error', reject)
       .connect(config);
   });
