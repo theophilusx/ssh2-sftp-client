@@ -33,7 +33,8 @@ const hookSftp = new Client();
 const config = {
   host: process.env['SFTP_SERVER'],
   username: process.env['SFTP_USER'],
-  password: process.env['SFTP_PASSWORD']
+  password: process.env['SFTP_PASSWORD'],
+  port: process.env['SFTP_PORT'] || 22
 };
 
 before(() => {
@@ -381,6 +382,57 @@ describe('put', function() {
   it('Put with bad dst path', function() {
     return expect(sftp.put(
       path.join(LOCAL_URL, 'test-file1.txt'),
+      path.join(SFTP_URL, 'bad-directory', 'bad-file.txt')
+    )).to.be.rejectedWith('Failed to upload');
+  });
+});
+describe('append', function() {
+  beforeEach(() => {
+    return sftp.put(new Buffer(''), path.join(SFTP_URL, 'mocha-append-test.md'))
+  })
+  afterEach(() => {
+    return hookSftp.delete(path.join(SFTP_URL, 'mocha-append-test.md'))
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  })
+
+  it('return should be a promise', function() {
+    return expect(sftp.append(new Buffer(''), path.join(SFTP_URL, 'mocha-append-test.md'))).to.be.a('promise');
+  });
+
+  it('cannot append file', function() {
+    return expect(sftp.append(path.join(LOCAL_URL, 'test-file1.txt'), path.join(SFTP_URL, 'mocha-append-test.md'))).to.be.rejectedWith('Cannot append a file to another')
+  });
+
+  it('append buffer file', function() {
+    return sftp.append(new Buffer('hello'), path.join(SFTP_URL, 'mocha-append-test.md'))
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'mocha-append-test.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 5});
+      });
+  });
+
+  it('append stream file', function() {
+    var str2 = new stream.Readable();
+    str2._read = function noop() {};
+    str2.push('your text here');
+    str2.push(null);
+
+    return sftp.append(str2, path.join(SFTP_URL, 'mocha-append-test.md'))
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'mocha-append-test.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 14});
+      });
+  });
+
+  it('Put with bad dst path', function() {
+    return expect(sftp.append(
+      Buffer.from('hello'),
       path.join(SFTP_URL, 'bad-directory', 'bad-file.txt')
     )).to.be.rejectedWith('Failed to upload');
   });
