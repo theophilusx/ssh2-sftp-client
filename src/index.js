@@ -270,6 +270,45 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
     }
   });
 };
+/**
+ * Append to file
+ *
+ * @param  {Buffer|stream} input
+ * @param  {String} remotePath,
+ * @param  {Object} useCompression [description]
+ * @param  {String} encoding. Encoding for the WriteStream, can be any value supported by node streams.
+ * @return {[type]}                [description]
+ */
+SftpClient.prototype.append = function(input, remotePath, useCompression, encoding, otherOptions) {
+  let options = this.getOptions(useCompression, encoding, otherOptions);
+
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    if (sftp) {
+      if (typeof input === 'string') {
+        throw new Error('Cannot append a file to another')
+      }
+      let stream = sftp.createWriteStream(remotePath, options);
+
+      stream.on('error', err => {
+        return reject(new Error(`Failed to upload data stream to ${remotePath}: ${err.message}`));
+      });
+
+      stream.on('close', () => {
+        return resolve(`Uploaded data stream to ${remotePath}`);
+      });
+
+      if (input instanceof Buffer) {
+        stream.end(input);
+        return false;
+      }
+      input.pipe(stream);
+    } else {
+      return reject(Error('sftp connect error'));
+    }
+  });
+};
 
 SftpClient.prototype.mkdir = function(path, recursive = false) {
   let sftp = this.sftp;
