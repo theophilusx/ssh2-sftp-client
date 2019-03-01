@@ -236,54 +236,77 @@ describe('stat', function() {
   });
 });
 
-describe('get', function() {
+describe('fast put', function() {
   before(() => {
     return hookSftp
-      .put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-file.md'), true)
+      .put(new Buffer('fast put'), path.join(SFTP_URL, 'mocha-fastput.md'))
       .catch(err => {
         throw new Error(`Before all hook error: ${err.message}`);
       });
   });
 
   after(() => {
-    return hookSftp.delete(path.join(SFTP_URL, 'mocha-file.md')).catch(err => {
-      throw new Error(`After all hook error: ${err.message}`);
-    });
-  });
-
-  it('return should be a promise', function() {
-    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file.md'))).to.be.a(
-      'promise'
-    );
-  });
-
-  it('get the file content', function() {
-    return sftp.get(path.join(SFTP_URL, 'mocha-file.md')).then(data => {
-      let body = '';
-      data.on('data', chunk => {
-        body += chunk;
+    return hookSftp
+      .delete(path.join(SFTP_URL, 'remote2.md.gz'))
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'remote.md'));
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
       });
-      data.on('end', () => {
-        return expect(body).to.equal('hello');
-      });
-    });
   });
 
-  it('get file faild', function() {
+  it('fastput file 1', function() {
+    return sftp
+      .fastPut(
+        path.join(LOCAL_URL, 'test-file1.txt'),
+        path.join(SFTP_URL, 'remote.md')
+      )
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'remote.md'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 6973257});
+      });
+  });
+
+  it('fastput file 2', function() {
+    return sftp
+      .fastPut(
+        path.join(LOCAL_URL, 'test-file2.txt.gz'),
+        path.join(SFTP_URL, 'remote2.md.gz')
+      )
+      .then(() => {
+        return sftp.stat(path.join(SFTP_URL, 'remote2.md.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastput with bad src', function() {
     return expect(
-      sftp.get(path.join(SFTP_URL, 'mocha-file-not-exist.md'))
-    ).to.be.rejectedWith('No such file');
+      sftp.fastPut(
+        path.join(LOCAL_URL, 'file-not-exist.txt'),
+        path.join(SFTP_URL, 'fastput-error.txt')
+      )
+    ).to.rejectedWith('Failed to upload');
+  });
+
+  it('fastput with bad dst', function() {
+    return expect(
+      sftp.fastPut(
+        path.join(LOCAL_URL, 'test-file1.txt'),
+        path.join(SFTP_URL, 'non-existent-dir', 'fastput-error.txt')
+      )
+    ).to.rejectedWith('Failed to upload');
   });
 });
 
 describe('fast get', function() {
   before(() => {
     return hookSftp
-      .put(
-        new Buffer('fast get'),
-        path.join(SFTP_URL, 'mocha-fastget1.md'),
-        true
-      )
+      .put(new Buffer('fast get'), path.join(SFTP_URL, 'mocha-fastget1.md'))
       .then(() => {
         return hookSftp.fastPut(
           path.join(LOCAL_URL, 'test-file1.txt'),
@@ -453,6 +476,63 @@ describe('put', function() {
     ).to.be.rejectedWith('Failed to upload');
   });
 });
+
+describe('get', function() {
+  before(() => {
+    return hookSftp
+      .put(new Buffer('hello'), path.join(SFTP_URL, 'mocha-file.md'))
+      .then(() => {
+        return hookSftp.fastPut(
+          path.join(LOCAL_URL, 'test-file1.txt'),
+          path.join(SFTP_URL, 'large-file1.txt')
+        );
+      })
+      .catch(err => {
+        throw new Error(`Before all hook error: ${err.message}`);
+      });
+  });
+
+  after(() => {
+    return hookSftp
+      .delete(path.join(SFTP_URL, 'mocha-file.md'))
+      .then(() => {
+        return hookSftp.delete(path.join(SFTP_URL, 'large-file1.txt'));
+      })
+      .catch(err => {
+        throw new Error(`After all hook error: ${err.message}`);
+      });
+  });
+
+  it('return should be a promise', function() {
+    return expect(sftp.get(path.join(SFTP_URL, 'mocha-file.md'))).to.be.a(
+      'promise'
+    );
+  });
+
+  it('get the file content', function() {
+    return sftp.get(path.join(SFTP_URL, 'mocha-file.md')).then(data => {
+      let body = data.toString();
+      return expect(body).to.equal('hello');
+    });
+  });
+
+  it('get large file using stream', function() {
+    let localFile = path.join(LOCAL_URL, 'local-large-file.txt');
+    return sftp
+      .get(path.join(SFTP_URL, 'large-file1.txt'), localFile)
+      .then(() => {
+        let stats = fs.statSync(localFile);
+        return expect(stats.size).to.equal(6973257);
+      });
+  });
+
+  it('get file faild', function() {
+    return expect(
+      sftp.get(path.join(SFTP_URL, 'mocha-file-not-exist.md'))
+    ).to.be.rejectedWith('No such file');
+  });
+});
+
 describe('append', function() {
   beforeEach(() => {
     return sftp.put(
@@ -517,77 +597,6 @@ describe('append', function() {
         path.join(SFTP_URL, 'bad-directory', 'bad-file.txt')
       )
     ).to.be.rejectedWith('Failed to upload');
-  });
-});
-
-describe('fast put', function() {
-  before(() => {
-    return hookSftp
-      .put(
-        new Buffer('fast put'),
-        path.join(SFTP_URL, 'mocha-fastput.md'),
-        true
-      )
-      .catch(err => {
-        throw new Error(`Before all hook error: ${err.message}`);
-      });
-  });
-
-  after(() => {
-    return hookSftp
-      .delete(path.join(SFTP_URL, 'remote2.md.gz'))
-      .then(() => {
-        return hookSftp.delete(path.join(SFTP_URL, 'remote.md'));
-      })
-      .catch(err => {
-        throw new Error(`After all hook error: ${err.message}`);
-      });
-  });
-
-  it('fastput file 1', function() {
-    return sftp
-      .fastPut(
-        path.join(LOCAL_URL, 'test-file1.txt'),
-        path.join(SFTP_URL, 'remote.md')
-      )
-      .then(() => {
-        return sftp.stat(path.join(SFTP_URL, 'remote.md'));
-      })
-      .then(stats => {
-        return expect(stats).to.containSubset({size: 6973257});
-      });
-  });
-
-  it('fastput file 2', function() {
-    return sftp
-      .fastPut(
-        path.join(LOCAL_URL, 'test-file2.txt.gz'),
-        path.join(SFTP_URL, 'remote2.md.gz')
-      )
-      .then(() => {
-        return sftp.stat(path.join(SFTP_URL, 'remote2.md.gz'));
-      })
-      .then(stats => {
-        return expect(stats).to.containSubset({size: 570314});
-      });
-  });
-
-  it('fastput with bad src', function() {
-    return expect(
-      sftp.fastPut(
-        path.join(LOCAL_URL, 'file-not-exist.txt'),
-        path.join(SFTP_URL, 'fastput-error.txt')
-      )
-    ).to.rejectedWith('Failed to upload');
-  });
-
-  it('fastput with bad dst', function() {
-    return expect(
-      sftp.fastPut(
-        path.join(LOCAL_URL, 'test-file1.txt'),
-        path.join(SFTP_URL, 'non-existent-dir', 'fastput-error.txt')
-      )
-    ).to.rejectedWith('Failed to upload');
   });
 });
 
@@ -794,29 +803,25 @@ describe('rename', function() {
 
 describe('getOptions', function() {
   it('encoding should be utf8 if undefined', function() {
-    return expect(sftp.getOptions()).to.have.property('encoding', 'utf8');
+    return expect(sftp.getOptions()).to.have.property('encoding', null);
   });
 
-  it('encoding should be utf8 if undefined 1', function() {
-    return expect(sftp.getOptions(false)).to.have.property('encoding', 'utf8');
-  });
-
-  it('encoding should be utf8 if undefined 2', function() {
-    return expect(sftp.getOptions(false, undefined)).to.have.property(
+  it('encoding should be utf8 if set to utf8', function() {
+    return expect(sftp.getOptions({encoding: 'utf8'})).to.have.property(
       'encoding',
       'utf8'
     );
   });
 
-  it('encoding should be null if null', function() {
-    return expect(sftp.getOptions(false, null)).to.have.property(
+  it('encoding should be null if set to null', function() {
+    return expect(sftp.getOptions({encoding: null})).to.have.property(
       'encoding',
       null
     );
   });
 
   it('encoding should be hex', function() {
-    return expect(sftp.getOptions(false, 'hex')).to.have.property(
+    return expect(sftp.getOptions({encoding: 'hex'})).to.have.property(
       'encoding',
       'hex'
     );
