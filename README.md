@@ -101,10 +101,10 @@ group: // group ID
 ```
 
 #### Get
-Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'utf8'.
+Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'null'.
 
 ```javascript
-sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
+sftp.get(remoteFilePath, [options]);
 ```
 
 #### FastGet
