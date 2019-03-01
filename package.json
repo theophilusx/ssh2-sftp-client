@@ -18,6 +18,7 @@
   "email": "jyu213@gmail.com",
   "license": "MIT",
   "dependencies": {
+    "concat-stream": "^2.0.0",
     "ssh2": "^0.8.2"
   },
   "devDependencies": {
