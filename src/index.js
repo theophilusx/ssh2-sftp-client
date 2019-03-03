@@ -125,7 +125,7 @@ SftpClient.prototype.stat = function(remotePath) {
           mode: stats.mode,
           permissions: stats.permissions,
           owner: stats.uid,
-          group: stats.guid,
+          group: stats.gid,
           size: stats.size,
           accessTime: stats.atime * 1000,
           modifyTime: stats.mtime * 1000
