@@ -18,7 +18,7 @@ const config = {
 const testEnv = {
   sftp: new Client(),
   hookSftp: new Client(),
-  localUrl: join(__dirname, 'testData'),
+  localUrl: join(__dirname, '../testData'),
   sftpUrl: process.env['SFTP_URL']
 };
 
