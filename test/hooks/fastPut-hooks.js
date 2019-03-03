@@ -19,6 +19,9 @@ function fastPutCleanup(client, sftpUrl) {
     .then(() => {
       return client.delete(join(sftpUrl, 'remote.md'));
     })
+    .then(() => {
+      return client.delete(join(sftpUrl, 'mocha-fastput.md'));
+    })
     .catch(err => {
       throw new Error(`FastPut cleanup hook error: ${err.message}`);
     });
