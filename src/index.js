@@ -8,7 +8,6 @@ const Client = require('ssh2').Client;
 const osPath = require('path').posix;
 const utils = require('./utils');
 const fs = require('fs');
-const stream = require('stream');
 const concat = require('concat-stream');
 
 let SftpClient = function() {
@@ -173,13 +172,13 @@ SftpClient.prototype.get = function(path, dst, userOptions = {}) {
           wtr.on('error', err => {
             return reject(new Error(`Failed get for ${path}: ${err.message}`));
           });
-          wtr.on('close', () => {
+          wtr.on('finish', () => {
             return resolve(dst);
           });
           rdr.pipe(wtr);
         } else {
           // assume dst is a writeStream
-          rdr.on('close', () => {
+          dst.on('finish', () => {
             return resolve(dst);
           });
           rdr.pipe(dst);
@@ -301,7 +300,7 @@ SftpClient.prototype.put = function(input, remotePath, userOptions = {}) {
         );
       });
 
-      stream.on('close', () => {
+      stream.on('finish', () => {
         return resolve(`Uploaded data stream to ${remotePath}`);
       });
 
@@ -345,7 +344,7 @@ SftpClient.prototype.append = function(input, remotePath, userOptions = {}) {
         );
       });
 
-      stream.on('close', () => {
+      stream.on('finish', () => {
         return resolve(`Uploaded data stream to ${remotePath}`);
       });
 
