@@ -39,7 +39,7 @@ after('Global shutdown', function() {
     });
 });
 
-describe('fast put', function() {
+describe('Fastput method tests', function() {
   before('FastPut setup hook', function() {
     return pHooks.fastPutSetup(hookSftp, sftpUrl).catch(err => {
       throw new Error(err.message);
