@@ -52,7 +52,7 @@ describe('Append method tests', function() {
   });
 
   it('Append should return a promise', function() {
-    let testFile = 'mocha-append-test1.mp';
+    let testFile = 'mocha-append-test1.md';
 
     return expect(
       sftp.append(Buffer.from('append test 1'), join(sftpUrl, testFile), {
