@@ -12,7 +12,7 @@
     "nodejs"
   ],
   "scripts": {
-    "test": "mocha test/index.js"
+    "test": "mocha"
   },
   "author": "见见",
   "email": "jyu213@gmail.com",
