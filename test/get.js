@@ -45,7 +45,7 @@ describe('Get method tests', function() {
   });
 
   after('Get cleanup hook', function() {
-    return gHooks.getCleanup(hookSftp, sftpUrl).catch(err => {
+    return gHooks.getCleanup(hookSftp, sftpUrl, localUrl).catch(err => {
       throw new Error(err.message);
     });
   });
@@ -61,13 +61,23 @@ describe('Get method tests', function() {
     });
   });
 
-  it('Get large file using a stream', function() {
+  it('Get large text file using a stream', function() {
     let localFile = join(localUrl, 'local-large-file.txt');
     return sftp
       .get(join(sftpUrl, 'large-file1.txt'), localFile, {encoding: 'utf8'})
       .then(() => {
         let stats = fs.statSync(localFile);
         return expect(stats.size).to.equal(6973257);
+      });
+  });
+
+  it('Get gzipped file using a stream', function() {
+    let localFile = join(localUrl, 'local-gizipped-file.txt.gz');
+    return sftp
+      .get(join(sftpUrl, 'gzipped-file.txt.gz'), localFile)
+      .then(() => {
+        let stats = fs.statSync(localFile);
+        return expect(stats.size).to.equal(570314);
       });
   });
 
