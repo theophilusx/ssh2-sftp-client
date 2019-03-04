@@ -316,33 +316,6 @@ describe('Rename method tests', function() {
   });
 });
 
-describe('GetOptions method tests', function() {
-  it('Encoding option should be null if not specified', function() {
-    return expect(sftp.getOptions()).to.have.property('encoding', null);
-  });
-
-  it('Encoding should be utf8 if set to utf8', function() {
-    return expect(sftp.getOptions({encoding: 'utf8'})).to.have.property(
-      'encoding',
-      'utf8'
-    );
-  });
-
-  it('Encoding should be null if set to null', function() {
-    return expect(sftp.getOptions({encoding: null})).to.have.property(
-      'encoding',
-      null
-    );
-  });
-
-  it('Encoding should be hex if set to hex', function() {
-    return expect(sftp.getOptions({encoding: 'hex'})).to.have.property(
-      'encoding',
-      'hex'
-    );
-  });
-});
-
 describe('Chmod method tests', function() {
   before('Chmod setup hook', function() {
     return cHooks.chmodSetup(hookSftp, sftpUrl).catch(err => {

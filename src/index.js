@@ -139,16 +139,18 @@ SftpClient.prototype.stat = function(remotePath) {
 /**
  * get file
  *
- * @param {String} path, path
- * @param {Object} useCompression, config options
- * @param {String} encoding. Encoding for the ReadStream, can be any value
- * supported by node streams. Use 'null' for binary
- * (https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding)
- * @return {Promise} stream, readable stream
+ * If a dst argument is provided, it must be either a string, representing the
+ * local path to where the data will be put, a stream, in which case data is
+ * piped into the stream or undefined, in which case the data is returned as
+ * a Buffer object.
+ *
+ * @param {String} path, remote file path
+ * @param {string|stream|undefined} dst, data destination
+ * @param {Object} userOptions, options passed to get
+ *
+ * @return {Promise}
  */
-SftpClient.prototype.get = function(path, dst, userOptions = {}) {
-  let options = this.getOptions(userOptions);
-
+SftpClient.prototype.get = function(path, dst, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -202,13 +204,7 @@ SftpClient.prototype.get = function(path, dst, userOptions = {}) {
  * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
-SftpClient.prototype.fastGet = function(
-  remotePath,
-  localPath,
-  userOptions = {}
-) {
-  let options = this.getOptions(userOptions);
-
+SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -234,13 +230,7 @@ SftpClient.prototype.fastGet = function(
  * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
-SftpClient.prototype.fastPut = function(
-  localPath,
-  remotePath,
-  userOptions = {}
-) {
-  let options = this.getOptions(userOptions);
-
+SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -270,9 +260,7 @@ SftpClient.prototype.fastPut = function(
  * @param  {String} encoding. Encoding for the WriteStream, can be any value supported by node streams.
  * @return {[type]}                [description]
  */
-SftpClient.prototype.put = function(input, remotePath, userOptions = {}) {
-  let options = this.getOptions(userOptions);
-
+SftpClient.prototype.put = function(input, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -320,13 +308,10 @@ SftpClient.prototype.put = function(input, remotePath, userOptions = {}) {
  *
  * @param  {Buffer|stream} input
  * @param  {String} remotePath,
- * @param  {Object} useCompression [description]
- * @param  {String} encoding. Encoding for the WriteStream, can be any value supported by node streams.
+ * @param  {Object} options
  * @return {[type]}                [description]
  */
-SftpClient.prototype.append = function(input, remotePath, userOptions = {}) {
-  let options = this.getOptions(userOptions);
-
+SftpClient.prototype.append = function(input, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -359,6 +344,15 @@ SftpClient.prototype.append = function(input, remotePath, userOptions = {}) {
   });
 };
 
+/**
+ * @async
+ *
+ * Make a dirextory on remote server
+ *
+ * @param {string} path, remote directory path.
+ * @param {boolean} recursive, if true, recursively create directories
+ * @return {Promise}.
+ */
 SftpClient.prototype.mkdir = function(path, recursive = false) {
   let sftp = this.sftp;
 
@@ -395,6 +389,15 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   return mkdir(path);
 };
 
+/**
+ * @async
+ *
+ * Remove directory on remote server
+ *
+ * @param {string} path, path to directory to be removed
+ * @param {boolean} recursive, if true, remove direcories/files in target
+ * @return {Promise}..
+ */
 SftpClient.prototype.rmdir = function(path, recursive = false) {
   let sftp = this.sftp;
 
@@ -574,31 +577,9 @@ SftpClient.prototype.end = function() {
   });
 };
 
-SftpClient.prototype.getOptions = function(userOptions) {
-  const defaults = {
-    highWaterMark: 32 * 1024,
-    debug: undefined,
-    concurrency: 64,
-    chunkSize: 32768,
-    step: undefined,
-    mode: 0o666,
-    autoClose: true,
-    encoding: null
-  };
-
-  let options = Object.assign({}, defaults, userOptions);
-  return options;
-};
-
 // add Event type support
 SftpClient.prototype.on = function(eventType, callback) {
   this.client.on(eventType, callback);
 };
 
 module.exports = SftpClient;
-
-// sftp = new SftpClient()
-// sftp.client.on('event')
-//
-// sftp.on('end', ()=>{})   => this.client.on('event', callback)
-// sftp.on('error', () => {})
