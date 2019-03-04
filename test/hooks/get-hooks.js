@@ -36,10 +36,10 @@ function getCleanup(client, sftpUrl, localUrl) {
       return client.delete(join(sftpUrl, 'gzipped-file.txt.gz'));
     })
     .then(() => {
-      return fs.unlinkSync(join(localUrl, 'local-large-file.txt'));
-    })
-    .then(() => {
-      return fs.unlinkSync(join(localUrl, 'local-gizipped-file.txt.gz'));
+      fs.unlinkSync(join(localUrl, 'local-large-file.txt'));
+      fs.unlinkSync(join(localUrl, 'local-gizipped-file.txt.gz'));
+      fs.unlinkSync(join(localUrl, 'local-gzipped-file.txt'));
+      return true;
     })
     .catch(err => {
       throw new Error(`Get cleanup hook error: ${err.message}`);

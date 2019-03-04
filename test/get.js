@@ -6,6 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
 const fs = require('fs');
+const zlib = require('zlib');
 const {setup, closeDown} = require('./hooks/global-hooks');
 const gHooks = require('./hooks/get-hooks');
 
@@ -79,6 +80,20 @@ describe('Get method tests', function() {
         let stats = fs.statSync(localFile);
         return expect(stats.size).to.equal(570314);
       });
+  });
+
+  it('Get gzipped file and gunzip in pipe', function() {
+    let localFile = join(localUrl, 'local-gzipped-file.txt');
+    let gunzip = zlib.createGunzip();
+    let out = fs.createWriteStream(localFile, {
+      flags: 'w',
+      encoding: null
+    });
+    gunzip.pipe(out);
+    return sftp.get(join(sftpUrl, 'gzipped-file.txt.gz'), gunzip).then(() => {
+      let stats = fs.statSync(localFile);
+      return expect(stats.size).to.equal(6973257);
+    });
   });
 
   it('Get non-existent file is rejected', function() {
