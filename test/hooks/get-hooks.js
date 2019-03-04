@@ -1,6 +1,7 @@
 'use strict';
 
 const {join} = require('path');
+const fs = require('fs');
 
 function getSetup(client, sftpUrl, localUrl) {
   return client
@@ -10,7 +11,14 @@ function getSetup(client, sftpUrl, localUrl) {
     .then(() => {
       return client.fastPut(
         join(localUrl, 'test-file1.txt'),
-        join(sftpUrl, 'large-file1.txt')
+        join(sftpUrl, 'large-file1.txt'),
+        {encoding: 'utf8'}
+      );
+    })
+    .then(() => {
+      return client.fastPut(
+        join(localUrl, 'test-file2.txt.gz'),
+        join(sftpUrl, 'gzipped-file.txt.gz')
       );
     })
     .catch(err => {
@@ -18,11 +26,20 @@ function getSetup(client, sftpUrl, localUrl) {
     });
 }
 
-function getCleanup(client, sftpUrl) {
+function getCleanup(client, sftpUrl, localUrl) {
   return client
     .delete(join(sftpUrl, 'mocha-file.md'))
     .then(() => {
       return client.delete(join(sftpUrl, 'large-file1.txt'));
+    })
+    .then(() => {
+      return client.delete(join(sftpUrl, 'gzipped-file.txt.gz'));
+    })
+    .then(() => {
+      return fs.unlinkSync(join(localUrl, 'local-large-file.txt'));
+    })
+    .then(() => {
+      return fs.unlinkSync(join(localUrl, 'local-gizipped-file.txt.gz'));
     })
     .catch(err => {
       throw new Error(`Get cleanup hook error: ${err.message}`);
