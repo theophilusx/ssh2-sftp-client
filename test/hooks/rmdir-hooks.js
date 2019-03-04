@@ -18,7 +18,7 @@ function rmdirSetup(client, sftpUrl) {
       return client.put(
         Buffer.from('hello'),
         join(sftpUrl, 'mocha-rmdir/file1.md'),
-        true
+        {encoding: 'utf8'}
       );
     })
     .then(() => {
