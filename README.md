@@ -1,6 +1,10 @@
 ## SSH2 SFTP Client
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
+Additional documentation on the methods and available options can be found in
+the [ssh2](https://github.com/mscdex/ssh2) and
+[ssh2-streams](https://github.com/mscdex/ssh2-streams) documentation.
+
 ### Installation
 ```shell
 npm install ssh2-sftp-client
@@ -35,10 +39,9 @@ interface, but which also break compatibility with previous versions.
 - The default encoding is null not utf8 as it was previously. This is consistent
   with the defaults for the underlying SSH2 module.
 - The usedCompressed option has been removed. None of the shh2-steams methods
-  actually support this option. This option can be set as part of the connection
-  options.  See [ssh2 client
-  event](https://github.com/mscdex/ssh2#user-content-client-methods).
-- The separate option arguments for encoding and useCompression to some methods
+  actually support this option. The 'compress' option can be set as part of the
+  connection options.  See [ssh2 client event](https://github.com/mscdex/ssh2#user-content-client-methods).
+- The separate explicit option arguments for encoding and useCompression for some methods
   have been replaced with a single 'options' argument, which is an object that
   can have the following properties (defaults shown). See the
   [ssh2-streams](https://github.com/mscdex/ssh2-streams) documentation for an
@@ -67,7 +70,7 @@ Used to retrieve a file from a remote SFTP server.
 - dst: Either a string, which will be used as the path to store the file on the
   local system or a writable stream, which will be used as the destination for a
   stream pipe. If undefined, the remote file will be read into a Buffer and
-  returned. 
+  the buffer returned. 
 - options: Options for the get operation e.g. encoding. 
 
 ### Documentation
