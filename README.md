@@ -1,6 +1,10 @@
 ## SSH2 SFTP Client
 a SFTP client for node.js, a wrapper for [ssh2](https://github.com/mscdex/ssh2)
 
+Additional documentation on the methods and available options can be found in
+the [ssh2](https://github.com/mscdex/ssh2) and
+[ssh2-streams](https://github.com/mscdex/ssh2-streams) documentation.
+
 ### Installation
 ```shell
 npm install ssh2-sftp-client
@@ -24,11 +28,57 @@ sftp.connect({
 });
 ```
 
+### Breaking Changes
+
+Due to some incompatibilities with stream handling which breaks this module when
+used with Node 10.x, some changes have been implemented that should enhance the
+interface, but which also break compatibility with previous versions. 
+
+#### Option Changes
+
+- The default encoding is null not utf8 as it was previously. This is consistent
+  with the defaults for the underlying SSH2 module.
+- The usedCompressed option has been removed. None of the shh2-steams methods
+  actually support this option. The 'compress' option can be set as part of the
+  connection options.  See [ssh2 client event](https://github.com/mscdex/ssh2#user-content-client-methods).
+- The separate explicit option arguments for encoding and useCompression for some methods
+  have been replaced with a single 'options' argument, which is an object that
+  can have the following properties (defaults shown). See the
+  [ssh2-streams](https://github.com/mscdex/ssh2-streams) documentation for an
+  explination of the opt8ons. 
+  
+```javascript
+    const defaults = {
+    highWaterMark: 32 * 1024,
+    debug: undefined,
+    concurrency: 64,
+    chunkSize: 32768,
+    step: undefined,
+    mode: 0o666,
+    autoClose: true,
+    encoding: null
+  };
+```
+
+#### Method Changes
+
+#### get(srcPath, dst, options)
+
+Used to retrieve a file from a remote SFTP server. 
+
+- srcPath: path to the file on the remote server
+- dst: Either a string, which will be used as the path to store the file on the
+  local system or a writable stream, which will be used as the destination for a
+  stream pipe. If undefined, the remote file will be read into a Buffer and
+  the buffer returned. 
+- options: Options for the get operation e.g. encoding. 
+
 ### Documentation
 the connection to server config pls see [ssh2 client event](https://github.com/mscdex/ssh2#user-content-client-methods).
 
 list of methods:
 all the methods will return a Promise;
+
 #### List
 Retrieves a directory listing.
 
@@ -54,10 +104,10 @@ group: // group ID
 ```
 
 #### Get
-Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'utf8'.
+Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'null'.
 
 ```javascript
-sftp.get(remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
+sftp.get(remoteFilePath, [options]);
 ```
 
 #### FastGet
@@ -71,9 +121,9 @@ sftp.fastGet(remotePath, localPath, [options]);
 upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'.
 
 ```javascript
-sftp.put(localFilePath, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
-sftp.put(Buffer, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
-sftp.put(Stream, remoteFilePath, [useCompression], [encoding], [addtionalOptions]);
+sftp.put(localFilePath, remoteFilePath, [optons]);
+sftp.put(Buffer, remoteFilePath, [options]);
+sftp.put(Stream, remoteFilePath, [options]);
 ```
 
 #### FastPut
