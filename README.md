@@ -118,7 +118,7 @@ sftp.fastGet(remotePath, localPath, [options]);
 ```
 
 #### Put
-upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'.
+upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'. **Be sure to include the file name in remoteFilePath!**
 
 ```javascript
 sftp.put(localFilePath, remoteFilePath, [optons]);
