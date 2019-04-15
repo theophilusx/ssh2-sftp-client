@@ -62,7 +62,7 @@ SftpClient.prototype.list = function(path) {
 
 /**
  * @async
- 
+
  * Tests to see if an object exists. If it does, return the type of that object
  * (in the format returned by list). If it does not exist, return false.
  *
@@ -547,7 +547,7 @@ SftpClient.prototype.connect = function(config, connectMethod) {
   connectMethod = connectMethod || 'on';
 
   return new Promise((resolve, reject) => {
-    this.client[connectMethod]('ready', () => {
+    const readyListener = () => {
       this.client.sftp((err, sftp) => {
         this.client.removeListener('error', reject);
         this.client.removeListener('end', reject);
@@ -555,9 +555,11 @@ SftpClient.prototype.connect = function(config, connectMethod) {
           reject(new Error(`Failed to connect to server: ${err.message}`));
         }
         this.sftp = sftp;
+        this.client.removeListener('ready', readyListener);
         resolve(sftp);
       });
-    })
+    };
+    this.client[connectMethod]('ready', readyListener)
       .on('end', reject)
       .on('error', reject)
       .connect(config);
