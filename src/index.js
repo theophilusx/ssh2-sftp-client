@@ -67,7 +67,7 @@ SftpClient.prototype.list = function(path) {
  * @param {String} pattern, a string containing the path 
  * @return {Promise} data, list info
  */
-SftpClient.prototype.auxList = function (path, pattern) {
+SftpClient.prototype.auxList = function (path, pattern='*') {
   const reg = /-/gi;
 
   return new Promise((resolve, reject) => {

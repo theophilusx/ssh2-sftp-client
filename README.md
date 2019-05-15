@@ -105,6 +105,15 @@ group: // group ID
 
 #### AuxList
 Retrieves a directory list that matches a pattern.
+The default pattern is "*", to list all of the files inside a directory.
+
+##### Pattern examples:
+    
+
+        *.txt -- matches any file name that ends with .txt
+        test* -- matches any file name that begins with test
+        *bar* -- matches any file name that has the sequence "bar" in any position
+
 
 ```javascript
 sftp.list(remoteFilePath, pattern)
