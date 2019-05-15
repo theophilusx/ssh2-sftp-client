@@ -103,6 +103,30 @@ owner: // user ID
 group: // group ID
 ```
 
+#### AuxList
+Retrieves a directory list that matches a pattern.
+
+```javascript
+sftp.list(remoteFilePath, pattern)
+```
+
+directory info:
+
+```
+type: // file type(-, d, l)
+name: // file name
+size: // file size
+modifyTime: // file timestamp of modified time
+accessTime: // file timestamp of access time
+rights: {
+    user:
+    group:
+    other:
+},
+owner: // user ID
+group: // group ID
+```
+
 #### Get
 Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'null'.
 
