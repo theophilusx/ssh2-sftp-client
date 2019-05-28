@@ -9,6 +9,7 @@ const osPath = require('path').posix;
 const utils = require('./utils');
 const fs = require('fs');
 const concat = require('concat-stream');
+const retry = require('retry');
 
 let SftpClient = function() {
   this.client = new Client();
@@ -545,22 +546,25 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
  */
 SftpClient.prototype.connect = function(config, connectMethod) {
   connectMethod = connectMethod || 'on';
+  var sftpObj = this;
+  var operation = retry.operation(config);
 
   return new Promise((resolve, reject) => {
-    this.client[connectMethod]('ready', () => {
-      this.client.sftp((err, sftp) => {
-        this.client.removeListener('error', reject);
-        this.client.removeListener('end', reject);
-        if (err) {
-          reject(new Error(`Failed to connect to server: ${err.message}`));
-        }
-        this.sftp = sftp;
-        resolve(sftp);
-      });
-    })
+    operation.attempt(function(number) {
+      sftpObj.client[connectMethod]('ready', () => {
+        sftpObj.client.sftp((err, sftp) => {
+          sftpObj.client.removeListener('error', reject);
+          sftpObj.client.removeListener('end', reject);
+          sftpObj.sftp = sftp;
+          resolve(sftp);
+        });
+      })
       .on('end', reject)
-      .on('error', reject)
-      .connect(config);
+      .on('error', function () {
+        operation.retry( new Error());
+       })
+       .connect(config);
+    });	
   });
 };
 
