@@ -427,7 +427,7 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   }
   let mkdir = p => {
     let {dir} = osPath.parse(p);
-    if(dir === ''){
+    if(dir === '' || dir === '/' || dir === '.'){
       return;
     }
     return this.exists(dir)
