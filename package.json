@@ -1,11 +1,11 @@
 {
-  "name": "ssh2-sftp-client",
-  "version": "2.4.3",
-  "description": "ssh2 sftp client for node",
+  "name": "ssh2-sftp-client-mkdir-patch",
+  "version": "2.4.4",
+  "description": "ssh2 sftp client for node. With mkdir recursive patch",
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jyu213/ssh2-sftp-client"
+    "url": "https://github.com/theryaz/ssh2-sftp-client"
   },
   "keywords": [
     "sftp",

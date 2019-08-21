@@ -65,7 +65,7 @@ SftpClient.prototype.list = function(path) {
  * Retrieves a directory listing with a filter
  *
  * @param {String} path, a string containing the path to a directory
- * @param {String} pattern, a string containing the path 
+ * @param {String} pattern, a string containing the path
  * @return {Promise} data, list info
  */
 SftpClient.prototype.auxList = function (path, pattern='*') {
@@ -114,7 +114,7 @@ SftpClient.prototype.auxList = function (path, pattern='*') {
 
 /**
  * @async
- 
+
  * Tests to see if an object exists. If it does, return the type of that object
  * (in the format returned by list). If it does not exist, return false.
  *
@@ -428,6 +428,9 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   }
   let mkdir = p => {
     let {dir} = osPath.parse(p);
+    if(dir === '' || dir === '/' || dir === '.'){
+      return;
+    }
     return this.exists(dir)
       .then(type => {
         if (!type) {
