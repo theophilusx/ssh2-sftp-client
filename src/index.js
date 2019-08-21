@@ -9,6 +9,7 @@ const osPath = require('path').posix;
 const utils = require('./utils');
 const fs = require('fs');
 const concat = require('concat-stream');
+const retry = require('retry');
 
 let SftpClient = function() {
   this.client = new Client();
@@ -61,8 +62,59 @@ SftpClient.prototype.list = function(path) {
 };
 
 /**
+ * Retrieves a directory listing with a filter
+ *
+ * @param {String} path, a string containing the path to a directory
+ * @param {String} pattern, a string containing the path
+ * @return {Promise} data, list info
+ */
+SftpClient.prototype.auxList = function (path, pattern='*') {
+  const reg = /-/gi;
+
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    if (!sftp) {
+      return reject(new Error('sftp connect error'));
+    }
+    sftp.readdir(path, (err, list) => {
+      if (err) {
+        reject(new Error(`Failed to list ${path}: ${err.message}`));
+      } else {
+        let newList = [];
+        // reset file info
+        if (list) {
+          let newPattern = pattern.replace((/\*([^\*])*?/ig),('[a-zA-Z0-9]*.*'))
+          let regex = new RegExp(newPattern,'g')
+          newList = list.map(item => {
+            if (regex.test(item.filename)){
+              return {
+                type: item.longname.substr(0, 1),
+                name: item.filename,
+                size: item.attrs.size,
+                modifyTime: item.attrs.mtime * 1000,
+                accessTime: item.attrs.atime * 1000,
+                rights: {
+                  user: item.longname.substr(1, 3).replace(reg, ''),
+                  group: item.longname.substr(4, 3).replace(reg, ''),
+                  other: item.longname.substr(7, 3).replace(reg, '')
+                },
+                owner: item.attrs.uid,
+                group: item.attrs.gid
+              };
+            }
+          });
+        }
+        resolve(newList);
+      }
+    });
+    return undefined;
+  });
+};
+
+/**
  * @async
- 
+
  * Tests to see if an object exists. If it does, return the type of that object
  * (in the format returned by list). If it does not exist, return false.
  *
@@ -376,6 +428,9 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   }
   let mkdir = p => {
     let {dir} = osPath.parse(p);
+    if(dir === '' || dir === '/' || dir === '.'){
+      return;
+    }
     return this.exists(dir)
       .then(type => {
         if (!type) {
@@ -545,22 +600,25 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
  */
 SftpClient.prototype.connect = function(config, connectMethod) {
   connectMethod = connectMethod || 'on';
+  var sftpObj = this;
+  var operation = retry.operation(config);
 
   return new Promise((resolve, reject) => {
-    this.client[connectMethod]('ready', () => {
-      this.client.sftp((err, sftp) => {
-        this.client.removeListener('error', reject);
-        this.client.removeListener('end', reject);
-        if (err) {
-          reject(new Error(`Failed to connect to server: ${err.message}`));
-        }
-        this.sftp = sftp;
-        resolve(sftp);
-      });
-    })
+    operation.attempt(function(number) {
+      sftpObj.client[connectMethod]('ready', () => {
+        sftpObj.client.sftp((err, sftp) => {
+          sftpObj.client.removeListener('error', reject);
+          sftpObj.client.removeListener('end', reject);
+          sftpObj.sftp = sftp;
+          resolve(sftp);
+        });
+      })
       .on('end', reject)
-      .on('error', reject)
-      .connect(config);
+      .on('error', function () {
+        operation.retry( new Error());
+       })
+       .connect(config);
+    });	
   });
 };
 

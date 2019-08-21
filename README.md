@@ -103,6 +103,39 @@ owner: // user ID
 group: // group ID
 ```
 
+#### AuxList
+Retrieves a directory list that matches a pattern.
+The default pattern is "*", to list all of the files inside a directory.
+
+##### Pattern examples:
+    
+
+        *.txt -- matches any file name that ends with .txt
+        test* -- matches any file name that begins with test
+        *bar* -- matches any file name that has the sequence "bar" in any position
+
+
+```javascript
+sftp.list(remoteFilePath, pattern)
+```
+
+directory info:
+
+```
+type: // file type(-, d, l)
+name: // file name
+size: // file size
+modifyTime: // file timestamp of modified time
+accessTime: // file timestamp of access time
+rights: {
+    user:
+    group:
+    other:
+},
+owner: // user ID
+group: // group ID
+```
+
 #### Get
 Get a `ReadableStream` from remotePath. The encoding is passed to Node Stream (https://nodejs.org/api/stream.html) and it controls how the content is encoded. For example, when downloading binary data, 'null' should be passed (check node stream documentation). Default to 'null'.
 
@@ -118,7 +151,7 @@ sftp.fastGet(remotePath, localPath, [options]);
 ```
 
 #### Put
-upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'.
+upload a file from `localPath` or `Buffer`, `Stream` data to `remoteFilePath`.The encoding is passed to Node Stream to control how the content is encoded. Default to 'utf8'. **Be sure to include the file name in remoteFilePath!**
 
 ```javascript
 sftp.put(localFilePath, remoteFilePath, [optons]);

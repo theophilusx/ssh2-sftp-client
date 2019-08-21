@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jyu213/ssh2-sftp-client"
+    "url": "https://github.com/theryaz/ssh2-sftp-client"
   },
   "keywords": [
     "sftp",
@@ -19,7 +19,8 @@
   "license": "MIT",
   "dependencies": {
     "concat-stream": "^2.0.0",
-    "ssh2": "^0.8.2"
+    "ssh2": "^0.8.2",
+    "retry": "^0.10.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
