@@ -607,12 +607,17 @@ SftpClient.prototype.connect = function(config, connectMethod) {
     operation.attempt(function(number) {
       sftpObj.client[connectMethod]('ready', () => {
         sftpObj.client.sftp((err, sftp) => {
+          if (err) {
+            reject(new Error(`Failed to connect to server: ${err.message}`));
+          }
           sftpObj.client.removeListener('error', reject);
           sftpObj.client.removeListener('end', reject);
+          sftpObj.client.removeListener('ready', reject);
           sftpObj.sftp = sftp;
           resolve(sftp);
         });
       })
+      
       .on('end', reject)
       .on('error', function () {
         operation.retry( new Error());
