@@ -240,6 +240,17 @@ sftp.on('error', callbackFn)
 ### FAQ
 
 ### Log
+
+### V2.5.2
+    - Repository transferred to theophilusx
+    - Fix error in package.json pointing to wrong repository
+
+### V2.5.1
+    - Apply 4 pull requests to address minor issues
+    
+### V2.5.0
+    - ???
+    
 ### V2.4.3
     - merge #108, #110
       - fix connect promise if connection ends
