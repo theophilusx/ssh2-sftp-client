@@ -625,6 +625,9 @@ SftpClient.prototype.connect = function(config) {
             }
           });
         })
+        .on('end', () => {
+          sftpObj.sftp = null;
+        })
         .on('error', e => {
           if (operation.retry(e)) {
             return;
