@@ -16,19 +16,19 @@
   },
   "author": "见见",
   "email": "jyu213@gmail.com",
-  "license": "MIT",
+  "license": "Apache v2",
   "dependencies": {
     "concat-stream": "^2.0.0",
     "ssh2": "^0.8.2",
-    "retry": "^0.10.1"
+    "retry": "^0.12.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
-    "dotenv": "^6.1.0",
-    "mocha": "^5.2.0",
+    "dotenv": "^8.1.0",
+    "mocha": "^6.2.0",
     "through2": "^3.0.1"
   }
 }
