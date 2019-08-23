@@ -3,7 +3,7 @@
 node_modules
 testServer
 tmp
-.npmignore
 npm-debug.log
 package-lock.json
 .env
+.tern-port
