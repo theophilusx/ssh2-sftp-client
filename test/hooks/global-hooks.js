@@ -26,20 +26,17 @@ let initialised = false;
 
 function setup() {
   if (!initialised) {
-    console.log('Need to initialize connections');
     return testEnv.sftp
       .connect(config)
       .then(() => {
-        console.log('Got sftp connection');
         return testEnv.hookSftp.connect(config);
       })
       .then(() => {
-        console.log('Got hookSftp connection');
         initialised = true;
         return testEnv;
       })
       .catch(err => {
-        throw new Error(err);
+        throw new Error(`global-hooks.setup: ${err.message}`);
       });
   }
   return Promise.resolve(testEnv);
@@ -57,7 +54,7 @@ function closeDown() {
         return true;
       })
       .catch(err => {
-        throw new Error(`Global test cleanup failed: ${err.message}`);
+        throw new Error(`global-hooks.closeDown: ${err.message}`);
       });
   }
   return Promise.resolve(true);
