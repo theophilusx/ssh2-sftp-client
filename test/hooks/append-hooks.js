@@ -6,16 +6,12 @@ function appendSetup(client, sftpUrl) {
   return client
     .put(
       Buffer.from('append test file'),
-      join(sftpUrl, 'mocha-append-test1.md'),
-      {
-        encoding: 'utf8'
-      }
+      join(sftpUrl, 'mocha-append-test1.md')
     )
     .then(() => {
       return client.put(
         Buffer.from('append test file'),
-        join(sftpUrl, 'mocha-append-test2.md'),
-        {encoding: 'utf8'}
+        join(sftpUrl, 'mocha-append-test2.md')
       );
     })
     .then(() => {

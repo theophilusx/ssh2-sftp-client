@@ -26,17 +26,20 @@ let initialised = false;
 
 function setup() {
   if (!initialised) {
+    console.log('Need to initialize connections');
     return testEnv.sftp
-      .connect(config, 'once')
+      .connect(config)
       .then(() => {
-        return testEnv.hookSftp.connect(config, 'once');
+        console.log('Got sftp connection');
+        return testEnv.hookSftp.connect(config);
       })
       .then(() => {
+        console.log('Got hookSftp connection');
         initialised = true;
         return testEnv;
       })
       .catch(err => {
-        throw new Error(`Global test setup failed: ${err.message}`);
+        throw new Error(err);
       });
   }
   return Promise.resolve(testEnv);

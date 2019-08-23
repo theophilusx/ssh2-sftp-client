@@ -68,7 +68,7 @@ SftpClient.prototype.list = function(path) {
  * @param {String} pattern, a string containing the path
  * @return {Promise} data, list info
  */
-SftpClient.prototype.auxList = function (path, pattern='*') {
+SftpClient.prototype.auxList = function(path, pattern = '*') {
   const reg = /-/gi;
 
   return new Promise((resolve, reject) => {
@@ -84,10 +84,10 @@ SftpClient.prototype.auxList = function (path, pattern='*') {
         let newList = [];
         // reset file info
         if (list) {
-          let newPattern = pattern.replace((/\*([^\*])*?/ig),('[a-zA-Z0-9]*.*'))
-          let regex = new RegExp(newPattern,'g')
+          let newPattern = pattern.replace(/\*([^\*])*?/gi, '[a-zA-Z0-9]*.*');
+          let regex = new RegExp(newPattern, 'g');
           newList = list.map(item => {
-            if (regex.test(item.filename)){
+            if (regex.test(item.filename)) {
               return {
                 type: item.longname.substr(0, 1),
                 name: item.filename,
@@ -428,7 +428,7 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   }
   let mkdir = p => {
     let {dir} = osPath.parse(p);
-    if(dir === '' || dir === '/' || dir === '.'){
+    if (dir === '' || dir === '/' || dir === '.') {
       return;
     }
     return this.exists(dir)
@@ -598,32 +598,52 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
  * @return {Promise} which will resolve to an sftp client object
  *
  */
-SftpClient.prototype.connect = function(config, connectMethod) {
-  connectMethod = connectMethod || 'on';
+SftpClient.prototype.connect = function(config) {
   var sftpObj = this;
-  var operation = retry.operation(config);
+  var operation = retry.operation({
+    retries: config.retries || 2,
+    factor: config.retry_factor || 2,
+    minTimeout: config.retry_minTimeout || 2000
+  });
+
+  function retryConnect(config, callback) {
+    operation.attempt(function(attemptCount) {
+      sftpObj.client
+        .on('ready', () => {
+          sftpObj.client.sftp((err, sftp) => {
+            if (operation.retry(err)) {
+              return;
+            }
+            if (err) {
+              let errMsg =
+                operation.mainError().message +
+                ` after ${attemptCount} attempts`;
+              callback(new Error(errMsg), sftp);
+            } else {
+              sftpObj.sftp = sftp;
+              callback(null, sftp);
+            }
+          });
+        })
+        .on('error', e => {
+          if (operation.retry(e)) {
+            return;
+          }
+          let errMsg =
+            operation.mainError().message + ` after ${attemptCount} attempts`;
+          callback(new Error(errMsg), null);
+        })
+        .connect(config);
+    });
+  }
 
   return new Promise((resolve, reject) => {
-    operation.attempt(function(number) {
-      sftpObj.client[connectMethod]('ready', () => {
-        sftpObj.client.sftp((err, sftp) => {
-          if (err) {
-            reject(new Error(`Failed to connect to server: ${err.message}`));
-          }
-          sftpObj.client.removeListener('error', reject);
-          sftpObj.client.removeListener('end', reject);
-          sftpObj.client.removeListener('ready', reject);
-          sftpObj.sftp = sftp;
-          resolve(sftp);
-        });
-      })
-      
-      .on('end', reject)
-      .on('error', function () {
-        operation.retry( new Error());
-       })
-       .connect(config);
-    });	
+    retryConnect(config, (err, sftp) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(sftp);
+    });
   });
 };
 
