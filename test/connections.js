@@ -91,3 +91,26 @@ describe('Connect Tests', function() {
     ).to.be.rejectedWith('All configured authentication methods failed');
   });
 });
+
+describe('Connect and disconnect', function() {
+  let client = new Client();
+  let host = process.env.SFTP_SERVER;
+  let port = process.env.SFTP_PORT;
+  let username = process.env.SFTP_USER;
+  let password = process.env.SFTP_PASSWORD;
+
+  it('connect and disconnect returns true', function() {
+    return expect(
+      client
+        .connect({
+          host: host,
+          port: port,
+          username: username,
+          password: password
+        })
+        .then(() => {
+          return client.end();
+        })
+    ).to.eventually.equal(true);
+  });
+});
