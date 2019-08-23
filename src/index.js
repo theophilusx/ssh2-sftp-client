@@ -612,6 +612,9 @@ SftpClient.prototype.connect = function(config) {
         .on('ready', () => {
           sftpObj.client.sftp((err, sftp) => {
             if (operation.retry(err)) {
+              sftpObj.client.removeAllListeners('ready');
+              sftpObj.client.removeAllListeners('error');
+              sftpObj.client.removeAllListeners('end');
               return;
             }
             if (err) {
@@ -650,6 +653,16 @@ SftpClient.prototype.connect = function(config) {
   });
 };
 
+function debugListeners(emitter) {
+  console.log('Listener Data');
+  let eventNames = emitter.eventNames();
+  console.log(`Events with Listeners: ${eventNames}`);
+  console.log('Listener count for each event');
+  eventNames.map(n => {
+    console.log(`${n}: ${emitter.listenerCount(n)}`);
+  });
+}
+
 /**
  * @async
  *
@@ -658,8 +671,13 @@ SftpClient.prototype.connect = function(config) {
  */
 SftpClient.prototype.end = function() {
   return new Promise(resolve => {
+    //debugListeners(this.client);
+    this.client.removeAllListeners('error');
+    this.client.removeAllListeners('end');
+    this.client.removeAllListeners('ready');
     this.client.end();
-    resolve();
+    this.sftp = null;
+    resolve(true);
   });
 };
 
