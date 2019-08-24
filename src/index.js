@@ -11,9 +11,69 @@ const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
 
+const debug = false;
+
 let SftpClient = function() {
   this.client = new Client();
 };
+
+/**
+ * Generate a new Error object with a reformatted error message which
+ * is a little more informative and useful to users.
+ *
+ * @param {Error} err - The Error object the new error will be based on
+ * @param {number} retryCount - For those functions which use retry. Number of
+ *                              attempts to complete before giving up
+ * @returns {Error} New error with custom error message
+ */
+function formatError(err, retryCount) {
+  let msg = '';
+
+  switch (err.code) {
+    case 'ENOTFOUND':
+      msg = `${err.level} error. Address lookup failed for host ${err.hostname}`;
+      break;
+    case 'ECONNREFUSED':
+      msg = `${err.level} error. Remote host at ${err.address} refused connection`;
+      break;
+    case null:
+      msg = err.message;
+      break;
+    default:
+      if (debug) {
+        console.log('Unformatted error');
+        console.dir(err);
+      }
+      msg = `${err.level} error. ${err.message}`;
+  }
+  if (retryCount) {
+    msg += ` after ${retryCount} attempts`;
+  }
+  return new Error(msg);
+}
+
+/**
+ * Remove all ready, error and end listeners.
+ *
+ * @param {Emitter} emitter - The emitter object to remove listeners from
+ */
+function removeListeners(emitter) {
+  emitter.removeAllListeners('ready');
+  emitter.removeAllListeners('error');
+  emitter.removeAllListeners('end');
+}
+
+/**
+ * Simple default error listener. Will reformat the error message and
+ * throw a new error.
+ *
+ * @param {Error} err - source for defining new error
+ * @throws {Error} Throws new error
+ */
+function errorListener(err) {
+  let newErr = formatError(err);
+  throw newErr;
+}
 
 /**
  * Retrieves a directory listing
@@ -599,57 +659,67 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
  *
  */
 SftpClient.prototype.connect = function(config) {
-  var sftpObj = this;
+  let obj = this;
   var operation = retry.operation({
     retries: config.retries || 2,
     factor: config.retry_factor || 2,
     minTimeout: config.retry_minTimeout || 2000
   });
 
-  function retryConnect(config, callback) {
-    operation.attempt(function(attemptCount) {
-      sftpObj.client
-        .on('ready', () => {
-          sftpObj.client.sftp((err, sftp) => {
-            if (operation.retry(err)) {
-              sftpObj.client.removeAllListeners('ready');
+  function retryConnect(sftpObj, config, callback) {
+    try {
+      operation.attempt(function(attemptCount) {
+        sftpObj.client
+          .on('ready', () => {
+            sftpObj.client.sftp((err, sftp) => {
+              if (err) {
+                if (operation.retry(err)) {
+                  // failed to connect, but not yet reached max attempt count
+                  // remove the listeners and try again
+                  removeListeners(sftpObj.client);
+                  return;
+                }
+                // exhausted retries - do callback with error
+                callback(formatError(err, attemptCount), null);
+              }
+              sftpObj.sftp = sftp;
+              // remove retry error listener and add generic error listener
               sftpObj.client.removeAllListeners('error');
-              sftpObj.client.removeAllListeners('end');
+              sftpObj.client.on('error', errorListener);
+              callback(null, sftp);
+            });
+          })
+          .on('end', () => {
+            sftpObj.sftp = null;
+          })
+          .on('error', err => {
+            if (operation.retry(err)) {
+              // failed to connect, but not yet reached max attempt count
+              // remove the listeners and try again
+              removeListeners(sftpObj.client);
               return;
             }
-            if (err) {
-              let errMsg =
-                operation.mainError().message +
-                ` after ${attemptCount} attempts`;
-              callback(new Error(errMsg), sftp);
-            } else {
-              sftpObj.sftp = sftp;
-              callback(null, sftp);
-            }
-          });
-        })
-        .on('end', () => {
-          sftpObj.sftp = null;
-        })
-        .on('error', e => {
-          if (operation.retry(e)) {
-            return;
-          }
-          let errMsg =
-            operation.mainError().message + ` after ${attemptCount} attempts`;
-          callback(new Error(errMsg), null);
-        })
-        .connect(config);
-    });
+            // exhausted retries - do callback with error
+            callback(formatError(err, attemptCount), null);
+          })
+          .connect(config);
+      });
+    } catch (err) {
+      callback(err, null);
+    }
   }
 
   return new Promise((resolve, reject) => {
-    retryConnect(config, (err, sftp) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(sftp);
-    });
+    try {
+      retryConnect(obj, config, (err, sftp) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(sftp);
+      });
+    } catch (err) {
+      reject(err.message);
+    }
   });
 };
 
@@ -671,10 +741,10 @@ function debugListeners(emitter) {
  */
 SftpClient.prototype.end = function() {
   return new Promise(resolve => {
-    //debugListeners(this.client);
-    this.client.removeAllListeners('error');
-    this.client.removeAllListeners('end');
-    this.client.removeAllListeners('ready');
+    if (debug) {
+      debugListeners(this.client);
+    }
+    removeListeners(this.client);
     this.client.end();
     this.sftp = null;
     resolve(true);
