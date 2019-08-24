@@ -79,75 +79,29 @@ function errorListener(err) {
  * Retrieves a directory listing
  *
  * @param {String} path, a string containing the path to a directory
+ * @param {regex} pattern - An optional pattern used to filter the list
  * @return {Promise} data, list info
  */
-SftpClient.prototype.list = function(path) {
+SftpClient.prototype.list = function(path, pattern = /.*/) {
   const reg = /-/gi;
 
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (!sftp) {
-      return reject(new Error('sftp connect error'));
-    }
-    sftp.readdir(path, (err, list) => {
-      if (err) {
-        reject(new Error(`Failed to list ${path}: ${err.message}`));
-      } else {
-        let newList = [];
-        // reset file info
-        if (list) {
-          newList = list.map(item => {
-            return {
-              type: item.longname.substr(0, 1),
-              name: item.filename,
-              size: item.attrs.size,
-              modifyTime: item.attrs.mtime * 1000,
-              accessTime: item.attrs.atime * 1000,
-              rights: {
-                user: item.longname.substr(1, 3).replace(reg, ''),
-                group: item.longname.substr(4, 3).replace(reg, ''),
-                other: item.longname.substr(7, 3).replace(reg, '')
-              },
-              owner: item.attrs.uid,
-              group: item.attrs.gid
-            };
-          });
-        }
-        resolve(newList);
+    try {
+      if (!sftp) {
+        reject(new Error('sftp.list: No active SFTP connection'));
       }
-    });
-    return undefined;
-  });
-};
-
-/**
- * Retrieves a directory listing with a filter
- *
- * @param {String} path, a string containing the path to a directory
- * @param {String} pattern, a string containing the path
- * @return {Promise} data, list info
- */
-SftpClient.prototype.auxList = function(path, pattern = '*') {
-  const reg = /-/gi;
-
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    if (!sftp) {
-      return reject(new Error('sftp connect error'));
-    }
-    sftp.readdir(path, (err, list) => {
-      if (err) {
-        reject(new Error(`Failed to list ${path}: ${err.message}`));
-      } else {
-        let newList = [];
-        // reset file info
-        if (list) {
-          let newPattern = pattern.replace(/\*([^\*])*?/gi, '[a-zA-Z0-9]*.*');
-          let regex = new RegExp(newPattern, 'g');
-          newList = list.map(item => {
-            if (regex.test(item.filename)) {
+      sftp.readdir(path, (err, list) => {
+        if (err) {
+          reject(
+            new Error(`sftp.list: Failed to list ${path}: ${err.message}`)
+          );
+        } else {
+          let newList = [];
+          // reset file info
+          if (list) {
+            newList = list.map(item => {
               return {
                 type: item.longname.substr(0, 1),
                 name: item.filename,
@@ -162,14 +116,39 @@ SftpClient.prototype.auxList = function(path, pattern = '*') {
                 owner: item.attrs.uid,
                 group: item.attrs.gid
               };
-            }
-          });
+            });
+          }
+          // provide some compatibility for auxList
+          let regex;
+          if (pattern instanceof RegExp) {
+            regex = pattern;
+          } else {
+            let newPattern = pattern.replace(/\*([^*])*?/gi, '.*');
+            regex = new RegExp(newPattern);
+          }
+          resolve(newList.filter(item => regex.test(item.name)));
         }
-        resolve(newList);
-      }
-    });
-    return undefined;
+      });
+    } catch (err) {
+      reject(formatError(err));
+    }
   });
+};
+
+/**
+ * Retrieves a directory listing with a filter
+ *
+ * @param {String} path, a string containing the path to a directory
+ * @param {String} pattern, a string containing the path
+ * @return {Promise} data, list info
+ *
+ * @deprecated Please use list() instead.
+ */
+SftpClient.prototype.auxList = function(path, pattern = '*') {
+  console.log(
+    'auxList is deprecated and will be removed. Please use lis() instead'
+  );
+  return this.list(path, pattern);
 };
 
 /**
