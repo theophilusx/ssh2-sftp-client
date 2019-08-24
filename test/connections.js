@@ -55,7 +55,9 @@ describe('Connect Tests', function() {
         username: username,
         password: password
       })
-    ).to.be.rejectedWith('getaddrinfo ENOTFOUND');
+    ).to.be.rejectedWith(
+      /Address lookup failed|Timed out while waiting for handshake/
+    );
   });
 
   it('bad port throws exception', function() {
@@ -66,7 +68,9 @@ describe('Connect Tests', function() {
         username: username,
         password: password
       })
-    ).to.be.rejectedWith('connect ECONNREFUSED');
+    ).to.be.rejectedWith(
+      /refused connection|Timed out while waiting for handshake/
+    );
   });
 
   it('bad username throws exception', function() {
@@ -77,7 +81,9 @@ describe('Connect Tests', function() {
         username: 'fred',
         password: password
       })
-    ).to.be.rejectedWith('All configured authentication methods failed');
+    ).to.be.rejectedWith(
+      /All configured authentication methods failed|Timed out while waiting for handshake/
+    );
   });
 
   it('bad password throws exception', function() {
@@ -88,7 +94,9 @@ describe('Connect Tests', function() {
         username: username,
         password: 'foobar'
       })
-    ).to.be.rejectedWith('All configured authentication methods failed');
+    ).to.be.rejectedWith(
+      /All configured authentication methods failed|Timed out while waiting for handshake/
+    );
   });
 });
 
