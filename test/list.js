@@ -39,7 +39,7 @@ after('Global shutdown', function() {
     });
 });
 
-describe('list method tests', () => {
+describe('list method tests', function() {
   before('List test setup hook', function() {
     return lHooks.listSetup(hookSftp, sftpUrl, localUrl).catch(err => {
       throw new Error(err.message);
@@ -137,6 +137,52 @@ describe('list method tests', () => {
 
   it('list with leading *txt pattern', async function() {
     let list = await sftp.list(join(sftpUrl, 'mocha-list'), '*txt');
+
+    return expect(list).to.containSubset([
+      {type: '-', name: 'test-file1.txt', size: 6973257},
+      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+    ]);
+  });
+});
+
+describe('auxList testing', function() {
+  before('List test setup hook', function() {
+    return lHooks.listSetup(hookSftp, sftpUrl, localUrl).catch(err => {
+      throw new Error(err.message);
+    });
+  });
+
+  after('List test cleanup hook', function() {
+    return lHooks.listCleanup(hookSftp, sftpUrl).catch(err => {
+      throw new Error(err.message);
+    });
+  });
+
+  it('auxList with * pattern', async function() {
+    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), '*');
+
+    return expect(list).to.containSubset([
+      {type: 'd', name: 'dir1'},
+      {type: 'd', name: 'dir2'},
+      {type: 'd', name: 'empty'},
+      {type: '-', name: 'file1.html', size: 11},
+      {type: '-', name: 'file2.md', size: 11},
+      {type: '-', name: 'test-file1.txt', size: 6973257},
+      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+    ]);
+  });
+
+  it('auxList with dir* pattern', async function() {
+    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), 'dir*');
+
+    return expect(list).to.containSubset([
+      {type: 'd', name: 'dir1'},
+      {type: 'd', name: 'dir2'}
+    ]);
+  });
+
+  it('auxList with leading *txt pattern', async function() {
+    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), '*txt');
 
     return expect(list).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},

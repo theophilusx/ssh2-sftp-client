@@ -26,25 +26,25 @@ let SftpClient = function() {
  *                              attempts to complete before giving up
  * @returns {Error} New error with custom error message
  */
-function formatError(err, retryCount) {
+function formatError(err, name = 'ssh2-sftp-client', retryCount) {
   let msg = '';
 
   switch (err.code) {
     case 'ENOTFOUND':
-      msg = `${err.level} error. Address lookup failed for host ${err.hostname}`;
+      msg = `${name}: ${err.level} error. Address lookup failed for host ${err.hostname}`;
       break;
     case 'ECONNREFUSED':
-      msg = `${err.level} error. Remote host at ${err.address} refused connection`;
+      msg = `${name}: ${err.level} error. Remote host at ${err.address} refused connection`;
       break;
     case null:
-      msg = err.message;
+      msg = `${name}: ${err.message}`;
       break;
     default:
       if (debug) {
         console.log('Unformatted error');
         console.dir(err);
       }
-      msg = `${err.level} error. ${err.message}`;
+      msg = `${name}: ${err.level} error. ${err.message}`;
   }
   if (retryCount) {
     msg += ` after ${retryCount} attempts`;
@@ -76,7 +76,8 @@ function errorListener(err) {
 }
 
 /**
- * Retrieves a directory listing
+ * Retrieves a directory listing. The pattern argument may be a regular expression
+ * or simple 'glob' style *.
  *
  * @param {String} path, a string containing the path to a directory
  * @param {regex} pattern - An optional pattern used to filter the list
