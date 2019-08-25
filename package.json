@@ -16,7 +16,7 @@
   },
   "author": "见见",
   "email": "jyu213@gmail.com",
-  "license": "Apache v2",
+  "license": "Apache-2.0",
   "dependencies": {
     "concat-stream": "^2.0.0",
     "ssh2": "^0.8.2",
