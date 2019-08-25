@@ -8,7 +8,6 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
 const gHooks = require('./hooks/global-hooks');
-const sHooks = require('./hooks/stat-hooks');
 const mHooks = require('./hooks/mkdir-hooks');
 const rHooks = require('./hooks/rmdir-hooks');
 const dHooks = require('./hooks/delete-hooks');
@@ -43,35 +42,6 @@ after('Global shutdown', function() {
     .catch(err => {
       throw new Error(err.message);
     });
-});
-
-describe('Stat method tests', function() {
-  before(() => {
-    return sHooks.statSetup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
-  });
-
-  after(() => {
-    return sHooks.statCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
-  });
-
-  it('Stat return should be a promise', function() {
-    return expect(sftp.stat(join(sftpUrl, 'mocha-stat.md'))).to.be.a('promise');
-  });
-
-  it('Stat on existing file returns stat data', async function() {
-    let stats = await sftp.stat(join(sftpUrl, 'mocha-stat.md'));
-    return expect(stats).to.containSubset({mode: 33279, size: 5});
-  });
-
-  it('Stat on non-existent file rejected', function() {
-    return expect(
-      sftp.stat(join(sftpUrl, 'mocha-stat1.md'))
-    ).to.be.rejectedWith('No such file');
-  });
 });
 
 describe('Mkdir method tests', function() {

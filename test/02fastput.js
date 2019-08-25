@@ -85,7 +85,7 @@ describe('Fastput method tests', function() {
         join(localUrl, 'file-not-exist.txt'),
         join(sftpUrl, 'fastput-error.txt')
       )
-    ).to.rejectedWith('Failed to upload');
+    ).to.rejectedWith('no such file or directory');
   });
 
   it('FastPut with bad destination directory is rejected', function() {
@@ -94,6 +94,6 @@ describe('Fastput method tests', function() {
         join(localUrl, 'test-file1.txt'),
         join(sftpUrl, 'non-existent-dir', 'fastput-error.txt')
       )
-    ).to.rejectedWith('Failed to upload');
+    ).to.rejectedWith('No such file');
   });
 });
