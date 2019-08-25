@@ -8,8 +8,6 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
 const gHooks = require('./hooks/global-hooks');
-const lHooks = require('./hooks/list-hooks');
-const eHooks = require('./hooks/exist-hooks');
 const sHooks = require('./hooks/stat-hooks');
 const mHooks = require('./hooks/mkdir-hooks');
 const rHooks = require('./hooks/rmdir-hooks');
@@ -20,7 +18,7 @@ const rnHooks = require('./hooks/rename-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-let hookSftp, sftp, sftpUrl, localUrl;
+let hookSftp, sftp, sftpUrl;
 
 before('Global setup', function() {
   return gHooks
@@ -29,7 +27,6 @@ before('Global setup', function() {
       hookSftp = testEnv.hookSftp;
       sftp = testEnv.sftp;
       sftpUrl = testEnv.sftpUrl;
-      localUrl = testEnv.localUrl;
       return true;
     })
     .catch(err => {
@@ -46,48 +43,6 @@ after('Global shutdown', function() {
     .catch(err => {
       throw new Error(err.message);
     });
-});
-
-describe('Exist method tests', function() {
-  before('Exist test setup hook', function() {
-    return eHooks.existSetup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
-  });
-
-  after('Exist test cleanup hook', function() {
-    return eHooks.existCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
-  });
-
-  it('Exist return should be a promise', function() {
-    return expect(sftp.exists(sftpUrl)).to.be.a('promise');
-  });
-
-  it('Exist returns truthy for existing directory', function() {
-    return expect(sftp.exists(join(sftpUrl, 'exist-dir'))).to.eventually.equal(
-      'd'
-    );
-  });
-
-  it('Exist returns truthy for existing file', function() {
-    return expect(
-      sftp.exists(join(sftpUrl, 'exist-file.txt'))
-    ).to.eventually.equal('-');
-  });
-
-  it('Exists return false value for non existent object', function() {
-    return expect(
-      sftp.exists(join(sftpUrl, 'no-such-dir/subdir'))
-    ).to.eventually.equal(false);
-  });
-
-  it('Exists return false for bad path', function() {
-    return expect(sftp.exists('just/a/really/bad/path')).to.eventually.equal(
-      false
-    );
-  });
 });
 
 describe('Stat method tests', function() {

@@ -131,7 +131,7 @@ SftpClient.prototype.list = function(path, pattern = /.*/) {
         }
       });
     } catch (err) {
-      reject(formatError(err));
+      reject(formatError(err, 'sftp.list'));
     }
   });
 };
@@ -167,31 +167,32 @@ SftpClient.prototype.exists = function(path) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    if (!sftp) {
-      return reject(new Error('sftp connect error'));
-    }
-    let {dir, base} = osPath.parse(path);
-    sftp.readdir(dir, (err, list) => {
-      if (err) {
-        if (err.code === 2) {
-          resolve(false);
-        } else {
-          reject(
-            new Error(`Error listing ${dir}: code: ${err.code} ${err.message}`)
-          );
-        }
-      } else {
-        let [type] = list
-          .filter(item => item.filename === base)
-          .map(item => item.longname.substr(0, 1));
-        if (type) {
-          resolve(type);
-        } else {
-          resolve(false);
-        }
+    try {
+      if (!sftp) {
+        reject(new Error('sftp.exists: No active SFTP connections'));
       }
-    });
-    return undefined;
+      let {dir, base} = osPath.parse(path);
+      sftp.readdir(dir, (err, list) => {
+        if (err) {
+          if (err.code === 2) {
+            resolve(false);
+          } else {
+            reject(formatError(err, 'sftp.exists'));
+          }
+        } else {
+          let [type] = list
+            .filter(item => item.filename === base)
+            .map(item => item.longname.substr(0, 1));
+          if (type) {
+            resolve(type);
+          } else {
+            resolve(false);
+          }
+        }
+      });
+    } catch (err) {
+      reject(formatError(err, 'sftp.exists'));
+    }
   });
 };
 
@@ -660,7 +661,7 @@ SftpClient.prototype.connect = function(config) {
                   return;
                 }
                 // exhausted retries - do callback with error
-                callback(formatError(err, attemptCount), null);
+                callback(formatError(err, 'sftp.connect', attemptCount), null);
               }
               sftpObj.sftp = sftp;
               // remove retry error listener and add generic error listener
@@ -680,7 +681,7 @@ SftpClient.prototype.connect = function(config) {
               return;
             }
             // exhausted retries - do callback with error
-            callback(formatError(err, attemptCount), null);
+            callback(formatError(err, 'sftp.connect', attemptCount), null);
           })
           .connect(config);
       });
