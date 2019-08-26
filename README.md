@@ -1,52 +1,49 @@
 
 # Table of Contents
 
-1.  [SSH2 SFTP Client](#org723ce22)
-2.  [Installation](#orga6f4f80)
-3.  [Basic Usage](#org9d39be6)
-4.  [Breaking Changes](#org86736b9)
-    1.  [Option Changes](#org31108ce)
-    2.  [Method Changes](#org828a135)
-        1.  [get(srcPath, dst, options)](#org5c61be4)
-5.  [Documentation](#orgc6fd858)
-    1.  [Methods](#org08f5a68)
-        1.  [list(path, pattern) ==> Array[object]](#orga80c89a)
-        2.  [exists(path) ==> boolean](#org592c641)
-        3.  [Get](#org27d0705)
-        4.  [FastGet](#orgaf1e39e)
-        5.  [Put](#org0526886)
-        6.  [FastPut](#org0da262d)
-        7.  [Mkdir](#orgcc46a15)
-        8.  [Rmdir](#org7d00137)
-        9.  [Delete](#org36c2653)
-        10. [Rename](#org0e097cb)
-        11. [Chmod](#org64b6f44)
-        12. [connect](#org5601311)
-        13. [end](#org6b19f77)
-6.  [FAQ](#org1c6816f)
-    1.  [How can you pass writable stream as dst for get method?](#org0c62ea0)
-    2.  [How can I upload files without having to specify a password?](#org869334b)
-7.  [Change Log](#org99a08ab)
-    1.  [v4.0.0 (Current development version)](#org03df77f)
-    2.  [V2.5.2 (Current stable version)](#org8d46a8e)
-    3.  [V2.5.1](#orgd92fe02)
-    4.  [V2.5.0](#orgdf1054e)
-    5.  [V2.4.3](#org642189d)
-    6.  [V2.4.2](#org2542e5a)
-    7.  [V2.4.1](#org011d7f2)
-    8.  [V2.4.0](#org3c883bf)
-    9.  [V2.3.0](#orgbbdc528)
-    10. [V3.0.0 &#x2013; deprecate this version](#orgb971193)
-    11. [V2.1.1](#orgcc7820f)
-    12. [V2.0.1](#orgd9c1128)
-    13. [V1.1.0](#org44e7c4b)
-    14. [V1.0.5:](#org708db7e)
-8.  [Logging Issues](#orga40f2bf)
-9.  [Pull Requests](#org8efd502)
-10. [Contributors](#org80377c6)
+1.  [SSH2 SFTP Client](#org949ed3d)
+2.  [Installation](#orgd8ff67f)
+3.  [Basic Usage](#org60a16be)
+4.  [Breaking Changes in Version 4.0.0](#org2e19cf8)
+5.  [Documentation](#org9a28dd7)
+    1.  [Methods](#orgad00f95)
+        1.  [list(path, pattern) ==> Array[object]](#org4f13cd6)
+        2.  [exists(path) ==> boolean](#org5a550ee)
+        3.  [Get](#org0338ad2)
+        4.  [FastGet](#org6464797)
+        5.  [Put](#org6b2ccff)
+        6.  [FastPut](#orgae48753)
+        7.  [Mkdir](#org6932e54)
+        8.  [Rmdir](#orgfa56829)
+        9.  [Delete](#org8d0fa13)
+        10. [Rename](#org7aefed3)
+        11. [Chmod](#org71cca74)
+        12. [connect](#org4c2f2a2)
+        13. [end](#orgad9fc4e)
+6.  [FAQ](#org6c5fc3a)
+    1.  [How can you pass writable stream as dst for get method?](#org8d2b468)
+    2.  [How can I upload files without having to specify a password?](#org869da60)
+7.  [Change Log](#org4aa8343)
+    1.  [v4.0.0 (Current development version)](#org6867d9e)
+    2.  [V2.5.2 (Current stable version)](#orgcc5a378)
+    3.  [V2.5.1](#org32fb93d)
+    4.  [V2.5.0](#org00f0dbb)
+    5.  [V2.4.3](#orgf72ef77)
+    6.  [V2.4.2](#org6e9cb6d)
+    7.  [V2.4.1](#org227a23c)
+    8.  [V2.4.0](#org2c7e8e4)
+    9.  [V2.3.0](#org50dd0d7)
+    10. [V3.0.0 &#x2013; deprecate this version](#orgce345e8)
+    11. [V2.1.1](#org6d9e0b2)
+    12. [V2.0.1](#orgaa00ef7)
+    13. [V1.1.0](#org561c30b)
+    14. [V1.0.5:](#org2adcdc8)
+8.  [Logging Issues](#orgf856518)
+9.  [Pull Requests](#org73c2770)
+10. [Contributors](#orgd31107e)
 
 
-<a id="org723ce22"></a>
+<a id="org949ed3d"></a>
 
 # SSH2 SFTP Client
 
@@ -62,14 +59,14 @@ Current development version is **v4.0.0** and is in the **release-4.0.0** branch
 the repository.
 
 
-<a id="orga6f4f80"></a>
+<a id="orgd8ff67f"></a>
 
 # Installation
 
     npm install ssh2-sftp-client
 
 
-<a id="org9d39be6"></a>
+<a id="org60a16be"></a>
 
 # Basic Usage
 
@@ -90,62 +87,30 @@ the repository.
     });
 
 
-<a id="org86736b9"></a>
+<a id="org2e19cf8"></a>
 
-# Breaking Changes
+# Breaking Changes in Version 4.0.0
 
-Due to some incompatibilities with stream handling which breaks this module when
-used with Node 10.x, some changes have been implemented that should enhance the
-interface, but which also break compatibility with previous versions. 
+There has been minor changes to the API signatures
 
+-   The `connect()` method no longer accepts a 'connectMethod' argument. It was
+    not clear what this argument was for or what it did.
 
-<a id="org31108ce"></a>
+-   Additional options are now available in the configure object passed to the
+    `connect()` method to control the connection retry functionality.
 
-## Option Changes
+-   Node versions before 8.x are no longer supported.
 
--   The default encoding is null not utf8 as it was previously. This is consistent
-    with the defaults for the underlying SSH2 module.
--   The usedCompressed option has been removed. None of the shh2-steams methods
-    actually support this option. The 'compress' option can be set as part of the
-    connection options.  See [ssh2 client event](<https://github.com/mscdex/ssh2#user-content-client-methods>).
--   The separate explicit option arguments for encoding and useCompression for some methods
-    have been replaced with a single 'options' argument, which is an object that
-    can have the following properties (defaults shown). See the
-    [ssh2-streams](<https://github.com/mscdex/ssh2-streams>) documentation for an
-    explination of the opt8ons. 
-    
-        const defaults = {
-          highWaterMark: 32 * 1024,
-          debug: undefined,
-          concurrency: 64,
-          chunkSize: 32768,
-          step: undefined,
-          mode: 0o666,
-          autoClose: true,
-          encoding: null
-        };
+-   Error message formats have changed. While they are now more consistent, if you
+    have code which parses the messages, it will need to be updated.
+
+-   The `auxList()` method is deprecated. An additional optional `pattern`
+    argument has been added to the `list()` method to facilitate filtering of
+    results returned by `list()`. Both 'glob' and regexp pattern styles are
+    supported.
 
 
-<a id="org828a135"></a>
-
-## Method Changes
-
-
-<a id="org5c61be4"></a>
-
-### get(srcPath, dst, options)
-
-Used to retrieve a file from a remote SFTP server. 
-
--   srcPath: path to the file on the remote server
--   dst: Either a string, which will be used as the path to store the file on the
-    local system or a writable stream, which will be used as the destination for a
-    stream pipe. If undefined, the remote file will be read into a Buffer and
-    the buffer returned.
--   options: Options for the get operation e.g. encoding.
-
-
-<a id="orgc6fd858"></a>
+<a id="org9a28dd7"></a>
 
 # Documentation
 
@@ -155,12 +120,12 @@ module. For full details, please see [SSH2 client methods](https://github.com/ms
 All the methods will return a Promise;
 
 
-<a id="org08f5a68"></a>
+<a id="orgad00f95"></a>
 
 ## Methods
 
 
-<a id="orga80c89a"></a>
+<a id="org4f13cd6"></a>
 
 ### list(path, pattern) ==> Array[object]
 
@@ -233,7 +198,7 @@ directory.
     anchor matches to the beginning/end of the string etc.
 
 
-<a id="org592c641"></a>
+<a id="org5a550ee"></a>
 
 ### exists(path) ==> boolean
 
@@ -268,7 +233,7 @@ if it exists or false if it does not.
           });
 
 
-<a id="org27d0705"></a>
+<a id="org0338ad2"></a>
 
 ### Get
 
@@ -277,7 +242,7 @@ Get a \`ReadableStream\` from remotePath.
     sftp.get(remoteFilePath, [options]);
 
 
-<a id="orgaf1e39e"></a>
+<a id="org6464797"></a>
 
 ### FastGet
 
@@ -287,7 +252,7 @@ throughput. Details on available options can be found [here](https://github.com/
     sftp.fastGet(remotePath, localPath, [options]);
 
 
-<a id="org0526886"></a>
+<a id="org6b2ccff"></a>
 
 ### Put
 
@@ -299,7 +264,7 @@ upload a file from \`localPath\` or \`Buffer\`, \`Stream\` data to
     sftp.put(Stream, remoteFilePath, [options]);
 
 
-<a id="org0da262d"></a>
+<a id="orgae48753"></a>
 
 ### FastPut
 
@@ -309,7 +274,7 @@ throughput. Details on available options are available [here](https://github.com
     sftp.fastPut(localPath, remotePath, [options]);
 
 
-<a id="orgcc46a15"></a>
+<a id="org6932e54"></a>
 
 ### Mkdir
 
@@ -321,7 +286,7 @@ defaults to false.
     sftp.mkdir(remoteFilePath, recursive);
 
 
-<a id="org7d00137"></a>
+<a id="orgfa56829"></a>
 
 ### Rmdir
 
@@ -335,7 +300,7 @@ action will fail.
     sftp.rmdir(localPath, recursive);
 
 
-<a id="org36c2653"></a>
+<a id="org8d0fa13"></a>
 
 ### Delete
 
@@ -344,7 +309,7 @@ Delete a file.
     sftp.delete(remoteFilePath);
 
 
-<a id="org0e097cb"></a>
+<a id="org7aefed3"></a>
 
 ### Rename
 
@@ -353,7 +318,7 @@ Rename a file or directory.
     sftp.rename(remoteSourcePath, remoteDestPath);
 
 
-<a id="org64b6f44"></a>
+<a id="org71cca74"></a>
 
 ### Chmod
 
@@ -362,7 +327,7 @@ Change the mode (read, write or execute) of a remote file or directory.
     sftp.chmod(remoteDestPath, mode);
 
 
-<a id="org5601311"></a>
+<a id="org4c2f2a2"></a>
 
 ### connect
 
@@ -376,7 +341,7 @@ Connect to an sftp server. Documentation for connection options is available [he
     });
 
 
-<a id="org6b19f77"></a>
+<a id="orgad9fc4e"></a>
 
 ### end
 
@@ -385,12 +350,12 @@ Close the sftp connection.
     sftp.end();
 
 
-<a id="org1c6816f"></a>
+<a id="org6c5fc3a"></a>
 
 # FAQ
 
 
-<a id="org0c62ea0"></a>
+<a id="org8d2b468"></a>
 
 ## How can you pass writable stream as dst for get method?
 
@@ -454,7 +419,7 @@ bring thenm across before saving to local file system.
       });
 
 
-<a id="org869334b"></a>
+<a id="org869da60"></a>
 
 ## How can I upload files without having to specify a password?
 
@@ -489,26 +454,26 @@ configuration.
     }
 
 
-<a id="org99a08ab"></a>
+<a id="org4aa8343"></a>
 
 # Change Log
 
 
-<a id="org03df77f"></a>
+<a id="org6867d9e"></a>
 
 ## v4.0.0 (Current development version)
 
 -   Remove support for node < 8.x
 -   Fix connection retry feature
--   Remove 'event' functions. Not really compatible with a Promise based API
 -   sftp connection object set to null when 'end' signal is raised
 -   Removed 'connectMethod' argument from connect method.
 -   Refined adding/removing of listeners in connect() and end() methods to enable
     errors to be adequately caught and reported.
 -   Depricate auxList() and add pattern/regexp filter option to list()
+-   Refactored handling of event signals to provide better feedback to clients
 
 
-<a id="org8d46a8e"></a>
+<a id="orgcc5a378"></a>
 
 ## V2.5.2 (Current stable version)
 
@@ -516,21 +481,21 @@ configuration.
 -   Fix error in package.json pointing to wrong repository
 
 
-<a id="orgd92fe02"></a>
+<a id="org32fb93d"></a>
 
 ## V2.5.1
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
 
-<a id="orgdf1054e"></a>
+<a id="org00f0dbb"></a>
 
 ## V2.5.0
 
 -   ???
 
 
-<a id="org642189d"></a>
+<a id="orgf72ef77"></a>
 
 ## V2.4.3
 
@@ -538,7 +503,7 @@ configuration.
     -   fix connect promise if connection ends
 
 
-<a id="org2542e5a"></a>
+<a id="org6e9cb6d"></a>
 
 ## V2.4.2
 
@@ -546,7 +511,7 @@ configuration.
     -   fix windows path
 
 
-<a id="org011d7f2"></a>
+<a id="org227a23c"></a>
 
 ## V2.4.1
 
@@ -554,7 +519,7 @@ configuration.
     -   bug fix
 
 
-<a id="org3c883bf"></a>
+<a id="org2c7e8e4"></a>
 
 ## V2.4.0
 
@@ -567,7 +532,7 @@ configuration.
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
 
-<a id="orgbbdc528"></a>
+<a id="org50dd0d7"></a>
 
 ## V2.3.0
 
@@ -576,7 +541,7 @@ configuration.
 -   fix: \`mkdir\` file exists decision logic
 
 
-<a id="orgb971193"></a>
+<a id="orgce345e8"></a>
 
 ## V3.0.0 &#x2013; deprecate this version
 
@@ -584,7 +549,7 @@ configuration.
 -   fix: get readable not emitting data events in node 10.0.0
 
 
-<a id="orgcc7820f"></a>
+<a id="org6d9e0b2"></a>
 
 ## V2.1.1
 
@@ -592,7 +557,7 @@ configuration.
 -   add: \`get\` or \`put\` method add extra options [pr#52](<https://github.com/jyu213/ssh2-sftp-client/pull/52>)
 
 
-<a id="orgd9c1128"></a>
+<a id="orgaa00ef7"></a>
 
 ## V2.0.1
 
@@ -602,14 +567,14 @@ configuration.
 -   fix: return Error object on promise rejection [pr#20](<https://github.com/jyu213/ssh2-sftp-client/pull/20>)
 
 
-<a id="org44e7c4b"></a>
+<a id="org561c30b"></a>
 
 ## V1.1.0
 
 -   fix: add encoding control support for binary stream
 
 
-<a id="org708db7e"></a>
+<a id="org2adcdc8"></a>
 
 ## V1.0.5:
 
@@ -617,7 +582,7 @@ configuration.
 -   change: remove \`this.client.sftp\` to \`connect\` function
 
 
-<a id="orga40f2bf"></a>
+<a id="orgf856518"></a>
 
 # Logging Issues
 
@@ -626,7 +591,7 @@ requests. Please ensure you include the module version, node version and
 platform. 
 
 
-<a id="org8efd502"></a>
+<a id="org73c2770"></a>
 
 # Pull Requests
 
@@ -646,7 +611,7 @@ your pull request what level of change it represents i.e.
     bug.
 
 
-<a id="org80377c6"></a>
+<a id="orgd31107e"></a>
 
 # Contributors
 

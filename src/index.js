@@ -760,7 +760,15 @@ SftpClient.prototype.end = function() {
   });
 };
 
-// add Event type support
+/**
+ * Add a listner to the client object. This is rarely necessary and can be
+ * the source of errors. It is the client's responsibility to remove the
+ * listeners when no longer required. Failure to do so can result in memory
+ * leaks.
+ *
+ * @param {string} eventType - one of the supported event types
+ * @param {function} callback - function called when event triggers
+ */
 SftpClient.prototype.on = function(eventType, callback) {
   this.client.on(eventType, callback);
 };
