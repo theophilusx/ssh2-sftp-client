@@ -77,3 +77,11 @@ describe('Mkdir method tests', function() {
       });
   });
 });
+
+describe('test mkdir without permissions', function() {
+  it('Create directory without write permission throws exception', function() {
+    return expect(
+      sftp.mkdir(join(sftpUrl, 'perm-test', 'dir-t2', 'dir-t6'), true)
+    ).to.be.rejectedWith('Failed to create directory');
+  });
+});

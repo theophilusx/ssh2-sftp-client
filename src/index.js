@@ -9,7 +9,7 @@ const osPath = require('path').posix;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const join = require('path').join;
+const {join, parse} = require('path');
 
 let SftpClient = function() {
   this.client = new Client();
@@ -461,43 +461,40 @@ SftpClient.prototype.append = function(input, remotePath, options) {
  * @param {boolean} recursive, if true, recursively create directories
  * @return {Promise}.
  */
-SftpClient.prototype.mkdir = function(path, recursive = false) {
+SftpClient.prototype.mkdir = async function(path, recursive = false) {
   let sftp = this.sftp;
 
-  let doMkdir = p => {
+  function doMkdir(p) {
     return new Promise((resolve, reject) => {
-      if (!sftp) {
-        return reject(new Error('sftp connect error'));
-      }
       sftp.mkdir(p, err => {
         if (err) {
-          reject(new Error(`Failed to create directory ${p}: ${err.message}`));
+          reject(formatError('Failed to create directory', 'sftp.mkdir'));
         }
         resolve(`${p} directory created`);
       });
-      return undefined;
     });
-  };
-
-  if (!recursive) {
-    return doMkdir(path);
   }
-  let mkdir = p => {
-    let {dir} = osPath.parse(p);
-    if (dir === '' || dir === '/' || dir === '.') {
-      return;
+
+  try {
+    if (!sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.mkdir')
+      );
     }
-    return this.exists(dir)
-      .then(type => {
-        if (!type) {
-          return mkdir(dir);
-        }
-      })
-      .then(() => {
-        return doMkdir(p);
-      });
-  };
-  return mkdir(path);
+    if (!recursive) {
+      return doMkdir(path);
+    }
+    let {dir} = parse(path);
+    let parent = await this.exists(dir);
+    if (!parent) {
+      await this.mkdir(dir, true);
+    } else if (parent !== 'd') {
+      return Promise.reject(formatError('Bad directory path', 'sftp.mkdir'));
+    }
+    return doMkdir(path);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.mkdir'));
+  }
 };
 
 /**
