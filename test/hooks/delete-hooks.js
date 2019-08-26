@@ -2,24 +2,21 @@
 
 const {join} = require('path');
 
-function deleteSetup(client, sftpUrl) {
-  return client
-    .put(Buffer.from('hello'), join(sftpUrl, 'mocha-delete.md'), {
+async function deleteSetup(client, sftpUrl) {
+  try {
+    await client.put(Buffer.from('hello'), join(sftpUrl, 'mocha-delete.md'), {
       encoding: 'utf8'
-    })
-    .then(() => {
-      return client.put(
-        Buffer.from('promise'),
-        join(sftpUrl, 'mocha-delete-promise.md'),
-        {encoding: 'utf8'}
-      );
-    })
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`Delete setup hook error: ${err.message}`);
     });
+    await client.put(
+      Buffer.from('promise'),
+      join(sftpUrl, 'mocha-delete-promise.md'),
+      {encoding: 'utf8'}
+    );
+    return true;
+  } catch (err) {
+    console.error(`deleteSetup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

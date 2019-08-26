@@ -2,32 +2,32 @@
 
 const {join} = require('path');
 
-function renameSetup(client, sftpUrl) {
-  return client
-    .put(Buffer.from('hello'), join(sftpUrl, 'mocha-rename.md'), {
+async function renameSetup(client, sftpUrl) {
+  try {
+    await client.put(Buffer.from('hello'), join(sftpUrl, 'mocha-rename.md'), {
       encoding: 'utf8'
-    })
-    .then(() => {
-      return client.put(
-        Buffer.from('conflict file'),
-        join(sftpUrl, 'mocha-conflict.md'),
-        {encoding: 'utf8'}
-      );
-    })
-    .catch(err => {
-      throw new Error(`Rename setup hook error: ${err.message}`);
     });
+    await client.put(
+      Buffer.from('conflict file'),
+      join(sftpUrl, 'mocha-conflict.md'),
+      {encoding: 'utf8'}
+    );
+    return true;
+  } catch (err) {
+    console.error(`renameSetup: ${err.message}`);
+    return false;
+  }
 }
 
-function renameCleanup(client, sftpUrl) {
-  return client
-    .delete(join(sftpUrl, 'mocha-rename-new.md'))
-    .then(() => {
-      return client.delete(join(sftpUrl, 'mocha-conflict.md'));
-    })
-    .catch(err => {
-      throw new Error(`Rename cleanup hook error: ${err.message}`);
-    });
+async function renameCleanup(client, sftpUrl) {
+  try {
+    await client.delete(join(sftpUrl, 'mocha-rename-new.md'));
+    await client.delete(join(sftpUrl, 'mocha-conflict.md'));
+    return true;
+  } catch (err) {
+    console.error(`renameCleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

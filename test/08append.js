@@ -66,7 +66,7 @@ describe('Append method tests', function() {
 
     return expect(
       sftp.append(join(localUrl, 'test-file1.txt'), join(sftpUrl, testFile))
-    ).to.be.rejectedWith('Cannot append a file to another');
+    ).to.be.rejectedWith('Cannot append one file to another');
   });
 
   it('Append buffer to file', function() {
@@ -107,6 +107,6 @@ describe('Append method tests', function() {
         Buffer.from('hello'),
         join(sftpUrl, 'bad-directory', 'bad-file.txt')
       )
-    ).to.be.rejectedWith('Failed to upload');
+    ).to.be.rejectedWith('No such file');
   });
 });

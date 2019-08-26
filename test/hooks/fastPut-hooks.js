@@ -2,29 +2,29 @@
 
 const {join} = require('path');
 
-function fastPutSetup(client, sftpUrl) {
-  return client
-    .put(Buffer.from('fast put'), join(sftpUrl, 'mocha-fastput.md'))
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`FastPut setup hook error: ${err.message}`);
-    });
+async function fastPutSetup(client, sftpUrl) {
+  try {
+    await client.put(
+      Buffer.from('fast put'),
+      join(sftpUrl, 'mocha-fastput.md')
+    );
+    return true;
+  } catch (err) {
+    console.error(`fastPutSetup: ${err.message}`);
+    return false;
+  }
 }
 
-function fastPutCleanup(client, sftpUrl) {
-  return client
-    .delete(join(sftpUrl, 'remote2.md.gz'))
-    .then(() => {
-      return client.delete(join(sftpUrl, 'remote.md'));
-    })
-    .then(() => {
-      return client.delete(join(sftpUrl, 'mocha-fastput.md'));
-    })
-    .catch(err => {
-      throw new Error(`FastPut cleanup hook error: ${err.message}`);
-    });
+async function fastPutCleanup(client, sftpUrl) {
+  try {
+    await client.delete(join(sftpUrl, 'remote.md'));
+    await client.delete(join(sftpUrl, 'remote2.md.gz'));
+    await client.delete(join(sftpUrl, 'mocha-fastput.md'));
+    return true;
+  } catch (err) {
+    console.error(`fastPutCleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

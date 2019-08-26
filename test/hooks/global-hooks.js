@@ -22,32 +22,28 @@ const testEnv = {
   sftpUrl: process.env['SFTP_URL']
 };
 
-function setup() {
-  return testEnv.sftp
-    .connect(config)
-    .then(() => {
-      return testEnv.hookSftp.connect(config);
-    })
-    .then(() => {
-      return testEnv;
-    })
-    .catch(err => {
-      Promise.reject(`global-hooks.setup: ${err.message}`);
-    });
+async function setup() {
+  try {
+    testEnv.sftp = new Client();
+    testEnv.hookSftp = new Client();
+    await testEnv.sftp.connect(config);
+    await testEnv.hookSftp.connect(config);
+    return testEnv;
+  } catch (err) {
+    console.error(`global setup: ${err.message}`);
+    return testEnv;
+  }
 }
 
-function closeDown() {
-  return testEnv.sftp
-    .end()
-    .then(() => {
-      return testEnv.hookSftp.end();
-    })
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      Promise.reject(`global-hook.closeDown: ${err.message}`);
-    });
+async function closeDown() {
+  try {
+    await testEnv.sftp.end();
+    await testEnv.hookSftp.end();
+    return true;
+  } catch (err) {
+    console.error(`global cleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

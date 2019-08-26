@@ -13,43 +13,49 @@ chai.use(chaiAsPromised);
 
 let hookSftp, sftp, sftpUrl, localUrl;
 
-before('Global setup', function() {
-  return gHooks
-    .setup()
-    .then(testEnv => {
-      hookSftp = testEnv.hookSftp;
-      sftp = testEnv.sftp;
-      sftpUrl = testEnv.sftpUrl;
-      localUrl = testEnv.localUrl;
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
+before('Global setup', async function() {
+  try {
+    let testEnv = await gHooks.setup();
+    hookSftp = testEnv.hookSftp;
+    sftp = testEnv.sftp;
+    sftpUrl = testEnv.sftpUrl;
+    localUrl = testEnv.localUrl;
+    return true;
+  } catch (err) {
+    console.error(`list global setup: ${err.message}`);
+    return false;
+  }
 });
 
-after('Global shutdown', function() {
-  return gHooks
-    .closeDown()
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
+after('Global shutdown', async function() {
+  try {
+    await gHooks.closeDown();
+    return true;
+  } catch (err) {
+    console.error(`list global close down: ${err.message}`);
+    return false;
+  }
 });
 
 describe('list method tests', function() {
-  before('List test setup hook', function() {
-    return lHooks.listSetup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  before('List test setup hook', async function() {
+    try {
+      await lHooks.listSetup(hookSftp, sftpUrl, localUrl);
+      return true;
+    } catch (err) {
+      console.error(`list setup: ${err.message}`);
+      return false;
+    }
   });
 
-  after('List test cleanup hook', function() {
-    return lHooks.listCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  after('List test cleanup hook', async function() {
+    try {
+      await lHooks.listCleanup(hookSftp, sftpUrl);
+      return true;
+    } catch (err) {
+      console.error(`list clenup: ${err.message}`);
+      return false;
+    }
   });
 
   it('list return should be a promise', function() {
@@ -146,16 +152,24 @@ describe('list method tests', function() {
 });
 
 describe('auxList testing', function() {
-  before('List test setup hook', function() {
-    return lHooks.listSetup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  before('List test setup hook', async function() {
+    try {
+      await lHooks.listSetup(hookSftp, sftpUrl, localUrl);
+      return true;
+    } catch (err) {
+      console.error(`auxList cleanup: ${err.message}`);
+      return false;
+    }
   });
 
-  after('List test cleanup hook', function() {
-    return lHooks.listCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  after('List test cleanup hook', async function() {
+    try {
+      await lHooks.listCleanup(hookSftp, sftpUrl);
+      return true;
+    } catch (err) {
+      console.log(`auxList cleanup: ${err.message}`);
+      return false;
+    }
   });
 
   it('auxList with * pattern', async function() {

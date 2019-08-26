@@ -100,7 +100,7 @@ describe('Put method tests', function() {
         join(localUrl, 'no-such-file.txt'),
         join(sftpUrl, 'mocha-put-no-file.txt')
       )
-    ).to.be.rejectedWith('Failed to upload');
+    ).to.be.rejectedWith('no such file or directory');
   });
 
   it('Put with bad dst path should be rejected', function() {
@@ -109,6 +109,6 @@ describe('Put method tests', function() {
         join(localUrl, 'test-file1.txt'),
         join(sftpUrl, 'bad-directory', 'bad-file.txt')
       )
-    ).to.be.rejectedWith('Failed to upload');
+    ).to.be.rejectedWith('No such file');
   });
 });

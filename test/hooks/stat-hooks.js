@@ -2,29 +2,27 @@
 
 const {join} = require('path');
 
-function statSetup(client, sftpUrl) {
-  return client
-    .put(Buffer.from('hello'), join(sftpUrl, 'mocha-stat.md'), {
+async function statSetup(client, sftpUrl) {
+  try {
+    await client.put(Buffer.from('hello'), join(sftpUrl, 'mocha-stat.md'), {
       encoding: 'utf8',
       mode: 0o777
-    })
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`Stat test setup hook failure: ${err.message}`);
     });
+    return true;
+  } catch (err) {
+    console.error(`statSetup: ${err.message}`);
+    return false;
+  }
 }
 
-function statCleanup(client, sftpUrl) {
-  return client
-    .delete(join(sftpUrl, 'mocha-stat.md'))
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`Stat test cleanup hook failed: ${err.message}`);
-    });
+async function statCleanup(client, sftpUrl) {
+  try {
+    await client.delete(join(sftpUrl, 'mocha-stat.md'));
+    return true;
+  } catch (err) {
+    console.error(`statCleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

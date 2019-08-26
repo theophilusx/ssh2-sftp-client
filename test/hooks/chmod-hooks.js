@@ -2,20 +2,26 @@
 
 const {join} = require('path');
 
-function chmodSetup(client, sftpUrl) {
-  return client
-    .put(Buffer.from('hello'), join(sftpUrl, 'mocha-chmod.txt'), {
+async function chmodSetup(client, sftpUrl) {
+  try {
+    await client.put(Buffer.from('hello'), join(sftpUrl, 'mocha-chmod.txt'), {
       encoding: 'utf8'
-    })
-    .catch(err => {
-      throw new Error(`Chmod setup hook error: ${err.message}`);
     });
+    return true;
+  } catch (err) {
+    console.error(`chmodSetup: ${err.message}`);
+    return false;
+  }
 }
 
-function chmodCleanup(client, sftpUrl) {
-  return client.delete(join(sftpUrl, 'mocha-chmod.txt')).catch(err => {
-    throw new Error(`Chmod cleanup hook error: ${err.message}`);
-  });
+async function chmodCleanup(client, sftpUrl) {
+  try {
+    await client.delete(join(sftpUrl, 'mocha-chmod.txt'));
+    return true;
+  } catch (err) {
+    console.error(`chmodCleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {

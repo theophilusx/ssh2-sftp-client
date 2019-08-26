@@ -20,34 +20,48 @@ describe('Connect Tests', function() {
   let port = process.env.SFTP_PORT;
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
-  let client = new Client();
 
-  afterEach('Cleanup', function() {
-    client.end();
-  });
+  // afterEach('Cleanup', async function() {
+  //   try {
+  //     await client.end();
+  //     return true;
+  //   } catch (err) {
+  //     console.err(`connections.cleanup: ${err.message}`);
+  //     return false;
+  //   }
+  // });
 
   it('connect should return a promise', function() {
+    let client = new Client();
     return expect(
-      client.connect({
-        host: host,
-        port: port,
-        username: username,
-        password: password
-      })
+      client
+        .connect({
+          host: host,
+          port: port,
+          username: username,
+          password: password
+        })
+        .then(() => {
+          client.end();
+        })
     ).to.be.a('promise');
   });
 
   it('valid connection', async function() {
+    let client = new Client();
     await client.connect({
       host: host,
       port: port,
       username: username,
       password: password
     });
-    return expect(client.sftp).to.be.an('object');
+    let type = typeof client.sftp;
+    await client.end();
+    return expect(type).to.equal('object');
   });
 
   it('bad host throws exception', function() {
+    let client = new Client();
     return expect(
       client.connect({
         host: 'bogus-host',
@@ -61,6 +75,7 @@ describe('Connect Tests', function() {
   });
 
   it('bad port throws exception', function() {
+    let client = new Client();
     return expect(
       client.connect({
         host: host,
@@ -74,6 +89,7 @@ describe('Connect Tests', function() {
   });
 
   it('bad username throws exception', function() {
+    let client = new Client();
     return expect(
       client.connect({
         host: host,
@@ -87,6 +103,7 @@ describe('Connect Tests', function() {
   });
 
   it('bad password throws exception', function() {
+    let client = new Client();
     return expect(
       client.connect({
         host: host,

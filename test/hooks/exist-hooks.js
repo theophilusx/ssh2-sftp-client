@@ -2,35 +2,29 @@
 
 const {join} = require('path');
 
-function existSetup(client, sftpUrl, localUrl) {
-  return client
-    .mkdir(join(sftpUrl, 'exist-dir'))
-    .then(() => {
-      return client.fastPut(
-        join(localUrl, 'test-file1.txt'),
-        join(sftpUrl, 'exist-file.txt')
-      );
-    })
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`Exist method test setup hook failure: ${err.message}`);
-    });
+async function existSetup(client, sftpUrl, localUrl) {
+  try {
+    await client.mkdir(join(sftpUrl, 'exist-dir'));
+    await client.fastPut(
+      join(localUrl, 'test-file1.txt'),
+      join(sftpUrl, 'exist-file.txt')
+    );
+    return true;
+  } catch (err) {
+    console.error(`existSetup: ${err.message}`);
+    return false;
+  }
 }
 
-function existCleanup(client, sftpUrl) {
-  return client
-    .delete(join(sftpUrl, 'exist-file.txt'))
-    .then(() => {
-      return client.rmdir(join(sftpUrl, 'exist-dir'));
-    })
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(`Exist method test clenaup hook failed: ${err.message}`);
-    });
+async function existCleanup(client, sftpUrl) {
+  try {
+    await client.delete(join(sftpUrl, 'exist-file.txt'));
+    await client.rmdir(join(sftpUrl, 'exist-dir'));
+    return true;
+  } catch (err) {
+    console.error(`existCleanup: ${err.message}`);
+    return false;
+  }
 }
 
 module.exports = {
