@@ -73,3 +73,17 @@ describe('Rmdir method tests', function() {
     ).to.eventually.equal('Successfully removed directory');
   });
 });
+
+describe('permission tests', function() {
+  it('fail to remove dir with root sub-dir', function() {
+    return expect(
+      sftp.rmdir(join(sftpUrl, 'perm-test', 'dir-t1'))
+    ).to.be.rejectedWith('Failure');
+  });
+
+  it('fail to remove dir without permisisons', function() {
+    return expect(
+      sftp.rmdir(join(sftpUrl, 'perm-test', 'dir-t2'))
+    ).to.be.rejectedWith('Failure');
+  });
+});

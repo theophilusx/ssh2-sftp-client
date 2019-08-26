@@ -6,10 +6,10 @@
 
 const Client = require('ssh2').Client;
 const osPath = require('path').posix;
-const utils = require('./utils');
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
+const join = require('path').join;
 
 let SftpClient = function() {
   this.client = new Client();
@@ -509,51 +509,56 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
  * @param {boolean} recursive, if true, remove direcories/files in target
  * @return {Promise}..
  */
-SftpClient.prototype.rmdir = function(path, recursive = false) {
+SftpClient.prototype.rmdir = async function(path, recursive = false) {
   let sftp = this.sftp;
 
-  let doRmdir = p => {
+  function doRmdir(p) {
     return new Promise((resolve, reject) => {
-      if (!sftp) {
-        return reject(new Error('sftp connect error'));
+      try {
+        sftp.rmdir(p, err => {
+          if (err) {
+            reject(formatError(err, 'sftp.rmdir'));
+          }
+          resolve('Successfully removed directory');
+        });
+      } catch (err) {
+        reject(formatError(err, 'sftp.rmdir'));
       }
-      sftp.rmdir(p, err => {
-        if (err) {
-          reject(new Error(`Failed to remove directory ${p}: ${err.message}`));
-        }
-        resolve('Successfully removed directory');
-      });
-      return undefined;
     });
-  };
-
-  if (!recursive) {
-    return doRmdir(path);
   }
 
-  let rmdir = p => {
-    let list;
-    let files;
-    let dirs;
-    return this.list(p)
-      .then(res => {
-        list = res;
-        files = list.filter(item => item.type === '-');
-        dirs = list.filter(item => item.type === 'd');
-        return utils.forEachAsync(files, f => {
-          return this.delete(osPath.join(p, f.name));
-        });
-      })
-      .then(() => {
-        return utils.forEachAsync(dirs, d => {
-          return rmdir(osPath.join(p, d.name));
-        });
-      })
-      .then(() => {
-        return doRmdir(p);
-      });
-  };
-  return rmdir(path);
+  try {
+    if (!sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.rmdir')
+      );
+    }
+    if (!recursive) {
+      return doRmdir(path);
+    }
+    let list = await this.list(path);
+    if (list.length) {
+      let files = list.filter(item => item.type !== 'd');
+      let dirs = list.filter(item => item.type === 'd');
+      for (let f of files) {
+        try {
+          await this.delete(join(path, f.name));
+        } catch (err) {
+          return Promise.reject(formatError(err, 'sftp.rmdir'));
+        }
+      }
+      for (let d of dirs) {
+        try {
+          await this.rmdir(join(path, d.name), true);
+        } catch (err) {
+          return Promise.reject(formatError(err, 'sftp.rmdir'));
+        }
+      }
+    }
+    return doRmdir(path);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.rmdir'));
+  }
 };
 
 /**
