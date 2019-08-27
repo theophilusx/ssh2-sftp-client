@@ -57,7 +57,20 @@ describe('Stat method tests', function() {
 
   it('Stat on existing file returns stat data', async function() {
     let stats = await sftp.stat(join(sftpUrl, 'mocha-stat.md'));
-    return expect(stats).to.containSubset({mode: 33279, size: 5});
+
+    return expect(stats).to.containSubset({
+      mode: 33279,
+      size: 5,
+      uid: 1000,
+      gid: 985,
+      isDirectory: false,
+      isFile: true,
+      isBlockDevice: false,
+      isCharacterDevice: false,
+      isSymbolicLink: false,
+      isFIFO: false,
+      isSocket: false
+    });
   });
 
   it('Stat on non-existent file rejected', function() {

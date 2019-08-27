@@ -214,15 +214,20 @@ SftpClient.prototype.stat = function(remotePath) {
         if (err) {
           reject(formatError(err, 'sftp.stat'));
         } else {
-          // format similarly to sftp.list
           resolve({
             mode: stats.mode,
-            permissions: stats.permissions,
-            owner: stats.uid,
-            group: stats.gid,
+            uid: stats.uid,
+            gid: stats.gid,
             size: stats.size,
             accessTime: stats.atime * 1000,
-            modifyTime: stats.mtime * 1000
+            modifyTime: stats.mtime * 1000,
+            isDirectory: stats.isDirectory(),
+            isFile: stats.isFile(),
+            isBlockDevice: stats.isBlockDevice(),
+            isCharacterDevice: stats.isCharacterDevice(),
+            isSymbolicLink: stats.isSymbolicLink(),
+            isFIFO: stats.isFIFO(),
+            isSocket: stats.isSocket()
           });
         }
       });
