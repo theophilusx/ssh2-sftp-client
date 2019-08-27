@@ -1,6 +1,6 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "2.5.2",
+  "version": "4.0.0",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
@@ -14,8 +14,14 @@
   "scripts": {
     "test": "mocha"
   },
-  "author": "见见",
-  "email": "jyu213@gmail.com",
+  "author": "Tim Cross",
+  "email": "theophilusx@gmail.com",
+  "contributors": [
+    {
+      "name": "见见 (original author)",
+      "email": "jyu213@gmail.com" 
+    }
+  ],
   "license": "Apache-2.0",
   "dependencies": {
     "concat-stream": "^2.0.0",
