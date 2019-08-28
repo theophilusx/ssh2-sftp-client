@@ -364,16 +364,17 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
 };
 
 /**
- * Create file
+ * Create file a file on the remote server. The 'src' argument
+ * can be a buffer, string or read stream. If 'src' is a string, it
+ * should be the path to a local file.
  *
- * @param  {String|Buffer|stream} input
- * @param  {String} remotePath,
- * @param  {Object} useCompression [description]
- * @param  {String} encoding. Encoding for the WriteStream, can be any
+ * @param  {String|Buffer|stream} src - source data to use
+ * @param  {String} remotePath - path to remote file
+ * @param  {Object} options - options used for write stream configuration
  *                            value supported by node streams.
- * @return {[type]}                [description]
+ * @return {Promise}
  */
-SftpClient.prototype.put = function(input, remotePath, options) {
+SftpClient.prototype.put = function(src, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
@@ -393,14 +394,14 @@ SftpClient.prototype.put = function(input, remotePath, options) {
         resolve(`Uploaded data stream to ${remotePath}`);
       });
 
-      if (input instanceof Buffer) {
-        stream.end(input);
+      if (src instanceof Buffer) {
+        stream.end(src);
       } else {
         let rdr;
-        if (typeof input === 'string') {
-          rdr = fs.createReadStream(input);
+        if (typeof src === 'string') {
+          rdr = fs.createReadStream(src);
         } else {
-          rdr = input;
+          rdr = src;
         }
         rdr.on('error', err => {
           removeListeners(stream);
@@ -415,7 +416,7 @@ SftpClient.prototype.put = function(input, remotePath, options) {
 };
 
 /**
- * Append to file
+ * Append to an existing remote file
  *
  * @param  {Buffer|stream} input
  * @param  {String} remotePath,
@@ -460,7 +461,7 @@ SftpClient.prototype.append = function(input, remotePath, options) {
 /**
  * @async
  *
- * Make a dirextory on remote server
+ * Make a directory on remote server
  *
  * @param {string} path, remote directory path.
  * @param {boolean} recursive, if true, recursively create directories
@@ -508,7 +509,8 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
  * Remove directory on remote server
  *
  * @param {string} path, path to directory to be removed
- * @param {boolean} recursive, if true, remove direcories/files in target
+ * @param {boolean} recursive, if true, remove directories/files in target
+ *                             directory
  * @return {Promise}..
  */
 SftpClient.prototype.rmdir = async function(path, recursive = false) {
@@ -597,7 +599,7 @@ SftpClient.prototype.delete = function(path) {
  *
  * Rename a file on the remote SFTP repository
  *
- * @param {sring} fromPath - path to the file to be renamced.
+ * @param {string} fromPath - path to the file to be renamced.
  * @param {string} toPath - path to the new name.
  *
  * @return {Promise}
@@ -713,6 +715,11 @@ SftpClient.prototype.connect = function(config) {
             // exhausted retries - do callback with error
             callback(formatError(err, 'sftp.connect', attemptCount), null);
           })
+          .on('close', withError => {
+            if (withError) {
+              console.error('sftp client closed due to errors');
+            }
+          })
           .connect(config);
       });
     } catch (err) {
@@ -755,8 +762,8 @@ SftpClient.prototype.end = function() {
   return new Promise((resolve, reject) => {
     try {
       // debugListeners(this.client);
-      removeListeners(this.client);
       this.client.end();
+      removeListeners(this.client);
       this.sftp = null;
       resolve(true);
     } catch (err) {
@@ -776,6 +783,10 @@ SftpClient.prototype.end = function() {
  */
 SftpClient.prototype.on = function(eventType, callback) {
   this.client.on(eventType, callback);
+};
+
+SftpClient.prototype.removeListener = function(eventType, listener) {
+  this.client.removeListener(eventType, listener);
 };
 
 module.exports = SftpClient;
