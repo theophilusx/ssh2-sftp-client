@@ -3,4 +3,12 @@
 node_modules
 tmp
 /test/
-/examples/
+example/
+.env
+.prettier
+env-turing
+.eslintrc
+.mocharc.js
+.indium.json
+README.org
+
