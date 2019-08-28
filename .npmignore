@@ -1,14 +1,15 @@
 *.tgz
 .DS_Store
+README.org
 node_modules
 tmp
-/test/
-example/
+test
+example
 .env
-.prettier
+.prettierrc
 env-turing
-.eslintrc
+.eslintrc.js
 .mocharc.js
 .indium.json
-README.org
+
 
