@@ -85,3 +85,33 @@ describe('test mkdir without permissions', function() {
     ).to.be.rejectedWith('Failed to create directory');
   });
 });
+
+describe('test mkdir with relative paths', function() {
+  it('Relative directory name creates dir', function() {
+    let path = 'xyz';
+    return expect(sftp.mkdir(path)).to.eventually.equal(
+      `${path} directory created`
+    );
+  });
+
+  it('Relative directory with sub dir creation', function() {
+    let path = 'xyz/abc';
+    return expect(sftp.mkdir(path)).to.eventually.equal(
+      `${path} directory created`
+    );
+  });
+
+  it('Relative dir name created with recursive flag', function() {
+    let path = 'abc';
+    return expect(sftp.mkdir(path, true)).to.eventually.equal(
+      `./${path} directory created`
+    );
+  });
+
+  it('relative dir and sub dir created with recursive flag', function() {
+    let path = 'def/ghi';
+    return expect(sftp.mkdir(path, true)).to.eventually.equal(
+      `${path} directory created`
+    );
+  });
+});
