@@ -5,11 +5,10 @@
 'use strict';
 
 const Client = require('ssh2').Client;
-const osPath = require('path').posix;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const {join, parse} = require('path');
+const {join, posix} = require('path');
 
 let SftpClient = function() {
   this.client = new Client();
@@ -171,7 +170,11 @@ SftpClient.prototype.exists = function(path) {
       if (!sftp) {
         reject(formatError('No SFTP connection available', 'sftp.exists'));
       }
-      let {dir, base} = osPath.parse(path);
+      let {dir, base} = posix.parse(path);
+      if (base === '.') {
+        // the '.' directory exists by definition
+        resolve('d');
+      }
       sftp.readdir(dir, (err, list) => {
         if (err) {
           if (err.code === 2) {
@@ -487,17 +490,22 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
         formatError('No SFTP connection available', 'sftp.mkdir')
       );
     }
+    let realPath = path;
+    let {dir} = posix.parse(path);
+    if (dir === '') {
+      dir = '.';
+      realPath = './' + path;
+    }
     if (!recursive) {
       return doMkdir(path);
     }
-    let {dir} = parse(path);
     let parent = await this.exists(dir);
     if (!parent) {
       await this.mkdir(dir, true);
     } else if (parent !== 'd') {
       return Promise.reject(formatError('Bad directory path', 'sftp.mkdir'));
     }
-    return doMkdir(path);
+    return doMkdir(realPath);
   } catch (err) {
     return Promise.reject(formatError(err, 'sftp.mkdir'));
   }
