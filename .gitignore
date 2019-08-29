@@ -7,3 +7,4 @@ npm-debug.log
 package-lock.json
 .env
 .tern-port
+env-turing
