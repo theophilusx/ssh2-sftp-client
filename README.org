@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v4.0.2*. Previous release was *v2.5.2*.
+Current stable release is *v4.0.3*.
 
 Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
 
@@ -881,6 +881,9 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+** v4.0.3
+  - Fix bug in mkdir() relating to handling of relative paths
+  - Modify exists() to always return 'd' if path is '.'
 ** v4.0.2 (Current stable version)
   - Fix some minor packaging issues
 
