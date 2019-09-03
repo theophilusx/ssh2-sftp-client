@@ -291,7 +291,11 @@ SftpClient.prototype.get = function(path, dst, options) {
         });
         wtr.on('finish', () => {
           removeListeners(rdr);
-          resolve(wtr);
+          if (typeof dst === 'string') {
+            resolve(dst);
+          } else {
+            resolve(wtr);
+          }
         });
         rdr.pipe(wtr);
       }
