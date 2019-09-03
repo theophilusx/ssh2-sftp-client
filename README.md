@@ -368,12 +368,12 @@ Returns the attributes associated with the object pointed to by `path`.
 ### get(path, dst, options) ==> String
 
 Retrieve a file from a remote SFTP server. The `dst` argument defines the
-destination and can be either a string, a buffer or a writeable stream. In
+destination and can be either a string or a writeable stream. In
 general, if your going to pass in a string as the destination, you are probably
 better off using the `fastGet()` method. 
 
 -   **path:** String. Path to the remote file to download
--   **dst:** String|Buffer|Writeable. Destination for the data. If a string, it
+-   **dst:** String|Stream. Destination for the data. If a string, it
     should be a local file path.
 -   **options:** Options for the `get()` command (see below).
 
