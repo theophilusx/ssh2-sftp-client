@@ -1,55 +1,56 @@
 
 # Table of Contents
 
-1.  [SSH2 SFTP Client](#org2d05174)
-2.  [Installation](#orga6627a8)
-3.  [Basic Usage](#org555685a)
-4.  [Breaking Changes in Version 4.0.0](#orgb8a1628)
-5.  [Documentation](#org9a9ccca)
-    1.  [Methods](#orgd6f69b2)
-        1.  [connect(config) ===> SFTPstream](#org8aed5bd)
-        2.  [list(path, pattern) ==> Array[object]](#orgc9acc5f)
-        3.  [exists(path) ==> boolean](#org20c37d4)
-        4.  [stat(path) ==> object](#org2bf719a)
-        5.  [get(path, dst, options) ==> String](#org63e06d9)
-        6.  [fastGet(remotePath, localPath, options) ===> string](#org148cac2)
-        7.  [put(src, remotePath, options) ==> string](#org9bd8e25)
-        8.  [fastPut(localPath, remotePath, options) ==> string](#orgade852f)
-        9.  [append(input, remotePath, options) ==> string](#orgf526c1b)
-        10. [mkdir(path, recursive) ==> string](#orgc241509)
-        11. [rmdir(path, recursive) ==> string](#orgcb7b23a)
-        12. [delete(path) ==> string](#org5f2aaf5)
-        13. [rename(fromPath, toPath) ==> string](#org8adc3aa)
-        14. [chmod(path, mode) ==> string](#orgc9cf7df)
-        15. [end() ==> boolean](#org6640bdd)
-        16. [Add and Remove Listeners](#orge3bfd3b)
-6.  [FAQ](#org1b29b3b)
-    1.  [How can you pass writable stream as dst for get method?](#org84b733e)
-    2.  [How can I upload files without having to specify a password?](#org3d27556)
-    3.  [How can I connect through a Socks Proxy](#org9213350)
-7.  [Change Log](#org3793d61)
-    1.  [v4.0.3](#orgfff5fc8)
-    2.  [v4.0.2 (Current stable version)](#orgcedb95b)
-    3.  [v4.0.0](#orgf4e6546)
-    4.  [v2.5.2](#org33a63c3)
-    5.  [v2.5.1](#org78ad039)
-    6.  [v2.5.0](#org3f0ba46)
-    7.  [v2.4.3](#org355d5d5)
-    8.  [v2.4.2](#orgb7c9fab)
-    9.  [v2.4.1](#org0c0beaa)
-    10. [v2.4.0](#orge80bc30)
-    11. [v2.3.0](#orgadff725)
-    12. [v3.0.0 &#x2013; deprecate this version](#org7712d13)
-    13. [v2.1.1](#orgf6ed439)
-    14. [v2.0.1](#org8f0f6d0)
-    15. [v1.1.0](#org0660d2b)
-    16. [v1.0.5:](#org49073b6)
-8.  [Logging Issues](#orgfea9882)
-9.  [Pull Requests](#org1031470)
-10. [Contributors](#org81425ff)
+1.  [SSH2 SFTP Client](#org8706e25)
+2.  [Installation](#org261da7d)
+3.  [Basic Usage](#org897d98a)
+4.  [Breaking Changes in Version 4.0.0](#org1d88072)
+5.  [Documentation](#org112a330)
+    1.  [Methods](#org7e69082)
+        1.  [connect(config) ===> SFTPstream](#org9eb5308)
+        2.  [list(path, pattern) ==> Array[object]](#org39a88e9)
+        3.  [exists(path) ==> boolean](#org21278ac)
+        4.  [stat(path) ==> object](#org9596bbb)
+        5.  [get(path, dst, options) ==> String|Stream|Buffer](#orgbffea8d)
+        6.  [fastGet(remotePath, localPath, options) ===> string](#orga3ef1d7)
+        7.  [put(src, remotePath, options) ==> string](#orgffa3c3d)
+        8.  [fastPut(localPath, remotePath, options) ==> string](#orgf41a9c9)
+        9.  [append(input, remotePath, options) ==> string](#org18ec48b)
+        10. [mkdir(path, recursive) ==> string](#orgf4ddfec)
+        11. [rmdir(path, recursive) ==> string](#org673378a)
+        12. [delete(path) ==> string](#org265d8de)
+        13. [rename(fromPath, toPath) ==> string](#org68fd904)
+        14. [chmod(path, mode) ==> string](#org6331e28)
+        15. [end() ==> boolean](#org0f3b12b)
+        16. [Add and Remove Listeners](#org7de1fd5)
+6.  [FAQ](#org6cbef1c)
+    1.  [How can you pass writable stream as dst for get method?](#org58a5248)
+    2.  [How can I upload files without having to specify a password?](#org0d8ca75)
+    3.  [How can I connect through a Socks Proxy](#org17e6641)
+7.  [Change Log](#org31048a2)
+    1.  [v4.0.4](#orgf023c0a)
+    2.  [v4.0.3](#org091bc5a)
+    3.  [v4.0.2 (Current stable version)](#orgbf33201)
+    4.  [v4.0.0](#org21a134a)
+    5.  [v2.5.2](#orgb37f83b)
+    6.  [v2.5.1](#orga1baf50)
+    7.  [v2.5.0](#org4e7edc8)
+    8.  [v2.4.3](#org8402cab)
+    9.  [v2.4.2](#orga0a191e)
+    10. [v2.4.1](#orgcea9caa)
+    11. [v2.4.0](#org21e5668)
+    12. [v2.3.0](#org7ebc0b7)
+    13. [v3.0.0 &#x2013; deprecate this version](#org19ce15e)
+    14. [v2.1.1](#orge8d1465)
+    15. [v2.0.1](#orgc9aeff0)
+    16. [v1.1.0](#orgf5a099d)
+    17. [v1.0.5:](#orgc5260a2)
+8.  [Logging Issues](#org113ae65)
+9.  [Pull Requests](#orgeff386b)
+10. [Contributors](#org8c16256)
 
 
-<a id="org2d05174"></a>
+<a id="org8706e25"></a>
 
 # SSH2 SFTP Client
 
@@ -66,14 +67,14 @@ Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
 Node versions < 8.x are not supported.
 
 
-<a id="orga6627a8"></a>
+<a id="org261da7d"></a>
 
 # Installation
 
     npm install ssh2-sftp-client
 
 
-<a id="org555685a"></a>
+<a id="org897d98a"></a>
 
 # Basic Usage
 
@@ -94,7 +95,7 @@ Node versions < 8.x are not supported.
     });
 
 
-<a id="orgb8a1628"></a>
+<a id="org1d88072"></a>
 
 # Breaking Changes in Version 4.0.0
 
@@ -122,7 +123,7 @@ There has been minor changes to the API signatures
     `isCharacterDevice`, `isSymbolicLink`, `isFIFO` and `isSocket` have been added.
 
 
-<a id="org9a9ccca"></a>
+<a id="org112a330"></a>
 
 # Documentation
 
@@ -133,12 +134,12 @@ All the methods will return a Promise, except for `on()` and
 `removeListener()`, which are typically only used in special use cases. 
 
 
-<a id="orgd6f69b2"></a>
+<a id="org7e69082"></a>
 
 ## Methods
 
 
-<a id="org8aed5bd"></a>
+<a id="org9eb5308"></a>
 
 ### connect(config) ===> SFTPstream
 
@@ -208,7 +209,7 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
         });
 
 
-<a id="orgc9acc5f"></a>
+<a id="org39a88e9"></a>
 
 ### list(path, pattern) ==> Array[object]
 
@@ -281,7 +282,7 @@ directory.
     anchor matches to the beginning/end of the string etc.
 
 
-<a id="org20c37d4"></a>
+<a id="org21278ac"></a>
 
 ### exists(path) ==> boolean
 
@@ -316,7 +317,7 @@ if it exists or false if it does not.
           });
 
 
-<a id="org2bf719a"></a>
+<a id="org9596bbb"></a>
 
 ### stat(path) ==> object
 
@@ -363,17 +364,23 @@ Returns the attributes associated with the object pointed to by `path`.
           });
 
 
-<a id="org63e06d9"></a>
+<a id="orgbffea8d"></a>
 
-### get(path, dst, options) ==> String
+### get(path, dst, options) ==> String|Stream|Buffer
 
 Retrieve a file from a remote SFTP server. The `dst` argument defines the
-destination and can be either a string, a buffer or a writeable stream. In
-general, if your going to pass in a string as the destination, you are probably
-better off using the `fastGet()` method. 
+destination and can be either a string, a writeable stream or undefined. If it
+is a string, it is interpreted as the path to a location on the local file
+system (path should include the file name). If it is a writeable stream, the
+remote data is piped into that stream. If `dst` is undefined, the method will
+put the data into a buffer and return that buffer when the Promise is
+resolved. If `dst` is defined, it is returned when the Promise is resolved.
+
+In general, if your going to pass in a string as the destination, you are
+probably better off using the `fastGet()` method.
 
 -   **path:** String. Path to the remote file to download
--   **dst:** String|Buffer|Writeable. Destination for the data. If a string, it
+-   **dst:** String|Stream. Destination for the data. If a string, it
     should be a local file path.
 -   **options:** Options for the `get()` command (see below).
 
@@ -417,7 +424,7 @@ better off using the `fastGet()` method.
         decompress a gzip file 'on the fly'.
 
 
-<a id="org148cac2"></a>
+<a id="orga3ef1d7"></a>
 
 ### fastGet(remotePath, localPath, options) ===> string
 
@@ -460,7 +467,7 @@ throughput. This is the simplest method if you just want to download a file.
           });
 
 
-<a id="org9bd8e25"></a>
+<a id="orgffa3c3d"></a>
 
 ### put(src, remotePath, options) ==> string
 
@@ -513,7 +520,7 @@ stream are piped to the `remotePath` on the server.
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
 
-<a id="orgade852f"></a>
+<a id="orgf41a9c9"></a>
 
 ### fastPut(localPath, remotePath, options) ==> string
 
@@ -556,7 +563,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           });
 
 
-<a id="orgf526c1b"></a>
+<a id="org18ec48b"></a>
 
 ### append(input, remotePath, options) ==> string
 
@@ -601,7 +608,7 @@ in to the file.
           });
 
 
-<a id="orgc241509"></a>
+<a id="orgf4ddfec"></a>
 
 ### mkdir(path, recursive) ==> string
 
@@ -630,7 +637,7 @@ defaults to false.
           });
 
 
-<a id="orgcb7b23a"></a>
+<a id="org673378a"></a>
 
 ### rmdir(path, recursive) ==> string
 
@@ -660,7 +667,7 @@ action will fail.
           });
 
 
-<a id="org5f2aaf5"></a>
+<a id="org265d8de"></a>
 
 ### delete(path) ==> string
 
@@ -685,7 +692,7 @@ Delete a file on the remote server.
           });
 
 
-<a id="org8adc3aa"></a>
+<a id="org68fd904"></a>
 
 ### rename(fromPath, toPath) ==> string
 
@@ -710,7 +717,7 @@ necessary permissions to modify the remote file.
           });
 
 
-<a id="orgc9cf7df"></a>
+<a id="org6331e28"></a>
 
 ### chmod(path, mode) ==> string
 
@@ -738,7 +745,7 @@ directory.
           });
 
 
-<a id="org6640bdd"></a>
+<a id="org0f3b12b"></a>
 
 ### end() ==> boolean
 
@@ -761,7 +768,7 @@ resources. This function also removes all listeners associated with the client.
           });
 
 
-<a id="orge3bfd3b"></a>
+<a id="org7de1fd5"></a>
 
 ### Add and Remove Listeners
 
@@ -787,12 +794,12 @@ them have any meaning in the context of SFTP. These are
     the `end()` method automatically removes all listeners from the client object. 
 
 
-<a id="org1b29b3b"></a>
+<a id="org6cbef1c"></a>
 
 # FAQ
 
 
-<a id="org84b733e"></a>
+<a id="org58a5248"></a>
 
 ## How can you pass writable stream as dst for get method?
 
@@ -856,7 +863,7 @@ bring thenm across before saving to local file system.
       });
 
 
-<a id="org3d27556"></a>
+<a id="org0d8ca75"></a>
 
 ## How can I upload files without having to specify a password?
 
@@ -891,7 +898,7 @@ configuration.
     }
 
 
-<a id="org9213350"></a>
+<a id="org17e6641"></a>
 
 ## How can I connect through a Socks Proxy
 
@@ -926,12 +933,20 @@ This solution was provided by @jmorino.
     // client is connected
 
 
-<a id="org3793d61"></a>
+<a id="org31048a2"></a>
 
 # Change Log
 
 
-<a id="orgfff5fc8"></a>
+<a id="orgf023c0a"></a>
+
+## v4.0.4
+
+-   Minor documentation fix
+-   Fix return value from `get()`
+
+
+<a id="org091bc5a"></a>
 
 ## v4.0.3
 
@@ -939,14 +954,14 @@ This solution was provided by @jmorino.
 -   Modify exists() to always return 'd' if path is '.'
 
 
-<a id="orgcedb95b"></a>
+<a id="orgbf33201"></a>
 
 ## v4.0.2 (Current stable version)
 
 -   Fix some minor packaging issues
 
 
-<a id="orgf4e6546"></a>
+<a id="org21a134a"></a>
 
 ## v4.0.0
 
@@ -964,7 +979,7 @@ This solution was provided by @jmorino.
 -   Added the `removeListener()` method to compliment the existing `on()` method.
 
 
-<a id="org33a63c3"></a>
+<a id="orgb37f83b"></a>
 
 ## v2.5.2
 
@@ -972,21 +987,21 @@ This solution was provided by @jmorino.
 -   Fix error in package.json pointing to wrong repository
 
 
-<a id="org78ad039"></a>
+<a id="orga1baf50"></a>
 
 ## v2.5.1
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
 
-<a id="org3f0ba46"></a>
+<a id="org4e7edc8"></a>
 
 ## v2.5.0
 
 -   ???
 
 
-<a id="org355d5d5"></a>
+<a id="org8402cab"></a>
 
 ## v2.4.3
 
@@ -994,7 +1009,7 @@ This solution was provided by @jmorino.
     -   fix connect promise if connection ends
 
 
-<a id="orgb7c9fab"></a>
+<a id="orga0a191e"></a>
 
 ## v2.4.2
 
@@ -1002,7 +1017,7 @@ This solution was provided by @jmorino.
     -   fix windows path
 
 
-<a id="org0c0beaa"></a>
+<a id="orgcea9caa"></a>
 
 ## v2.4.1
 
@@ -1010,7 +1025,7 @@ This solution was provided by @jmorino.
     -   bug fix
 
 
-<a id="orge80bc30"></a>
+<a id="org21e5668"></a>
 
 ## v2.4.0
 
@@ -1023,7 +1038,7 @@ This solution was provided by @jmorino.
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
 
-<a id="orgadff725"></a>
+<a id="org7ebc0b7"></a>
 
 ## v2.3.0
 
@@ -1032,7 +1047,7 @@ This solution was provided by @jmorino.
 -   fix: \`mkdir\` file exists decision logic
 
 
-<a id="org7712d13"></a>
+<a id="org19ce15e"></a>
 
 ## v3.0.0 &#x2013; deprecate this version
 
@@ -1040,7 +1055,7 @@ This solution was provided by @jmorino.
 -   fix: get readable not emitting data events in node 10.0.0
 
 
-<a id="orgf6ed439"></a>
+<a id="orge8d1465"></a>
 
 ## v2.1.1
 
@@ -1048,7 +1063,7 @@ This solution was provided by @jmorino.
 -   add: \`get\` or \`put\` method add extra options [pr#52](<https://github.com/jyu213/ssh2-sftp-client/pull/52>)
 
 
-<a id="org8f0f6d0"></a>
+<a id="orgc9aeff0"></a>
 
 ## v2.0.1
 
@@ -1058,14 +1073,14 @@ This solution was provided by @jmorino.
 -   fix: return Error object on promise rejection [pr#20](<https://github.com/jyu213/ssh2-sftp-client/pull/20>)
 
 
-<a id="org0660d2b"></a>
+<a id="orgf5a099d"></a>
 
 ## v1.1.0
 
 -   fix: add encoding control support for binary stream
 
 
-<a id="org49073b6"></a>
+<a id="orgc5260a2"></a>
 
 ## v1.0.5:
 
@@ -1073,7 +1088,7 @@ This solution was provided by @jmorino.
 -   change: remove \`this.client.sftp\` to \`connect\` function
 
 
-<a id="orgfea9882"></a>
+<a id="org113ae65"></a>
 
 # Logging Issues
 
@@ -1082,7 +1097,7 @@ requests. Please ensure you include the module version, node version and
 platform. 
 
 
-<a id="org1031470"></a>
+<a id="orgeff386b"></a>
 
 # Pull Requests
 
@@ -1102,7 +1117,7 @@ your pull request what level of change it represents i.e.
     bug.
 
 
-<a id="org81425ff"></a>
+<a id="org8c16256"></a>
 
 # Contributors
 
@@ -1113,4 +1128,5 @@ intention is to credit anyone who contributes going forward.
 
 -   **jyu213:** Original author
 -   **theophilusx:** Current maintainer
+-   **henrytk:** Documentation fix
 
