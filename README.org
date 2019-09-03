@@ -893,28 +893,24 @@ This solution was provided by @jmorino.
 ** v4.0.3
   - Fix bug in mkdir() relating to handling of relative paths
   - Modify exists() to always return 'd' if path is '.'
-** v4.0.2 (Current stable version)
+** v4.0.2
   - Fix some minor packaging issues
-
 ** v4.0.0 
-
-- Remove support for node < 8.x
-- Fix connection retry feature
-- sftp connection object set to null when 'end' signal is raised
-- Removed 'connectMethod' argument from connect method.
-- Refined adding/removing of listeners in connect() and end() methods to enable
-  errors to be adequately caught and reported.
-- Depricate auxList() and add pattern/regexp filter option to list()
-- Refactored handling of event signals to provide better feedback to clients
-- Removed pointless 'permissions' property from objects returned by ~stat()~
-  (same as mode property). Added additional properties describing the type of
-  object. 
-- Added the ~removeListener()~ method to compliment the existing ~on()~ method.
-
+   - Remove support for node < 8.x
+   - Fix connection retry feature
+   - sftp connection object set to null when 'end' signal is raised
+   - Removed 'connectMethod' argument from connect method.
+   - Refined adding/removing of listeners in connect() and end() methods to enable
+     errors to be adequately caught and reported.
+   - Depricate auxList() and add pattern/regexp filter option to list()
+   - Refactored handling of event signals to provide better feedback to clients
+   - Removed pointless 'permissions' property from objects returned by ~stat()~
+     (same as mode property). Added additional properties describing the type of
+     object. 
+   - Added the ~removeListener()~ method to compliment the existing ~on()~ method.
 ** v2.5.2 
-    - Repository transferred to theophilusx
-    - Fix error in package.json pointing to wrong repository
-
+   - Repository transferred to theophilusx
+   - Fix error in package.json pointing to wrong repository
 ** v2.5.1
     - Apply 4 pull requests to address minor issues prior to transfer
     
