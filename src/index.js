@@ -442,7 +442,16 @@ SftpClient.prototype.append = function(input, remotePath, options) {
         reject(formatError('Cannot append one file to another', 'sftp.append'));
       }
 
-      let stream = sftp.createWriteStream(remotePath, options);
+      let writerOptions = {
+        flags: 'a'
+      };
+
+      if (options) {
+        writerOptions = options;
+        writerOptions.flags = 'a';
+      }
+
+      let stream = sftp.createWriteStream(remotePath, writerOptions);
 
       stream.on('error', err => {
         removeListeners(stream);
@@ -771,12 +780,17 @@ SftpClient.prototype.connect = function(config) {
  *
  */
 SftpClient.prototype.end = function() {
+  let obj = this;
+
   return new Promise((resolve, reject) => {
     try {
       // debugListeners(this.client);
-      this.client.end();
-      removeListeners(this.client);
-      this.sftp = null;
+      obj.client.on('close', () => {
+        removeListeners(obj.client);
+        resolve(true);
+      });
+      obj.client.end();
+      //removeListeners(obj.client);
       resolve(true);
     } catch (err) {
       reject(formatError(err, 'sftp.end'));
