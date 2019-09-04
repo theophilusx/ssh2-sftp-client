@@ -8,8 +8,10 @@ example
 .env
 .prettierrc
 env-turing
+env-vbox
 .eslintrc.js
 .mocharc.js
 .indium.json
+.tern-port
 
 
