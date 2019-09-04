@@ -387,7 +387,17 @@ SftpClient.prototype.put = function(src, remotePath, options) {
 
     try {
       if (!sftp) {
-        reject(new Error('sftp.put: No SFTP connections available'));
+        return reject(new Error('sftp.put: No SFTP connections available'));
+      }
+
+      if (typeof src === 'string') {
+        try {
+          fs.accessSync(src, fs.constants.R_OK);
+        } catch (err) {
+          return reject(
+            formatError(`Cannot read ${src}: ${err.message}`, 'sftp.put')
+          );
+        }
       }
 
       let stream = sftp.createWriteStream(remotePath, options);
