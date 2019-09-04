@@ -5,72 +5,58 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
-const gHooks = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  closeConnection
+} = require('./hooks/global-hooks');
 const eHooks = require('./hooks/exist-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-let hookSftp, sftp, sftpUrl, localUrl;
-
-before('Global setup', function() {
-  return gHooks
-    .setup()
-    .then(testEnv => {
-      hookSftp = testEnv.hookSftp;
-      sftp = testEnv.sftp;
-      sftpUrl = testEnv.sftpUrl;
-      localUrl = testEnv.localUrl;
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
-after('Global shutdown', function() {
-  return gHooks
-    .closeDown()
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
 describe('Exist method tests', function() {
-  before('Exist test setup hook', function() {
-    return eHooks.existSetup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  let hookSftp, sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
   });
 
-  after('Exist test cleanup hook', function() {
-    return eHooks.existCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  before('Exist test setup hook', async function() {
+    hookSftp = await getConnection('exist-hook');
+    sftp = await getConnection('exist');
+    await eHooks.existSetup(hookSftp, config.sftpUrl, config.localUrl);
+    return true;
+  });
+
+  after('Exist test cleanup hook', async function() {
+    await eHooks.existCleanup(hookSftp, config.sftpUrl);
+    await closeConnection('exist', sftp);
+    await closeConnection('exist-hook', hookSftp);
+    return true;
   });
 
   it('Exist return should be a promise', function() {
-    return expect(sftp.exists(sftpUrl)).to.be.a('promise');
+    return expect(sftp.exists(config.sftpUrl)).to.be.a('promise');
   });
 
   it('Exist returns truthy for existing directory', function() {
-    return expect(sftp.exists(join(sftpUrl, 'exist-dir'))).to.eventually.equal(
-      'd'
-    );
+    return expect(
+      sftp.exists(join(config.sftpUrl, 'exist-dir'))
+    ).to.eventually.equal('d');
   });
 
   it('Exist returns truthy for existing file', function() {
     return expect(
-      sftp.exists(join(sftpUrl, 'exist-file.txt'))
+      sftp.exists(join(config.sftpUrl, 'exist-file.txt'))
     ).to.eventually.equal('-');
   });
 
   it('Exists return false value for non existent object', function() {
     return expect(
-      sftp.exists(join(sftpUrl, 'no-such-dir/subdir'))
+      sftp.exists(join(config.sftpUrl, 'no-such-dir/subdir'))
     ).to.eventually.equal(false);
   });
 

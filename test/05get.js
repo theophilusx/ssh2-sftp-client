@@ -7,65 +7,58 @@ const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
-const {setup, closeDown} = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  closeConnection
+} = require('./hooks/global-hooks');
 const gHooks = require('./hooks/get-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-let hookSftp, sftp, sftpUrl, localUrl;
-
-before('Global setup', function() {
-  return setup()
-    .then(testEnv => {
-      hookSftp = testEnv.hookSftp;
-      sftp = testEnv.sftp;
-      (sftpUrl = testEnv.sftpUrl), (localUrl = testEnv.localUrl);
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
-after('Global shutdown', function() {
-  return closeDown()
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
 describe('Get method tests', function() {
-  before('Get setup hook', function() {
-    return gHooks.getSetup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  let hookSftp, sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
   });
 
-  after('Get cleanup hook', function() {
-    return gHooks.getCleanup(hookSftp, sftpUrl, localUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  before('Get setup hook', async function() {
+    hookSftp = await getConnection('get-hook');
+    sftp = await getConnection('get');
+    await gHooks.getSetup(hookSftp, config.sftpUrl, config.localUrl);
+    return true;
+  });
+
+  after('Get cleanup hook', async function() {
+    await gHooks.getCleanup(hookSftp, config.sftpUrl, config.localUrl);
+    await closeConnection('get', sftp);
+    await closeConnection('get-hook', hookSftp);
+    return true;
   });
 
   it('Get returns a promise', function() {
-    return expect(sftp.get(join(sftpUrl, 'mocha-file.md'))).to.be.a('promise');
+    return expect(sftp.get(join(config.sftpUrl, 'mocha-file.md'))).to.be.a(
+      'promise'
+    );
   });
 
   it('get the file content', function() {
-    return sftp.get(join(sftpUrl, 'mocha-file.md')).then(data => {
+    return sftp.get(join(config.sftpUrl, 'mocha-file.md')).then(data => {
       let body = data.toString();
       return expect(body).to.equal('hello');
     });
   });
 
   it('Get large text file using a stream', function() {
-    let localFile = join(localUrl, 'local-large-file.txt');
+    let localFile = join(config.localUrl, 'local-large-file.txt');
     return sftp
-      .get(join(sftpUrl, 'large-file1.txt'), localFile, {encoding: 'utf8'})
+      .get(join(config.sftpUrl, 'large-file1.txt'), localFile, {
+        encoding: 'utf8'
+      })
       .then(() => {
         let stats = fs.statSync(localFile);
         return expect(stats.size).to.equal(6973257);
@@ -73,9 +66,9 @@ describe('Get method tests', function() {
   });
 
   it('Get gzipped file using a stream', function() {
-    let localFile = join(localUrl, 'local-gizipped-file.txt.gz');
+    let localFile = join(config.localUrl, 'local-gizipped-file.txt.gz');
     return sftp
-      .get(join(sftpUrl, 'gzipped-file.txt.gz'), localFile)
+      .get(join(config.sftpUrl, 'gzipped-file.txt.gz'), localFile)
       .then(() => {
         let stats = fs.statSync(localFile);
         return expect(stats.size).to.equal(570314);
@@ -83,22 +76,24 @@ describe('Get method tests', function() {
   });
 
   it('Get gzipped file and gunzip in pipe', function() {
-    let localFile = join(localUrl, 'local-gzipped-file.txt');
+    let localFile = join(config.localUrl, 'local-gzipped-file.txt');
     let gunzip = zlib.createGunzip();
     let out = fs.createWriteStream(localFile, {
       flags: 'w',
       encoding: null
     });
     gunzip.pipe(out);
-    return sftp.get(join(sftpUrl, 'gzipped-file.txt.gz'), gunzip).then(() => {
-      let stats = fs.statSync(localFile);
-      return expect(stats.size).to.equal(6973257);
-    });
+    return sftp
+      .get(join(config.sftpUrl, 'gzipped-file.txt.gz'), gunzip)
+      .then(() => {
+        let stats = fs.statSync(localFile);
+        return expect(stats.size).to.equal(6973257);
+      });
   });
 
   it('Get non-existent file is rejected', function() {
     return expect(
-      sftp.get(join(sftpUrl, 'moacha-file-not-exist.md'))
+      sftp.get(join(config.sftpUrl, 'moacha-file-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
 });

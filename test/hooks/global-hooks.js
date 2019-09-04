@@ -9,44 +9,41 @@ const {join} = require('path');
 
 // use your test ssh server config
 const config = {
-  host: process.env['SFTP_SERVER'],
-  username: process.env['SFTP_USER'],
-  password: process.env['SFTP_PASSWORD'],
-  port: process.env['SFTP_PORT'] || 22
-};
-
-const testEnv = {
-  sftp: new Client(),
-  hookSftp: new Client(),
+  host: process.env.SFTP_SERVER,
+  username: process.env.SFTP_USER,
+  password: process.env.SFTP_PASSWORD,
+  port: process.env.SFTP_PORT || 22,
   localUrl: join(__dirname, '../testData'),
-  sftpUrl: process.env['SFTP_URL']
+  sftpUrl: process.env.SFTP_URL,
+  delay: 10000
 };
 
-async function setup() {
+const getConnection = async name => {
   try {
-    testEnv.sftp = new Client();
-    testEnv.hookSftp = new Client();
-    await testEnv.sftp.connect(config);
-    await testEnv.hookSftp.connect(config);
-    return testEnv;
+    let con = new Client();
+    await con.connect(config);
+    return con;
   } catch (err) {
-    console.error(`global setup: ${err.message}`);
-    return testEnv;
+    console.error(`${name}: Connect failure ${err.message}`);
+    console.dir(config);
+    throw err;
   }
-}
+};
 
-async function closeDown() {
+const closeConnection = async (name, con) => {
   try {
-    await testEnv.sftp.end();
-    await testEnv.hookSftp.end();
+    if (con) {
+      await con.end();
+    }
     return true;
   } catch (err) {
-    console.error(`global cleanup: ${err.message}`);
-    return false;
+    console.error(`${name}: Connection close failure: ${err.message}`);
+    throw err;
   }
-}
+};
 
 module.exports = {
-  setup,
-  closeDown
+  config,
+  getConnection,
+  closeConnection
 };

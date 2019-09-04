@@ -6,58 +6,50 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
 const stream = require('stream');
-const {setup, closeDown} = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  closeConnection
+} = require('./hooks/global-hooks');
 const aHooks = require('./hooks/append-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-let hookSftp, sftp, sftpUrl, localUrl;
-
-before('Global setup', function() {
-  return setup()
-    .then(testEnv => {
-      hookSftp = testEnv.hookSftp;
-      sftp = testEnv.sftp;
-      sftpUrl = testEnv.sftpUrl;
-      localUrl = testEnv.localUrl;
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
-after('Global shutdown', function() {
-  return closeDown()
-    .then(() => {
-      return true;
-    })
-    .catch(err => {
-      throw new Error(err.message);
-    });
-});
-
 describe('Append method tests', function() {
-  before('Append test setup hook', function() {
-    return aHooks.appendSetup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  let hookSftp, sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
   });
 
-  after('Append test cleanup hook', function() {
-    return aHooks.appendCleanup(hookSftp, sftpUrl).catch(err => {
-      throw new Error(err.message);
-    });
+  before('Append test setup hook', async function() {
+    hookSftp = await getConnection('append-hook');
+    sftp = await getConnection('append');
+    aHooks.appendSetup(hookSftp, config.sftpUrl);
+    return true;
+  });
+
+  after('Append test cleanup hook', async function() {
+    await aHooks.appendCleanup(hookSftp, config.sftpUrl);
+    await closeConnection('append', sftp);
+    await closeConnection('append-hook', hookSftp);
+    return true;
   });
 
   it('Append should return a promise', function() {
     let testFile = 'mocha-append-test1.md';
 
     return expect(
-      sftp.append(Buffer.from('append test 1'), join(sftpUrl, testFile), {
-        encoding: 'utf8'
-      })
+      sftp.append(
+        Buffer.from('append test 1'),
+        join(config.sftpUrl, testFile),
+        {
+          encoding: 'utf8'
+        }
+      )
     ).to.be.a('promise');
   });
 
@@ -65,7 +57,10 @@ describe('Append method tests', function() {
     let testFile = 'mocha-append-test1.md';
 
     return expect(
-      sftp.append(join(localUrl, 'test-file1.txt'), join(sftpUrl, testFile))
+      sftp.append(
+        join(config.localUrl, 'test-file1.txt'),
+        join(config.sftpUrl, testFile)
+      )
     ).to.be.rejectedWith('Cannot append one file to another');
   });
 
@@ -73,11 +68,11 @@ describe('Append method tests', function() {
     let testFile = 'mocha-append-test2.md';
 
     return sftp
-      .append(Buffer.from('hello'), join(sftpUrl, testFile), {
+      .append(Buffer.from('hello'), join(config.sftpUrl, testFile), {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(join(sftpUrl, testFile));
+        return sftp.stat(join(config.sftpUrl, testFile));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 5});
@@ -92,12 +87,12 @@ describe('Append method tests', function() {
     str2.push(null);
 
     return sftp
-      .append(str2, join(sftpUrl, testFile), {encoding: 'utf8'})
+      .append(str2, join(config.sftpUrl, testFile), {encoding: 'utf8'})
       .then(() => {
-        return sftp.stat(join(sftpUrl, testFile));
+        return sftp.stat(join(config.sftpUrl, testFile));
       })
       .then(stats => {
-        return expect(stats).to.containSubset({size: 14});
+        return expect(stats).to.containSubset({size: 30});
       });
   });
 
@@ -105,7 +100,7 @@ describe('Append method tests', function() {
     return expect(
       sftp.append(
         Buffer.from('hello'),
-        join(sftpUrl, 'bad-directory', 'bad-file.txt')
+        join(config.sftpUrl, 'bad-directory', 'bad-file.txt')
       )
     ).to.be.rejectedWith('No such file');
   });

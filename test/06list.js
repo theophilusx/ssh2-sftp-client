@@ -5,75 +5,59 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {join} = require('path');
-const gHooks = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  closeConnection
+} = require('./hooks/global-hooks');
 const lHooks = require('./hooks/list-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-let hookSftp, sftp, sftpUrl, localUrl;
-
-before('Global setup', async function() {
-  try {
-    let testEnv = await gHooks.setup();
-    hookSftp = testEnv.hookSftp;
-    sftp = testEnv.sftp;
-    sftpUrl = testEnv.sftpUrl;
-    localUrl = testEnv.localUrl;
-    return true;
-  } catch (err) {
-    console.error(`list global setup: ${err.message}`);
-    return false;
-  }
-});
-
-after('Global shutdown', async function() {
-  try {
-    await gHooks.closeDown();
-    return true;
-  } catch (err) {
-    console.error(`list global close down: ${err.message}`);
-    return false;
-  }
-});
-
 describe('list method tests', function() {
+  let hookSftp, sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
+  });
+
   before('List test setup hook', async function() {
-    try {
-      await lHooks.listSetup(hookSftp, sftpUrl, localUrl);
-      return true;
-    } catch (err) {
-      console.error(`list setup: ${err.message}`);
-      return false;
-    }
+    hookSftp = await getConnection('list-hook');
+    sftp = await getConnection('list');
+    await lHooks.listSetup(hookSftp, config.sftpUrl, config.localUrl);
+    return true;
   });
 
   after('List test cleanup hook', async function() {
-    try {
-      await lHooks.listCleanup(hookSftp, sftpUrl);
-      return true;
-    } catch (err) {
-      console.error(`list clenup: ${err.message}`);
-      return false;
-    }
+    await lHooks.listCleanup(hookSftp, config.sftpUrl);
+    await closeConnection('list', sftp);
+    await closeConnection('list-hook', hookSftp);
+    return true;
   });
 
   it('list return should be a promise', function() {
-    return expect(sftp.list(join(sftpUrl, 'mocha-list'))).to.be.a('promise');
+    return expect(sftp.list(join(config.sftpUrl, 'mocha-list'))).to.be.a(
+      'promise'
+    );
   });
 
   it('list return on empty directory should be empty', function() {
-    return expect(sftp.list(join(sftpUrl, 'mocha-list/empty'))).to.become([]);
+    return expect(
+      sftp.list(join(config.sftpUrl, 'mocha-list/empty'))
+    ).to.become([]);
   });
 
   it('list non-existent directory rejected', function() {
     return expect(
-      sftp.list(join(sftpUrl, 'mocha-list/not-exist'))
+      sftp.list(join(config.sftpUrl, 'mocha-list/not-exist'))
     ).to.be.rejectedWith('No such file');
   });
 
   it('list existing dir returns details of each entry', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'));
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'));
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -87,7 +71,7 @@ describe('list method tests', function() {
   });
 
   it('list with /.*/ regexp', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), /.*/);
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /.*/);
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -101,7 +85,7 @@ describe('list method tests', function() {
   });
 
   it('list with /dir.*/ regexp', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), /dir.*/);
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /dir.*/);
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -110,7 +94,7 @@ describe('list method tests', function() {
   });
 
   it('list with leading /.*txt/ regexp', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), /.*txt/);
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /.*txt/);
 
     return expect(list).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},
@@ -119,7 +103,7 @@ describe('list method tests', function() {
   });
 
   it('list with * pattern', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), '*');
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), '*');
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -133,7 +117,7 @@ describe('list method tests', function() {
   });
 
   it('list with dir* pattern', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), 'dir*');
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), 'dir*');
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -142,7 +126,7 @@ describe('list method tests', function() {
   });
 
   it('list with leading *txt pattern', async function() {
-    let list = await sftp.list(join(sftpUrl, 'mocha-list'), '*txt');
+    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), '*txt');
 
     return expect(list).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},
@@ -152,28 +136,30 @@ describe('list method tests', function() {
 });
 
 describe('auxList testing', function() {
+  let hookSftp, sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
+  });
+
   before('List test setup hook', async function() {
-    try {
-      await lHooks.listSetup(hookSftp, sftpUrl, localUrl);
-      return true;
-    } catch (err) {
-      console.error(`auxList cleanup: ${err.message}`);
-      return false;
-    }
+    hookSftp = await getConnection('auxList-hook');
+    sftp = await getConnection('auxList');
+    await lHooks.listSetup(hookSftp, config.sftpUrl, config.localUrl);
+    return true;
   });
 
   after('List test cleanup hook', async function() {
-    try {
-      await lHooks.listCleanup(hookSftp, sftpUrl);
-      return true;
-    } catch (err) {
-      console.log(`auxList cleanup: ${err.message}`);
-      return false;
-    }
+    await lHooks.listCleanup(hookSftp, config.sftpUrl);
+    await closeConnection('auxList', sftp);
+    await closeConnection('auxList-hook', hookSftp);
+    return true;
   });
 
   it('auxList with * pattern', async function() {
-    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), '*');
+    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), '*');
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -187,7 +173,7 @@ describe('auxList testing', function() {
   });
 
   it('auxList with dir* pattern', async function() {
-    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), 'dir*');
+    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), 'dir*');
 
     return expect(list).to.containSubset([
       {type: 'd', name: 'dir1'},
@@ -196,7 +182,7 @@ describe('auxList testing', function() {
   });
 
   it('auxList with leading *txt pattern', async function() {
-    let list = await sftp.auxList(join(sftpUrl, 'mocha-list'), '*txt');
+    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), '*txt');
 
     return expect(list).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},

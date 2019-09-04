@@ -21,15 +21,11 @@ describe('Connect Tests', function() {
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
-  // afterEach('Cleanup', async function() {
-  //   try {
-  //     await client.end();
-  //     return true;
-  //   } catch (err) {
-  //     console.err(`connections.cleanup: ${err.message}`);
-  //     return false;
-  //   }
-  // });
+  beforeEach(function(done) {
+    setTimeout(function() {
+      done();
+    }, 1000);
+  });
 
   it('connect should return a promise', function() {
     let client = new Client();
@@ -39,7 +35,8 @@ describe('Connect Tests', function() {
           host: host,
           port: port,
           username: username,
-          password: password
+          password: password,
+          retries: 1
         })
         .then(() => {
           client.end();
@@ -53,7 +50,8 @@ describe('Connect Tests', function() {
       host: host,
       port: port,
       username: username,
-      password: password
+      password: password,
+      retries: 1
     });
     let type = typeof client.sftp;
     await client.end();
@@ -67,7 +65,8 @@ describe('Connect Tests', function() {
         host: 'bogus-host',
         port: port,
         username: username,
-        password: password
+        password: password,
+        retries: 1
       })
     ).to.be.rejectedWith(
       /Address lookup failed|Timed out while waiting for handshake/
@@ -81,7 +80,8 @@ describe('Connect Tests', function() {
         host: host,
         port: 21,
         username: username,
-        password: password
+        password: password,
+        retries: 1
       })
     ).to.be.rejectedWith(
       /refused connection|Timed out while waiting for handshake/
@@ -95,7 +95,8 @@ describe('Connect Tests', function() {
         host: host,
         port: port,
         username: 'fred',
-        password: password
+        password: password,
+        retries: 1
       })
     ).to.be.rejectedWith(
       /All configured authentication methods failed|Timed out while waiting for handshake/
@@ -109,7 +110,8 @@ describe('Connect Tests', function() {
         host: host,
         port: port,
         username: username,
-        password: 'foobar'
+        password: 'foobar',
+        retries: 1
       })
     ).to.be.rejectedWith(
       /All configured authentication methods failed|Timed out while waiting for handshake/
@@ -131,7 +133,8 @@ describe('Connect and disconnect', function() {
           host: host,
           port: port,
           username: username,
-          password: password
+          password: password,
+          retries: 1
         })
         .then(() => {
           return client.end();
