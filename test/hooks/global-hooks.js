@@ -15,7 +15,7 @@ const config = {
   port: process.env.SFTP_PORT || 22,
   localUrl: join(__dirname, '../testData'),
   sftpUrl: process.env.SFTP_URL,
-  delay: 10000
+  delay: 20000
 };
 
 const getConnection = async name => {
