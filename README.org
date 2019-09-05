@@ -887,7 +887,13 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
-** v4.0.4
+** v4.0.5 (Dev Version)
+   - move ~end()~ call to resolve into close hook
+   - Prevent ~put()~ and ~get()~ from creating empty files in destination when
+     unable to read source
+   - Expand tests for operations when lacking required permissions
+
+** v4.0.4 (Prod Version)
    - Minor documentation fix
    - Fix return value from ~get()~
 ** v4.0.3
