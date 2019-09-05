@@ -264,43 +264,55 @@ SftpClient.prototype.get = function(path, dst, options) {
       if (!sftp) {
         return reject(formatError('No SFTP connection available', 'sftp.get'));
       }
-      let rdr = sftp.createReadStream(path, options);
 
-      rdr.on('error', err => {
-        removeListeners(rdr);
-        reject(formatError(err, 'sftp.get'));
-      });
-
-      if (dst === undefined) {
-        // no dst specified, return buffer of data
-        let concatStream = concat(buff => {
-          rdr.removeAllListeners('error');
-          resolve(buff);
-        });
-        rdr.pipe(concatStream);
-      } else {
-        let wtr;
-        if (typeof dst === 'string') {
-          // dst local file path
-          wtr = fs.createWriteStream(dst);
-        } else {
-          // assume dst is a writeable
-          wtr = dst;
+      sftp.stat(path, function(err, stats) {
+        if (err) {
+          return reject(formatError(err, 'sftp.get'));
         }
-        wtr.on('error', err => {
+        if ((stats.mode & 0o444) === 0) {
+          return reject(
+            formatError(`No read permission for ${path}`, 'sftp.get')
+          );
+        }
+
+        let rdr = sftp.createReadStream(path, options);
+
+        rdr.on('error', err => {
           removeListeners(rdr);
           reject(formatError(err, 'sftp.get'));
         });
-        wtr.on('finish', () => {
-          removeListeners(rdr);
+
+        if (dst === undefined) {
+          // no dst specified, return buffer of data
+          let concatStream = concat(buff => {
+            rdr.removeAllListeners('error');
+            resolve(buff);
+          });
+          rdr.pipe(concatStream);
+        } else {
+          let wtr;
           if (typeof dst === 'string') {
-            resolve(dst);
+            // dst local file path
+            wtr = fs.createWriteStream(dst);
           } else {
-            resolve(wtr);
+            // assume dst is a writeable
+            wtr = dst;
           }
-        });
-        rdr.pipe(wtr);
-      }
+          wtr.on('error', err => {
+            removeListeners(rdr);
+            reject(formatError(err, 'sftp.get'));
+          });
+          wtr.on('finish', () => {
+            removeListeners(rdr);
+            if (typeof dst === 'string') {
+              resolve(dst);
+            } else {
+              resolve(wtr);
+            }
+          });
+          rdr.pipe(wtr);
+        }
+      });
     } catch (err) {
       reject(formatError(err, 'sftp.get'));
     }
