@@ -92,7 +92,7 @@ SftpClient.prototype.list = function(path, pattern = /.*/) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.list'));
+        return reject(formatError('No SFTP connection available', 'sftp.list'));
       }
       sftp.readdir(path, (err, list) => {
         if (err) {
@@ -168,12 +168,14 @@ SftpClient.prototype.exists = function(path) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.exists'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.exists')
+        );
       }
       let {dir, base} = posix.parse(path);
       if (base === '.') {
         // the '.' directory exists by definition
-        resolve('d');
+        return resolve('d');
       }
       sftp.readdir(dir, (err, list) => {
         if (err) {
@@ -211,7 +213,7 @@ SftpClient.prototype.stat = function(remotePath) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.stat'));
+        return reject(formatError('No SFTP connection available', 'sftp.stat'));
       }
       sftp.stat(remotePath, function(err, stats) {
         if (err) {
@@ -260,7 +262,7 @@ SftpClient.prototype.get = function(path, dst, options) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.get'));
+        return reject(formatError('No SFTP connection available', 'sftp.get'));
       }
       let rdr = sftp.createReadStream(path, options);
 
@@ -323,7 +325,9 @@ SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.fastGet'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.fastGet')
+        );
       }
       sftp.fastGet(remotePath, localPath, options, function(err) {
         if (err) {
@@ -356,7 +360,9 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.fastPut'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.fastPut')
+        );
       }
       sftp.fastPut(localPath, remotePath, options, function(err) {
         if (err) {
@@ -446,10 +452,14 @@ SftpClient.prototype.append = function(input, remotePath, options) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.append'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.append')
+        );
       }
       if (typeof input === 'string') {
-        reject(formatError('Cannot append one file to another', 'sftp.append'));
+        return reject(
+          formatError('Cannot append one file to another', 'sftp.append')
+        );
       }
 
       let writerOptions = {
@@ -611,7 +621,9 @@ SftpClient.prototype.delete = function(path) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.delete'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.delete')
+        );
       }
       sftp.unlink(path, err => {
         if (err) {
@@ -642,7 +654,9 @@ SftpClient.prototype.rename = function(fromPath, toPath) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.rename'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.rename')
+        );
       }
       sftp.rename(fromPath, toPath, err => {
         if (err) {
@@ -672,7 +686,9 @@ SftpClient.prototype.chmod = function(remotePath, mode) {
 
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.chmod'));
+        return reject(
+          formatError('No SFTP connection available', 'sftp.chmod')
+        );
       }
       sftp.chmod(remotePath, mode, err => {
         if (err) {
