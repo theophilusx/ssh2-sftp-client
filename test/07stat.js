@@ -10,12 +10,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const sHooks = require('./hooks/stat-hooks');
+const {statSetup, statCleanup} = require('./hooks/stat-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Stat method tests', function() {
+describe('stat() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -27,36 +27,36 @@ describe('Stat method tests', function() {
   before('stat setup hook', async function() {
     hookSftp = await getConnection('stat');
     sftp = await getConnection('stat-hook');
-    await sHooks.statSetup(hookSftp, config.sftpUrl);
+    await statSetup(hookSftp, config.sftpUrl);
     return true;
   });
 
   after('stat cleanup hook', async function() {
-    await sHooks.statCleanup(hookSftp, config.sftpUrl);
+    await statCleanup(hookSftp, config.sftpUrl);
     await closeConnection('stat', sftp);
     await closeConnection('stat-hook', hookSftp);
     return true;
   });
 
   it('Stat return should be a promise', function() {
-    return expect(sftp.stat(join(config.sftpUrl, 'mocha-stat.md'))).to.be.a(
+    return expect(sftp.stat(join(config.sftpUrl, 'stat-test.md'))).to.be.a(
       'promise'
     );
   });
 
   it('Stat on existing file returns stat data', async function() {
-    let stats = await sftp.stat(join(config.sftpUrl, 'mocha-stat.md'));
+    let stats = await sftp.stat(join(config.sftpUrl, 'stat-test.md'));
 
     return expect(stats).to.containSubset({
       mode: 33279,
-      size: 5,
+      size: 16,
       isFile: true
     });
   });
 
   it('Stat on non-existent file rejected', function() {
     return expect(
-      sftp.stat(join(config.sftpUrl, 'mocha-stat1.md'))
+      sftp.stat(join(config.sftpUrl, 'stat-test-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
 });
