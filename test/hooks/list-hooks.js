@@ -4,27 +4,27 @@ const {join} = require('path');
 
 async function listSetup(client, sftpUrl, localUrl) {
   try {
-    await client.mkdir(join(sftpUrl, 'mocha-list/dir1'), true);
-    await client.mkdir(join(sftpUrl, 'mocha-list/dir2/sub1'), true);
-    await client.mkdir(join(sftpUrl, 'mocha-list/empty'), true);
+    await client.mkdir(join(sftpUrl, 'list-test/dir1'), true);
+    await client.mkdir(join(sftpUrl, 'list-test/dir2/sub1'), true);
+    await client.mkdir(join(sftpUrl, 'list-test/empty'), true);
     await client.put(
-      Buffer.from('hello file1'),
-      join(sftpUrl, 'mocha-list/file1.html'),
+      Buffer.from('<title>List Test Data 1</title>'),
+      join(sftpUrl, 'list-test/file1.html'),
       {encoding: 'utf8'}
     );
     await client.put(
-      Buffer.from('hello file2'),
-      join(sftpUrl, 'mocha-list/file2.md'),
+      Buffer.from('# List Test Data 2'),
+      join(sftpUrl, 'list-test/file2.md'),
       {encoding: 'utf8'}
     );
     await client.fastPut(
       join(localUrl, 'test-file1.txt'),
-      join(sftpUrl, 'mocha-list/test-file1.txt'),
+      join(sftpUrl, 'list-test/test-file1.txt'),
       {encoding: 'utf8'}
     );
     await client.fastPut(
       join(localUrl, 'test-file2.txt.gz'),
-      join(sftpUrl, 'mocha-list/test-file2.txt.gz')
+      join(sftpUrl, 'list-test/test-file2.txt.gz')
     );
     return true;
   } catch (err) {
@@ -35,7 +35,7 @@ async function listSetup(client, sftpUrl, localUrl) {
 
 async function listCleanup(client, sftpUrl) {
   try {
-    await client.rmdir(join(sftpUrl, 'mocha-list'), true);
+    await client.rmdir(join(sftpUrl, 'list-test'), true);
     return true;
   } catch (err) {
     console.error(`listCleanup: ${err.message}`);

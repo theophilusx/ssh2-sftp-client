@@ -10,12 +10,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const lHooks = require('./hooks/list-hooks');
+const {listSetup, listCleanup} = require('./hooks/list-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('list method tests', function() {
+describe('list() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -27,108 +27,115 @@ describe('list method tests', function() {
   before('List test setup hook', async function() {
     hookSftp = await getConnection('list-hook');
     sftp = await getConnection('list');
-    await lHooks.listSetup(hookSftp, config.sftpUrl, config.localUrl);
+    await listSetup(hookSftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
-  after('List test cleanup hook', async function() {
-    await lHooks.listCleanup(hookSftp, config.sftpUrl);
+  after('list test cleanup hook', async function() {
+    await listCleanup(hookSftp, config.sftpUrl);
     await closeConnection('list', sftp);
     await closeConnection('list-hook', hookSftp);
     return true;
   });
 
   it('list return should be a promise', function() {
-    return expect(sftp.list(join(config.sftpUrl, 'mocha-list'))).to.be.a(
+    return expect(sftp.list(join(config.sftpUrl, 'list-test'))).to.be.a(
       'promise'
     );
   });
 
-  it('list return on empty directory should be empty', function() {
-    return expect(
-      sftp.list(join(config.sftpUrl, 'mocha-list/empty'))
-    ).to.become([]);
+  it('list return for empty directory should be empty', function() {
+    return expect(sftp.list(join(config.sftpUrl, 'list-test/empty'))).to.become(
+      []
+    );
   });
 
   it('list non-existent directory rejected', function() {
     return expect(
-      sftp.list(join(config.sftpUrl, 'mocha-list/not-exist'))
+      sftp.list(join(config.sftpUrl, 'list-test/not-exist'))
     ).to.be.rejectedWith('No such file');
   });
 
   it('list existing dir returns details of each entry', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'));
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'));
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(7);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'},
       {type: 'd', name: 'empty'},
-      {type: '-', name: 'file1.html', size: 11},
-      {type: '-', name: 'file2.md', size: 11},
+      {type: '-', name: 'file1.html'},
+      {type: '-', name: 'file2.md'},
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
 
   it('list with /.*/ regexp', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /.*/);
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /.*/);
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(7);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'},
       {type: 'd', name: 'empty'},
-      {type: '-', name: 'file1.html', size: 11},
-      {type: '-', name: 'file2.md', size: 11},
+      {type: '-', name: 'file1.html'},
+      {type: '-', name: 'file2.md'},
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
 
   it('list with /dir.*/ regexp', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /dir.*/);
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /dir.*/);
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'}
     ]);
   });
 
   it('list with leading /.*txt/ regexp', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), /.*txt/);
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /.*txt/);
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
 
-  it('list with * pattern', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), '*');
+  it('list with * glob pattern', async function() {
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), '*');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(7);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'},
       {type: 'd', name: 'empty'},
-      {type: '-', name: 'file1.html', size: 11},
-      {type: '-', name: 'file2.md', size: 11},
+      {type: '-', name: 'file1.html'},
+      {type: '-', name: 'file2.md'},
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
 
-  it('list with dir* pattern', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), 'dir*');
+  it('list with dir* glob pattern', async function() {
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), 'dir*');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'}
     ]);
   });
 
   it('list with leading *txt pattern', async function() {
-    let list = await sftp.list(join(config.sftpUrl, 'mocha-list'), '*txt');
+    let data = await sftp.list(join(config.sftpUrl, 'list-test'), '*txt');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
@@ -147,44 +154,47 @@ describe('auxList testing', function() {
   before('List test setup hook', async function() {
     hookSftp = await getConnection('auxList-hook');
     sftp = await getConnection('auxList');
-    await lHooks.listSetup(hookSftp, config.sftpUrl, config.localUrl);
+    await listSetup(hookSftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
   after('List test cleanup hook', async function() {
-    await lHooks.listCleanup(hookSftp, config.sftpUrl);
+    await listCleanup(hookSftp, config.sftpUrl);
     await closeConnection('auxList', sftp);
     await closeConnection('auxList-hook', hookSftp);
     return true;
   });
 
   it('auxList with * pattern', async function() {
-    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), '*');
+    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), '*');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(7);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'},
       {type: 'd', name: 'empty'},
-      {type: '-', name: 'file1.html', size: 11},
-      {type: '-', name: 'file2.md', size: 11},
+      {type: '-', name: 'file1.html'},
+      {type: '-', name: 'file2.md'},
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
 
   it('auxList with dir* pattern', async function() {
-    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), 'dir*');
+    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), 'dir*');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: 'd', name: 'dir1'},
       {type: 'd', name: 'dir2'}
     ]);
   });
 
   it('auxList with leading *txt pattern', async function() {
-    let list = await sftp.auxList(join(config.sftpUrl, 'mocha-list'), '*txt');
+    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), '*txt');
 
-    return expect(list).to.containSubset([
+    expect(data.length).to.equal(2);
+    return expect(data).to.containSubset([
       {type: '-', name: 'test-file1.txt', size: 6973257},
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
