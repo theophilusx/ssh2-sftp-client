@@ -6,23 +6,23 @@ const fs = require('fs');
 async function fastGetSetup(client, sftpUrl, localUrl) {
   try {
     await client.put(
-      Buffer.from('fast get'),
-      join(sftpUrl, 'mocha-fastget1.md'),
-      {
-        encoding: 'utf8'
-      }
+      Buffer.from('fastGet promise test'),
+      join(sftpUrl, 'fastget-promise.txt')
+    );
+    await client.put(
+      Buffer.from('fast get small file'),
+      join(sftpUrl, 'fastget-small.txt'),
+      {encoding: 'utf8'}
     );
     await client.fastPut(
       join(localUrl, 'test-file1.txt'),
-      join(sftpUrl, 'mocha-fastget2.txt'),
+      join(sftpUrl, 'fastget-large.txt'),
       {encoding: 'utf8'}
     );
     await client.fastPut(
       join(localUrl, 'test-file2.txt.gz'),
-      join(sftpUrl, 'mocha-fastget3.txt.gz'),
-      {encoding: null}
+      join(sftpUrl, 'fastget-gzip.txt.gz')
     );
-    fs.mkdirSync(join(localUrl, 'fastGet'));
     return true;
   } catch (err) {
     console.error(`fastGetSetup: ${err.message}`);
@@ -32,14 +32,14 @@ async function fastGetSetup(client, sftpUrl, localUrl) {
 
 async function fastGetCleanup(client, sftpUrl, localUrl) {
   try {
-    let localDir = join(localUrl, 'fastGet');
-    await client.delete(join(sftpUrl, 'mocha-fastget1.md'));
-    await client.delete(join(sftpUrl, 'mocha-fastget2.txt'));
-    fs.unlinkSync(join(localDir, 'local1.md'));
-    fs.unlinkSync(join(localDir, 'local2.txt'));
-    fs.unlinkSync(join(localDir, 'local3.txt.gz'));
-    await client.delete(join(sftpUrl, 'mocha-fastget3.txt.gz'));
-    fs.rmdirSync(localDir);
+    await client.delete(join(sftpUrl, 'fastget-promise.txt'));
+    await client.delete(join(sftpUrl, 'fastget-small.txt'));
+    await client.delete(join(sftpUrl, 'fastget-large.txt'));
+    await client.delete(join(sftpUrl, 'fastget-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'fastget-promise.txt'));
+    fs.unlinkSync(join(localUrl, 'fastget-small.txt'));
+    fs.unlinkSync(join(localUrl, 'fastget-large.txt'));
+    fs.unlinkSync(join(localUrl, 'fastget-gzip.txt.gz'));
     return true;
   } catch (err) {
     console.error(`fastGetCleanup: ${err.message}`);

@@ -39,52 +39,61 @@ describe('FastGet method tests', function() {
     return true;
   });
 
-  it('FastGet small text file', function() {
+  it('fastGet returns a promise', function() {
+    return expect(
+      sftp.fastGet(
+        join(config.sftpUrl, 'fastget-promise.txt'),
+        join(config.localUrl, 'fastget-promise.txt')
+      )
+    ).to.be.a('promise');
+  });
+
+  it('fastGet small text file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'mocha-fastget1.md'),
-        join(config.localUrl, 'fastGet', 'local1.md'),
+        join(config.sftpUrl, 'fastget-small.txt'),
+        join(config.localUrl, 'fastget-small.txt'),
         {encoding: 'utf8'}
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastGet', 'local1.md'))
-        ).to.containSubset({size: 8});
+          fs.statSync(join(config.localUrl, 'fastget-small.txt'))
+        ).to.containSubset({size: 19});
       });
   });
 
-  it('FastGet large text file', function() {
+  it('fastGet large text file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'mocha-fastget2.txt'),
-        join(config.localUrl, 'fastGet', 'local2.txt'),
+        join(config.sftpUrl, 'fastget-large.txt'),
+        join(config.localUrl, 'fastget-large.txt'),
         {encoding: 'utf8'}
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastGet', 'local2.txt'))
+          fs.statSync(join(config.localUrl, 'fastget-large.txt'))
         ).to.containSubset({size: 6973257});
       });
   });
 
-  it('FastGet gzipped file', function() {
+  it('fastGet gzipped file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'mocha-fastget3.txt.gz'),
-        join(config.localUrl, 'fastGet', 'local3.txt.gz')
+        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        join(config.localUrl, 'fastget-gzip.txt.gz')
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastGet', 'local3.txt.gz'))
+          fs.statSync(join(config.localUrl, 'fastget-gzip.txt.gz'))
         ).to.containSubset({size: 570314});
       });
   });
 
-  it('FastGet non-existent file is rejected', function() {
+  it('fastGet non-existent file is rejected', function() {
     return expect(
       sftp.fastGet(
-        join(config.sftpUrl, 'mocha-fastget-not-exist.txt'),
-        join(config.localUrl, 'fastGet', 'not-exist.txt')
+        join(config.sftpUrl, 'fastget-not-exist.txt'),
+        join(config.localUrl, 'fastget-not-exist.txt')
       )
     ).to.be.rejectedWith('No such file');
   });
