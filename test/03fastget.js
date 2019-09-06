@@ -16,7 +16,7 @@ const gHooks = require('./hooks/fastGet-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('FastGet method tests', function() {
+describe('fastGet() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {

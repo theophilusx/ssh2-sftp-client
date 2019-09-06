@@ -15,7 +15,7 @@ const {fastPutCleanup} = require('./hooks/fastPut-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Fastput method tests', function() {
+describe('fastPut() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
