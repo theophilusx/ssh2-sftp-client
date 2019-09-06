@@ -12,12 +12,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const gHooks = require('./hooks/get-hooks');
+const {getSetup, getCleanup} = require('./hooks/get-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Get method tests', function() {
+describe('get() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -26,57 +26,60 @@ describe('Get method tests', function() {
     }, config.delay);
   });
 
-  before('Get setup hook', async function() {
+  before('get setup hook', async function() {
     hookSftp = await getConnection('get-hook');
     sftp = await getConnection('get');
-    await gHooks.getSetup(hookSftp, config.sftpUrl, config.localUrl);
+    await getSetup(hookSftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
-  after('Get cleanup hook', async function() {
-    await gHooks.getCleanup(hookSftp, config.sftpUrl, config.localUrl);
+  after('get cleanup hook', async function() {
+    await getCleanup(hookSftp, config.sftpUrl, config.localUrl);
     await closeConnection('get', sftp);
     await closeConnection('get-hook', hookSftp);
     return true;
   });
 
-  it('Get returns a promise', function() {
-    return expect(sftp.get(join(config.sftpUrl, 'mocha-file.md'))).to.be.a(
+  it('get returns a promise', function() {
+    return expect(sftp.get(join(config.sftpUrl, 'get-promise.txt'))).to.be.a(
       'promise'
     );
   });
 
   it('get the file content', function() {
-    return sftp.get(join(config.sftpUrl, 'mocha-file.md')).then(data => {
+    return sftp.get(join(config.sftpUrl, 'get-promise.txt')).then(data => {
       let body = data.toString();
-      return expect(body).to.equal('hello');
+      return expect(body).to.equal('Get promise test');
     });
   });
 
-  it('Get large text file using a stream', function() {
-    let localFile = join(config.localUrl, 'local-large-file.txt');
+  it('get large text file using a stream', function() {
     return sftp
-      .get(join(config.sftpUrl, 'large-file1.txt'), localFile, {
-        encoding: 'utf8'
-      })
+      .get(
+        join(config.sftpUrl, 'get-large.txt'),
+        join(config.localUrl, 'get-large.txt'),
+        {encoding: 'utf8'}
+      )
       .then(() => {
-        let stats = fs.statSync(localFile);
+        let stats = fs.statSync(join(config.localUrl, 'get-large.txt'));
         return expect(stats.size).to.equal(6973257);
       });
   });
 
-  it('Get gzipped file using a stream', function() {
-    let localFile = join(config.localUrl, 'local-gizipped-file.txt.gz');
+  it('get gzipped file using a stream', function() {
     return sftp
-      .get(join(config.sftpUrl, 'gzipped-file.txt.gz'), localFile)
+      .get(
+        join(config.sftpUrl, 'get-gzip.txt.gz'),
+        join(config.localUrl, 'get-gzip.txt.gz')
+      )
       .then(() => {
-        let stats = fs.statSync(localFile);
+        let stats = fs.statSync(join(config.localUrl, 'get-gzip.txt.gz'));
         return expect(stats.size).to.equal(570314);
       });
   });
 
-  it('Get gzipped file and gunzip in pipe', function() {
-    let localFile = join(config.localUrl, 'local-gzipped-file.txt');
+  it('get gzipped file and gunzip in pipe', function() {
+    let localFile = join(config.localUrl, 'get-unzip.txt');
     let gunzip = zlib.createGunzip();
     let out = fs.createWriteStream(localFile, {
       flags: 'w',
@@ -84,16 +87,17 @@ describe('Get method tests', function() {
     });
     gunzip.pipe(out);
     return sftp
-      .get(join(config.sftpUrl, 'gzipped-file.txt.gz'), gunzip)
-      .then(() => {
+      .get(join(config.sftpUrl, 'get-gzip.txt.gz'), gunzip)
+      .then(wtr => {
+        wtr.flush();
         let stats = fs.statSync(localFile);
         return expect(stats.size).to.equal(6973257);
       });
   });
 
-  it('Get non-existent file is rejected', function() {
+  it('get non-existent file is rejected', function() {
     return expect(
-      sftp.get(join(config.sftpUrl, 'moacha-file-not-exist.md'))
+      sftp.get(join(config.sftpUrl, 'file-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
 });

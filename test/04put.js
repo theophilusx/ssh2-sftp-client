@@ -11,12 +11,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const pHooks = require('./hooks/put-hooks');
+const {putCleanup} = require('./hooks/put-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Put method tests', function() {
+describe('put() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -32,7 +32,7 @@ describe('Put method tests', function() {
   });
 
   after('Put cleanup hook', async function() {
-    await pHooks.putCleanup(hookSftp, config.sftpUrl);
+    await putCleanup(hookSftp, config.sftpUrl);
     await closeConnection('put', sftp);
     await closeConnection('put-hook', hookSftp);
     return true;
@@ -40,7 +40,10 @@ describe('Put method tests', function() {
 
   it('Put should return a promise', function() {
     return expect(
-      sftp.put(Buffer.from('blah'), join(config.sftpUrl, 'mocha-put-buffer.md'))
+      sftp.put(
+        Buffer.from('put promise test'),
+        join(config.sftpUrl, 'put-promise.txt')
+      )
     ).to.be.a('promise');
   });
 
@@ -48,10 +51,10 @@ describe('Put method tests', function() {
     return sftp
       .put(
         join(config.localUrl, 'test-file1.txt'),
-        join(config.sftpUrl, 'mocha-put-string.md')
+        join(config.sftpUrl, 'put-large.txt')
       )
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'mocha-put-string.md'));
+        return sftp.stat(join(config.sftpUrl, 'put-large.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 6973257});
@@ -60,11 +63,11 @@ describe('Put method tests', function() {
 
   it('Put data from buffer into remote file', function() {
     return sftp
-      .put(Buffer.from('hello'), join(config.sftpUrl, 'mocha-put-buffer.md'), {
+      .put(Buffer.from('hello'), join(config.sftpUrl, 'put-buffer.txt'), {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'mocha-put-buffer.md'));
+        return sftp.stat(join(config.sftpUrl, 'put-buffer.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 5});
@@ -78,11 +81,11 @@ describe('Put method tests', function() {
     str2.push(null);
 
     return sftp
-      .put(str2, join(config.sftpUrl, 'mocha-put-stream.md'), {
+      .put(str2, join(config.sftpUrl, 'put-stream.txt'), {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'mocha-put-stream.md'));
+        return sftp.stat(join(config.sftpUrl, 'put-stream.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 14});
