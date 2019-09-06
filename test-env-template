@@ -1,0 +1,6 @@
+# Example template for .env file for testing
+SFTP_SERVER=<sftp server name>
+SFTP_USER=<sftp user name>
+SFTP_PASSWORD=<sftp password>
+SFTP_URL=<path to root on server>
+TEST_DELAY=<delay in ms between each test group>
