@@ -525,7 +525,7 @@ checking performed apart from normal writeStream checks. This function simply
 opens a writeStream on the remote file in append mode and writes the data passed
 in to the file. 
 
-- input :: string | readStream. Data to append to remote file
+- input :: buffer | readStream. Data to append to remote file
 - remotePath :: string. Path to remote file
 - options :: object. Options to pass to writeStream (see below)
  
@@ -892,6 +892,10 @@ This solution was provided by @jmorino.
    - Prevent ~put()~ and ~get()~ from creating empty files in destination when
      unable to read source
    - Expand tests for operations when lacking required permissions
+   - Add additional data checks for ~append()~
+       - Verify file exists
+       - Verify file is writeable
+       - Verify file is a regular file
 
 ** v4.0.4 (Prod Version)
    - Minor documentation fix
