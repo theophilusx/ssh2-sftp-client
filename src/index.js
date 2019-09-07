@@ -26,6 +26,8 @@ let SftpClient = function() {
 function formatError(err, name = 'ssh2-sftp-client', retryCount) {
   let msg = '';
 
+  //console.dir(err);
+
   if (typeof err === 'string') {
     msg = `${name}: ${err}`;
   } else {
@@ -473,33 +475,55 @@ SftpClient.prototype.append = function(input, remotePath, options) {
           formatError('Cannot append one file to another', 'sftp.append')
         );
       }
+      sftp.stat(remotePath, function(err, stats) {
+        if (err) {
+          return reject(
+            formatError(`${remotePath} ${err.message}`, 'sftp.append')
+          );
+        }
 
-      let writerOptions = {
-        flags: 'a'
-      };
+        if ((stats.mode & 0o0100000) === 0) {
+          return reject(
+            formatError(
+              `${remotePath} Remote path must be a regular file`,
+              'sftp-append'
+            )
+          );
+        }
 
-      if (options) {
-        writerOptions = options;
-        writerOptions.flags = 'a';
-      }
+        if ((stats.mode & 0o0444) === 0) {
+          return reject(
+            formatError(`${remotePath} No write permission`, 'sftp-append')
+          );
+        }
 
-      let stream = sftp.createWriteStream(remotePath, writerOptions);
+        let writerOptions = {
+          flags: 'a'
+        };
 
-      stream.on('error', err => {
-        removeListeners(stream);
-        reject(formatError(err, 'sftp.append'));
+        if (options) {
+          writerOptions = options;
+          writerOptions.flags = 'a';
+        }
+
+        let stream = sftp.createWriteStream(remotePath, writerOptions);
+
+        stream.on('error', err => {
+          removeListeners(stream);
+          reject(formatError(err, 'sftp.append'));
+        });
+
+        stream.on('finish', () => {
+          removeListeners(stream);
+          resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
+        });
+
+        if (input instanceof Buffer) {
+          stream.end(input);
+        } else {
+          input.pipe(stream);
+        }
       });
-
-      stream.on('finish', () => {
-        removeListeners(stream);
-        resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
-      });
-
-      if (input instanceof Buffer) {
-        stream.end(input);
-      } else {
-        input.pipe(stream);
-      }
     } catch (err) {
       reject(formatError(err, 'sftp.append'));
     }
