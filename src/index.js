@@ -78,6 +78,32 @@ function errorListener(err, source) {
   throw newErr;
 }
 
+SftpClient.prototype.realPath = function(path) {
+  let sftp = this.sftp;
+
+  return new Promise((resolve, reject) => {
+    try {
+      if (!sftp) {
+        return reject(
+          formatError('No SFTP connection available', 'sftp.realPath')
+        );
+      }
+      sftp.realpath(path, (err, absPath) => {
+        if (err) {
+          reject(formatError(err, 'sftp.realPath'));
+        }
+        resolve(absPath);
+      });
+    } catch (err) {
+      reject(formatError(err, 'sftp.realPath'));
+    }
+  });
+};
+
+SftpClient.prototype.cwd = function() {
+  return this.realPath('.');
+};
+
 /**
  * Retrieves a directory listing. The pattern argument may be a regular expression
  * or simple 'glob' style *.
