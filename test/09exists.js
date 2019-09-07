@@ -10,7 +10,7 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const eHooks = require('./hooks/exist-hooks');
+const {existSetup, existCleanup} = require('./hooks/exist-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -27,12 +27,12 @@ describe('Exist method tests', function() {
   before('Exist test setup hook', async function() {
     hookSftp = await getConnection('exist-hook');
     sftp = await getConnection('exist');
-    await eHooks.existSetup(hookSftp, config.sftpUrl, config.localUrl);
+    await existSetup(hookSftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
   after('Exist test cleanup hook', async function() {
-    await eHooks.existCleanup(hookSftp, config.sftpUrl);
+    await existCleanup(hookSftp, config.sftpUrl);
     await closeConnection('exist', sftp);
     await closeConnection('exist-hook', hookSftp);
     return true;
@@ -44,7 +44,7 @@ describe('Exist method tests', function() {
 
   it('Exist returns truthy for existing directory', function() {
     return expect(
-      sftp.exists(join(config.sftpUrl, 'exist-dir'))
+      sftp.exists(join(config.sftpUrl, 'exist-test-dir'))
     ).to.eventually.equal('d');
   });
 
@@ -54,7 +54,23 @@ describe('Exist method tests', function() {
     ).to.eventually.equal('-');
   });
 
-  it('Exists return false value for non existent object', function() {
+  it('exist returns true for file in sub-dir', function() {
+    return expect(
+      sftp.exists(join(config.sftpUrl, 'exist-test-dir', 'exist-gzip.txt.gz'))
+    ).to.eventually.equal('-');
+  });
+
+  it('exist returns true for "." dir', function() {
+    return expect(sftp.exists('.')).to.eventually.equal('d');
+  });
+
+  it('exists returns true for relative path on existing dir', function() {
+    return expect(
+      sftp.exists('./testServer/exist-test-dir')
+    ).to.eventually.equal('d');
+  });
+
+  it('Exists return false value for non existent dir', function() {
     return expect(
       sftp.exists(join(config.sftpUrl, 'no-such-dir/subdir'))
     ).to.eventually.equal(false);
