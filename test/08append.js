@@ -11,7 +11,7 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const aHooks = require('./hooks/append-hooks');
+const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -28,24 +28,22 @@ describe('Append method tests', function() {
   before('Append test setup hook', async function() {
     hookSftp = await getConnection('append-hook');
     sftp = await getConnection('append');
-    aHooks.appendSetup(hookSftp, config.sftpUrl);
+    await appendSetup(hookSftp, config.sftpUrl);
     return true;
   });
 
   after('Append test cleanup hook', async function() {
-    await aHooks.appendCleanup(hookSftp, config.sftpUrl);
+    await appendCleanup(hookSftp, config.sftpUrl);
     await closeConnection('append', sftp);
     await closeConnection('append-hook', hookSftp);
     return true;
   });
 
   it('Append should return a promise', function() {
-    let testFile = 'mocha-append-test1.md';
-
     return expect(
       sftp.append(
         Buffer.from('append test 1'),
-        join(config.sftpUrl, testFile),
+        join(config.sftpUrl, 'append-promise-test.md'),
         {
           encoding: 'utf8'
         }
@@ -54,45 +52,40 @@ describe('Append method tests', function() {
   });
 
   it('Append two files is rejected', function() {
-    let testFile = 'mocha-append-test1.md';
-
     return expect(
       sftp.append(
         join(config.localUrl, 'test-file1.txt'),
-        join(config.sftpUrl, testFile)
+        join(config.sftpUrl, 'append-test1.md')
       )
     ).to.be.rejectedWith('Cannot append one file to another');
   });
 
   it('Append buffer to file', function() {
-    let testFile = 'mocha-append-test2.md';
-
     return sftp
-      .append(Buffer.from('hello'), join(config.sftpUrl, testFile), {
+      .append(Buffer.from('hello'), join(config.sftpUrl, 'append-test2.txt'), {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, testFile));
+        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
       })
       .then(stats => {
-        return expect(stats).to.containSubset({size: 5});
+        return expect(stats).to.containSubset({size: 23});
       });
   });
 
   it('Append stream to file', function() {
-    let testFile = 'mocha-append-test3.md';
     let str2 = new stream.Readable();
     str2._read = function noop() {};
     str2.push('your text here');
     str2.push(null);
 
     return sftp
-      .append(str2, join(config.sftpUrl, testFile), {encoding: 'utf8'})
+      .append(str2, join(config.sftpUrl, 'append-test3'), {encoding: 'utf8'})
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, testFile));
+        return sftp.stat(join(config.sftpUrl, 'append-test3'));
       })
       .then(stats => {
-        return expect(stats).to.containSubset({size: 30});
+        return expect(stats).to.containSubset({size: 32});
       });
   });
 
@@ -103,5 +96,23 @@ describe('Append method tests', function() {
         join(config.sftpUrl, 'bad-directory', 'bad-file.txt')
       )
     ).to.be.rejectedWith('No such file');
+  });
+
+  it('append to non-existing file is rejected', function() {
+    return expect(
+      sftp.append(
+        Buffer.from('should not work'),
+        join(config.sftpUrl, 'append-no-such-file.txt')
+      )
+    ).to.be.rejectedWith('No such file');
+  });
+
+  it('append to directory is rejected', function() {
+    return expect(
+      sftp.append(
+        Buffer.from('should not work'),
+        join(config.sftpUrl, 'append-dir-test')
+      )
+    ).to.be.rejectedWith('Remote path must be a regular file');
   });
 });
