@@ -15,7 +15,7 @@ const {existSetup, existCleanup} = require('./hooks/exist-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Exist method tests', function() {
+describe('exists() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
