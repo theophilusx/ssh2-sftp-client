@@ -242,45 +242,52 @@ SftpClient.prototype.exists = async function(remotePath) {
   }
 };
 
+SftpClient.prototype._stat = function(remotePath) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    sftp.stat(remotePath, function(err, stats) {
+      if (err) {
+        reject(formatError(err, 'sftp.stat'));
+      } else {
+        resolve({
+          mode: stats.mode,
+          uid: stats.uid,
+          gid: stats.gid,
+          size: stats.size,
+          accessTime: stats.atime * 1000,
+          modifyTime: stats.mtime * 1000,
+          isDirectory: stats.isDirectory(),
+          isFile: stats.isFile(),
+          isBlockDevice: stats.isBlockDevice(),
+          isCharacterDevice: stats.isCharacterDevice(),
+          isSymbolicLink: stats.isSymbolicLink(),
+          isFIFO: stats.isFIFO(),
+          isSocket: stats.isSocket()
+        });
+      }
+    });
+  });
+};
+
 /**
  * Retrieves attributes for path
  *
  * @param {String} path, a string containing the path to a file
  * @return {Promise} stats, attributes info
  */
-SftpClient.prototype.stat = function(remotePath) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(formatError('No SFTP connection available', 'sftp.stat'));
-      }
-      sftp.stat(remotePath, function(err, stats) {
-        if (err) {
-          reject(formatError(err, 'sftp.stat'));
-        } else {
-          resolve({
-            mode: stats.mode,
-            uid: stats.uid,
-            gid: stats.gid,
-            size: stats.size,
-            accessTime: stats.atime * 1000,
-            modifyTime: stats.mtime * 1000,
-            isDirectory: stats.isDirectory(),
-            isFile: stats.isFile(),
-            isBlockDevice: stats.isBlockDevice(),
-            isCharacterDevice: stats.isCharacterDevice(),
-            isSymbolicLink: stats.isSymbolicLink(),
-            isFIFO: stats.isFIFO(),
-            isSocket: stats.isSocket()
-          });
-        }
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.stat'));
+SftpClient.prototype.stat = async function(remotePath) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.stat')
+      );
     }
-  });
+    let absPath = await this.realPath(remotePath);
+    return this._stat(absPath);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.stat'));
+  }
 };
 
 /**
