@@ -100,4 +100,58 @@ describe('get() method tests', function() {
       sftp.get(join(config.sftpUrl, 'file-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
+
+  it('get with relative remote path 1', function() {
+    return sftp
+      .get(
+        './testServer/get-gzip.txt.gz',
+        join(config.localUrl, 'get-relative1-gzip.txt.gz')
+      )
+      .then(() => {
+        let stats = fs.statSync(
+          join(config.localUrl, 'get-relative1-gzip.txt.gz')
+        );
+        return expect(stats.size).to.equal(570314);
+      });
+  });
+
+  it('get with relative remote path 2', function() {
+    return sftp
+      .get(
+        '../tim/testServer/get-gzip.txt.gz',
+        join(config.localUrl, 'get-relative2-gzip.txt.gz')
+      )
+      .then(() => {
+        let stats = fs.statSync(
+          join(config.localUrl, 'get-relative2-gzip.txt.gz')
+        );
+        return expect(stats.size).to.equal(570314);
+      });
+  });
+
+  it('get with relative local path 3', function() {
+    return sftp
+      .get(
+        join(config.sftpUrl, 'get-gzip.txt.gz'),
+        './test/testData/get-relative3-gzip.txt.gz'
+      )
+      .then(() => {
+        let stats = fs.statSync('./test/testData/get-relative3-gzip.txt.gz');
+        return expect(stats.size).to.equal(570314);
+      });
+  });
+
+  it('get with relative local path 4', function() {
+    return sftp
+      .get(
+        join(config.sftpUrl, 'get-gzip.txt.gz'),
+        '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz'
+      )
+      .then(() => {
+        let stats = fs.statSync(
+          join(config.localUrl, 'get-relative4-gzip.txt.gz')
+        );
+        return expect(stats.size).to.equal(570314);
+      });
+  });
 });

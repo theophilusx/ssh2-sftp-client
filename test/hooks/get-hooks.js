@@ -36,6 +36,10 @@ async function getCleanup(client, sftpUrl, localUrl) {
     fs.unlinkSync(join(localUrl, 'get-large.txt'));
     fs.unlinkSync(join(localUrl, 'get-gzip.txt.gz'));
     fs.unlinkSync(join(localUrl, 'get-unzip.txt'));
+    fs.unlinkSync(join(localUrl, 'get-relative1-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'get-relative2-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'get-relative3-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'get-relative4-gzip.txt.gz'));
     return true;
   } catch (err) {
     console.error(`getCleanup: ${err.message}`);
