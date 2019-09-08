@@ -8,7 +8,7 @@ const Client = require('ssh2').Client;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const {join, posix} = require('path');
+const {join, posix, normalize} = require('path');
 
 let SftpClient = function() {
   this.client = new Client();
@@ -290,6 +290,49 @@ SftpClient.prototype.stat = async function(remotePath) {
   }
 };
 
+SftpClient.prototype._get = function(path, dst, options) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    let rdr = sftp.createReadStream(path, options);
+    rdr.on('error', err => {
+      removeListeners(rdr);
+      reject(formatError(err, 'sftp.get'));
+    });
+
+    if (dst === undefined) {
+      // no dst specified, return buffer of data
+      let concatStream = concat(buff => {
+        rdr.removeAllListeners('error');
+        resolve(buff);
+      });
+      rdr.pipe(concatStream);
+    } else {
+      let wtr;
+      if (typeof dst === 'string') {
+        // dst local file path
+        wtr = fs.createWriteStream(dst);
+      } else {
+        // assume dst is a writeable
+        wtr = dst;
+      }
+      wtr.on('error', err => {
+        removeListeners(rdr);
+        reject(formatError(err, 'sftp.get'));
+      });
+      wtr.on('finish', () => {
+        removeListeners(rdr);
+        if (typeof dst === 'string') {
+          resolve(dst);
+        } else {
+          resolve(wtr);
+        }
+      });
+      rdr.pipe(wtr);
+    }
+  });
+};
+
 /**
  * get file
  *
@@ -304,66 +347,43 @@ SftpClient.prototype.stat = async function(remotePath) {
  *
  * @return {Promise}
  */
-SftpClient.prototype.get = function(path, dst, options) {
+SftpClient.prototype.get = async function(path, dst, options) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.get')
+      );
+    }
+
+    let absPath = await this.realPath(path);
+
+    let stats = await this.stat(absPath);
+    if ((stats.mode & 0o444) === 0) {
+      return Promise.reject(
+        formatError(`No read permission for ${absPath}`, 'sftp.get')
+      );
+    }
+
+    if (typeof dst === 'string') {
+      let dstPath = normalize(dst);
+      return this._get(absPath, dstPath, options);
+    }
+    return this._get(absPath, dst, options);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.get'));
+  }
+};
+
+SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    try {
-      if (!sftp) {
-        return reject(formatError('No SFTP connection available', 'sftp.get'));
+    sftp.fastGet(remotePath, localPath, options, function(err) {
+      if (err) {
+        reject(formatError(err, 'sftp.fastGet'));
       }
-
-      sftp.stat(path, function(err, stats) {
-        if (err) {
-          return reject(formatError(err, 'sftp.get'));
-        }
-        if ((stats.mode & 0o444) === 0) {
-          return reject(
-            formatError(`No read permission for ${path}`, 'sftp.get')
-          );
-        }
-
-        let rdr = sftp.createReadStream(path, options);
-
-        rdr.on('error', err => {
-          removeListeners(rdr);
-          reject(formatError(err, 'sftp.get'));
-        });
-
-        if (dst === undefined) {
-          // no dst specified, return buffer of data
-          let concatStream = concat(buff => {
-            rdr.removeAllListeners('error');
-            resolve(buff);
-          });
-          rdr.pipe(concatStream);
-        } else {
-          let wtr;
-          if (typeof dst === 'string') {
-            // dst local file path
-            wtr = fs.createWriteStream(dst);
-          } else {
-            // assume dst is a writeable
-            wtr = dst;
-          }
-          wtr.on('error', err => {
-            removeListeners(rdr);
-            reject(formatError(err, 'sftp.get'));
-          });
-          wtr.on('finish', () => {
-            removeListeners(rdr);
-            if (typeof dst === 'string') {
-              resolve(dst);
-            } else {
-              resolve(wtr);
-            }
-          });
-          rdr.pipe(wtr);
-        }
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.get'));
-    }
+      resolve(`${remotePath} was successfully download to ${localPath}!`);
+    });
   });
 };
 
@@ -379,25 +399,31 @@ SftpClient.prototype.get = function(path, dst, options) {
  * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
-SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.fastGet')
-        );
-      }
-      sftp.fastGet(remotePath, localPath, options, function(err) {
-        if (err) {
-          reject(formatError(err, 'sftp.fastGet'));
-        }
-        resolve(`${remotePath} was successfully download to ${localPath}!`);
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.fastGet'));
+SftpClient.prototype.fastGet = async function(remotePath, localPath, options) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.fastGet')
+      );
     }
+    let src = await this.realPath(remotePath);
+    let dst = normalize(localPath);
+    return this._fastGet(src, dst, options);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.fastGet'));
+  }
+};
+
+SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
+  const sftp = this.sftp;
+
+  return new Promise((resolve, reject) => {
+    sftp.fastPut(localPath, remotePath, options, function(err) {
+      if (err) {
+        reject(formatError(err, 'sftp.fastPut'));
+      }
+      resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+    });
   });
 };
 
@@ -414,24 +440,58 @@ SftpClient.prototype.fastGet = function(remotePath, localPath, options) {
  * @param {Object} options
  * @return {Promise} the result of downloading the file
  */
-SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
+SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.fastPut')
+      );
+    }
+
+    let src = fs.realpathSync(localPath);
+    let dst = remotePath;
+    if (dst.startsWith('../')) {
+      let root = await this.realPath('..');
+      dst = join(root, dst.substring(3));
+    } else if (dst.startsWith('./')) {
+      let root = await this.realPath('.');
+      dst = join(root, dst.substring(2));
+    }
+    return this._fastPut(src, dst, options);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.fastPut'));
+  }
+};
+
+SftpClient.prototype._put = function(src, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.fastPut')
-        );
+    let stream = sftp.createWriteStream(remotePath, options);
+
+    stream.on('error', err => {
+      reject(formatError(err, 'sftp.put'));
+    });
+
+    stream.on('finish', () => {
+      removeListeners(stream);
+      resolve(`Uploaded data stream to ${remotePath}`);
+    });
+
+    if (src instanceof Buffer) {
+      stream.end(src);
+    } else {
+      let rdr;
+      if (typeof src === 'string') {
+        rdr = fs.createReadStream(src);
+      } else {
+        rdr = src;
       }
-      sftp.fastPut(localPath, remotePath, options, function(err) {
-        if (err) {
-          reject(formatError(err, 'sftp.fastPut'));
-        }
-        resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+      rdr.on('error', err => {
+        removeListeners(stream);
+        reject(formatError(err, 'sftp.put'));
       });
-    } catch (err) {
-      reject(formatError(err, 'sftp.fastPut'));
+      rdr.pipe(stream);
     }
   });
 };
@@ -447,53 +507,63 @@ SftpClient.prototype.fastPut = function(localPath, remotePath, options) {
  *                            value supported by node streams.
  * @return {Promise}
  */
-SftpClient.prototype.put = function(src, remotePath, options) {
+SftpClient.prototype.put = async function(localSrc, remotePath, options) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connections available', 'sftp.put')
+      );
+    }
+    let src = localSrc;
+    if (typeof src === 'string') {
+      src = fs.realpathSync(src);
+      fs.accessSync(src, fs.constants.R_OK);
+    }
+    let dst = remotePath;
+    if (dst.startsWith('../')) {
+      let root = await this.realPath('..');
+      dst = join(root, dst.substring(3));
+    } else if (dst.startsWith('./')) {
+      let root = await this.realPath('.');
+      dst = join(root, dst.substring(2));
+    }
+    return this._put(src, dst, options);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.put'));
+  }
+};
+
+SftpClient.prototype._append = function(input, remotePath, options) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    try {
-      if (!sftp) {
-        return reject(new Error('sftp.put: No SFTP connections available'));
-      }
+    let writerOptions;
 
-      if (typeof src === 'string') {
-        try {
-          fs.accessSync(src, fs.constants.R_OK);
-        } catch (err) {
-          return reject(
-            formatError(`Cannot read ${src}: ${err.message}`, 'sftp.put')
-          );
-        }
-      }
+    if (options) {
+      writerOptions = options;
+      writerOptions.flags = 'a';
+    } else {
+      writerOptions = {
+        flags: 'a'
+      };
+    }
 
-      let stream = sftp.createWriteStream(remotePath, options);
+    let stream = sftp.createWriteStream(remotePath, writerOptions);
 
-      stream.on('error', err => {
-        reject(formatError(err, 'sftp.put'));
-      });
+    stream.on('error', err => {
+      removeListeners(stream);
+      reject(formatError(err, 'sftp.append'));
+    });
 
-      stream.on('finish', () => {
-        removeListeners(stream);
-        resolve(`Uploaded data stream to ${remotePath}`);
-      });
+    stream.on('finish', () => {
+      removeListeners(stream);
+      resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
+    });
 
-      if (src instanceof Buffer) {
-        stream.end(src);
-      } else {
-        let rdr;
-        if (typeof src === 'string') {
-          rdr = fs.createReadStream(src);
-        } else {
-          rdr = src;
-        }
-        rdr.on('error', err => {
-          removeListeners(stream);
-          reject(formatError(err, 'sftp.put'));
-        });
-        rdr.pipe(stream);
-      }
-    } catch (err) {
-      reject(formatError(err, 'sftp.put'));
+    if (input instanceof Buffer) {
+      stream.end(input);
+    } else {
+      input.pipe(stream);
     }
   });
 };
@@ -506,74 +576,37 @@ SftpClient.prototype.put = function(src, remotePath, options) {
  * @param  {Object} options
  * @return {Promise}
  */
-SftpClient.prototype.append = function(input, remotePath, options) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.append')
-        );
-      }
-      if (typeof input === 'string') {
-        return reject(
-          formatError('Cannot append one file to another', 'sftp.append')
-        );
-      }
-      sftp.stat(remotePath, function(err, stats) {
-        if (err) {
-          return reject(
-            formatError(`${remotePath} ${err.message}`, 'sftp.append')
-          );
-        }
-
-        if ((stats.mode & 0o0100000) === 0) {
-          return reject(
-            formatError(
-              `${remotePath} Remote path must be a regular file`,
-              'sftp-append'
-            )
-          );
-        }
-
-        if ((stats.mode & 0o0444) === 0) {
-          return reject(
-            formatError(`${remotePath} No write permission`, 'sftp-append')
-          );
-        }
-
-        let writerOptions = {
-          flags: 'a'
-        };
-
-        if (options) {
-          writerOptions = options;
-          writerOptions.flags = 'a';
-        }
-
-        let stream = sftp.createWriteStream(remotePath, writerOptions);
-
-        stream.on('error', err => {
-          removeListeners(stream);
-          reject(formatError(err, 'sftp.append'));
-        });
-
-        stream.on('finish', () => {
-          removeListeners(stream);
-          resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
-        });
-
-        if (input instanceof Buffer) {
-          stream.end(input);
-        } else {
-          input.pipe(stream);
-        }
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.append'));
+SftpClient.prototype.append = async function(input, remotePath, options) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.append')
+      );
     }
-  });
+    if (typeof input === 'string') {
+      return Promise.reject(
+        formatError('Cannot append one file to another', 'sftp.append')
+      );
+    }
+    let absPath = await this.realPath(remotePath);
+    let stats = await this.stat(absPath);
+    if ((stats.mode & 0o0100000) === 0) {
+      return Promise.reject(
+        formatError(
+          `${remotePath} Remote path must be a regular file`,
+          'sftp-append'
+        )
+      );
+    }
+    if ((stats.mode & 0o0444) === 0) {
+      return Promise.reject(
+        formatError(`${remotePath} No write permission`, 'sftp-append')
+      );
+    }
+    return this._append(input, absPath, options);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.append'));
+  }
 };
 
 /**
