@@ -39,7 +39,7 @@ npm install ssh2-sftp-client
 
 #+end_src
 
-* Breaking Changes in Version 4.0.0
+* Breaking Changes in Version 4.x
 
 There has been minor changes to the API signatures
 
@@ -64,6 +64,14 @@ There has been minor changes to the API signatures
   property. New properties ~isDirectory~, ~isFile~, ~isBlockDevice~,
   ~isCharacterDevice~, ~isSymbolicLink~, ~isFIFO~ and ~isSocket~ have been added.
 
+* Enhancements in Version 4.1.x
+  - Some of the data upload/download methods would create an empty destination
+    file when the source file did not exist. This has now been fixed.
+  - Handling of absolute path names was weak and inconsistent. This has now been
+    made more consistent and reliable. Two new methods ~realPath()~ and ~cwd()~
+    have been added
+  - More error checking and provision of error messages with more meaningful
+    information. Expansion and enhancements of test cases. 
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -703,6 +711,17 @@ directory.
 
 #+end_src
 
+*** realPath(path) ===> string
+
+Converts a relative path to an absolute path on the remote server. This method
+is mainly used internally to resolve remote path names. 
+
+- path :: A file path, either relative or absolute
+
+*** cwd() ==> string
+
+Returns what the server believes is the current remote working directory. 
+
 *** end() ==> boolean
 
 Ends the current client session, releasing the client socket and associated
@@ -896,6 +915,9 @@ This solution was provided by @jmorino.
        - Verify file exists
        - Verify file is writeable
        - Verify file is a regular file
+   - Fix handling of relative paths
+   - Add ~realPath()~ method
+   - Add ~cwd()~ method
 
 ** v4.0.4 (Prod Version)
    - Minor documentation fix
