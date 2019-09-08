@@ -104,6 +104,51 @@ SftpClient.prototype.cwd = function() {
   return this.realPath('.');
 };
 
+SftpClient.prototype._list = function(path, pattern = /.*/) {
+  const _this = this;
+  const reg = /-/gi;
+
+  return new Promise((resolve, reject) => {
+    let sftp = _this.sftp;
+
+    sftp.readdir(path, (err, list) => {
+      if (err) {
+        reject(formatError(err, 'sftp.list'));
+      } else {
+        let newList = [];
+        // reset file info
+        if (list) {
+          newList = list.map(item => {
+            return {
+              type: item.longname.substr(0, 1),
+              name: item.filename,
+              size: item.attrs.size,
+              modifyTime: item.attrs.mtime * 1000,
+              accessTime: item.attrs.atime * 1000,
+              rights: {
+                user: item.longname.substr(1, 3).replace(reg, ''),
+                group: item.longname.substr(4, 3).replace(reg, ''),
+                other: item.longname.substr(7, 3).replace(reg, '')
+              },
+              owner: item.attrs.uid,
+              group: item.attrs.gid
+            };
+          });
+        }
+        // provide some compatibility for auxList
+        let regex;
+        if (pattern instanceof RegExp) {
+          regex = pattern;
+        } else {
+          let newPattern = pattern.replace(/\*([^*])*?/gi, '.*');
+          regex = new RegExp(newPattern);
+        }
+        resolve(newList.filter(item => regex.test(item.name)));
+      }
+    });
+  });
+};
+
 /**
  * Retrieves a directory listing. The pattern argument may be a regular expression
  * or simple 'glob' style *.
@@ -112,55 +157,18 @@ SftpClient.prototype.cwd = function() {
  * @param {regex} pattern - An optional pattern used to filter the list
  * @return {Promise} data, list info
  */
-SftpClient.prototype.list = function(path, pattern = /.*/) {
-  const reg = /-/gi;
-
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(formatError('No SFTP connection available', 'sftp.list'));
-      }
-      sftp.readdir(path, (err, list) => {
-        if (err) {
-          reject(formatError(err, 'sftp.list'));
-        } else {
-          let newList = [];
-          // reset file info
-          if (list) {
-            newList = list.map(item => {
-              return {
-                type: item.longname.substr(0, 1),
-                name: item.filename,
-                size: item.attrs.size,
-                modifyTime: item.attrs.mtime * 1000,
-                accessTime: item.attrs.atime * 1000,
-                rights: {
-                  user: item.longname.substr(1, 3).replace(reg, ''),
-                  group: item.longname.substr(4, 3).replace(reg, ''),
-                  other: item.longname.substr(7, 3).replace(reg, '')
-                },
-                owner: item.attrs.uid,
-                group: item.attrs.gid
-              };
-            });
-          }
-          // provide some compatibility for auxList
-          let regex;
-          if (pattern instanceof RegExp) {
-            regex = pattern;
-          } else {
-            let newPattern = pattern.replace(/\*([^*])*?/gi, '.*');
-            regex = new RegExp(newPattern);
-          }
-          resolve(newList.filter(item => regex.test(item.name)));
-        }
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.list'));
+SftpClient.prototype.list = async function(path, pattern = /.*/) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.list')
+      );
     }
-  });
+    let absPath = await this.realPath(path);
+    return this._list(absPath, pattern);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.list'));
+  }
 };
 
 /**
@@ -179,6 +187,33 @@ SftpClient.prototype.auxList = function(path, pattern = '*') {
   return this.list(path, pattern);
 };
 
+SftpClient.prototype._exists = function(path) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    let {dir, base} = posix.parse(path);
+
+    sftp.readdir(dir, (err, list) => {
+      if (err) {
+        if (err.code === 2) {
+          resolve(false);
+        } else {
+          reject(formatError(err, 'sftp.exists'));
+        }
+      } else {
+        let [type] = list
+          .filter(item => item.filename === base)
+          .map(item => item.longname.substr(0, 1));
+        if (type) {
+          resolve(type);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+  });
+};
+
 /**
  * @async
 
@@ -190,43 +225,21 @@ SftpClient.prototype.auxList = function(path, pattern = '*') {
  * @return {boolean} returns false if object does not exist. Returns type of
  *                   object if it does
  */
-SftpClient.prototype.exists = function(path) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.exists')
-        );
-      }
-      let {dir, base} = posix.parse(path);
-      if (base === '.') {
-        // the '.' directory exists by definition
-        return resolve('d');
-      }
-      sftp.readdir(dir, (err, list) => {
-        if (err) {
-          if (err.code === 2) {
-            resolve(false);
-          } else {
-            reject(formatError(err, 'sftp.exists'));
-          }
-        } else {
-          let [type] = list
-            .filter(item => item.filename === base)
-            .map(item => item.longname.substr(0, 1));
-          if (type) {
-            resolve(type);
-          } else {
-            resolve(false);
-          }
-        }
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.exists'));
+SftpClient.prototype.exists = async function(remotePath) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.exists')
+      );
     }
-  });
+    let absPath = await this.realPath(remotePath);
+    return this._exists(absPath);
+  } catch (err) {
+    if (err.message.match(/No such file/)) {
+      return Promise.resolve(false);
+    }
+    return Promise.reject(formatError(err, 'sftp.exists'));
+  }
 };
 
 /**
