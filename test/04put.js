@@ -109,4 +109,60 @@ describe('put() method tests', function() {
       )
     ).to.be.rejectedWith('No such file');
   });
+
+  it('put relative remote path 1', function() {
+    return sftp
+      .put(
+        join(config.localUrl, 'test-file2.txt.gz'),
+        './testServer/put-relative1-gzip.txt.gz'
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'put-relative1-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('Put relative remote path 2', function() {
+    return sftp
+      .put(
+        join(config.localUrl, 'test-file2.txt.gz'),
+        `../${config.username}/testServer/put-relative2-gzip.txt.gz`
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'put-relative2-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('put relative local path 3', function() {
+    return sftp
+      .put(
+        './test/testData/test-file2.txt.gz',
+        join(config.sftpUrl, 'put-relative3-gzip.txt.gz')
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'put-relative3-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('put relative local path 4', function() {
+    return sftp
+      .put(
+        '../ssh2-sftp-client/test/testData/test-file2.txt.gz',
+        join(config.sftpUrl, 'put-relative4-gzip.txt.gz')
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'put-relative4-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
 });

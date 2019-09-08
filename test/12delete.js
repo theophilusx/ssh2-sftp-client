@@ -10,7 +10,7 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const dHooks = require('./hooks/delete-hooks');
+const {deleteSetup} = require('./hooks/delete-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -27,7 +27,7 @@ describe('Delete method tests', function() {
   before('Delete tests setup hook', async function() {
     hookSftp = await getConnection('delete-hook');
     sftp = await getConnection('delete');
-    await dHooks.deleteSetup(hookSftp, config.sftpUrl);
+    await deleteSetup(hookSftp, config.sftpUrl);
     return true;
   });
 
@@ -39,13 +39,13 @@ describe('Delete method tests', function() {
 
   it('Delete returns a promise', function() {
     return expect(
-      sftp.delete(join(config.sftpUrl, 'mocha-delete-promise.md'))
+      sftp.delete(join(config.sftpUrl, 'delete-promise.md'))
     ).to.be.a('promise');
   });
 
   it('Delete a file', function() {
     return expect(
-      sftp.delete(join(config.sftpUrl, 'mocha-delete.md'))
+      sftp.delete(join(config.sftpUrl, 'delete-file.md'))
     ).to.eventually.equal('Successfully deleted file');
   });
 
@@ -53,5 +53,17 @@ describe('Delete method tests', function() {
     return expect(
       sftp.delete(join(config.sftpUrl, 'no-such-file.txt'))
     ).to.be.rejectedWith('No such file');
+  });
+
+  it('delete with relative path 1', function() {
+    return expect(
+      sftp.delete('./testServer/delete-relative1.txt')
+    ).to.eventually.equal('Successfully deleted file');
+  });
+
+  it('delete with relative path 2', function() {
+    return expect(
+      sftp.delete(`../${config.username}/testServer/delete-relative2.txt`)
+    ).to.eventually.equal('Successfully deleted file');
   });
 });

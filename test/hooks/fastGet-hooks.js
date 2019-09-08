@@ -40,6 +40,10 @@ async function fastGetCleanup(client, sftpUrl, localUrl) {
     fs.unlinkSync(join(localUrl, 'fastget-small.txt'));
     fs.unlinkSync(join(localUrl, 'fastget-large.txt'));
     fs.unlinkSync(join(localUrl, 'fastget-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'fastget-relative1-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'fastget-relative2-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'fastget-relative3-gzip.txt.gz'));
+    fs.unlinkSync(join(localUrl, 'fastget-relative4-gzip.txt.gz'));
     return true;
   } catch (err) {
     console.error(`fastGetCleanup: ${err.message}`);

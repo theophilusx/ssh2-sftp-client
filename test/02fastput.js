@@ -94,4 +94,60 @@ describe('fastPut() method tests', function() {
       )
     ).to.rejectedWith('No such file');
   });
+
+  it('fastPut remote relative path 1', function() {
+    return sftp
+      .fastPut(
+        join(config.localUrl, 'test-file2.txt.gz'),
+        './testServer/fastput-relative1-gzip.txt.gz'
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'fastput-relative1-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastPut remote relative path 2', function() {
+    return sftp
+      .fastPut(
+        join(config.localUrl, 'test-file2.txt.gz'),
+        '../tim/testServer/fastput-relative2-gzip.txt.gz'
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'fastput-relative2-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastPut local relative path 3', function() {
+    return sftp
+      .fastPut(
+        './test/testData/test-file2.txt.gz',
+        join(config.sftpUrl, 'fastput-relative3-gzip.txt.gz')
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'fastput-relative3-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastPut local relative path 4', function() {
+    return sftp
+      .fastPut(
+        '../ssh2-sftp-client/test/testData/test-file2.txt.gz',
+        join(config.sftpUrl, 'fastput-relative4-gzip.txt.gz')
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'fastput-relative4-gzip.txt.gz'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 570314});
+      });
+  });
 });

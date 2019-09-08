@@ -10,7 +10,7 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const mHooks = require('./hooks/mkdir-hooks');
+const {mkdirCleanup} = require('./hooks/mkdir-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -31,14 +31,16 @@ describe('Mkdir method tests', function() {
   });
 
   after('Mkdir test cleanup', async function() {
-    await mHooks.mkdirCleanup(hookSftp, config.sftpUrl);
+    await mkdirCleanup(hookSftp, config.sftpUrl);
     await closeConnection('mkdir', sftp);
     await closeConnection('mkdir-hook', hookSftp);
     return true;
   });
 
   it('Mkdir should return a promise', function() {
-    return expect(sftp.mkdir(join(config.sftpUrl, 'mocha'))).to.be.a('promise');
+    return expect(sftp.mkdir(join(config.sftpUrl, 'mkdir-promise'))).to.be.a(
+      'promise'
+    );
   });
 
   it('Mkdir without recursive option and bad path should be rejected', function() {
@@ -49,9 +51,12 @@ describe('Mkdir method tests', function() {
 
   it('Mkdir with recursive option should create all directories', function() {
     return sftp
-      .mkdir(join(config.sftpUrl, 'mocha', 'mocha-dir-force', 'subdir'), true)
+      .mkdir(
+        join(config.sftpUrl, 'mkdir-recursive', 'dir-force', 'subdir'),
+        true
+      )
       .then(() => {
-        return sftp.list(join(config.sftpUrl, 'mocha', 'mocha-dir-force'));
+        return sftp.list(join(config.sftpUrl, 'mkdir-recursive', 'dir-force'));
       })
       .then(list => {
         return expect(list).to.containSubset([{name: 'subdir'}]);
@@ -60,68 +65,40 @@ describe('Mkdir method tests', function() {
 
   it('mkdir without recursive option creates dir', function() {
     return sftp
-      .mkdir(join(config.sftpUrl, 'mocha', 'mocha-non-recursive'), false)
+      .mkdir(join(config.sftpUrl, 'mkdir-non-recursive'), false)
       .then(() => {
-        return sftp.list(join(config.sftpUrl, 'mocha'));
+        return sftp.list(config.sftpUrl);
       })
       .then(list => {
-        return expect(list).to.containSubset([{name: 'mocha-non-recursive'}]);
+        return expect(list).to.containSubset([{name: 'mkdir-non-recursive'}]);
       });
   });
 
   it('Relative directory name creates dir', function() {
-    let path = 'xyz';
+    let path = './testServer/mkdir-xyz';
     return expect(sftp.mkdir(path)).to.eventually.equal(
-      `${path} directory created`
+      `${config.sftpUrl}/mkdir-xyz directory created`
     );
   });
 
   it('Relative directory with sub dir creation', function() {
-    let path = 'xyz/abc';
+    let path = './testServer/mkdir-xyz/abc';
     return expect(sftp.mkdir(path)).to.eventually.equal(
-      `${path} directory created`
+      `${config.sftpUrl}/mkdir-xyz/abc directory created`
     );
   });
 
   it('Relative dir name created with recursive flag', function() {
-    let path = 'abc';
+    let path = './testServer/mkdir-abc';
     return expect(sftp.mkdir(path, true)).to.eventually.equal(
-      `./${path} directory created`
+      `${config.sftpUrl}/mkdir-abc directory created`
     );
   });
 
   it('relative dir and sub dir created with recursive flag', function() {
-    let path = 'def/ghi';
+    let path = './testServer/mkdir-def/ghi';
     return expect(sftp.mkdir(path, true)).to.eventually.equal(
-      `${path} directory created`
+      `${config.sftpUrl}/mkdir-def/ghi directory created`
     );
-  });
-});
-
-describe('test mkdir without permissions', function() {
-  let hookSftp, sftp;
-
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
-
-  before('Mkdir setup hook', async function() {
-    hookSftp = await getConnection('mkdir-hook');
-    sftp = await getConnection('mkdir');
-    return true;
-  });
-
-  after('Mkdir test cleanup', async function() {
-    await closeConnection('mkdir', sftp);
-    await closeConnection('mkdir-hook', hookSftp);
-    return true;
-  });
-
-  it('Create directory without write permission throws exception', function() {
-    return expect(
-      sftp.mkdir(join(config.sftpUrl, 'perm-test', 'dir-t2', 'dir-t6'), true)
-    ).to.be.rejectedWith('Failed to create directory');
   });
 });

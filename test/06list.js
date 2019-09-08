@@ -140,6 +140,16 @@ describe('list() method tests', function() {
       {type: '-', name: 'test-file2.txt.gz', size: 570314}
     ]);
   });
+
+  it('list with relative path', async function() {
+    let data = await sftp.list('./testServer');
+    return expect(data.length).to.equal(1);
+  });
+
+  it('list with "." path', async function() {
+    let data = await sftp.list('.');
+    return expect(data).to.containSubset([{type: 'd', name: 'testServer'}]);
+  });
 });
 
 describe('auxList testing', function() {

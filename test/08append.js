@@ -115,4 +115,34 @@ describe('Append method tests', function() {
       )
     ).to.be.rejectedWith('Remote path must be a regular file');
   });
+
+  it('Append relative remote path 1', function() {
+    return sftp
+      .append(Buffer.from('hello'), './testServer/append-test2.txt', {
+        encoding: 'utf8'
+      })
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 28});
+      });
+  });
+
+  it('Append relative remote path 2', function() {
+    return sftp
+      .append(
+        Buffer.from('hello'),
+        `../${config.username}/testServer/append-test2.txt`,
+        {
+          encoding: 'utf8'
+        }
+      )
+      .then(() => {
+        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
+      })
+      .then(stats => {
+        return expect(stats).to.containSubset({size: 33});
+      });
+  });
 });

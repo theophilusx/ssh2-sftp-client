@@ -97,4 +97,56 @@ describe('fastGet() method tests', function() {
       )
     ).to.be.rejectedWith('No such file');
   });
+
+  it('fastGet remote relative path 1', function() {
+    return sftp
+      .fastGet(
+        './testServer/fastget-gzip.txt.gz',
+        join(config.localUrl, 'fastget-relative1-gzip.txt.gz')
+      )
+      .then(() => {
+        return expect(
+          fs.statSync(join(config.localUrl, 'fastget-relative1-gzip.txt.gz'))
+        ).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastGet remote relative path 2', function() {
+    return sftp
+      .fastGet(
+        `../${config.username}/testServer/fastget-gzip.txt.gz`,
+        join(config.localUrl, 'fastget-relative2-gzip.txt.gz')
+      )
+      .then(() => {
+        return expect(
+          fs.statSync(join(config.localUrl, 'fastget-relative2-gzip.txt.gz'))
+        ).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastGet local relative path 3', function() {
+    return sftp
+      .fastGet(
+        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        './test/testData/fastget-relative3-gzip.txt.gz'
+      )
+      .then(() => {
+        return expect(
+          fs.statSync(join(config.localUrl, 'fastget-relative3-gzip.txt.gz'))
+        ).to.containSubset({size: 570314});
+      });
+  });
+
+  it('fastGet local relative path 4', function() {
+    return sftp
+      .fastGet(
+        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        '../ssh2-sftp-client/test/testData/fastget-relative4-gzip.txt.gz'
+      )
+      .then(() => {
+        return expect(
+          fs.statSync(join(config.localUrl, 'fastget-relative4-gzip.txt.gz'))
+        ).to.containSubset({size: 570314});
+      });
+  });
 });

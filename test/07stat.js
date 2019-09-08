@@ -59,4 +59,14 @@ describe('stat() method tests', function() {
       sftp.stat(join(config.sftpUrl, 'stat-test-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
+
+  it('stat on "." returns isDirectory = true', async function() {
+    let data = await sftp.stat('.');
+    return expect(data.isDirectory).to.equal(true);
+  });
+
+  it('stat on ".." returns isDirectory = true', async function() {
+    let data = await sftp.stat('..');
+    return expect(data.isDirectory).to.equal(true);
+  });
 });

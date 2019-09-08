@@ -10,12 +10,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const rHooks = require('./hooks/rmdir-hooks');
+const {rmdirSetup} = require('./hooks/rmdir-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Rmdir method tests', function() {
+describe('rmdir() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -24,78 +24,58 @@ describe('Rmdir method tests', function() {
     }, config.delay);
   });
 
-  before('Rmdir setup hook', async function() {
+  before('rmdir() setup hook', async function() {
     hookSftp = await getConnection('rmdir-hook');
     sftp = await getConnection('rmdir');
-    await rHooks.rmdirSetup(hookSftp, config.sftpUrl);
+    await rmdirSetup(hookSftp, config.sftpUrl);
     return true;
   });
 
-  after('mkdir cleanup hook', async function() {
+  after('rmdir() cleanup hook', async function() {
     await closeConnection('mkdir', sftp);
     await closeConnection('rmdir-hook', hookSftp);
     return true;
   });
 
-  it('Rmdir should return a promise', function() {
-    return expect(sftp.rmdir(join(config.sftpUrl, 'mocha'))).to.be.a('promise');
+  it('rmdir should return a promise', function() {
+    return expect(sftp.rmdir(join(config.sftpUrl, 'rmdir-promise'))).to.be.a(
+      'promise'
+    );
   });
 
-  it('Rmdir on non-existent directory should be rejected', function() {
+  it('rmdir on non-existent directory should be rejected', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'mocha-rmdir2'), true)
+      sftp.rmdir(join(config.sftpUrl, 'rmdir-not-exist'), true)
     ).to.be.rejectedWith('No such file');
   });
 
-  it('Rmdir without recursion on empty directory', function() {
+  it('rmdir without recursion on empty directory', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'mocha-rmdir', 'dir1'))
+      sftp.rmdir(join(config.sftpUrl, 'rmdir-empty'))
     ).to.eventually.equal('Successfully removed directory');
   });
 
-  it('Rmdirrecursively remove all directories', function() {
+  it('rmdir recursively remove all directories', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'mocha-rmdir', 'dir3'), true)
+      sftp.rmdir(join(config.sftpUrl, 'rmdir-non-empty', 'dir3'), true)
     ).to.eventually.equal('Successfully removed directory');
   });
 
-  it('Rmdir recursively remove dirs and files', function() {
+  it('rmdir recursively remove dirs and files', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'mocha-rmdir'), true)
+      sftp.rmdir(join(config.sftpUrl, 'rmdir-non-empty'), true)
     ).to.eventually.equal('Successfully removed directory');
   });
-});
 
-describe('permission tests', function() {
-  let hookSftp, sftp;
-
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
-
-  before('permission test setup hook', async function() {
-    hookSftp = await getConnection('rmdir-permission-hook');
-    sftp = await getConnection('rmdir-permission');
-    return true;
-  });
-
-  after('permission test cleanup hook', async function() {
-    await closeConnection('rmdir-permissions', sftp);
-    await closeConnection('rmdir-permission-hook', hookSftp);
-    return true;
-  });
-
-  it('fail to remove dir with root sub-dir', function() {
+  it('rmdir with relative path 1', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'perm-test', 'dir-t1'))
-    ).to.be.rejectedWith('Failure');
+      sftp.rmdir('./testServer/rmdir-relative1')
+    ).to.eventually.equal('Successfully removed directory');
   });
 
-  it('fail to remove dir without permisisons', function() {
+  it('rmdir with relative path 2', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'perm-test', 'dir-t2'))
-    ).to.be.rejectedWith('Failure');
+      sftp.rmdir(`../${config.username}/testServer/rmdir-relative2`)
+    ).to.eventually.equal('Successfully removed directory');
   });
 });
