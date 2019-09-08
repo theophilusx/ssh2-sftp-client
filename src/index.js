@@ -90,12 +90,12 @@ SftpClient.prototype.realPath = function(path) {
       }
       sftp.realpath(path, (err, absPath) => {
         if (err) {
-          reject(formatError(err, 'sftp.realPath'));
+          reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
         }
         resolve(absPath);
       });
     } catch (err) {
-      reject(formatError(err, 'sftp.realPath'));
+      reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
     }
   });
 };
@@ -639,14 +639,19 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
       );
     }
     let realPath = path;
-    let {dir} = posix.parse(path);
-    if (dir === '') {
-      dir = '.';
-      realPath = './' + path;
+    if (realPath.startsWith('../')) {
+      let root = await this.realPath('..');
+      realPath = join(root, realPath.substring(3));
+    } else if (realPath.startsWith('./')) {
+      let root = await this.realPath('.');
+      realPath = join(root, realPath.substring(2));
     }
+
     if (!recursive) {
-      return doMkdir(path);
+      return doMkdir(realPath);
     }
+
+    let {dir} = posix.parse(realPath);
     let parent = await this.exists(dir);
     if (!parent) {
       await this.mkdir(dir, true);
@@ -693,32 +698,46 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
         formatError('No SFTP connection available', 'sftp.rmdir')
       );
     }
+    let absPath = await this.realPath(path);
     if (!recursive) {
-      return doRmdir(path);
+      return doRmdir(absPath);
     }
-    let list = await this.list(path);
+    let list = await this.list(absPath);
     if (list.length) {
       let files = list.filter(item => item.type !== 'd');
       let dirs = list.filter(item => item.type === 'd');
       for (let f of files) {
         try {
-          await this.delete(join(path, f.name));
+          await this.delete(join(absPath, f.name));
         } catch (err) {
           return Promise.reject(formatError(err, 'sftp.rmdir'));
         }
       }
       for (let d of dirs) {
         try {
-          await this.rmdir(join(path, d.name), true);
+          await this.rmdir(join(absPath, d.name), true);
         } catch (err) {
           return Promise.reject(formatError(err, 'sftp.rmdir'));
         }
       }
     }
-    return doRmdir(path);
+    return doRmdir(absPath);
   } catch (err) {
     return Promise.reject(formatError(err, 'sftp.rmdir'));
   }
+};
+
+SftpClient.prototype._delete = function(path) {
+  return new Promise((resolve, reject) => {
+    let sftp = this.sftp;
+
+    sftp.unlink(path, err => {
+      if (err) {
+        reject(formatError(err, 'sftp.delete'));
+      }
+      resolve('Successfully deleted file');
+    });
+  });
 };
 
 /**
@@ -730,25 +749,30 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
  * @return {Promise} with string 'Successfully deleeted file' once resolved
  *
  */
-SftpClient.prototype.delete = function(path) {
+SftpClient.prototype.delete = async function(path) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.delete')
+      );
+    }
+    let absPath = await this.realPath(path);
+    return this._delete(absPath);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.delete'));
+  }
+};
+
+SftpClient.prototype._rename = function(fromPath, toPath) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.delete')
-        );
+    sftp.rename(fromPath, toPath, err => {
+      if (err) {
+        reject(formatError(err, 'sftp.rename'));
       }
-      sftp.unlink(path, err => {
-        if (err) {
-          reject(formatError(err, 'sftp.delete'));
-        }
-        resolve('Successfully deleted file');
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.delete'));
-    }
+      resolve(`Successfully renamed ${fromPath} to ${toPath}`);
+    });
   });
 };
 
@@ -763,25 +787,38 @@ SftpClient.prototype.delete = function(path) {
  * @return {Promise}
  *
  */
-SftpClient.prototype.rename = function(fromPath, toPath) {
+SftpClient.prototype.rename = async function(fromPath, toPath) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.rename')
+      );
+    }
+    let src = await this.realPath(fromPath);
+    let dst = toPath;
+    if (dst.startsWith('../')) {
+      let root = await this.realPath('..');
+      dst = join(root, dst.substring(3));
+    } else if (dst.startsWith('./')) {
+      let root = await this.realPath('.');
+      dst = join(root, dst.substring(2));
+    }
+    return this._rename(src, dst);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.rename'));
+  }
+};
+
+SftpClient.prototype._chmod = function(remotePath, mode) {
   return new Promise((resolve, reject) => {
     let sftp = this.sftp;
 
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.rename')
-        );
+    sftp.chmod(remotePath, mode, err => {
+      if (err) {
+        reject(formatError(err, 'sftp.chmod'));
       }
-      sftp.rename(fromPath, toPath, err => {
-        if (err) {
-          reject(formatError(err, 'sftp.rename'));
-        }
-        resolve(`Successfully renamed ${fromPath} to ${toPath}`);
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.rename'));
-    }
+      resolve('Successfully change file mode');
+    });
   });
 };
 
@@ -795,26 +832,18 @@ SftpClient.prototype.rename = function(fromPath, toPath) {
  *
  * @return {Promise}.
  */
-SftpClient.prototype.chmod = function(remotePath, mode) {
-  return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
-
-    try {
-      if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.chmod')
-        );
-      }
-      sftp.chmod(remotePath, mode, err => {
-        if (err) {
-          reject(formatError(err, 'sftp.chmod'));
-        }
-        resolve('Successfully change file mode');
-      });
-    } catch (err) {
-      reject(formatError(err, 'sftp.chmod'));
+SftpClient.prototype.chmod = async function(remotePath, mode) {
+  try {
+    if (!this.sftp) {
+      return Promise.reject(
+        formatError('No SFTP connection available', 'sftp.chmod')
+      );
     }
-  });
+    let path = await this.realPath(remotePath);
+    return this._chmod(path, mode);
+  } catch (err) {
+    return Promise.reject(formatError(err, 'sftp.chmod'));
+  }
 };
 
 /**
