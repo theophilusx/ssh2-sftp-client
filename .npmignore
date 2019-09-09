@@ -13,5 +13,6 @@ env-vbox
 .mocharc.js
 .indium.json
 .tern-port
+test-env-template
 
 
