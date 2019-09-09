@@ -67,7 +67,7 @@ There has been minor changes to the API signatures
 * Enhancements in Version 4.1.x
   - Some of the data upload/download methods would create an empty destination
     file when the source file did not exist. This has now been fixed.
-  - Handling of absolute path names was weak and inconsistent. This has now been
+  - Handling of relative path names was weak and inconsistent. This has now been
     made more consistent and reliable. Two new methods ~realPath()~ and ~cwd()~
     have been added
   - More error checking and provision of error messages with more meaningful
