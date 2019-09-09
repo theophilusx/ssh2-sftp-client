@@ -58,7 +58,7 @@ describe('Bad permission tests', function() {
     });
   });
 
-  describe('No access to remote file', function() {
+  describe('No access to remote object', function() {
     it('fastget throws exception', function() {
       return expect(
         sftp.fastGet(
@@ -73,6 +73,91 @@ describe('Bad permission tests', function() {
         sftp.get(
           join(config.sftpUrl, 'no-access-get.txt'),
           join(config.localUrl, 'no-access-get.txt')
+        )
+      ).be.rejectedWith('No read permission');
+    });
+
+    it('list throws exception', function() {
+      return expect(
+        sftp.list(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('exists throws exception', function() {
+      return expect(
+        sftp.exists(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('stat throws exception', function() {
+      return expect(
+        sftp.stat(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('append throws exception', function() {
+      return expect(
+        sftp.append(
+          Buffer.from('Should not work'),
+          join(config.sftpUrl, 'no-access-get.txt')
+        )
+      ).be.rejectedWith('No write permission');
+    });
+
+    it('mkdir throws exception', function() {
+      return expect(
+        sftp.stat(join(config.sftpUrl, 'no-access-dir/not-work'), true)
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('rmdir throws exception', function() {
+      return expect(
+        sftp.rmdir(join(config.sftpUrl, 'no-access-dir/sub-dir'), true)
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('delete throws exception', function() {
+      return expect(
+        sftp.delete(
+          join(
+            config.sftpUrl,
+            'no-access-dir',
+            'sub-dir',
+            'permission-gzip.txt.gz'
+          )
+        )
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('rename throws exception', function() {
+      return expect(
+        sftp.rename(
+          join(
+            config.sftpUrl,
+            'no-access-dir',
+            'sub-dir',
+            'permission-gzip.txt.gz'
+          ),
+          join(
+            config.sftpUrl,
+            'no-acceass-dir',
+            'sub-dir',
+            'permission-rename.gzip.txt.gz'
+          )
+        )
+      ).be.rejectedWith('Permission denied');
+    });
+
+    it('chmod throws exception', function() {
+      return expect(
+        sftp.chmod(
+          join(
+            config.sftpUrl,
+            'no-access-dir',
+            'sub-dir',
+            'permission-gzip.txt.gz'
+          ),
+          0o777
         )
       ).be.rejectedWith('Permission denied');
     });

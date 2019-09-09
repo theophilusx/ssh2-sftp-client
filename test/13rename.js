@@ -49,6 +49,15 @@ describe('rename() method tests', function() {
     ).to.be.a('promise');
   });
 
+  it('rename non-existent file is rejected', function() {
+    return expect(
+      sftp.rename(
+        join(config.sftpUrl, 'no-such-file.txt'),
+        join(config.sftpUrl, 'dummy.md')
+      )
+    ).to.be.rejectedWith('No such file');
+  });
+
   it('rename file successfully', function() {
     return sftp
       .rename(
@@ -61,15 +70,6 @@ describe('rename() method tests', function() {
       .then(list => {
         return expect(list).to.containSubset([{name: 'rename-new.md'}]);
       });
-  });
-
-  it('rename non-existent file is rejected', function() {
-    return expect(
-      sftp.rename(
-        join(config.sftpUrl, 'no-such-file.txt'),
-        join(config.sftpUrl, 'dummy.md')
-      )
-    ).to.be.rejectedWith('No such file');
   });
 
   it('rename to existing file name is rejected', function() {

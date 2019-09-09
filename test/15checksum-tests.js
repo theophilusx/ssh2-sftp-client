@@ -11,12 +11,12 @@ const {
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
-const cHooks = require('./hooks/checksum-hooks');
+const {checksumCleanup} = require('./hooks/checksum-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Put/Get checksum tests', function() {
+describe('put() and get() checksum tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -32,7 +32,7 @@ describe('Put/Get checksum tests', function() {
   });
 
   after('Checksum test cleanup hook', async function() {
-    await cHooks.checksumCleanup(hookSftp, config.sftpUrl, config.localUrl);
+    await checksumCleanup(hookSftp, config.sftpUrl, config.localUrl);
     await closeConnection('checksum', sftp);
     await closeConnection('checksum-hook', hookSftp);
     return true;
@@ -123,7 +123,7 @@ describe('Put/Get checksum tests', function() {
   });
 });
 
-describe('FastPut/FastGet checksum tests', function() {
+describe('fastPut() and fastGet() checksum tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -139,7 +139,7 @@ describe('FastPut/FastGet checksum tests', function() {
   });
 
   after('Checksum test cleanup hook', async function() {
-    await cHooks.checksumCleanup(hookSftp, config.sftpUrl, config.localUrl);
+    await checksumCleanup(hookSftp, config.sftpUrl, config.localUrl);
     await closeConnection('checksum2', sftp);
     await closeConnection('checksum2-hook', hookSftp);
     return true;

@@ -55,10 +55,10 @@ describe('Path tests', function() {
     );
   });
 
-  it('Resolve "../tim/testServer" relative path', function() {
-    return expect(sftp.realPath('../tim/testServer')).to.eventually.equal(
-      config.sftpUrl
-    );
+  it('Resolve "../user/testServer" relative path', function() {
+    return expect(
+      sftp.realPath(`../${config.username}/testServer`)
+    ).to.eventually.equal(config.sftpUrl);
   });
 
   it('cwd() returns current working dir', function() {

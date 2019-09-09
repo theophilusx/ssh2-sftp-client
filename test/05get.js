@@ -118,7 +118,7 @@ describe('get() method tests', function() {
   it('get with relative remote path 2', function() {
     return sftp
       .get(
-        '../tim/testServer/get-gzip.txt.gz',
+        `../${config.username}/testServer/get-gzip.txt.gz`,
         join(config.localUrl, 'get-relative2-gzip.txt.gz')
       )
       .then(() => {

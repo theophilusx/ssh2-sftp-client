@@ -15,7 +15,7 @@ const {deleteSetup} = require('./hooks/delete-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Delete method tests', function() {
+describe('delete() method tests', function() {
   let hookSftp, sftp;
 
   before(function(done) {
@@ -24,7 +24,7 @@ describe('Delete method tests', function() {
     }, config.delay);
   });
 
-  before('Delete tests setup hook', async function() {
+  before('delete tests setup hook', async function() {
     hookSftp = await getConnection('delete-hook');
     sftp = await getConnection('delete');
     await deleteSetup(hookSftp, config.sftpUrl);
@@ -37,19 +37,19 @@ describe('Delete method tests', function() {
     return true;
   });
 
-  it('Delete returns a promise', function() {
+  it('delete returns a promise', function() {
     return expect(
       sftp.delete(join(config.sftpUrl, 'delete-promise.md'))
     ).to.be.a('promise');
   });
 
-  it('Delete a file', function() {
+  it('delete a file', function() {
     return expect(
       sftp.delete(join(config.sftpUrl, 'delete-file.md'))
     ).to.eventually.equal('Successfully deleted file');
   });
 
-  it('Delete non-existent file is rejected', function() {
+  it('delete non-existent file is rejected', function() {
     return expect(
       sftp.delete(join(config.sftpUrl, 'no-such-file.txt'))
     ).to.be.rejectedWith('No such file');

@@ -38,13 +38,13 @@ describe('stat() method tests', function() {
     return true;
   });
 
-  it('Stat return should be a promise', function() {
+  it('stat return should be a promise', function() {
     return expect(sftp.stat(join(config.sftpUrl, 'stat-test.md'))).to.be.a(
       'promise'
     );
   });
 
-  it('Stat on existing file returns stat data', async function() {
+  it('stat on existing file returns stat data', async function() {
     let stats = await sftp.stat(join(config.sftpUrl, 'stat-test.md'));
 
     return expect(stats).to.containSubset({
@@ -54,7 +54,7 @@ describe('stat() method tests', function() {
     });
   });
 
-  it('Stat on non-existent file rejected', function() {
+  it('stat on non-existent file rejected', function() {
     return expect(
       sftp.stat(join(config.sftpUrl, 'stat-test-not-exist.md'))
     ).to.be.rejectedWith('No such file');

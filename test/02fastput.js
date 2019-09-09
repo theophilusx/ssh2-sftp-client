@@ -113,7 +113,7 @@ describe('fastPut() method tests', function() {
     return sftp
       .fastPut(
         join(config.localUrl, 'test-file2.txt.gz'),
-        '../tim/testServer/fastput-relative2-gzip.txt.gz'
+        `../${config.username}/testServer/fastput-relative2-gzip.txt.gz`
       )
       .then(() => {
         return sftp.stat(join(config.sftpUrl, 'fastput-relative2-gzip.txt.gz'));

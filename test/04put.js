@@ -25,20 +25,20 @@ describe('put() method tests', function() {
     }, config.delay);
   });
 
-  before('Put setup hook', async function() {
+  before('put setup hook', async function() {
     hookSftp = await getConnection('put-hook');
     sftp = await getConnection('put');
     return true;
   });
 
-  after('Put cleanup hook', async function() {
+  after('put cleanup hook', async function() {
     await putCleanup(hookSftp, config.sftpUrl);
     await closeConnection('put', sftp);
     await closeConnection('put-hook', hookSftp);
     return true;
   });
 
-  it('Put should return a promise', function() {
+  it('put should return a promise', function() {
     return expect(
       sftp.put(
         Buffer.from('put promise test'),
@@ -47,7 +47,7 @@ describe('put() method tests', function() {
     ).to.be.a('promise');
   });
 
-  it('Put large text file', function() {
+  it('put large text file', function() {
     return sftp
       .put(
         join(config.localUrl, 'test-file1.txt'),
@@ -61,7 +61,7 @@ describe('put() method tests', function() {
       });
   });
 
-  it('Put data from buffer into remote file', function() {
+  it('put data from buffer into remote file', function() {
     return sftp
       .put(Buffer.from('hello'), join(config.sftpUrl, 'put-buffer.txt'), {
         encoding: 'utf8'
@@ -74,7 +74,7 @@ describe('put() method tests', function() {
       });
   });
 
-  it('Put data from stream into remote file', function() {
+  it('put data from stream into remote file', function() {
     let str2 = new stream.Readable();
     str2._read = function noop() {};
     str2.push('your text here');
@@ -92,7 +92,7 @@ describe('put() method tests', function() {
       });
   });
 
-  it('Put with no src file should be rejected', function() {
+  it('put with no src file should be rejected', function() {
     return expect(
       sftp.put(
         join(config.localUrl, 'no-such-file.txt'),
@@ -101,7 +101,7 @@ describe('put() method tests', function() {
     ).to.be.rejectedWith('no such file or directory');
   });
 
-  it('Put with bad dst path should be rejected', function() {
+  it('put with bad dst path should be rejected', function() {
     return expect(
       sftp.put(
         join(config.localUrl, 'test-file1.txt'),
@@ -124,7 +124,7 @@ describe('put() method tests', function() {
       });
   });
 
-  it('Put relative remote path 2', function() {
+  it('put relative remote path 2', function() {
     return sftp
       .put(
         join(config.localUrl, 'test-file2.txt.gz'),
