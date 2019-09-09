@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v4.0.3*.
+Current stable release is *v4.1.0*.
 
 Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
 
@@ -906,7 +906,7 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
-** v4.0.5 (Dev Version)
+** v4.1.0 (Prod Version)
    - move ~end()~ call to resolve into close hook
    - Prevent ~put()~ and ~get()~ from creating empty files in destination when
      unable to read source
@@ -919,7 +919,7 @@ This solution was provided by @jmorino.
    - Add ~realPath()~ method
    - Add ~cwd()~ method
 
-** v4.0.4 (Prod Version)
+** v4.0.4 
    - Minor documentation fix
    - Fix return value from ~get()~
 ** v4.0.3
