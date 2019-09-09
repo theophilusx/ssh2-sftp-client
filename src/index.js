@@ -79,7 +79,7 @@ function errorListener(err, source) {
 }
 
 SftpClient.prototype.realPath = function(path) {
-  let sftp = this.sftp;
+  const sftp = this.sftp;
 
   return new Promise((resolve, reject) => {
     try {
@@ -109,7 +109,7 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
   const reg = /-/gi;
 
   return new Promise((resolve, reject) => {
-    let sftp = _this.sftp;
+    const sftp = _this.sftp;
 
     sftp.readdir(path, (err, list) => {
       if (err) {
@@ -189,7 +189,7 @@ SftpClient.prototype.auxList = function(path, pattern = '*') {
 
 SftpClient.prototype._exists = function(path) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     let {dir, base} = posix.parse(path);
 
@@ -244,7 +244,7 @@ SftpClient.prototype.exists = async function(remotePath) {
 
 SftpClient.prototype._stat = function(remotePath) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     sftp.stat(remotePath, function(err, stats) {
       if (err) {
@@ -292,7 +292,7 @@ SftpClient.prototype.stat = async function(remotePath) {
 
 SftpClient.prototype._get = function(path, dst, options) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     let rdr = sftp.createReadStream(path, options);
     rdr.on('error', err => {
@@ -376,7 +376,7 @@ SftpClient.prototype.get = async function(path, dst, options) {
 
 SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     sftp.fastGet(remotePath, localPath, options, function(err) {
       if (err) {
@@ -465,7 +465,7 @@ SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
 
 SftpClient.prototype._put = function(src, remotePath, options) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     let stream = sftp.createWriteStream(remotePath, options);
 
@@ -535,7 +535,7 @@ SftpClient.prototype.put = async function(localSrc, remotePath, options) {
 
 SftpClient.prototype._append = function(input, remotePath, options) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     let writerOptions;
 
@@ -619,7 +619,7 @@ SftpClient.prototype.append = async function(input, remotePath, options) {
  * @return {Promise}.
  */
 SftpClient.prototype.mkdir = async function(path, recursive = false) {
-  let sftp = this.sftp;
+  const sftp = this.sftp;
 
   function doMkdir(p) {
     return new Promise((resolve, reject) => {
@@ -675,7 +675,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
  * @return {Promise}..
  */
 SftpClient.prototype.rmdir = async function(path, recursive = false) {
-  let sftp = this.sftp;
+  const sftp = this.sftp;
 
   function doRmdir(p) {
     return new Promise((resolve, reject) => {
@@ -811,7 +811,7 @@ SftpClient.prototype.rename = async function(fromPath, toPath) {
 
 SftpClient.prototype._chmod = function(remotePath, mode) {
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    const sftp = this.sftp;
 
     sftp.chmod(remotePath, mode, err => {
       if (err) {
