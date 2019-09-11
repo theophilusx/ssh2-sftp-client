@@ -1,0 +1,7 @@
+* Tools
+
+This directory contains various scripts and tools used to help diagnose
+issues. By definition, they are minimal and rough, lacking adequate error
+checking etc. 
+
+
