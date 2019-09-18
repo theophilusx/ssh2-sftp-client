@@ -150,6 +150,11 @@ describe('list() method tests', function() {
     let data = await sftp.list('.');
     return expect(data).to.containSubset([{type: 'd', name: 'testServer'}]);
   });
+
+  it(`list with absolute path ${config.sftpUrl} and pattern`, async function() {
+    let data = await sftp.list('/home/tim/testServer', 'list*');
+    return expect(data).to.containSubset([{name: 'list-test'}]);
+  });
 });
 
 describe('auxList testing', function() {

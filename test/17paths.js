@@ -33,7 +33,7 @@ describe('Path tests', function() {
     return true;
   });
 
-  it('Resolves absolute path', function() {
+  it(`Resolves absolute path ${config.sftpUrl}`, function() {
     return expect(sftp.realPath(config.sftpUrl)).to.eventually.equal(
       config.sftpUrl
     );
