@@ -158,17 +158,11 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
  * @return {Promise} data, list info
  */
 SftpClient.prototype.list = async function(path, pattern = /.*/) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.list')
-      );
-    }
-    let absPath = await this.realPath(path);
-    return this._list(absPath, pattern);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.list'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.list');
   }
+  let absPath = await this.realPath(path);
+  return this._list(absPath, pattern);
 };
 
 /**
@@ -228,17 +222,15 @@ SftpClient.prototype._exists = function(path) {
 SftpClient.prototype.exists = async function(remotePath) {
   try {
     if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.exists')
-      );
+      throw formatError('No SFTP connection available', 'sftp.exists');
     }
     let absPath = await this.realPath(remotePath);
     return this._exists(absPath);
   } catch (err) {
     if (err.message.match(/No such file/)) {
-      return Promise.resolve(false);
+      return false;
     }
-    return Promise.reject(formatError(err, 'sftp.exists'));
+    throw formatError(err, 'sftp.exists');
   }
 };
 
@@ -277,17 +269,11 @@ SftpClient.prototype._stat = function(remotePath) {
  * @return {Promise} stats, attributes info
  */
 SftpClient.prototype.stat = async function(remotePath) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.stat')
-      );
-    }
-    let absPath = await this.realPath(remotePath);
-    return this._stat(absPath);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.stat'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.stat');
   }
+  let absPath = await this.realPath(remotePath);
+  return this._stat(absPath);
 };
 
 SftpClient.prototype._get = function(path, dst, options) {
@@ -348,30 +334,22 @@ SftpClient.prototype._get = function(path, dst, options) {
  * @return {Promise}
  */
 SftpClient.prototype.get = async function(path, dst, options) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.get')
-      );
-    }
-
-    let absPath = await this.realPath(path);
-
-    let stats = await this.stat(absPath);
-    if ((stats.mode & 0o444) === 0) {
-      return Promise.reject(
-        formatError(`No read permission for ${absPath}`, 'sftp.get')
-      );
-    }
-
-    if (typeof dst === 'string') {
-      let dstPath = normalize(dst);
-      return this._get(absPath, dstPath, options);
-    }
-    return this._get(absPath, dst, options);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.get'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.get');
   }
+
+  let absPath = await this.realPath(path);
+
+  let stats = await this.stat(absPath);
+  if ((stats.mode & 0o444) === 0) {
+    throw formatError(`No read permission for ${absPath}`, 'sftp.get');
+  }
+
+  if (typeof dst === 'string') {
+    let dstPath = normalize(dst);
+    return this._get(absPath, dstPath, options);
+  }
+  return this._get(absPath, dst, options);
 };
 
 SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
@@ -400,18 +378,12 @@ SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
  * @return {Promise} the result of downloading the file
  */
 SftpClient.prototype.fastGet = async function(remotePath, localPath, options) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.fastGet')
-      );
-    }
-    let src = await this.realPath(remotePath);
-    let dst = normalize(localPath);
-    return this._fastGet(src, dst, options);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.fastGet'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.fastGet');
   }
+  let src = await this.realPath(remotePath);
+  let dst = normalize(localPath);
+  return this._fastGet(src, dst, options);
 };
 
 SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
@@ -441,26 +413,19 @@ SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
  * @return {Promise} the result of downloading the file
  */
 SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.fastPut')
-      );
-    }
-
-    let src = fs.realpathSync(localPath);
-    let dst = remotePath;
-    if (dst.startsWith('../')) {
-      let root = await this.realPath('..');
-      dst = join(root, dst.substring(3));
-    } else if (dst.startsWith('./')) {
-      let root = await this.realPath('.');
-      dst = join(root, dst.substring(2));
-    }
-    return this._fastPut(src, dst, options);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.fastPut'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.fastPut');
   }
+  let src = fs.realpathSync(localPath);
+  let dst = remotePath;
+  if (dst.startsWith('../')) {
+    let root = await this.realPath('..');
+    dst = join(root, dst.substring(3));
+  } else if (dst.startsWith('./')) {
+    let root = await this.realPath('.');
+    dst = join(root, dst.substring(2));
+  }
+  return this._fastPut(src, dst, options);
 };
 
 SftpClient.prototype._put = function(src, remotePath, options) {
@@ -508,29 +473,23 @@ SftpClient.prototype._put = function(src, remotePath, options) {
  * @return {Promise}
  */
 SftpClient.prototype.put = async function(localSrc, remotePath, options) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connections available', 'sftp.put')
-      );
-    }
-    let src = localSrc;
-    if (typeof src === 'string') {
-      src = fs.realpathSync(src);
-      fs.accessSync(src, fs.constants.R_OK);
-    }
-    let dst = remotePath;
-    if (dst.startsWith('../')) {
-      let root = await this.realPath('..');
-      dst = join(root, dst.substring(3));
-    } else if (dst.startsWith('./')) {
-      let root = await this.realPath('.');
-      dst = join(root, dst.substring(2));
-    }
-    return this._put(src, dst, options);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.put'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connections available', 'sftp.put');
   }
+  let src = localSrc;
+  if (typeof src === 'string') {
+    src = fs.realpathSync(src);
+    fs.accessSync(src, fs.constants.R_OK);
+  }
+  let dst = remotePath;
+  if (dst.startsWith('../')) {
+    let root = await this.realPath('..');
+    dst = join(root, dst.substring(3));
+  } else if (dst.startsWith('./')) {
+    let root = await this.realPath('.');
+    dst = join(root, dst.substring(2));
+  }
+  return this._put(src, dst, options);
 };
 
 SftpClient.prototype._append = function(input, remotePath, options) {
@@ -577,36 +536,24 @@ SftpClient.prototype._append = function(input, remotePath, options) {
  * @return {Promise}
  */
 SftpClient.prototype.append = async function(input, remotePath, options) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.append')
-      );
-    }
-    if (typeof input === 'string') {
-      return Promise.reject(
-        formatError('Cannot append one file to another', 'sftp.append')
-      );
-    }
-    let absPath = await this.realPath(remotePath);
-    let stats = await this.stat(absPath);
-    if ((stats.mode & 0o0100000) === 0) {
-      return Promise.reject(
-        formatError(
-          `${remotePath} Remote path must be a regular file`,
-          'sftp-append'
-        )
-      );
-    }
-    if ((stats.mode & 0o0444) === 0) {
-      return Promise.reject(
-        formatError(`${remotePath} No write permission`, 'sftp-append')
-      );
-    }
-    return this._append(input, absPath, options);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.append'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.append');
   }
+  if (typeof input === 'string') {
+    throw formatError('Cannot append one file to another', 'sftp.append');
+  }
+  let absPath = await this.realPath(remotePath);
+  let stats = await this.stat(absPath);
+  if ((stats.mode & 0o0100000) === 0) {
+    throw formatError(
+      `${remotePath} Remote path must be a regular file`,
+      'sftp-append'
+    );
+  }
+  if ((stats.mode & 0o0444) === 0) {
+    throw formatError(`${remotePath} No write permission`, 'sftp-append');
+  }
+  return this._append(input, absPath, options);
 };
 
 /**
@@ -634,9 +581,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
 
   try {
     if (!sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.mkdir')
-      );
+      throw formatError('No SFTP connection available', 'sftp.mkdir');
     }
     let realPath = path;
     if (realPath.startsWith('../')) {
@@ -656,11 +601,11 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
     if (!parent) {
       await this.mkdir(dir, true);
     } else if (parent !== 'd') {
-      return Promise.reject(formatError('Bad directory path', 'sftp.mkdir'));
+      throw formatError('Bad directory path', 'sftp.mkdir');
     }
     return doMkdir(realPath);
   } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.mkdir'));
+    throw formatError(err, 'sftp.mkdir');
   }
 };
 
@@ -694,9 +639,7 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
 
   try {
     if (!sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.rmdir')
-      );
+      throw formatError('No SFTP connection available', 'sftp.rmdir');
     }
     let absPath = await this.realPath(path);
     if (!recursive) {
@@ -710,20 +653,20 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
         try {
           await this.delete(join(absPath, f.name));
         } catch (err) {
-          return Promise.reject(formatError(err, 'sftp.rmdir'));
+          throw formatError(err, 'sftp.rmdir');
         }
       }
       for (let d of dirs) {
         try {
           await this.rmdir(join(absPath, d.name), true);
         } catch (err) {
-          return Promise.reject(formatError(err, 'sftp.rmdir'));
+          throw formatError(err, 'sftp.rmdir');
         }
       }
     }
     return doRmdir(absPath);
   } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.rmdir'));
+    throw formatError(err, 'sftp.rmdir');
   }
 };
 
@@ -750,17 +693,11 @@ SftpClient.prototype._delete = function(path) {
  *
  */
 SftpClient.prototype.delete = async function(path) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.delete')
-      );
-    }
-    let absPath = await this.realPath(path);
-    return this._delete(absPath);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.delete'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.delete');
   }
+  let absPath = await this.realPath(path);
+  return this._delete(absPath);
 };
 
 SftpClient.prototype._rename = function(fromPath, toPath) {
@@ -788,25 +725,19 @@ SftpClient.prototype._rename = function(fromPath, toPath) {
  *
  */
 SftpClient.prototype.rename = async function(fromPath, toPath) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.rename')
-      );
-    }
-    let src = await this.realPath(fromPath);
-    let dst = toPath;
-    if (dst.startsWith('../')) {
-      let root = await this.realPath('..');
-      dst = join(root, dst.substring(3));
-    } else if (dst.startsWith('./')) {
-      let root = await this.realPath('.');
-      dst = join(root, dst.substring(2));
-    }
-    return this._rename(src, dst);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.rename'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.rename');
   }
+  let src = await this.realPath(fromPath);
+  let dst = toPath;
+  if (dst.startsWith('../')) {
+    let root = await this.realPath('..');
+    dst = join(root, dst.substring(3));
+  } else if (dst.startsWith('./')) {
+    let root = await this.realPath('.');
+    dst = join(root, dst.substring(2));
+  }
+  return this._rename(src, dst);
 };
 
 SftpClient.prototype._chmod = function(remotePath, mode) {
@@ -833,17 +764,11 @@ SftpClient.prototype._chmod = function(remotePath, mode) {
  * @return {Promise}.
  */
 SftpClient.prototype.chmod = async function(remotePath, mode) {
-  try {
-    if (!this.sftp) {
-      return Promise.reject(
-        formatError('No SFTP connection available', 'sftp.chmod')
-      );
-    }
-    let path = await this.realPath(remotePath);
-    return this._chmod(path, mode);
-  } catch (err) {
-    return Promise.reject(formatError(err, 'sftp.chmod'));
+  if (!this.sftp) {
+    throw formatError('No SFTP connection available', 'sftp.chmod');
   }
+  let path = await this.realPath(remotePath);
+  return this._chmod(path, mode);
 };
 
 /**
