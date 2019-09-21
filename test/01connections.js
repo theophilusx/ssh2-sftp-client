@@ -141,4 +141,26 @@ describe('Connect and disconnect', function() {
         })
     ).to.eventually.equal(true);
   });
+
+  it('Connect when connected rejected', function() {
+    return expect(
+      client
+        .connect({
+          host: host,
+          port: port,
+          username: username,
+          password: password,
+          retries: 1
+        })
+        .then(() => {
+          return client.connect({
+            host: host,
+            port: port,
+            username: username,
+            password: password,
+            retries: 1
+          });
+        })
+    ).to.be.rejectedWith(/An existing SFTP connection is already defined/);
+  });
 });

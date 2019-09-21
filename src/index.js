@@ -73,9 +73,9 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function errorListener(err, source) {
-  let newErr = formatError(err, source);
-  throw newErr;
+function errorListener(err) {
+  console.log(`Error listener: ${err.message}`);
+  throw formatError(err);
 }
 
 SftpClient.prototype.realPath = function(path) {
@@ -785,9 +785,9 @@ SftpClient.prototype.chmod = async function(remotePath, mode) {
 SftpClient.prototype.connect = function(config) {
   let obj = this;
   var operation = retry.operation({
-    retries: config.retries || 2,
+    retries: config.retries || 1,
     factor: config.retry_factor || 2,
-    minTimeout: config.retry_minTimeout || 2000
+    minTimeout: config.retry_minTimeout || 1000
   });
 
   function retryConnect(sftpObj, config, callback) {
@@ -810,7 +810,7 @@ SftpClient.prototype.connect = function(config) {
               // remove retry error listener and add generic error listener
               sftpObj.client.removeAllListeners('error');
               sftpObj.client.on('error', errorListener);
-              sftpObj.client.on('finish', withError => {
+              sftpObj.client.on('close', withError => {
                 if (withError) {
                   console.error('Client ended due to errors');
                 }
@@ -846,12 +846,21 @@ SftpClient.prototype.connect = function(config) {
 
   return new Promise((resolve, reject) => {
     try {
-      retryConnect(obj, config, (err, sftp) => {
-        if (err) {
-          reject(formatError(err, 'sftp.connect'));
-        }
-        resolve(sftp);
-      });
+      if (obj.sftp) {
+        reject(
+          formatError(
+            'An existing SFTP connection is already defined',
+            'sftp.connect'
+          )
+        );
+      } else {
+        retryConnect(obj, config, (err, sftp) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(sftp);
+        });
+      }
     } catch (err) {
       reject(formatError(err, 'sftp.connect'));
     }
@@ -875,17 +884,18 @@ SftpClient.prototype.connect = function(config) {
  *
  */
 SftpClient.prototype.end = function() {
-  let obj = this;
+  let self = this;
 
   return new Promise((resolve, reject) => {
     try {
       // debugListeners(this.client);
-      obj.client.on('close', () => {
-        removeListeners(obj.client);
-        resolve(true);
-      });
-      obj.client.end();
-      //removeListeners(obj.client);
+      // obj.client.on('close', () => {
+      //   removeListeners(obj.client);
+      //   //resolve(true);
+      // });
+      self.client.end();
+      removeListeners(self.client);
+      self.sftp = undefined;
       resolve(true);
     } catch (err) {
       reject(formatError(err, 'sftp.end'));
