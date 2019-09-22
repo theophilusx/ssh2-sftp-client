@@ -120,13 +120,13 @@ describe('Connect Tests', function() {
 });
 
 describe('Connect and disconnect', function() {
-  let client = new Client();
   let host = process.env.SFTP_SERVER;
   let port = process.env.SFTP_PORT;
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
   it('connect and disconnect returns true', function() {
+    let client = new Client();
     return expect(
       client
         .connect({
@@ -143,6 +143,7 @@ describe('Connect and disconnect', function() {
   });
 
   it('Connect when connected rejected', function() {
+    let client = new Client();
     return expect(
       client
         .connect({

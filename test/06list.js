@@ -152,7 +152,7 @@ describe('list() method tests', function() {
   });
 
   it(`list with absolute path ${config.sftpUrl} and pattern`, async function() {
-    let data = await sftp.list('/home/tim/testServer', 'list*');
+    let data = await sftp.list(config.sftpUrl, 'list*');
     return expect(data).to.containSubset([{name: 'list-test'}]);
   });
 });
