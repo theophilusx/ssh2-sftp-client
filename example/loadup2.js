@@ -13,7 +13,7 @@ const config = {
   port: process.env.SFTP_PORT || 22
 };
 
-let maxConnections = 15;
+let maxConnections = 11;
 let clientCount = 0;
 let clients = [];
 let promises = [];
@@ -55,4 +55,12 @@ Promise.all(promises)
   })
   .catch(err => {
     console.log(`First Error: ${err.message}`);
+    console.log('Script terminated with errors');
+  })
+  .finally(async () => {
+    for (let c of clients) {
+      if (c.sftp) {
+        await c.end();
+      }
+    }
   });
