@@ -13,6 +13,7 @@ const {join, posix, normalize} = require('path');
 let SftpClient = function(clientName = '') {
   this.client = new Client();
   this.clientName = clientName;
+  this.endCalled = false;
 };
 
 /**
@@ -30,24 +31,24 @@ function formatError(err, name = 'sftp', retryCount) {
   //console.dir(err);
 
   if (typeof err === 'string') {
-    msg = `${name} [${this.clientName}]: ${err}`;
+    msg = `${name}: ${err}`;
   } else {
     switch (err.code) {
       case 'ENOTFOUND':
         msg =
-          `${name} [${this.clientName}]: ` +
+          `${name}: ` +
           `${err.level} error. Address lookup failed for host ${err.hostname}`;
         break;
       case 'ECONNREFUSED':
         msg =
-          `${name} [${this.clientName}]: ${err.level} error. Remote host at ` +
+          `${name}: ${err.level} error. Remote host at ` +
           `${err.address} refused connection`;
         break;
       case 'ENOENT':
-        msg = `${name} [${this.clientName}]: ${err.message}`;
+        msg = `${name}: ${err.message}`;
         break;
       default:
-        msg = `${name} [${this.clientName}]: ${err.message}`;
+        msg = `${name}: ${err.message}`;
     }
   }
 
@@ -64,7 +65,9 @@ function formatError(err, name = 'sftp', retryCount) {
  */
 function removeListeners(emitter) {
   let listeners = emitter.eventNames();
-  listeners.map(name => emitter.removeAllListeners(name));
+  listeners.forEach(name => {
+    emitter.removeAllListeners(name);
+  });
 }
 
 /**
@@ -74,9 +77,19 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function errorListener(err) {
-  console.log(`Error listener: ${err.message}`);
-  throw formatError(err);
+function makeErrorListener(name) {
+  return function(err) {
+    throw formatError(err, name);
+  };
+}
+
+function makeEndListener(client) {
+  return function() {
+    if (!client.endCalled) {
+      client.sftp = undefined;
+      throw formatError('Connection ended unexpectedly', client.clientName);
+    }
+  };
 }
 
 SftpClient.prototype.realPath = function(path) {
@@ -810,7 +823,9 @@ SftpClient.prototype.connect = function(config) {
               self.sftp = sftp;
               // remove retry error listener and add generic error listener
               self.client.removeAllListeners('error');
-              self.client.on('error', errorListener);
+              self.client.removeAllListeners('end');
+              self.client.on('end', makeEndListener(self));
+              self.client.on('error', makeErrorListener(self.clientName));
               self.client.on('close', withError => {
                 if (withError) {
                   console.error('Client ended due to errors');
@@ -818,9 +833,6 @@ SftpClient.prototype.connect = function(config) {
               });
               callback(null, sftp);
             });
-          })
-          .on('end', () => {
-            self.sftp = null;
           })
           .on('error', err => {
             removeListeners(self.client);
@@ -832,6 +844,15 @@ SftpClient.prototype.connect = function(config) {
             // exhausted retries - do callback with error
             callback(formatError(err, 'sftp.connect', attemptCount), null);
           })
+          .on('end', () => {
+            callback(
+              formatError(
+                'Connection ended unexpectedly by remote server',
+                self.clientName
+              )
+            );
+          })
+
           .connect(config);
       });
     } catch (err) {
@@ -880,6 +901,7 @@ SftpClient.prototype.end = function() {
 
   return new Promise((resolve, reject) => {
     try {
+      self.endCalled = true;
       // debugListeners(this.client);
       // obj.client.on('close', () => {
       //   removeListeners(obj.client);
@@ -889,6 +911,7 @@ SftpClient.prototype.end = function() {
       removeListeners(self.client);
       self.sftp = undefined;
       resolve(true);
+      self.endCalled = false;
     } catch (err) {
       reject(formatError(err, 'sftp.end'));
     }
