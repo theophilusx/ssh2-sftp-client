@@ -64,6 +64,20 @@ There has been minor changes to the API signatures
   property. New properties ~isDirectory~, ~isFile~, ~isBlockDevice~,
   ~isCharacterDevice~, ~isSymbolicLink~, ~isFIFO~ and ~isSocket~ have been added.
 
+* Enhancements in Version 4.2.x
+  - Added ability to set a client name in ~Client()~ constructor. This can be
+    useful when creating multiple clients as the client name will be displayed
+    in error messages, providing a clue as to which client has failed.
+  - Added a work-around for the SSH2 bug which results in only an ~end~ event
+    being raised when the remote server drops the connection during the connect
+    process. (see FAQ section below).
+  - Added additional error checking to prevent attempts to call ~connect()~ on
+    an already connected client. While a client can be used to make multiple
+    connections, you must call ~end()~ before calling ~connect()~ again. Each
+    client object can only represent a single connection to an SFTP
+    server. However, some methods, such as ~fastPut()~ and ~fastGet()~ will use
+    concurrency to speed up the transfer of data. 
+  - Added some more examples in the example directory of the repository
 * Enhancements in Version 4.1.x
   - Some of the data upload/download methods would create an empty destination
     file when the source file did not exist. This has now been fixed.
@@ -81,6 +95,46 @@ All the methods will return a Promise, except for ~on()~ and
 ~removeListener()~, which are typically only used in special use cases. 
 
 ** Methods
+
+*** new SftpClient(name) ===> SFTP client object
+
+Constructor to create a new ~ssh2-sftp-client~ object. An optional ~name~ string
+can be provided, which will be used in error messages to help identify which
+client has thrown the error. 
+
+**** Constructor arguments
+
+- name :: string. An optional name string used in error messages
+
+**** Example Used
+
+#+begin_src js2
+  'use strict';
+
+  const Client = require('ssh2-sftp-client');
+
+  const config = {
+    host: 'example.com',
+    user: 'donald',
+    password: 'my-secret'
+  };
+
+  const sftp = new Client('example-client');
+
+  sftp.connect(config)
+    .then(() => {
+      return sftp.cwd();
+    })
+    .then(p => {
+      console.log(`Remote working directory is ${p}`);
+      return sftp.end();
+    })
+    .catch(err => {
+      console.log(`Error: ${err.message}`); // error message will include 'example-client'
+    });
+
+#+end_src
+
 *** connect(config) ===> SFTPstream
 
 Connect to an sftp server. Full documentation for connection options is
@@ -769,6 +823,33 @@ Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object. 
 
 * FAQ
+** Remote server drops connections with only an end event
+
+Many SFTP servers have rate limiting protection which will drop connections once
+a limit has been reached. In particular, openSSH has the setting ~MaxStartups~,
+which can be a tuple of the form =max:drop:full= where =max= is the maximum
+allowed unauthenticated connections, =drop= is a percentage value which
+specifies percentage of connections to be dropped once =max= connections has
+been reached and =full= is the number of connections at which point all
+subsequent connections will be dropped. e.g. =10:30:60= means allow up to 10
+unauthenticated connections after which drop 30% of connection attempts until
+reaching 60 unauthenticated connections, at which time, drop all attempts. 
+
+Clients first make an unauthenticated connection to the SFTP server to begin
+negotiation of protocol settings (cipher, authentication method etc). If you are
+creating multiple connections in a script, it is easy to exceed the limit,
+resulting in some connections being dropped. As SSH2 only raises an 'end' event
+for these dropped connections, no error is detected. The ~ssh2-sftp-client~ now
+listens for ~end~ events during the connection process and if one is detected,
+will reject the connection promise. 
+
+One way to avoid this type of issue is to add a delay between connection
+attempts. It does not need to be a very long delay - just sufficient to permit
+the previous connection to be authenticated. In fact, the default setting for
+openSSH is =10:30:60=, so you really just need to have enough delay to ensure
+that the 1st connection has completed authentication before the 11th connection
+is attempted. 
+
 ** How can you pass writable stream as dst for get method?
 
 If the dst argument passed to the get method is a writeable stream, the remote
@@ -906,7 +987,13 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
-** v4.1.0 (Prod Version)
+** v4.2.0 (Prod Version)
+   - Work-around for SSH2 =end= event bug
+   - Added ability to set client name in constructor method
+   - Added additional error checking to prevent ~connect()~ being called on
+     already connected client
+   - Added additional examples in =example= directory
+** v4.1.0
    - move ~end()~ call to resolve into close hook
    - Prevent ~put()~ and ~get()~ from creating empty files in destination when
      unable to read source
