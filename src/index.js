@@ -53,7 +53,7 @@ function formatError(err, name = 'sftp', retryCount) {
   }
 
   if (retryCount) {
-    msg += ` after ${retryCount} attempts`;
+    msg += ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`;
   }
   return new Error(msg);
 }
