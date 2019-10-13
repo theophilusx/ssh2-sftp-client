@@ -826,11 +826,6 @@ SftpClient.prototype.connect = function(config) {
               self.client.removeAllListeners('end');
               self.client.on('end', makeEndListener(self));
               self.client.on('error', makeErrorListener(self.clientName));
-              self.client.on('close', withError => {
-                if (withError) {
-                  console.error('Client ended due to errors');
-                }
-              });
               callback(null, sftp);
             });
           })
@@ -893,7 +888,7 @@ SftpClient.prototype.connect = function(config) {
 /**
  * @async
  *
- * Close the SFTP connection
+ * End the SFTP connection
  *
  */
 SftpClient.prototype.end = function() {
@@ -903,10 +898,6 @@ SftpClient.prototype.end = function() {
     try {
       self.endCalled = true;
       // debugListeners(this.client);
-      // obj.client.on('close', () => {
-      //   removeListeners(obj.client);
-      //   //resolve(true);
-      // });
       self.client.end();
       removeListeners(self.client);
       self.sftp = undefined;
