@@ -8,12 +8,14 @@ const Client = require('ssh2').Client;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const {join, posix, normalize} = require('path');
+const {posix, normalize} = require('path');
 
 let SftpClient = function(clientName = '') {
   this.client = new Client();
   this.clientName = clientName;
   this.endCalled = false;
+  this.remotePathSep = '/';
+  this.remotePlatform = 'unix';
 };
 
 /**
@@ -98,16 +100,15 @@ SftpClient.prototype.realPath = function(path) {
   return new Promise((resolve, reject) => {
     try {
       if (!sftp) {
-        return reject(
-          formatError('No SFTP connection available', 'sftp.realPath')
-        );
+        reject(formatError('No SFTP connection available', 'sftp.realPath'));
+      } else {
+        sftp.realpath(path, (err, absPath) => {
+          if (err) {
+            reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
+          }
+          resolve(absPath);
+        });
       }
-      sftp.realpath(path, (err, absPath) => {
-        if (err) {
-          reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
-        }
-        resolve(absPath);
-      });
     } catch (err) {
       reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
     }
@@ -432,12 +433,12 @@ SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
   }
   let src = fs.realpathSync(localPath);
   let dst = remotePath;
-  if (dst.startsWith('../')) {
+  if (dst.startsWith('..')) {
     let root = await this.realPath('..');
-    dst = join(root, dst.substring(3));
-  } else if (dst.startsWith('./')) {
+    dst = root + this.remotePathSep + dst.substring(3);
+  } else if (dst.startsWith('.')) {
     let root = await this.realPath('.');
-    dst = join(root, dst.substring(2));
+    dst = root + this.remotePathSep + dst.substring(2);
   }
   return this._fastPut(src, dst, options);
 };
@@ -496,12 +497,12 @@ SftpClient.prototype.put = async function(localSrc, remotePath, options) {
     fs.accessSync(src, fs.constants.R_OK);
   }
   let dst = remotePath;
-  if (dst.startsWith('../')) {
+  if (dst.startsWith('..')) {
     let root = await this.realPath('..');
-    dst = join(root, dst.substring(3));
-  } else if (dst.startsWith('./')) {
+    dst = root + this.remotePathSep + dst.substring(3);
+  } else if (dst.startsWith('.')) {
     let root = await this.realPath('.');
-    dst = join(root, dst.substring(2));
+    dst = root + this.remotePathSep + dst.substring(2);
   }
   return this._put(src, dst, options);
 };
@@ -598,12 +599,12 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
       throw formatError('No SFTP connection available', 'sftp.mkdir');
     }
     let realPath = path;
-    if (realPath.startsWith('../')) {
+    if (realPath.startsWith('..')) {
       let root = await this.realPath('..');
-      realPath = join(root, realPath.substring(3));
-    } else if (realPath.startsWith('./')) {
+      realPath = root + this.remotePathSep + realPath.substring(3);
+    } else if (realPath.startsWith('.')) {
       let root = await this.realPath('.');
-      realPath = join(root, realPath.substring(2));
+      realPath = root + this.remotePathSep + realPath.substring(2);
     }
 
     if (!recursive) {
@@ -665,14 +666,14 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
       let dirs = list.filter(item => item.type === 'd');
       for (let f of files) {
         try {
-          await this.delete(join(absPath, f.name));
+          await this.delete(absPath + this.remotePathSep + f.name);
         } catch (err) {
           throw formatError(err, 'sftp.rmdir');
         }
       }
       for (let d of dirs) {
         try {
-          await this.rmdir(join(absPath, d.name), true);
+          await this.rmdir(absPath + this.remotePathSep + d.name, true);
         } catch (err) {
           throw formatError(err, 'sftp.rmdir');
         }
@@ -744,12 +745,12 @@ SftpClient.prototype.rename = async function(fromPath, toPath) {
   }
   let src = await this.realPath(fromPath);
   let dst = toPath;
-  if (dst.startsWith('../')) {
+  if (dst.startsWith('..')) {
     let root = await this.realPath('..');
-    dst = join(root, dst.substring(3));
-  } else if (dst.startsWith('./')) {
+    dst = root + this.remotePathSep + dst.substring(3);
+  } else if (dst.startsWith('.')) {
     let root = await this.realPath('.');
-    dst = join(root, dst.substring(2));
+    dst = root + this.remotePathSep + dst.substring(2);
   }
   return this._rename(src, dst);
 };
