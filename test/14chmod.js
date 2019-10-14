@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {chmodSetup, chmodCleanup} = require('./hooks/chmod-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -40,13 +40,13 @@ describe('chmod() method tests', function() {
 
   it('chmod should return a promise', function() {
     return expect(
-      sftp.chmod(join(config.sftpUrl, 'chmod-test.txt'), 0o444)
+      sftp.chmod(makeRemotePath(config.sftpUrl, 'chmod-test.txt'), 0o444)
     ).to.be.a('promise');
   });
 
   it('chmod on a file reports correct mode', function() {
     return sftp
-      .chmod(join(config.sftpUrl, 'chmod-test.txt'), 0o777)
+      .chmod(makeRemotePath(config.sftpUrl, 'chmod-test.txt'), 0o777)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -66,7 +66,7 @@ describe('chmod() method tests', function() {
 
   it('chmod on a directory reports correct mode', function() {
     return sftp
-      .chmod(join(config.sftpUrl, 'chmod-test-dir'), 0o444)
+      .chmod(makeRemotePath(config.sftpUrl, 'chmod-test-dir'), 0o444)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -86,7 +86,7 @@ describe('chmod() method tests', function() {
 
   it('chmod on non-existent file is rejecterd', function() {
     return expect(
-      sftp.chmod(join(config.sftpUrl, 'does-not-exist.txt'), 0o777)
+      sftp.chmod(makeRemotePath(config.sftpUrl, 'does-not-exist.txt'), 0o777)
     ).to.be.rejectedWith('No such file');
   });
 

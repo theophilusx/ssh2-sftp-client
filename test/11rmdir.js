@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {rmdirSetup} = require('./hooks/rmdir-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -38,32 +38,35 @@ describe('rmdir() method tests', function() {
   });
 
   it('rmdir should return a promise', function() {
-    return expect(sftp.rmdir(join(config.sftpUrl, 'rmdir-promise'))).to.be.a(
-      'promise'
-    );
+    return expect(
+      sftp.rmdir(makeRemotePath(config.sftpUrl, 'rmdir-promise'))
+    ).to.be.a('promise');
   });
 
   it('rmdir on non-existent directory should be rejected', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'rmdir-not-exist'), true)
+      sftp.rmdir(makeRemotePath(config.sftpUrl, 'rmdir-not-exist'), true)
     ).to.be.rejectedWith('No such file');
   });
 
   it('rmdir without recursion on empty directory', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'rmdir-empty'))
+      sftp.rmdir(makeRemotePath(config.sftpUrl, 'rmdir-empty'))
     ).to.eventually.equal('Successfully removed directory');
   });
 
   it('rmdir recursively remove all directories', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'rmdir-non-empty', 'dir3'), true)
+      sftp.rmdir(
+        makeRemotePath(config.sftpUrl, 'rmdir-non-empty', 'dir3'),
+        true
+      )
     ).to.eventually.equal('Successfully removed directory');
   });
 
   it('rmdir recursively remove dirs and files', function() {
     return expect(
-      sftp.rmdir(join(config.sftpUrl, 'rmdir-non-empty'), true)
+      sftp.rmdir(makeRemotePath(config.sftpUrl, 'rmdir-non-empty'), true)
     ).to.eventually.equal('Successfully removed directory');
   });
 

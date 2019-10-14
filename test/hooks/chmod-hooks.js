@@ -1,17 +1,17 @@
 'use strict';
 
-const {join} = require('path');
+const {makeRemotePath} = require('./global-hooks');
 
 async function chmodSetup(client, sftpUrl) {
   try {
     await client.put(
       Buffer.from('chmod testing'),
-      join(sftpUrl, 'chmod-test.txt'),
+      makeRemotePath(sftpUrl, 'chmod-test.txt'),
       {
         encoding: 'utf8'
       }
     );
-    await client.mkdir(join(sftpUrl, 'chmod-test-dir'));
+    await client.mkdir(makeRemotePath(sftpUrl, 'chmod-test-dir'));
     return true;
   } catch (err) {
     console.error(`chmodSetup: ${err.message}`);
@@ -21,8 +21,8 @@ async function chmodSetup(client, sftpUrl) {
 
 async function chmodCleanup(client, sftpUrl) {
   try {
-    await client.delete(join(sftpUrl, 'chmod-test.txt'));
-    await client.rmdir(join(sftpUrl, 'chmod-test-dir'));
+    await client.delete(makeRemotePath(sftpUrl, 'chmod-test.txt'));
+    await client.rmdir(makeRemotePath(sftpUrl, 'chmod-test-dir'));
     return true;
   } catch (err) {
     console.error(`chmodCleanup: ${err.message}`);

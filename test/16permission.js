@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {permissionSetup, permissionCleanup} = require('./hooks/permission-hook');
+const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -42,8 +42,8 @@ describe('Bad permission tests', function() {
     it('fastPut throws exception', function() {
       return expect(
         sftp.fastPut(
-          join(config.localUrl, 'no-access.txt'),
-          join(config.sftpUrl, 'no-access1.txt')
+          makeLocalPath(config.localUrl, 'no-access.txt'),
+          makeRemotePath(config.sftpUrl, 'no-access1.txt')
         )
       ).be.rejectedWith('permission denied');
     });
@@ -51,8 +51,8 @@ describe('Bad permission tests', function() {
     it('put throws exception', function() {
       return expect(
         sftp.put(
-          join(config.localUrl, 'no-access.txt'),
-          join(config.sftpUrl, 'no-access1.txt')
+          makeLocalPath(config.localUrl, 'no-access.txt'),
+          makeRemotePath(config.sftpUrl, 'no-access1.txt')
         )
       ).be.rejectedWith('permission denied');
     });
@@ -62,8 +62,8 @@ describe('Bad permission tests', function() {
     it('fastget throws exception', function() {
       return expect(
         sftp.fastGet(
-          join(config.sftpUrl, 'no-access-get.txt'),
-          join(config.localUrl, 'no-access-fastget.txt')
+          makeRemotePath(config.sftpUrl, 'no-access-get.txt'),
+          makeLocalPath(config.localUrl, 'no-access-fastget.txt')
         )
       ).be.rejectedWith('Permission denied');
     });
@@ -71,27 +71,27 @@ describe('Bad permission tests', function() {
     it('get throws exception', function() {
       return expect(
         sftp.get(
-          join(config.sftpUrl, 'no-access-get.txt'),
-          join(config.localUrl, 'no-access-get.txt')
+          makeRemotePath(config.sftpUrl, 'no-access-get.txt'),
+          makeLocalPath(config.localUrl, 'no-access-get.txt')
         )
       ).be.rejectedWith('No read permission');
     });
 
     it('list throws exception', function() {
       return expect(
-        sftp.list(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+        sftp.list(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
       ).be.rejectedWith('Permission denied');
     });
 
     it('exists throws exception', function() {
       return expect(
-        sftp.exists(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+        sftp.exists(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
       ).be.rejectedWith('Permission denied');
     });
 
     it('stat throws exception', function() {
       return expect(
-        sftp.stat(join(config.sftpUrl, 'no-access-dir/sub-dir'))
+        sftp.stat(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
       ).be.rejectedWith('Permission denied');
     });
 
@@ -99,27 +99,33 @@ describe('Bad permission tests', function() {
       return expect(
         sftp.append(
           Buffer.from('Should not work'),
-          join(config.sftpUrl, 'no-access-get.txt')
+          makeRemotePath(config.sftpUrl, 'no-access-get.txt')
         )
       ).be.rejectedWith('No write permission');
     });
 
     it('mkdir throws exception', function() {
       return expect(
-        sftp.stat(join(config.sftpUrl, 'no-access-dir/not-work'), true)
+        sftp.stat(
+          makeRemotePath(config.sftpUrl, 'no-access-dir/not-work'),
+          true
+        )
       ).be.rejectedWith('Permission denied');
     });
 
     it('rmdir throws exception', function() {
       return expect(
-        sftp.rmdir(join(config.sftpUrl, 'no-access-dir/sub-dir'), true)
+        sftp.rmdir(
+          makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'),
+          true
+        )
       ).be.rejectedWith('Permission denied');
     });
 
     it('delete throws exception', function() {
       return expect(
         sftp.delete(
-          join(
+          makeRemotePath(
             config.sftpUrl,
             'no-access-dir',
             'sub-dir',
@@ -132,13 +138,13 @@ describe('Bad permission tests', function() {
     it('rename throws exception', function() {
       return expect(
         sftp.rename(
-          join(
+          makeRemotePath(
             config.sftpUrl,
             'no-access-dir',
             'sub-dir',
             'permission-gzip.txt.gz'
           ),
-          join(
+          makeRemotePath(
             config.sftpUrl,
             'no-acceass-dir',
             'sub-dir',
@@ -151,7 +157,7 @@ describe('Bad permission tests', function() {
     it('chmod throws exception', function() {
       return expect(
         sftp.chmod(
-          join(
+          makeRemotePath(
             config.sftpUrl,
             'no-access-dir',
             'sub-dir',

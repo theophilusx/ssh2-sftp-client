@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {deleteSetup} = require('./hooks/delete-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -39,19 +39,19 @@ describe('delete() method tests', function() {
 
   it('delete returns a promise', function() {
     return expect(
-      sftp.delete(join(config.sftpUrl, 'delete-promise.md'))
+      sftp.delete(makeRemotePath(config.sftpUrl, 'delete-promise.md'))
     ).to.be.a('promise');
   });
 
   it('delete a file', function() {
     return expect(
-      sftp.delete(join(config.sftpUrl, 'delete-file.md'))
+      sftp.delete(makeRemotePath(config.sftpUrl, 'delete-file.md'))
     ).to.eventually.equal('Successfully deleted file');
   });
 
   it('delete non-existent file is rejected', function() {
     return expect(
-      sftp.delete(join(config.sftpUrl, 'no-such-file.txt'))
+      sftp.delete(makeRemotePath(config.sftpUrl, 'no-such-file.txt'))
     ).to.be.rejectedWith('No such file');
   });
 

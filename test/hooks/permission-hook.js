@@ -1,22 +1,30 @@
 'use strict';
 
-const {join} = require('path');
+const {makeLocalPath, makeRemotePath} = require('./global-hooks');
 const fs = require('fs');
 
 async function permissionSetup(client, sftpUrl, localUrl) {
   try {
-    fs.chmodSync(join(localUrl, 'no-access.txt'), 0o000);
+    fs.chmodSync(makeLocalPath(localUrl, 'no-access.txt'), 0o000);
     await client.fastPut(
-      join(localUrl, 'test-file1.txt'),
-      join(sftpUrl, 'no-access-get.txt')
+      makeLocalPath(localUrl, 'test-file1.txt'),
+      makeRemotePath(sftpUrl, 'no-access-get.txt')
     );
-    await client.chmod(join(sftpUrl, 'no-access-get.txt'), '0o000');
-    await client.mkdir(join(sftpUrl, 'no-access-dir', 'sub-dir'), true);
+    await client.chmod(makeRemotePath(sftpUrl, 'no-access-get.txt'), '0o000');
+    await client.mkdir(
+      makeRemotePath(sftpUrl, 'no-access-dir', 'sub-dir'),
+      true
+    );
     await client.fastPut(
-      join(localUrl, 'test-file2.txt.gz'),
-      join(sftpUrl, 'no-access-dir', 'sub-dir', 'permission-gzip.txt.gz')
+      makeLocalPath(localUrl, 'test-file2.txt.gz'),
+      makeRemotePath(
+        sftpUrl,
+        'no-access-dir',
+        'sub-dir',
+        'permission-gzip.txt.gz'
+      )
     );
-    await client.chmod(join(sftpUrl, 'no-access-dir'), '0o000');
+    await client.chmod(makeRemotePath(sftpUrl, 'no-access-dir'), '0o000');
     return true;
   } catch (err) {
     console.error(`permissionSetup: ${err.message}`);
@@ -26,10 +34,10 @@ async function permissionSetup(client, sftpUrl, localUrl) {
 
 async function permissionCleanup(client, sftpUrl) {
   try {
-    await client.chmod(join(sftpUrl, 'no-access-get.txt'), 0o700);
-    await client.delete(join(sftpUrl, 'no-access-get.txt'));
-    await client.chmod(join(sftpUrl, 'no-access-dir'), 0o777);
-    await client.rmdir(join(sftpUrl, 'no-access-dir'), true);
+    await client.chmod(makeRemotePath(sftpUrl, 'no-access-get.txt'), 0o700);
+    await client.delete(makeRemotePath(sftpUrl, 'no-access-get.txt'));
+    await client.chmod(makeRemotePath(sftpUrl, 'no-access-dir'), 0o777);
+    await client.rmdir(makeRemotePath(sftpUrl, 'no-access-dir'), true);
     return true;
   } catch (err) {
     console.error(`permissionCleanup: ${err.message}`);

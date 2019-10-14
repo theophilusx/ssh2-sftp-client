@@ -4,7 +4,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const checksum = require('checksum');
 const {
   config,
@@ -12,6 +11,7 @@ const {
   closeConnection
 } = require('./hooks/global-hooks');
 const {checksumCleanup} = require('./hooks/checksum-hooks');
+const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -39,9 +39,9 @@ describe('put() and get() checksum tests', function() {
   });
 
   it('Large file checksum', function() {
-    let localSrc = join(config.localUrl, 'test-file1.txt');
-    let remoteSrc = join(config.sftpUrl, 'checksum-file1.txt');
-    let localCopy = join(config.localUrl, 'checksum-file1.txt');
+    let localSrc = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteSrc = makeRemotePath(config.sftpUrl, 'checksum-file1.txt');
+    let localCopy = makeLocalPath(config.localUrl, 'checksum-file1.txt');
     let srcChecksum, copyChecksum;
 
     return sftp
@@ -81,9 +81,9 @@ describe('put() and get() checksum tests', function() {
   });
 
   it('Gzipped file checksum', function() {
-    let localSrc = join(config.localUrl, 'test-file2.txt.gz');
-    let remoteSrc = join(config.sftpUrl, 'checksum-file2.txt.gz');
-    let localCopy = join(config.localUrl, 'checksum-file2.txt.gz');
+    let localSrc = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
+    let remoteSrc = makeRemotePath(config.sftpUrl, 'checksum-file2.txt.gz');
+    let localCopy = makeLocalPath(config.localUrl, 'checksum-file2.txt.gz');
     let srcChecksum, copyChecksum;
 
     return sftp
@@ -146,9 +146,9 @@ describe('fastPut() and fastGet() checksum tests', function() {
   });
 
   it('Large file checksum', function() {
-    let localSrc = join(config.localUrl, 'test-file1.txt');
-    let remoteSrc = join(config.sftpUrl, 'checksum-file1.txt');
-    let localCopy = join(config.localUrl, 'checksum-file1.txt');
+    let localSrc = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteSrc = makeRemotePath(config.sftpUrl, 'checksum-file1.txt');
+    let localCopy = makeLocalPath(config.localUrl, 'checksum-file1.txt');
     let srcChecksum, copyChecksum;
 
     return sftp
@@ -188,9 +188,9 @@ describe('fastPut() and fastGet() checksum tests', function() {
   });
 
   it('Gzipped file checksum', function() {
-    let localSrc = join(config.localUrl, 'test-file2.txt.gz');
-    let remoteSrc = join(config.sftpUrl, 'checksum-file2.txt.gz');
-    let localCopy = join(config.localUrl, 'checksum-file2.txt.gz');
+    let localSrc = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
+    let remoteSrc = makeRemotePath(config.sftpUrl, 'checksum-file2.txt.gz');
+    let localCopy = makeLocalPath(config.localUrl, 'checksum-file2.txt.gz');
     let srcChecksum, copyChecksum;
 
     return sftp

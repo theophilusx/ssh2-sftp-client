@@ -1,25 +1,25 @@
 'use strict';
 
-const {join} = require('path');
+const {makeLocalPath, makeRemotePath} = require('./global-hooks');
 const fs = require('fs');
 
 async function getSetup(client, sftpUrl, localUrl) {
   try {
     await client.put(
       Buffer.from('Get promise test'),
-      join(sftpUrl, 'get-promise.txt'),
+      makeRemotePath(sftpUrl, 'get-promise.txt'),
       {
         encoding: 'utf8'
       }
     );
     await client.fastPut(
-      join(localUrl, 'test-file1.txt'),
-      join(sftpUrl, 'get-large.txt'),
+      makeLocalPath(localUrl, 'test-file1.txt'),
+      makeRemotePath(sftpUrl, 'get-large.txt'),
       {encoding: 'utf8'}
     );
     await client.fastPut(
-      join(localUrl, 'test-file2.txt.gz'),
-      join(sftpUrl, 'get-gzip.txt.gz')
+      makeLocalPath(localUrl, 'test-file2.txt.gz'),
+      makeRemotePath(sftpUrl, 'get-gzip.txt.gz')
     );
     return true;
   } catch (err) {
@@ -30,16 +30,16 @@ async function getSetup(client, sftpUrl, localUrl) {
 
 async function getCleanup(client, sftpUrl, localUrl) {
   try {
-    await client.delete(join(sftpUrl, 'get-promise.txt'));
-    await client.delete(join(sftpUrl, 'get-large.txt'));
-    await client.delete(join(sftpUrl, 'get-gzip.txt.gz'));
-    fs.unlinkSync(join(localUrl, 'get-large.txt'));
-    fs.unlinkSync(join(localUrl, 'get-gzip.txt.gz'));
-    fs.unlinkSync(join(localUrl, 'get-unzip.txt'));
-    fs.unlinkSync(join(localUrl, 'get-relative1-gzip.txt.gz'));
-    fs.unlinkSync(join(localUrl, 'get-relative2-gzip.txt.gz'));
-    fs.unlinkSync(join(localUrl, 'get-relative3-gzip.txt.gz'));
-    fs.unlinkSync(join(localUrl, 'get-relative4-gzip.txt.gz'));
+    await client.delete(makeRemotePath(sftpUrl, 'get-promise.txt'));
+    await client.delete(makeRemotePath(sftpUrl, 'get-large.txt'));
+    await client.delete(makeRemotePath(sftpUrl, 'get-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-large.txt'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-unzip.txt'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-relative1-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-relative2-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-relative3-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-relative4-gzip.txt.gz'));
     return true;
   } catch (err) {
     console.error(`getCleanup: ${err.message}`);

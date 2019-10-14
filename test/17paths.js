@@ -4,7 +4,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
@@ -39,14 +38,14 @@ describe('Path tests', function() {
     );
   });
 
-  it('Resolve "." relative path', function() {
-    return expect(sftp.realPath('.')).to.eventually.equal(
-      join('/home', config.username)
-    );
+  it('Resolve "." relative path', async function() {
+    let absPath = await sftp.realPath('.');
+    return expect(config.sftpUrl.startsWith(absPath)).to.equal(true);
   });
 
-  it('Resolve ".." relative path', function() {
-    return expect(sftp.realPath('..')).to.eventually.equal('/home');
+  it('Resolve ".." relative path', async function() {
+    let absPath = await sftp.realPath('..');
+    return expect(config.sftpUrl.startsWith(absPath)).to.equal(true);
   });
 
   it('Resolve "./testServer" relative path', function() {
@@ -61,9 +60,8 @@ describe('Path tests', function() {
     ).to.eventually.equal(config.sftpUrl);
   });
 
-  it('cwd() returns current working dir', function() {
-    return expect(sftp.cwd()).to.eventually.equal(
-      join('/home', config.username)
-    );
+  it('cwd() returns current working dir', async function() {
+    let pwd = await sftp.cwd();
+    return expect(config.sftpUrl.startsWith(pwd)).to.equal(true);
   });
 });

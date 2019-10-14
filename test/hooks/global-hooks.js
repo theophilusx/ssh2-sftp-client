@@ -19,15 +19,15 @@ const config = {
   retries: 1
 };
 
-const makeLocalPath = (root, target) => {
-  return join(root, target);
+const makeLocalPath = (...args) => {
+  return join(...args);
 };
 
-const makeRemotePath = (root, target) => {
+const makeRemotePath = (...args) => {
   if (process.env.TEST_PLATFORM === 'unix') {
-    return root + '/' + target;
+    return args.join('/');
   }
-  return root + '\\' + target;
+  return args.join('\\');
 };
 
 const getConnection = async name => {

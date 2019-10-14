@@ -6,13 +6,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {renameSetup, renameCleanup} = require('./hooks/rename-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -43,8 +43,8 @@ describe('rename() method tests', function() {
   it('rename should return a promise', function() {
     return expect(
       sftp.rename(
-        join(config.sftpUrl, 'rename-promise.md'),
-        join(config.sftpUrl, 'rename-promise2.txt')
+        makeRemotePath(config.sftpUrl, 'rename-promise.md'),
+        makeRemotePath(config.sftpUrl, 'rename-promise2.txt')
       )
     ).to.be.a('promise');
   });
@@ -52,8 +52,8 @@ describe('rename() method tests', function() {
   it('rename non-existent file is rejected', function() {
     return expect(
       sftp.rename(
-        join(config.sftpUrl, 'no-such-file.txt'),
-        join(config.sftpUrl, 'dummy.md')
+        makeRemotePath(config.sftpUrl, 'no-such-file.txt'),
+        makeRemotePath(config.sftpUrl, 'dummy.md')
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -61,8 +61,8 @@ describe('rename() method tests', function() {
   it('rename file successfully', function() {
     return sftp
       .rename(
-        join(config.sftpUrl, 'rename-promise2.txt'),
-        join(config.sftpUrl, 'rename-new.md')
+        makeRemotePath(config.sftpUrl, 'rename-promise2.txt'),
+        makeRemotePath(config.sftpUrl, 'rename-new.md')
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -75,8 +75,8 @@ describe('rename() method tests', function() {
   it('rename to existing file name is rejected', function() {
     return expect(
       sftp.rename(
-        join(config.sftpUrl, 'rename-new.md'),
-        join(config.sftpUrl, 'rename-conflict.md')
+        makeRemotePath(config.sftpUrl, 'rename-new.md'),
+        makeRemotePath(config.sftpUrl, 'rename-conflict.md')
       )
     ).to.be.rejectedWith('Failure');
   });
@@ -85,7 +85,7 @@ describe('rename() method tests', function() {
     return sftp
       .rename(
         './testServer/rename-new.md',
-        join(config.sftpUrl, 'rename-relative1.md')
+        makeRemotePath(config.sftpUrl, 'rename-relative1.md')
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -99,7 +99,7 @@ describe('rename() method tests', function() {
     return sftp
       .rename(
         `../${config.username}/testServer/rename-relative1.md`,
-        join(config.sftpUrl, 'rename-relative2.md')
+        makeRemotePath(config.sftpUrl, 'rename-relative2.md')
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -112,7 +112,7 @@ describe('rename() method tests', function() {
   it('rename with relative destination 3', function() {
     return sftp
       .rename(
-        join(config.sftpUrl, 'rename-relative2.md'),
+        makeRemotePath(config.sftpUrl, 'rename-relative2.md'),
         './testServer/rename-relative3.md'
       )
       .then(() => {
@@ -126,7 +126,7 @@ describe('rename() method tests', function() {
   it('rename with relative destination 4', function() {
     return sftp
       .rename(
-        join(config.sftpUrl, 'rename-relative3.md'),
+        makeRemotePath(config.sftpUrl, 'rename-relative3.md'),
         `../${config.username}/testServer/rename-relative4.md`
       )
       .then(() => {
