@@ -868,8 +868,27 @@ SftpClient.prototype.connect = function(config) {
       retryConnect(config, (err, sftp) => {
         if (err) {
           reject(err);
+        } else {
+          sftp.realpath('.', (err, absPath) => {
+            if (err) {
+              reject(
+                formatError(
+                  `Failed to determine remote server type: ${err.message}`,
+                  'sftp.connect'
+                )
+              );
+            } else {
+              if (absPath.startsWith('/')) {
+                self.remotePathSep = '/';
+                self.remotePlatform = 'unix';
+              } else {
+                self.remotePathSep = '\\\\';
+                self.remotePlatform = 'windows';
+              }
+              resolve(sftp);
+            }
+          });
         }
-        resolve(sftp);
       });
     }
   });
