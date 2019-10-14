@@ -4,7 +4,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const stream = require('stream');
 const {
   config,
@@ -12,6 +11,7 @@ const {
   closeConnection
 } = require('./hooks/global-hooks');
 const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
+const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -43,7 +43,7 @@ describe('append() method tests', function() {
     return expect(
       sftp.append(
         Buffer.from('append test 1'),
-        join(config.sftpUrl, 'append-promise-test.md'),
+        makeRemotePath(config.sftpUrl, 'append-promise-test.md'),
         {
           encoding: 'utf8'
         }
@@ -54,19 +54,23 @@ describe('append() method tests', function() {
   it('append two files is rejected', function() {
     return expect(
       sftp.append(
-        join(config.localUrl, 'test-file1.txt'),
-        join(config.sftpUrl, 'append-test1.md')
+        makeLocalPath(config.localUrl, 'test-file1.txt'),
+        makeRemotePath(config.sftpUrl, 'append-test1.md')
       )
     ).to.be.rejectedWith('Cannot append one file to another');
   });
 
   it('append buffer to file', function() {
     return sftp
-      .append(Buffer.from('hello'), join(config.sftpUrl, 'append-test2.txt'), {
-        encoding: 'utf8'
-      })
+      .append(
+        Buffer.from('hello'),
+        makeRemotePath(config.sftpUrl, 'append-test2.txt'),
+        {
+          encoding: 'utf8'
+        }
+      )
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 23});
@@ -80,9 +84,11 @@ describe('append() method tests', function() {
     str2.push(null);
 
     return sftp
-      .append(str2, join(config.sftpUrl, 'append-test3'), {encoding: 'utf8'})
+      .append(str2, makeRemotePath(config.sftpUrl, 'append-test3'), {
+        encoding: 'utf8'
+      })
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'append-test3'));
+        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test3'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 32});
@@ -93,7 +99,7 @@ describe('append() method tests', function() {
     return expect(
       sftp.append(
         Buffer.from('hello'),
-        join(config.sftpUrl, 'bad-directory', 'bad-file.txt')
+        makeRemotePath(config.sftpUrl, 'bad-directory', 'bad-file.txt')
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -102,7 +108,7 @@ describe('append() method tests', function() {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
-        join(config.sftpUrl, 'append-no-such-file.txt')
+        makeRemotePath(config.sftpUrl, 'append-no-such-file.txt')
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -111,7 +117,7 @@ describe('append() method tests', function() {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
-        join(config.sftpUrl, 'append-dir-test')
+        makeRemotePath(config.sftpUrl, 'append-dir-test')
       )
     ).to.be.rejectedWith('Remote path must be a regular file');
   });
@@ -122,7 +128,7 @@ describe('append() method tests', function() {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 28});
@@ -139,7 +145,7 @@ describe('append() method tests', function() {
         }
       )
       .then(() => {
-        return sftp.stat(join(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
       .then(stats => {
         return expect(stats).to.containSubset({size: 33});

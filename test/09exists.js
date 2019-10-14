@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {existSetup, existCleanup} = require('./hooks/exist-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -44,19 +44,21 @@ describe('exists() method tests', function() {
 
   it('exists returns truthy for existing directory', function() {
     return expect(
-      sftp.exists(join(config.sftpUrl, 'exist-test-dir'))
+      sftp.exists(makeRemotePath(config.sftpUrl, 'exist-test-dir'))
     ).to.eventually.equal('d');
   });
 
   it('exist returns truthy for existing file', function() {
     return expect(
-      sftp.exists(join(config.sftpUrl, 'exist-file.txt'))
+      sftp.exists(makeRemotePath(config.sftpUrl, 'exist-file.txt'))
     ).to.eventually.equal('-');
   });
 
   it('exist returns true for file in sub-dir', function() {
     return expect(
-      sftp.exists(join(config.sftpUrl, 'exist-test-dir', 'exist-gzip.txt.gz'))
+      sftp.exists(
+        makeRemotePath(config.sftpUrl, 'exist-test-dir', 'exist-gzip.txt.gz')
+      )
     ).to.eventually.equal('-');
   });
 
@@ -72,7 +74,7 @@ describe('exists() method tests', function() {
 
   it('Exists return false value for non existent dir', function() {
     return expect(
-      sftp.exists(join(config.sftpUrl, 'no-such-dir/subdir'))
+      sftp.exists(makeRemotePath(config.sftpUrl, 'no-such-dir/subdir'))
     ).to.eventually.equal(false);
   });
 

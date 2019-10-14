@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {listSetup, listCleanup} = require('./hooks/list-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -39,25 +39,25 @@ describe('list() method tests', function() {
   });
 
   it('list return should be a promise', function() {
-    return expect(sftp.list(join(config.sftpUrl, 'list-test'))).to.be.a(
-      'promise'
-    );
+    return expect(
+      sftp.list(makeRemotePath(config.sftpUrl, 'list-test'))
+    ).to.be.a('promise');
   });
 
   it('list return for empty directory should be empty', function() {
-    return expect(sftp.list(join(config.sftpUrl, 'list-test/empty'))).to.become(
-      []
-    );
+    return expect(
+      sftp.list(makeRemotePath(config.sftpUrl, 'list-test/empty'))
+    ).to.become([]);
   });
 
   it('list non-existent directory rejected', function() {
     return expect(
-      sftp.list(join(config.sftpUrl, 'list-test/not-exist'))
+      sftp.list(makeRemotePath(config.sftpUrl, 'list-test/not-exist'))
     ).to.be.rejectedWith('No such file');
   });
 
   it('list existing dir returns details of each entry', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'));
+    let data = await sftp.list(makeRemotePath(config.sftpUrl, 'list-test'));
 
     expect(data.length).to.equal(7);
     return expect(data).to.containSubset([
@@ -72,7 +72,10 @@ describe('list() method tests', function() {
   });
 
   it('list with /.*/ regexp', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /.*/);
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      /.*/
+    );
 
     expect(data.length).to.equal(7);
     return expect(data).to.containSubset([
@@ -87,7 +90,10 @@ describe('list() method tests', function() {
   });
 
   it('list with /dir.*/ regexp', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /dir.*/);
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      /dir.*/
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
@@ -97,7 +103,10 @@ describe('list() method tests', function() {
   });
 
   it('list with leading /.*txt/ regexp', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), /.*txt/);
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      /.*txt/
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
@@ -107,7 +116,10 @@ describe('list() method tests', function() {
   });
 
   it('list with * glob pattern', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), '*');
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      '*'
+    );
 
     expect(data.length).to.equal(7);
     return expect(data).to.containSubset([
@@ -122,7 +134,10 @@ describe('list() method tests', function() {
   });
 
   it('list with dir* glob pattern', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), 'dir*');
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      'dir*'
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
@@ -132,7 +147,10 @@ describe('list() method tests', function() {
   });
 
   it('list with leading *txt pattern', async function() {
-    let data = await sftp.list(join(config.sftpUrl, 'list-test'), '*txt');
+    let data = await sftp.list(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      '*txt'
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
@@ -181,7 +199,10 @@ describe('auxList testing', function() {
   });
 
   it('auxList with * pattern', async function() {
-    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), '*');
+    let data = await sftp.auxList(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      '*'
+    );
 
     expect(data.length).to.equal(7);
     return expect(data).to.containSubset([
@@ -196,7 +217,10 @@ describe('auxList testing', function() {
   });
 
   it('auxList with dir* pattern', async function() {
-    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), 'dir*');
+    let data = await sftp.auxList(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      'dir*'
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
@@ -206,7 +230,10 @@ describe('auxList testing', function() {
   });
 
   it('auxList with leading *txt pattern', async function() {
-    let data = await sftp.auxList(join(config.sftpUrl, 'list-test'), '*txt');
+    let data = await sftp.auxList(
+      makeRemotePath(config.sftpUrl, 'list-test'),
+      '*txt'
+    );
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([

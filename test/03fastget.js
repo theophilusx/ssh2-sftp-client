@@ -4,7 +4,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const fs = require('fs');
 const {
   config,
@@ -12,6 +11,7 @@ const {
   closeConnection
 } = require('./hooks/global-hooks');
 const gHooks = require('./hooks/fastGet-hooks');
+const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -42,8 +42,8 @@ describe('fastGet() method tests', function() {
   it('fastGet returns a promise', function() {
     return expect(
       sftp.fastGet(
-        join(config.sftpUrl, 'fastget-promise.txt'),
-        join(config.localUrl, 'fastget-promise.txt')
+        makeRemotePath(config.sftpUrl, 'fastget-promise.txt'),
+        makeLocalPath(config.localUrl, 'fastget-promise.txt')
       )
     ).to.be.a('promise');
   });
@@ -51,13 +51,13 @@ describe('fastGet() method tests', function() {
   it('fastGet small text file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'fastget-small.txt'),
-        join(config.localUrl, 'fastget-small.txt'),
+        makeRemotePath(config.sftpUrl, 'fastget-small.txt'),
+        makeLocalPath(config.localUrl, 'fastget-small.txt'),
         {encoding: 'utf8'}
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-small.txt'))
+          fs.statSync(makeLocalPath(config.localUrl, 'fastget-small.txt'))
         ).to.containSubset({size: 19});
       });
   });
@@ -65,13 +65,13 @@ describe('fastGet() method tests', function() {
   it('fastGet large text file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'fastget-large.txt'),
-        join(config.localUrl, 'fastget-large.txt'),
+        makeRemotePath(config.sftpUrl, 'fastget-large.txt'),
+        makeLocalPath(config.localUrl, 'fastget-large.txt'),
         {encoding: 'utf8'}
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-large.txt'))
+          fs.statSync(makeLocalPath(config.localUrl, 'fastget-large.txt'))
         ).to.containSubset({size: 6973257});
       });
   });
@@ -79,12 +79,12 @@ describe('fastGet() method tests', function() {
   it('fastGet gzipped file', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
-        join(config.localUrl, 'fastget-gzip.txt.gz')
+        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz')
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-gzip.txt.gz'))
+          fs.statSync(makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz'))
         ).to.containSubset({size: 570314});
       });
   });
@@ -92,8 +92,8 @@ describe('fastGet() method tests', function() {
   it('fastGet non-existent file is rejected', function() {
     return expect(
       sftp.fastGet(
-        join(config.sftpUrl, 'fastget-not-exist.txt'),
-        join(config.localUrl, 'fastget-not-exist.txt')
+        makeRemotePath(config.sftpUrl, 'fastget-not-exist.txt'),
+        makeLocalPath(config.localUrl, 'fastget-not-exist.txt')
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -102,11 +102,13 @@ describe('fastGet() method tests', function() {
     return sftp
       .fastGet(
         './testServer/fastget-gzip.txt.gz',
-        join(config.localUrl, 'fastget-relative1-gzip.txt.gz')
+        makeLocalPath(config.localUrl, 'fastget-relative1-gzip.txt.gz')
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-relative1-gzip.txt.gz'))
+          fs.statSync(
+            makeLocalPath(config.localUrl, 'fastget-relative1-gzip.txt.gz')
+          )
         ).to.containSubset({size: 570314});
       });
   });
@@ -115,11 +117,13 @@ describe('fastGet() method tests', function() {
     return sftp
       .fastGet(
         `../${config.username}/testServer/fastget-gzip.txt.gz`,
-        join(config.localUrl, 'fastget-relative2-gzip.txt.gz')
+        makeLocalPath(config.localUrl, 'fastget-relative2-gzip.txt.gz')
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-relative2-gzip.txt.gz'))
+          fs.statSync(
+            makeLocalPath(config.localUrl, 'fastget-relative2-gzip.txt.gz')
+          )
         ).to.containSubset({size: 570314});
       });
   });
@@ -127,12 +131,14 @@ describe('fastGet() method tests', function() {
   it('fastGet local relative path 3', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
         './test/testData/fastget-relative3-gzip.txt.gz'
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-relative3-gzip.txt.gz'))
+          fs.statSync(
+            makeLocalPath(config.localUrl, 'fastget-relative3-gzip.txt.gz')
+          )
         ).to.containSubset({size: 570314});
       });
   });
@@ -140,12 +146,14 @@ describe('fastGet() method tests', function() {
   it('fastGet local relative path 4', function() {
     return sftp
       .fastGet(
-        join(config.sftpUrl, 'fastget-gzip.txt.gz'),
+        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
         '../ssh2-sftp-client/test/testData/fastget-relative4-gzip.txt.gz'
       )
       .then(() => {
         return expect(
-          fs.statSync(join(config.localUrl, 'fastget-relative4-gzip.txt.gz'))
+          fs.statSync(
+            makeLocalPath(config.localUrl, 'fastget-relative4-gzip.txt.gz')
+          )
         ).to.containSubset({size: 570314});
       });
   });

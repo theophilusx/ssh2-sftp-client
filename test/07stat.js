@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {statSetup, statCleanup} = require('./hooks/stat-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -39,13 +39,13 @@ describe('stat() method tests', function() {
   });
 
   it('stat return should be a promise', function() {
-    return expect(sftp.stat(join(config.sftpUrl, 'stat-test.md'))).to.be.a(
-      'promise'
-    );
+    return expect(
+      sftp.stat(makeRemotePath(config.sftpUrl, 'stat-test.md'))
+    ).to.be.a('promise');
   });
 
   it('stat on existing file returns stat data', async function() {
-    let stats = await sftp.stat(join(config.sftpUrl, 'stat-test.md'));
+    let stats = await sftp.stat(makeRemotePath(config.sftpUrl, 'stat-test.md'));
 
     return expect(stats).to.containSubset({
       mode: 33279,
@@ -56,7 +56,7 @@ describe('stat() method tests', function() {
 
   it('stat on non-existent file rejected', function() {
     return expect(
-      sftp.stat(join(config.sftpUrl, 'stat-test-not-exist.md'))
+      sftp.stat(makeRemotePath(config.sftpUrl, 'stat-test-not-exist.md'))
     ).to.be.rejectedWith('No such file');
   });
 

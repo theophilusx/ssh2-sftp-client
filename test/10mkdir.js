@@ -4,13 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {join} = require('path');
 const {
   config,
   getConnection,
   closeConnection
 } = require('./hooks/global-hooks');
 const {mkdirCleanup} = require('./hooks/mkdir-hooks');
+const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -38,25 +38,32 @@ describe('mkdir() method tests', function() {
   });
 
   it('mkdir should return a promise', function() {
-    return expect(sftp.mkdir(join(config.sftpUrl, 'mkdir-promise'))).to.be.a(
-      'promise'
-    );
+    return expect(
+      sftp.mkdir(makeRemotePath(config.sftpUrl, 'mkdir-promise'))
+    ).to.be.a('promise');
   });
 
   it('mkdir without recursive option and bad path should be rejected', function() {
     return expect(
-      sftp.mkdir(join(config.sftpUrl, 'mocha3', 'mm'))
+      sftp.mkdir(makeRemotePath(config.sftpUrl, 'mocha3', 'mm'))
     ).to.be.rejectedWith('Failed to create directory');
   });
 
   it('mkdir with recursive option should create all directories', function() {
     return sftp
       .mkdir(
-        join(config.sftpUrl, 'mkdir-recursive', 'dir-force', 'subdir'),
+        makeRemotePath(
+          config.sftpUrl,
+          'mkdir-recursive',
+          'dir-force',
+          'subdir'
+        ),
         true
       )
       .then(() => {
-        return sftp.list(join(config.sftpUrl, 'mkdir-recursive', 'dir-force'));
+        return sftp.list(
+          makeRemotePath(config.sftpUrl, 'mkdir-recursive', 'dir-force')
+        );
       })
       .then(list => {
         return expect(list).to.containSubset([{name: 'subdir'}]);
@@ -65,7 +72,7 @@ describe('mkdir() method tests', function() {
 
   it('mkdir without recursive option creates dir', function() {
     return sftp
-      .mkdir(join(config.sftpUrl, 'mkdir-non-recursive'), false)
+      .mkdir(makeRemotePath(config.sftpUrl, 'mkdir-non-recursive'), false)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
