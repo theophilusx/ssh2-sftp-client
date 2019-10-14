@@ -13,10 +13,21 @@ const config = {
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
   port: process.env.SFTP_PORT || 22,
-  localUrl: join(__dirname, '../testData'),
+  localUrl: process.env.LOCAL_URL,
   sftpUrl: process.env.SFTP_URL,
   delay: process.env.TEST_DELAY || 500,
   retries: 1
+};
+
+const makeLocalPath = (root, target) => {
+  return join(root, target);
+};
+
+const makeRemotePath = (root, target) => {
+  if (process.env.TEST_PLATFORM === 'unix') {
+    return root + '/' + target;
+  }
+  return root + '\\' + target;
 };
 
 const getConnection = async name => {
@@ -45,6 +56,8 @@ const closeConnection = async (name, con) => {
 
 module.exports = {
   config,
+  makeLocalPath,
+  makeRemotePath,
   getConnection,
   closeConnection
 };

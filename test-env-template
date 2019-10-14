@@ -3,4 +3,7 @@ SFTP_SERVER=<sftp server name>
 SFTP_USER=<sftp user name>
 SFTP_PASSWORD=<sftp password>
 SFTP_URL=<path to root on server>
+LOCAL_URL=<location for test data files on local host>
 TEST_DELAY=<delay in ms between each test group>
+TEST_PLATFORM=<local platform test run from unix or windows>
+
