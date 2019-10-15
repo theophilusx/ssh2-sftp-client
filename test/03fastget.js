@@ -48,45 +48,31 @@ describe('fastGet() method tests', function() {
     ).to.be.a('promise');
   });
 
-  it('fastGet small text file', function() {
-    return sftp
-      .fastGet(
-        makeRemotePath(config.sftpUrl, 'fastget-small.txt'),
-        makeLocalPath(config.localUrl, 'fastget-small.txt'),
-        {encoding: 'utf8'}
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(makeLocalPath(config.localUrl, 'fastget-small.txt'))
-        ).to.containSubset({size: 19});
-      });
+  it('fastGet small text file', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'fastget-small.txt');
+    let remotePath = makeRemotePath(config.sftpUrl, 'fastget-small.txt');
+    await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('fastGet large text file', function() {
-    return sftp
-      .fastGet(
-        makeRemotePath(config.sftpUrl, 'fastget-large.txt'),
-        makeLocalPath(config.localUrl, 'fastget-large.txt'),
-        {encoding: 'utf8'}
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(makeLocalPath(config.localUrl, 'fastget-large.txt'))
-        ).to.containSubset({size: 6973257});
-      });
+  it('fastGet large text file', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'fastget-large.txt');
+    let remotePath = makeRemotePath(config.sftpUrl, 'fastget-large.txt');
+    await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('fastGet gzipped file', function() {
-    return sftp
-      .fastGet(
-        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
-        makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz')
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz'))
-        ).to.containSubset({size: 570314});
-      });
+  it('fastGet gzipped file', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz');
+    let remotePath = makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz');
+    await sftp.fastGet(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
   it('fastGet non-existent file is rejected', function() {
@@ -98,63 +84,46 @@ describe('fastGet() method tests', function() {
     ).to.be.rejectedWith('No such file');
   });
 
-  it('fastGet remote relative path 1', function() {
-    return sftp
-      .fastGet(
-        './testServer/fastget-gzip.txt.gz',
-        makeLocalPath(config.localUrl, 'fastget-relative1-gzip.txt.gz')
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(
-            makeLocalPath(config.localUrl, 'fastget-relative1-gzip.txt.gz')
-          )
-        ).to.containSubset({size: 570314});
-      });
+  it('fastGet remote relative path 1', async function() {
+    let localPath = makeLocalPath(
+      config.localUrl,
+      'fastget-relative1-gzip.txt.gz'
+    );
+    let remotePath = './testServer/fastget-gzip.txt.gz';
+    await sftp.fastGet(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('fastGet remote relative path 2', function() {
-    return sftp
-      .fastGet(
-        `../${config.username}/testServer/fastget-gzip.txt.gz`,
-        makeLocalPath(config.localUrl, 'fastget-relative2-gzip.txt.gz')
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(
-            makeLocalPath(config.localUrl, 'fastget-relative2-gzip.txt.gz')
-          )
-        ).to.containSubset({size: 570314});
-      });
+  it('fastGet remote relative path 2', async function() {
+    let localPath = makeLocalPath(
+      config.localUrl,
+      'fastget-relative2-gzip.txt.gz'
+    );
+    let remotePath = `../${config.username}/testServer/fastget-gzip.txt.gz`;
+    await sftp.fastGet(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('fastGet local relative path 3', function() {
-    return sftp
-      .fastGet(
-        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
-        './test/testData/fastget-relative3-gzip.txt.gz'
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(
-            makeLocalPath(config.localUrl, 'fastget-relative3-gzip.txt.gz')
-          )
-        ).to.containSubset({size: 570314});
-      });
+  it('fastGet local relative path 3', async function() {
+    let localPath = './test/testData/fastget-relative3-gzip.txt.gz';
+    let remotePath = makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz');
+    await sftp.fastGet(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('fastGet local relative path 4', function() {
-    return sftp
-      .fastGet(
-        makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz'),
-        '../ssh2-sftp-client/test/testData/fastget-relative4-gzip.txt.gz'
-      )
-      .then(() => {
-        return expect(
-          fs.statSync(
-            makeLocalPath(config.localUrl, 'fastget-relative4-gzip.txt.gz')
-          )
-        ).to.containSubset({size: 570314});
-      });
+  it('fastGet local relative path 4', async function() {
+    let localPath =
+      '../ssh2-sftp-client/test/testData/fastget-relative4-gzip.txt.gz';
+    let remotePath = makeRemotePath(config.sftpUrl, 'fastget-gzip.txt.gz');
+    await sftp.fastGet(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 });

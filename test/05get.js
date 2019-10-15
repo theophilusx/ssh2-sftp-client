@@ -107,57 +107,40 @@ describe('get() method tests', function() {
     ).to.be.rejectedWith('No such file');
   });
 
-  it('get with relative remote path 1', function() {
-    return sftp
-      .get(
-        './testServer/get-gzip.txt.gz',
-        makeLocalPath(config.localUrl, 'get-relative1-gzip.txt.gz')
-      )
-      .then(() => {
-        let stats = fs.statSync(
-          makeLocalPath(config.localUrl, 'get-relative1-gzip.txt.gz')
-        );
-        return expect(stats.size).to.equal(570314);
-      });
+  it('get with relative remote path 1', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'get-relative1-gzip.txt.gz');
+    let remotePath = './testServer/get-gzip.txt.gz';
+    await sftp.get(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('get with relative remote path 2', function() {
-    return sftp
-      .get(
-        `../${config.username}/testServer/get-gzip.txt.gz`,
-        makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz')
-      )
-      .then(() => {
-        let stats = fs.statSync(
-          makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz')
-        );
-        return expect(stats.size).to.equal(570314);
-      });
+  it('get with relative remote path 2', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz');
+    let remotePath = `../${config.username}/testServer/get-gzip.txt.gz`;
+    await sftp.get(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('get with relative local path 3', function() {
-    return sftp
-      .get(
-        makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz'),
-        './test/testData/get-relative3-gzip.txt.gz'
-      )
-      .then(() => {
-        let stats = fs.statSync('./test/testData/get-relative3-gzip.txt.gz');
-        return expect(stats.size).to.equal(570314);
-      });
+  it('get with relative local path 3', async function() {
+    let localPath = './test/testData/get-relative3-gzip.txt.gz';
+    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    await sftp.get(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('get with relative local path 4', function() {
-    return sftp
-      .get(
-        makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz'),
-        '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz'
-      )
-      .then(() => {
-        let stats = fs.statSync(
-          makeLocalPath(config.localUrl, 'get-relative4-gzip.txt.gz')
-        );
-        return expect(stats.size).to.equal(570314);
-      });
+  it('get with relative local path 4', async function() {
+    let localPath =
+      '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz';
+    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    await sftp.get(remotePath, localPath);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 });
