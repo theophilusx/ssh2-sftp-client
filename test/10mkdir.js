@@ -46,7 +46,7 @@ describe('mkdir() method tests', function() {
   it('mkdir without recursive option and bad path should be rejected', function() {
     return expect(
       sftp.mkdir(makeRemotePath(config.sftpUrl, 'mocha3', 'mm'))
-    ).to.be.rejectedWith('Failed to create directory');
+    ).to.be.rejectedWith(/No such file/);
   });
 
   it('mkdir with recursive option should create all directories', function() {
