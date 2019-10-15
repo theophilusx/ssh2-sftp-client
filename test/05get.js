@@ -55,50 +55,45 @@ describe('get() method tests', function() {
       });
   });
 
-  it('get large text file using a stream', function() {
-    return sftp
-      .get(
-        makeRemotePath(config.sftpUrl, 'get-large.txt'),
-        makeLocalPath(config.localUrl, 'get-large.txt'),
-        {encoding: 'utf8'}
-      )
-      .then(() => {
-        let stats = fs.statSync(
-          makeLocalPath(config.localUrl, 'get-large.txt')
-        );
-        return expect(stats.size).to.equal(6973257);
-      });
+  it('get large text file using a stream', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'get-large.txt');
+    let remotePath = makeRemotePath(config.sftpUrl, 'get-large.txt');
+    let out = fs.createWriteStream(localPath, {
+      flags: 'w',
+      encoding: null
+    });
+    await sftp.get(remotePath, out);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('get gzipped file using a stream', function() {
-    return sftp
-      .get(
-        makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz'),
-        makeLocalPath(config.localUrl, 'get-gzip.txt.gz')
-      )
-      .then(() => {
-        let stats = fs.statSync(
-          makeLocalPath(config.localUrl, 'get-gzip.txt.gz')
-        );
-        return expect(stats.size).to.equal(570314);
-      });
+  it('get gzipped file using a stream', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'get-gzip.txt.gz');
+    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    let out = fs.createWriteStream(localPath, {
+      flags: 'w',
+      encoding: null
+    });
+    await sftp.get(remotePath, out);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(localStats.size).to.equal(stats.size);
   });
 
-  it('get gzipped file and gunzip in pipe', function() {
-    let localFile = makeLocalPath(config.localUrl, 'get-unzip.txt');
+  it('get gzipped file and gunzip in pipe', async function() {
+    let localPath = makeLocalPath(config.localUrl, 'get-unzip.txt');
+    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
     let gunzip = zlib.createGunzip();
-    let out = fs.createWriteStream(localFile, {
+    let out = fs.createWriteStream(localPath, {
       flags: 'w',
       encoding: null
     });
     gunzip.pipe(out);
-    return sftp
-      .get(makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz'), gunzip)
-      .then(wtr => {
-        wtr.flush();
-        let stats = fs.statSync(localFile);
-        return expect(stats.size).to.equal(6973257);
-      });
+    await sftp.get(remotePath, gunzip);
+    let stats = await sftp.stat(remotePath);
+    let localStats = fs.statSync(localPath);
+    return expect(stats.size < localStats.size).to.equal(true);
   });
 
   it('get non-existent file is rejected', function() {
