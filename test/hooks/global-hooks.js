@@ -24,7 +24,7 @@ const makeLocalPath = (...args) => {
 };
 
 const makeRemotePath = (...args) => {
-  if (process.env.TEST_PLATFORM === 'unix') {
+  if (process.env.TEST_SERVER === 'unix') {
     return args.join('/');
   }
   return args.join('\\');
