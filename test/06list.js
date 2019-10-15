@@ -66,8 +66,8 @@ describe('list() method tests', function() {
       {type: 'd', name: 'empty'},
       {type: '-', name: 'file1.html'},
       {type: '-', name: 'file2.md'},
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -84,8 +84,8 @@ describe('list() method tests', function() {
       {type: 'd', name: 'empty'},
       {type: '-', name: 'file1.html'},
       {type: '-', name: 'file2.md'},
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -110,8 +110,8 @@ describe('list() method tests', function() {
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -128,8 +128,8 @@ describe('list() method tests', function() {
       {type: 'd', name: 'empty'},
       {type: '-', name: 'file1.html'},
       {type: '-', name: 'file2.md'},
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -154,8 +154,8 @@ describe('list() method tests', function() {
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -211,8 +211,8 @@ describe('auxList testing', function() {
       {type: 'd', name: 'empty'},
       {type: '-', name: 'file1.html'},
       {type: '-', name: 'file2.md'},
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 
@@ -237,8 +237,8 @@ describe('auxList testing', function() {
 
     expect(data.length).to.equal(2);
     return expect(data).to.containSubset([
-      {type: '-', name: 'test-file1.txt', size: 6973257},
-      {type: '-', name: 'test-file2.txt.gz', size: 570314}
+      {type: '-', name: 'test-file1.txt'},
+      {type: '-', name: 'test-file2.txt.gz'}
     ]);
   });
 });
