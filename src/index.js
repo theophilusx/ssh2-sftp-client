@@ -128,7 +128,7 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
 
     sftp.readdir(path, (err, list) => {
       if (err) {
-        reject(formatError(err, 'sftp.list'));
+        reject(formatError(`${err.message} ${path}`, 'sftp.list'));
       } else {
         let newList = [];
         // reset file info
@@ -255,7 +255,7 @@ SftpClient.prototype._stat = function(remotePath) {
 
     sftp.stat(remotePath, function(err, stats) {
       if (err) {
-        reject(formatError(err, 'sftp.stat'));
+        reject(formatError(`${err.message} ${remotePath}`, 'sftp.stat'));
       } else {
         resolve({
           mode: stats.mode,
@@ -298,7 +298,7 @@ SftpClient.prototype._get = function(path, dst, options) {
     let rdr = sftp.createReadStream(path, options);
     rdr.on('error', err => {
       removeListeners(rdr);
-      reject(formatError(err, 'sftp.get'));
+      reject(formatError(`${err.message} ${path}`, 'sftp.get'));
     });
 
     if (dst === undefined) {
@@ -319,7 +319,12 @@ SftpClient.prototype._get = function(path, dst, options) {
       }
       wtr.on('error', err => {
         removeListeners(rdr);
-        reject(formatError(err, 'sftp.get'));
+        reject(
+          formatError(
+            `${err.message} ${typeof dst === 'string' ? dst : ''}`,
+            'sftp.get'
+          )
+        );
       });
       wtr.on('finish', () => {
         removeListeners(rdr);
@@ -373,7 +378,7 @@ SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
 
     sftp.fastGet(remotePath, localPath, options, function(err) {
       if (err) {
-        reject(formatError(err, 'sftp.fastGet'));
+        reject(formatError(`${err.message} ${remotePath}`, 'sftp.fastGet'));
       }
       resolve(`${remotePath} was successfully download to ${localPath}!`);
     });
@@ -407,7 +412,12 @@ SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
   return new Promise((resolve, reject) => {
     sftp.fastPut(localPath, remotePath, options, function(err) {
       if (err) {
-        reject(formatError(err, 'sftp.fastPut'));
+        reject(
+          formatError(
+            `${err.message} Local: ${localPath} Remote: ${remotePath}`,
+            'sftp.fastPut'
+          )
+        );
       }
       resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
     });
@@ -450,7 +460,7 @@ SftpClient.prototype._put = function(src, remotePath, options) {
     let stream = sftp.createWriteStream(remotePath, options);
 
     stream.on('error', err => {
-      reject(formatError(err, 'sftp.put'));
+      reject(formatError(`${err.message} ${remotePath}`, 'sftp.put'));
     });
 
     stream.on('finish', () => {
@@ -469,7 +479,12 @@ SftpClient.prototype._put = function(src, remotePath, options) {
       }
       rdr.on('error', err => {
         removeListeners(stream);
-        reject(formatError(err, 'sftp.put'));
+        reject(
+          formatError(
+            `${err.message} ${typeof src === 'string' ? src : ''}`,
+            'sftp.put'
+          )
+        );
       });
       rdr.pipe(stream);
     }
@@ -526,7 +541,7 @@ SftpClient.prototype._append = function(input, remotePath, options) {
 
     stream.on('error', err => {
       removeListeners(stream);
-      reject(formatError(err, 'sftp.append'));
+      reject(formatError(`${err.message} ${remotePath}`, 'sftp.append'));
     });
 
     stream.on('finish', () => {
@@ -587,7 +602,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
     return new Promise((resolve, reject) => {
       sftp.mkdir(p, err => {
         if (err) {
-          reject(formatError('Failed to create directory', 'sftp.mkdir'));
+          reject(formatError(`${err.message} ${p}`, 'sftp.mkdir'));
         }
         resolve(`${p} directory created`);
       });
@@ -642,7 +657,7 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
       try {
         sftp.rmdir(p, err => {
           if (err) {
-            reject(formatError(err, 'sftp.rmdir'));
+            reject(formatError(`${err.message} ${p}`, 'sftp.rmdir'));
           }
           resolve('Successfully removed directory');
         });
@@ -691,7 +706,7 @@ SftpClient.prototype._delete = function(path) {
 
     sftp.unlink(path, err => {
       if (err) {
-        reject(formatError(err, 'sftp.delete'));
+        reject(formatError(`${err.message} ${path}`, 'sftp.delete'));
       }
       resolve('Successfully deleted file');
     });
@@ -721,7 +736,12 @@ SftpClient.prototype._rename = function(fromPath, toPath) {
 
     sftp.rename(fromPath, toPath, err => {
       if (err) {
-        reject(formatError(err, 'sftp.rename'));
+        reject(
+          formatError(
+            `${err.message} From: ${fromPath} To: ${toPath}`,
+            'sftp.rename'
+          )
+        );
       }
       resolve(`Successfully renamed ${fromPath} to ${toPath}`);
     });
@@ -761,7 +781,7 @@ SftpClient.prototype._chmod = function(remotePath, mode) {
 
     sftp.chmod(remotePath, mode, err => {
       if (err) {
-        reject(formatError(err, 'sftp.chmod'));
+        reject(formatError(`${err.message} ${remotePath}`, 'sftp.chmod'));
       }
       resolve('Successfully change file mode');
     });
@@ -883,7 +903,7 @@ SftpClient.prototype.connect = function(config) {
                 self.remotePathSep = '/';
                 self.remotePlatform = 'unix';
               } else {
-                self.remotePathSep = '\\\\';
+                self.remotePathSep = '\\';
                 self.remotePlatform = 'windows';
               }
               resolve(sftp);
