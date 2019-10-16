@@ -987,7 +987,7 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
-** v4.2.1
+** v4.2.1 (Prod Version)
    - Remove default close listener. changes in ssh2 API removed the utility of a
      default close listener
    - Fix path handling. Under mixed environments (where client platform and
@@ -997,7 +997,7 @@ This solution was provided by @jmorino.
      such file" now report "No such file /path/to/missing/file" to help with
      debugging
 
-** v4.2.0 (Prod Version)
+** v4.2.0 
    - Work-around for SSH2 =end= event bug
    - Added ability to set client name in constructor method
    - Added additional error checking to prevent ~connect()~ being called on
