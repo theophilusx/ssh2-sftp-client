@@ -987,6 +987,16 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+** v4.2.1
+   - Remove default close listener. changes in ssh2 API removed the utility of a
+     default close listener
+   - Fix path handling. Under mixed environments (where client platform and
+     server platform were different i.e. one windows the other unix), path
+     handling was broken due tot he use of path.join().
+   - Ensure error messages include path details. Instead of errors such as "No
+     such file" now report "No such file /path/to/missing/file" to help with
+     debugging
+
 ** v4.2.0 (Prod Version)
    - Work-around for SSH2 =end= event bug
    - Added ability to set client name in constructor method
