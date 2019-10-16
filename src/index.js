@@ -842,6 +842,10 @@ SftpClient.prototype.connect = function(config) {
                 callback(formatError(err, 'sftp.connect', attemptCount), null);
               }
               self.sftp = sftp;
+              self.sftp.on(
+                'error',
+                makeErrorListener(`${self.clientName} SFTPStream`)
+              );
               // remove retry error listener and add generic error listener
               self.client.removeAllListeners('error');
               self.client.removeAllListeners('end');
@@ -868,7 +872,6 @@ SftpClient.prototype.connect = function(config) {
               )
             );
           })
-
           .connect(config);
       });
     } catch (err) {
