@@ -192,7 +192,7 @@ client has thrown the error.
 
     -   **name:** string. An optional name string used in error messages
 
-2.  Example Used
+2.  Example Use
 
         'use strict';
         
@@ -300,14 +300,14 @@ directory.
 -   **path:** {String} Remote directory path
 -   **pattern:** (optional) {string|RegExp} A pattern used to filter the items included in the returned
     array. Pattern can be a simple *glob* style string or a regular
-    experession. Defaults to `/.*/`.
+    expression. Defaults to `/.*/`.
 
 1.  Example Use
 
         const Client = require('ssh2-sftp-client');
         
         const config = {
-          host: 'exmaple.com',
+          host: 'example.com',
           port: 22,
           username: 'red-don',
           password: 'my-secret'
@@ -374,7 +374,7 @@ if it exists or false if it does not.
         const Client = require('ssh2-sftp-client');
         
         const config = {
-          host: 'exmaple.com',
+          host: 'example.com',
           port: 22,
           username: 'red-don',
           password: 'my-secret'
@@ -419,7 +419,7 @@ Returns the attributes associated with the object pointed to by `path`.
           isDirectory: false, // true if object is a directory
           isFile: true, // true if object is a file
           isBlockDevice: false, // true if object is a block device
-          isCharcterDevice: false, // true if object is a character device
+          isCharacterDevice: false, // true if object is a character device
           isSymbolicLink: false, // true if object is a symbolic link
           isFIFO: false, // true if object is a FIFO
           isSocket: false // true if object is a socket
@@ -873,7 +873,7 @@ Although normally not required, you can add and remove custom listeners on the
 ssh2 client object. This object supports a number of events, but only a few of
 them have any meaning in the context of SFTP. These are 
 
--   **error:** An error occured. Calls listener with an error argument.
+-   **error:** An error occurred. Calls listener with an error argument.
 -   **end:** The socket has been disconnected. No argument.
 -   **close:** The socket was closed. Boolean argument which is true when the socket
     was closed due to errors.
@@ -935,11 +935,11 @@ file will be piped into that writeable. If the writeable you pass in is a
 writeable stream created with `fs.createWriteStream()`, the data will be written
 to the file specified in the constructor call to `createWriteStream()`. 
 
-The wrteable stream can be any type of write stream. For example, the below code
+The writeable stream can be any type of write stream. For example, the below code
 will convert all the characters in the remote file to upper case before it is
 saved to the local file system. This could just as easily be something like a
 gunzip stream from `zlib`, enabling you to decompress remote zipped files as you
-bring thenm across before saving to local file system. 
+bring them across before saving to local file system. 
 
     'use strict';
     
@@ -1019,7 +1019,7 @@ configuration.
       host: 'YOUR-HOST',
       port: 'YOUR-PORT',
       username: 'YOUR-USERNAME',
-      privateKey: fs.readFileSync('/path/to/ssh/ke')
+      privateKey: fs.readFileSync('/path/to/ssh/key')
     }).then(() => {
       sftp.fastPut(.....)
     }
@@ -1140,7 +1140,7 @@ This solution was provided by @jmorino.
 -   Removed 'connectMethod' argument from connect method.
 -   Refined adding/removing of listeners in connect() and end() methods to enable
     errors to be adequately caught and reported.
--   Depricate auxList() and add pattern/regexp filter option to list()
+-   Deprecate auxList() and add pattern/regexp filter option to list()
 -   Refactored handling of event signals to provide better feedback to clients
 -   Removed pointless 'permissions' property from objects returned by `stat()`
     (same as mode property). Added additional properties describing the type of
@@ -1200,7 +1200,7 @@ This solution was provided by @jmorino.
 
 -   Requires node.js v7.5.0 or above.
 -   merge pr #97, thanks for @theophilusx
-    -   Remove emmitter.maxListener warnings
+    -   Remove emitter.maxListener warnings
     -   Upgraded ssh2 dependency from 0.5.5 to 0.6.1
     -   Enhanced error messages to provide more context and to be more consistent
     -   re-factored test
@@ -1280,7 +1280,7 @@ your pull request what level of change it represents i.e.
 
 -   **Major:** Change to API or major change in functionality which will require an
     increase in major version number.
--   **Ninor:** Minor change, enhancement or new feature which does not change
+-   **Minor:** Minor change, enhancement or new feature which does not change
     existing API and will not break existing client code.
 -   **Bug Fix:** No change to functionality or features. Simple fix of an existing
     bug.
