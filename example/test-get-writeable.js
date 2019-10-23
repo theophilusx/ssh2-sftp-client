@@ -10,6 +10,9 @@
 // fastGet() method tends to be faster as it allows for concurrent processes
 // when downloading large files.
 
+// Call the script as
+// node ./test-git-writeable.js /path/to/remote/file
+
 // use the following line and comment out the one below it if you are
 // running using the ssh2-sftp-client from npmjs.com i.e. is in your package.json
 //const Client = require('ssh2-sftp-client');
