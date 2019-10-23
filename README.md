@@ -200,7 +200,7 @@ client has thrown the error.
         
         const config = {
           host: 'example.com',
-          user: 'donald',
+          username: 'donald',
           password: 'my-secret'
         };
         
@@ -469,7 +469,8 @@ probably better off using the `fastGet()` method.
     The options object can be used to pass options to the underlying readStream used
     to read the data from the remote server.
     
-        { flags: 'r',
+        {
+          flags: 'r',
           encoding: null,
           handle: null,
           mode: 0o666,
@@ -523,7 +524,7 @@ throughput. This is the simplest method if you just want to download a file.
           concurrency: 64, // integer. Number of concurrent reads to use
           chunkSize: 32768, // integer. Size of each read in bytes
           step: function(total_transferred, chunk, total) // callback called each time a
-           // chunk is transferred
+                                                          // chunk is transferred
         }
     
     -   **Warning:** Some servers do not respond correctly to requests to alter chunk
@@ -1008,7 +1009,7 @@ ssh-agent as part of the login session.
       username: 'YOUR-USERNAME',
       agent: process.env.SSH_AUTH_SOCK
     }).then(() => {
-      sftp.fastPut(....)
+      sftp.fastPut(/* ... */)
     }
 
 Another alternative is to just pass in the SSH key directly as part of the
@@ -1021,7 +1022,7 @@ configuration.
       username: 'YOUR-USERNAME',
       privateKey: fs.readFileSync('/path/to/ssh/key')
     }).then(() => {
-      sftp.fastPut(.....)
+      sftp.fastPut(/* ... */)
     }
 
 
@@ -1055,7 +1056,6 @@ This solution was provided by @jmorino.
       username: '.....',
       privateKey: '.....'
     })
-    
     
     // client is connected
 
