@@ -102,7 +102,7 @@ Constructor to create a new ~ssh2-sftp-client~ object. An optional ~name~ string
 can be provided, which will be used in error messages to help identify which
 client has thrown the error. 
 
-**** Constructor arguments
+**** Constructor Arguments
 
 - name :: string. An optional name string used in error messages
 
@@ -216,7 +216,7 @@ directory.
 
 - path :: {String} Remote directory path
 - pattern :: (optional) {string|RegExp} A pattern used to filter the items included in the returned
-             array. Pattern can be a simple /glob/ style string or a regular
+             array. Pattern can be a simple /glob/-style string or a regular
              expression. Defaults to ~/.*/~.
 
 **** Example Use
@@ -274,7 +274,7 @@ The objects in the array returned by ~list()~ have the following properties;
 **** Pattern Filter
 
 The filter options can be a regular expression (most powerful option) or a
-simple /glob/ like string where * will match any number of characters e.g
+simple /glob/-like string where * will match any number of characters, e.g.
 
 #+begin_example
   foo* => foo, foobar, foobaz
@@ -282,7 +282,7 @@ simple /glob/ like string where * will match any number of characters e.g
   ,*oo* => foo, foobar, look, book
 #+end_example
 
-The /glob/ style matching is very simple. In most cases, you are best off using
+The /glob/-style matching is very simple. In most cases, you are best off using
 a real regular expression which will allow you to do more powerful matching and
 anchor matches to the beginning/end of the string etc.
 
@@ -444,7 +444,7 @@ throughput. This is the simplest method if you just want to download a file.
                file.
 - options :: Options for ~fastGet()~ (see below)
 
-**** OPtions
+**** Options
 
 #+begin_src js2
   {
