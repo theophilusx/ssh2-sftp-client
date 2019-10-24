@@ -12,7 +12,7 @@ Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
 
 Node versions < 8.x are not supported.
 
-* Installation 
+* Installation
 
 #+begin_src shell
 npm install ssh2-sftp-client
@@ -47,9 +47,9 @@ There has been minor changes to the API signatures
   not clear what this argument was for or what it did.
 
 - Additional options are now available in the configure object passed to the
-  ~connect()~ method to control the connection retry functionality. 
+  ~connect()~ method to control the connection retry functionality.
 
-- Node versions before 8.x are no longer supported. 
+- Node versions before 8.x are no longer supported.
 
 - Error message formats have changed. While they are now more consistent, if you
   have code which parses the messages, it will need to be updated.
@@ -76,7 +76,7 @@ There has been minor changes to the API signatures
     connections, you must call ~end()~ before calling ~connect()~ again. Each
     client object can only represent a single connection to an SFTP
     server. However, some methods, such as ~fastPut()~ and ~fastGet()~ will use
-    concurrency to speed up the transfer of data. 
+    concurrency to speed up the transfer of data.
   - Added some more examples in the example directory of the repository
 * Enhancements in Version 4.1.x
   - Some of the data upload/download methods would create an empty destination
@@ -85,14 +85,14 @@ There has been minor changes to the API signatures
     made more consistent and reliable. Two new methods ~realPath()~ and ~cwd()~
     have been added
   - More error checking and provision of error messages with more meaningful
-    information. Expansion and enhancements of test cases. 
+    information. Expansion and enhancements of test cases.
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
 module. For full details, please see [[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]
 
 All the methods will return a Promise, except for ~on()~ and
-~removeListener()~, which are typically only used in special use cases. 
+~removeListener()~, which are typically only used in special use cases.
 
 ** Methods
 
@@ -100,13 +100,13 @@ All the methods will return a Promise, except for ~on()~ and
 
 Constructor to create a new ~ssh2-sftp-client~ object. An optional ~name~ string
 can be provided, which will be used in error messages to help identify which
-client has thrown the error. 
+client has thrown the error.
 
-**** Constructor arguments
+**** Constructor Arguments
 
 - name :: string. An optional name string used in error messages
 
-**** Example Used
+**** Example Use
 
 #+begin_src js2
   'use strict';
@@ -146,12 +146,12 @@ This module is based on the excellent [[https://github.com/mscdex/ssh2#client][S
 client and server library and provides much more functionality than just SFTP
 connectivity. Many of the connect options provided by that module are less
 relevant for SFTP connections. It is recommended you keep the config options to
-the minimum needed and stick to the options listed in the ~commonOpts~ below. 
+the minimum needed and stick to the options listed in the ~commonOpts~ below.
 
 The ~retries~, ~retry_factor~ and ~retry_minTimeout~ options are not part of the
 SSH2 module. These are part of the configuration for the [[https://www.npmjs.com/package/retry][retry]] package and what
 is used to enable retrying of sftp connection attempts. See the documentation
-for that package for an explanation of these values.  
+for that package for an explanation of these values.
 
 #+begin_src js2
   // common options
@@ -169,7 +169,7 @@ for that package for an explanation of these values.
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
     strictVendor: true // boolean - Performs a strict server vendor check
     debug: myDebug // function - Set this to a function that receives a single
-                  // string argument to get detailed (local) debug information. 
+                  // string argument to get detailed (local) debug information.
     retries: 2 // integer. Number of times to retry connecting
     retry_factor: 2 // integer. Time factor used to calculate time between retries
     retry_minTimeout: 2000 // integer. Minimum timeout between attempts
@@ -198,7 +198,7 @@ for that package for an explanation of these values.
 
 **** Example Use
 
-#+begin_src javascript 
+#+begin_src javascript
   sftp.connect({
     host: example.com,
     port: 22,
@@ -212,12 +212,12 @@ for that package for an explanation of these values.
 
 Retrieves a directory listing. This method returns a Promise, which once
 realised, returns an array of objects representing items in the remote
-directory. 
+directory.
 
 - path :: {String} Remote directory path
 - pattern :: (optional) {string|RegExp} A pattern used to filter the items included in the returned
-             array. Pattern can be a simple /glob/ style string or a regular
-             experession. Defaults to ~/.*/~.
+             array. Pattern can be a simple /glob/-style string or a regular
+             expression. Defaults to ~/.*/~.
 
 **** Example Use
 
@@ -225,7 +225,7 @@ directory.
   const Client = require('ssh2-sftp-client');
 
   const config = {
-    host: 'exmaple.com',
+    host: 'example.com',
     port: 22,
     username: 'red-don',
     password: 'my-secret'
@@ -274,7 +274,7 @@ The objects in the array returned by ~list()~ have the following properties;
 **** Pattern Filter
 
 The filter options can be a regular expression (most powerful option) or a
-simple /glob/ like string where * will match any number of characters e.g
+simple /glob/-like string where * will match any number of characters, e.g.
 
 #+begin_example
   foo* => foo, foobar, foobaz
@@ -282,7 +282,7 @@ simple /glob/ like string where * will match any number of characters e.g
   ,*oo* => foo, foobar, look, book
 #+end_example
 
-The /glob/ style matching is very simple. In most cases, you are best off using
+The /glob/-style matching is very simple. In most cases, you are best off using
 a real regular expression which will allow you to do more powerful matching and
 anchor matches to the beginning/end of the string etc.
 
@@ -297,7 +297,7 @@ if it exists or false if it does not.
   const Client = require('ssh2-sftp-client');
 
   const config = {
-    host: 'exmaple.com',
+    host: 'example.com',
     port: 22,
     username: 'red-don',
     password: 'my-secret'
@@ -323,7 +323,7 @@ if it exists or false if it does not.
 
 *** stat(path) ==> object
 
-Returns the attributes associated with the object pointed to by ~path~. 
+Returns the attributes associated with the object pointed to by ~path~.
 
 - path :: String. Remote path to directory or file on remote server
 
@@ -342,7 +342,7 @@ The ~stat()~ method returns an object with the following properties;
     isDirectory: false, // true if object is a directory
     isFile: true, // true if object is a file
     isBlockDevice: false, // true if object is a block device
-    isCharcterDevice: false, // true if object is a character device
+    isCharacterDevice: false, // true if object is a character device
     isSymbolicLink: false, // true if object is a symbolic link
     isFIFO: false, // true if object is a FIFO
     isSocket: false // true if object is a socket
@@ -385,13 +385,13 @@ probably better off using the ~fastGet()~ method.
 
 - path :: String. Path to the remote file to download
 - dst :: String|Stream. Destination for the data. If a string, it
-         should be a local file path. 
-- options :: Options for the ~get()~ command (see below). 
+         should be a local file path.
+- options :: Options for the ~get()~ command (see below).
 
 **** Options
 
 The options object can be used to pass options to the underlying readStream used
-to read the data from the remote server. 
+to read the data from the remote server.
 
 #+begin_src js2
   { flags: 'r',
@@ -405,7 +405,7 @@ to read the data from the remote server.
 
 Most of the time, you won't want to use any options. Sometimes, it may be useful
 to set the encoding. For example, to 'utf-8'. However, it is important not to do
-this for binary files to avoid data corruption. 
+this for binary files to avoid data corruption.
 
 **** Example Use
 
@@ -444,7 +444,7 @@ throughput. This is the simplest method if you just want to download a file.
                file.
 - options :: Options for ~fastGet()~ (see below)
 
-**** OPtions
+**** Options
 
 #+begin_src js2
   {
@@ -456,9 +456,9 @@ throughput. This is the simplest method if you just want to download a file.
 #+end_src
 
 - Warning :: Some servers do not respond correctly to requests to alter chunk
-             size. This can result in lost or corrupted data. 
+             size. This can result in lost or corrupted data.
 
-**** Sample Use 
+**** Sample Use
 
 #+begin_src javascript
   let client = new Client();
@@ -484,7 +484,7 @@ Upload data from local system to remote server. If the ~src~ argument is a
 string, it is interpreted as a local file path to be used for the data to
 transfer. If the ~src~ argument is a buffer, the contents of the buffer are
 copied to the remote file and if it is a readable stream, the contents of that
-stream are piped to the ~remotePath~ on the server. 
+stream are piped to the ~remotePath~ on the server.
 
 - src :: string | buffer | readable stream. Data source for data to copy to the
          remote server.
@@ -509,7 +509,7 @@ The following options are supported;
 The most common options to use are mode and encoding. The values shown above are
 the defaults. You do not have to set encoding to utf-8 for text files, null is
 fine for all file types. However, using utf-8 encoding for binary files will
-often result in data corruption. 
+often result in data corruption.
 
 **** Example Use
 
@@ -537,7 +537,7 @@ often result in data corruption.
 *** fastPut(localPath, remotePath, options) ==> string
 
 Uploads the data in file at ~localPath~ to a new file on remote server at
-~remotePath~ using concurrency. The options object allows tweaking of the fast put process. 
+~remotePath~ using concurrency. The options object allows tweaking of the fast put process.
 
 - localPath :: string. Path to local file to upload
 - remotePath :: string. Path to remote file to create
@@ -558,7 +558,7 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
 
 - Warning :: There have been reports that some SFTP servers will not honour
              requests for non-default chunk sizes. This can result in data loss
-             or corruption. 
+             or corruption.
 
 **** Example Use
 
@@ -585,12 +585,12 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
 Append the ~input~ data to an existing remote file. There is no integrity
 checking performed apart from normal writeStream checks. This function simply
 opens a writeStream on the remote file in append mode and writes the data passed
-in to the file. 
+in to the file.
 
 - input :: buffer | readStream. Data to append to remote file
 - remotePath :: string. Path to remote file
 - options :: object. Options to pass to writeStream (see below)
- 
+
 **** Options
 
 The following options are supported;
@@ -607,7 +607,7 @@ The following options are supported;
 
 The most common options to use are mode and encoding. The values shown above are
 the defaults. You do not have to set encoding to utf-8 for text files, null is
-fine for all file types. Generally, I would not attempt to append binary files. 
+fine for all file types. Generally, I would not attempt to append binary files.
 
 **** Example Use
 
@@ -637,7 +637,7 @@ defaults to false.
 - path :: string. Path to remote directory to create
 - recursive :: boolean. If true, create any missing directories in the path as
                well
- 
+
 **** Example Use
 
 #+begin_src javascript
@@ -662,7 +662,7 @@ defaults to false.
 Remove a directory. If removing a directory and recursive flag is set to
 ~true~, the specified directory and all sub-directories and files will be
 deleted. If set to false and the directory has sub-directories or files, the
-action will fail. 
+action will fail.
 
 - path :: string. Path to remote directory
 - recursive :: boolean. If true, remove all files and directories in target
@@ -691,7 +691,7 @@ action will fail.
 
 Delete a file on the remote server.
 
-- path :: string. Path to remote file to be deleted. 
+- path :: string. Path to remote file to be deleted.
 
 **** Example Use
 
@@ -715,7 +715,7 @@ Delete a file on the remote server.
 *** rename(fromPath, toPath) ==> string
 
 Rename a file or directory from ~fromPath~ to ~toPath~. You must have the
-necessary permissions to modify the remote file. 
+necessary permissions to modify the remote file.
 
 **** Example Use
 
@@ -768,13 +768,13 @@ directory.
 *** realPath(path) ===> string
 
 Converts a relative path to an absolute path on the remote server. This method
-is mainly used internally to resolve remote path names. 
+is mainly used internally to resolve remote path names.
 
 - path :: A file path, either relative or absolute
 
 *** cwd() ==> string
 
-Returns what the server believes is the current remote working directory. 
+Returns what the server believes is the current remote working directory.
 
 *** end() ==> boolean
 
@@ -803,24 +803,24 @@ resources. This function also removes all listeners associated with the client.
 
 Although normally not required, you can add and remove custom listeners on the
 ssh2 client object. This object supports a number of events, but only a few of
-them have any meaning in the context of SFTP. These are 
+them have any meaning in the context of SFTP. These are
 
-- error :: An error occured. Calls listener with an error argument.
-- end :: The socket has been disconnected. No argument. 
+- error :: An error occurred. Calls listener with an error argument.
+- end :: The socket has been disconnected. No argument.
 - close :: The socket was closed. Boolean argument which is true when the socket
-           was closed due to errors. 
+           was closed due to errors.
 
-**** on(eventType, listener) 
+**** on(eventType, listener)
 
 Adds the specified listener to the specified event type. It the event type is
 ~error~, the listener should accept 1 argument, which will be an Error object. If
 the event type is ~close~, the listener should accept one argument of a boolean
 type, which will be true when the client connection was closed due to errors.
 
-**** removeListener(eventType, listener) 
+**** removeListener(eventType, listener)
 
 Removes the specified listener from the event specified in eventType. Note that
-the ~end()~ method automatically removes all listeners from the client object. 
+the ~end()~ method automatically removes all listeners from the client object.
 
 * FAQ
 ** Remote server drops connections with only an end event
@@ -833,7 +833,7 @@ specifies percentage of connections to be dropped once =max= connections has
 been reached and =full= is the number of connections at which point all
 subsequent connections will be dropped. e.g. =10:30:60= means allow up to 10
 unauthenticated connections after which drop 30% of connection attempts until
-reaching 60 unauthenticated connections, at which time, drop all attempts. 
+reaching 60 unauthenticated connections, at which time, drop all attempts.
 
 Clients first make an unauthenticated connection to the SFTP server to begin
 negotiation of protocol settings (cipher, authentication method etc). If you are
@@ -841,27 +841,27 @@ creating multiple connections in a script, it is easy to exceed the limit,
 resulting in some connections being dropped. As SSH2 only raises an 'end' event
 for these dropped connections, no error is detected. The ~ssh2-sftp-client~ now
 listens for ~end~ events during the connection process and if one is detected,
-will reject the connection promise. 
+will reject the connection promise.
 
 One way to avoid this type of issue is to add a delay between connection
 attempts. It does not need to be a very long delay - just sufficient to permit
 the previous connection to be authenticated. In fact, the default setting for
 openSSH is =10:30:60=, so you really just need to have enough delay to ensure
 that the 1st connection has completed authentication before the 11th connection
-is attempted. 
+is attempted.
 
 ** How can you pass writable stream as dst for get method?
 
 If the dst argument passed to the get method is a writeable stream, the remote
 file will be piped into that writeable. If the writeable you pass in is a
 writeable stream created with ~fs.createWriteStream()~, the data will be written
-to the file specified in the constructor call to ~createWriteStream()~. 
+to the file specified in the constructor call to ~createWriteStream()~.
 
-The wrteable stream can be any type of write stream. For example, the below code
+The writeable stream can be any type of write stream. For example, the below code
 will convert all the characters in the remote file to upper case before it is
 saved to the local file system. This could just as easily be something like a
 gunzip stream from ~zlib~, enabling you to decompress remote zipped files as you
-bring thenm across before saving to local file system. 
+bring them across before saving to local file system.
 
 #+begin_src javascript
   'use strict';
@@ -917,11 +917,11 @@ bring thenm across before saving to local file system.
 ** How can I upload files without having to specify a password?
 
 There are a couple of ways to do this. Essentially, you want to setup SSH keys
-and use these for authentication to the remote server. 
+and use these for authentication to the remote server.
 
 One solution, provided by @KalleVuorjoki is to use the SSH agent
 process. *Note*: SSH_AUTH_SOCK is normally created by your OS when you load the
-ssh-agent as part of the login session. 
+ssh-agent as part of the login session.
 
 #+begin_src javascript
   let sftp = new Client();
@@ -937,7 +937,7 @@ ssh-agent as part of the login session.
 #+end_src
 
 Another alternative is to just pass in the SSH key directly as part of the
-configuration. 
+configuration.
 
 #+begin_src javascript
   let sftp = new Client();
@@ -945,7 +945,7 @@ configuration.
     host: 'YOUR-HOST',
     port: 'YOUR-PORT',
     username: 'YOUR-USERNAME',
-    privateKey: fs.readFileSync('/path/to/ssh/ke')
+    privateKey: fs.readFileSync('/path/to/ssh/key')
   }).then(() => {
     sftp.fastPut(.....)
   }
@@ -954,7 +954,7 @@ configuration.
 
 ** How can I connect through a Socks Proxy
 
-This solution was provided by @jmorino. 
+This solution was provided by @jmorino.
 
 #+begin_src js2
   import { SocksClient } from 'socks';
@@ -997,7 +997,7 @@ This solution was provided by @jmorino.
      such file" now report "No such file /path/to/missing/file" to help with
      debugging
 
-** v4.2.0 
+** v4.2.0
    - Work-around for SSH2 =end= event bug
    - Added ability to set client name in constructor method
    - Added additional error checking to prevent ~connect()~ being called on
@@ -1016,7 +1016,7 @@ This solution was provided by @jmorino.
    - Add ~realPath()~ method
    - Add ~cwd()~ method
 
-** v4.0.4 
+** v4.0.4
    - Minor documentation fix
    - Fix return value from ~get()~
 ** v4.0.3
@@ -1024,28 +1024,28 @@ This solution was provided by @jmorino.
   - Modify exists() to always return 'd' if path is '.'
 ** v4.0.2
   - Fix some minor packaging issues
-** v4.0.0 
+** v4.0.0
    - Remove support for node < 8.x
    - Fix connection retry feature
    - sftp connection object set to null when 'end' signal is raised
    - Removed 'connectMethod' argument from connect method.
    - Refined adding/removing of listeners in connect() and end() methods to enable
      errors to be adequately caught and reported.
-   - Depricate auxList() and add pattern/regexp filter option to list()
+   - Deprecate auxList() and add pattern/regexp filter option to list()
    - Refactored handling of event signals to provide better feedback to clients
    - Removed pointless 'permissions' property from objects returned by ~stat()~
      (same as mode property). Added additional properties describing the type of
-     object. 
+     object.
    - Added the ~removeListener()~ method to compliment the existing ~on()~ method.
-** v2.5.2 
+** v2.5.2
    - Repository transferred to theophilusx
    - Fix error in package.json pointing to wrong repository
 ** v2.5.1
     - Apply 4 pull requests to address minor issues prior to transfer
-    
+
 ** v2.5.0
     - ???
-    
+
 ** v2.4.3
     - merge #108, #110
       - fix connect promise if connection ends
@@ -1061,7 +1061,7 @@ This solution was provided by @jmorino.
 ** v2.4.0
 - Requires node.js v7.5.0 or above.
 - merge pr #97, thanks for @theophilusx
-        - Remove emmitter.maxListener warnings
+        - Remove emitter.maxListener warnings
         - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
         - Enhanced error messages to provide more context and to be more consistent
         - re-factored test
@@ -1097,33 +1097,33 @@ This solution was provided by @jmorino.
 
 Please log an issue for all bugs, questions, feature and enhancement
 requests. Please ensure you include the module version, node version and
-platform. 
+platform.
 
 * Pull Requests
 
 Pull requests are always welcomed. However, please ensure your changes pass all
 tests and if your adding a new feature, that tests for that feature are
 included. Likewise, for new features or enhancements, please include any
-relevant documentation updates. 
+relevant documentation updates.
 
 This module will adopt a standard semantic versioning policy. Please indicate in
 your pull request what level of change it represents i.e.
 
 - Major :: Change to API or major change in functionality which will require an
            increase in major version number.
-- Ninor :: Minor change, enhancement or new feature which does not change
+- Minor :: Minor change, enhancement or new feature which does not change
            existing API and will not break existing client code.
 - Bug Fix :: No change to functionality or features. Simple fix of an existing
-             bug. 
+             bug.
 
-* Contributors 
+* Contributors
 
 This module was initially written by jyu213. On August 23rd, 2019, theophilusx
 took over responsibility for maintaining this module. A number of other people
 have contributed to this module, but until now, this was not tracked. My
-intention is to credit anyone who contributes going forward. 
+intention is to credit anyone who contributes going forward.
 
 - jyu213 :: Original author
-- theophilusx :: Current maintainer 
+- theophilusx :: Current maintainer
 - henrytk :: Documentation fix
 
