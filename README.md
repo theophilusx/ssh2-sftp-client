@@ -1,65 +1,65 @@
 
 # Table of Contents
 
-1.  [SSH2 SFTP Client](#org2ff92dd)
-2.  [Installation](#org101da24)
-3.  [Basic Usage](#orge0baaf0)
-4.  [Breaking Changes in Version 4.x](#org1450b73)
-5.  [Enhancements in Version 4.2.x](#org0da6002)
-6.  [Enhancements in Version 4.1.x](#org436dffc)
-7.  [Documentation](#org627f927)
-    1.  [Methods](#org2e64c16)
-        1.  [new SftpClient(name) ===> SFTP client object](#orga990762)
-        2.  [connect(config) ===> SFTPstream](#orga24c78c)
-        3.  [list(path, pattern) ==> Array[object]](#org62856bf)
-        4.  [exists(path) ==> boolean](#orgf1725d7)
-        5.  [stat(path) ==> object](#orgca82db5)
-        6.  [get(path, dst, options) ==> String|Stream|Buffer](#orgf03d9dc)
-        7.  [fastGet(remotePath, localPath, options) ===> string](#org60015f8)
-        8.  [put(src, remotePath, options) ==> string](#org4c453c1)
-        9.  [fastPut(localPath, remotePath, options) ==> string](#org43ba146)
-        10. [append(input, remotePath, options) ==> string](#orgeb14ec0)
-        11. [mkdir(path, recursive) ==> string](#orge36efb6)
-        12. [rmdir(path, recursive) ==> string](#org4e9756a)
-        13. [delete(path) ==> string](#org5558876)
-        14. [rename(fromPath, toPath) ==> string](#org8d1ae7f)
-        15. [chmod(path, mode) ==> string](#orgd6f506d)
-        16. [realPath(path) ===> string](#orge278e16)
-        17. [cwd() ==> string](#org03d8066)
-        18. [end() ==> boolean](#org48ede29)
-        19. [Add and Remove Listeners](#orgdb4973a)
-8.  [FAQ](#orgd9bd9d8)
-    1.  [Remote server drops connections with only an end event](#org5abb622)
-    2.  [How can you pass writable stream as dst for get method?](#org3e21a0f)
-    3.  [How can I upload files without having to specify a password?](#orgad53a21)
-    4.  [How can I connect through a Socks Proxy](#org89b487a)
-9.  [Change Log](#org74bc7f8)
-    1.  [v4.2.1 (Prod Version)](#org135b786)
-    2.  [v4.2.0](#orgec101e3)
-    3.  [v4.1.0](#org5da0e74)
-    4.  [v4.0.4](#org8266de9)
-    5.  [v4.0.3](#orgef2b0c4)
-    6.  [v4.0.2](#org9e36bec)
-    7.  [v4.0.0](#orge515716)
-    8.  [v2.5.2](#org453ef69)
-    9.  [v2.5.1](#org929e671)
-    10. [v2.5.0](#org09654d5)
-    11. [v2.4.3](#orgc17457a)
-    12. [v2.4.2](#org3708b37)
-    13. [v2.4.1](#org5293271)
-    14. [v2.4.0](#orgaea5aba)
-    15. [v2.3.0](#org65eab1d)
-    16. [v3.0.0 &#x2013; deprecate this version](#orgcb65936)
-    17. [v2.1.1](#org5324914)
-    18. [v2.0.1](#org7238a3b)
-    19. [v1.1.0](#org026a96e)
-    20. [v1.0.5:](#org0e31491)
-10. [Logging Issues](#org4860a8f)
-11. [Pull Requests](#orgffb1857)
-12. [Contributors](#org891dcee)
+1.  [SSH2 SFTP Client](#org41a8638)
+2.  [Installation](#org15678e1)
+3.  [Basic Usage](#org6b1d5c5)
+4.  [Breaking Changes in Version 4.x](#org125c28c)
+5.  [Enhancements in Version 4.2.x](#org4a1a90b)
+6.  [Enhancements in Version 4.1.x](#orgdef98f6)
+7.  [Documentation](#orgfc9300b)
+    1.  [Methods](#orgb7ace47)
+        1.  [new SftpClient(name) ===> SFTP client object](#org1b1479f)
+        2.  [connect(config) ===> SFTPstream](#orgd5d4142)
+        3.  [list(path, pattern) ==> Array[object]](#org9a8a36c)
+        4.  [exists(path) ==> boolean](#orga71ff78)
+        5.  [stat(path) ==> object](#org58db215)
+        6.  [get(path, dst, options) ==> String|Stream|Buffer](#org7f23e75)
+        7.  [fastGet(remotePath, localPath, options) ===> string](#org47cafa6)
+        8.  [put(src, remotePath, options) ==> string](#org2141bca)
+        9.  [fastPut(localPath, remotePath, options) ==> string](#org4df427d)
+        10. [append(input, remotePath, options) ==> string](#orgcda3a57)
+        11. [mkdir(path, recursive) ==> string](#org7dd6990)
+        12. [rmdir(path, recursive) ==> string](#orgbdb68ab)
+        13. [delete(path) ==> string](#orga187138)
+        14. [rename(fromPath, toPath) ==> string](#org28f8692)
+        15. [chmod(path, mode) ==> string](#orgab9ddb7)
+        16. [realPath(path) ===> string](#org0b60f6d)
+        17. [cwd() ==> string](#org61dfdbc)
+        18. [end() ==> boolean](#org5d530a8)
+        19. [Add and Remove Listeners](#org151e402)
+8.  [FAQ](#orgfed9874)
+    1.  [Remote server drops connections with only an end event](#org2ce44f9)
+    2.  [How can you pass writable stream as dst for get method?](#org0b19ad4)
+    3.  [How can I upload files without having to specify a password?](#org8d6d766)
+    4.  [How can I connect through a Socks Proxy](#org19074b6)
+9.  [Change Log](#orgcb69ba6)
+    1.  [v4.2.1 (Prod Version)](#orge10c02d)
+    2.  [v4.2.0](#org6998a15)
+    3.  [v4.1.0](#orgd8e8b16)
+    4.  [v4.0.4](#orgb819f33)
+    5.  [v4.0.3](#org36079a4)
+    6.  [v4.0.2](#org9bc7f41)
+    7.  [v4.0.0](#org000572a)
+    8.  [v2.5.2](#org570b118)
+    9.  [v2.5.1](#org977f516)
+    10. [v2.5.0](#org3354131)
+    11. [v2.4.3](#org4720d99)
+    12. [v2.4.2](#orgfc7cfd0)
+    13. [v2.4.1](#org6bcb3c7)
+    14. [v2.4.0](#orgbe9fa35)
+    15. [v2.3.0](#org11026d8)
+    16. [v3.0.0 &#x2013; deprecate this version](#orgba8d0ef)
+    17. [v2.1.1](#orge4cb2b6)
+    18. [v2.0.1](#org128f12e)
+    19. [v1.1.0](#org70dea3a)
+    20. [v1.0.5:](#org74bed2c)
+10. [Logging Issues](#org7daebd5)
+11. [Pull Requests](#orgee6d252)
+12. [Contributors](#orgb456d51)
 
 
-<a id="org2ff92dd"></a>
+<a id="org41a8638"></a>
 
 # SSH2 SFTP Client
 
@@ -76,20 +76,20 @@ Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
 Node versions < 8.x are not supported.
 
 
-<a id="org101da24"></a>
+<a id="org15678e1"></a>
 
 # Installation
 
     npm install ssh2-sftp-client
 
 
-<a id="orge0baaf0"></a>
+<a id="org6b1d5c5"></a>
 
 # Basic Usage
 
     let Client = require('ssh2-sftp-client');
     let sftp = new Client();
-
+    
     sftp.connect({
       host: '127.0.0.1',
       port: '8080',
@@ -104,7 +104,7 @@ Node versions < 8.x are not supported.
     });
 
 
-<a id="org1450b73"></a>
+<a id="org125c28c"></a>
 
 # Breaking Changes in Version 4.x
 
@@ -132,7 +132,7 @@ There has been minor changes to the API signatures
     `isCharacterDevice`, `isSymbolicLink`, `isFIFO` and `isSocket` have been added.
 
 
-<a id="org0da6002"></a>
+<a id="org4a1a90b"></a>
 
 # Enhancements in Version 4.2.x
 
@@ -151,7 +151,7 @@ There has been minor changes to the API signatures
 -   Added some more examples in the example directory of the repository
 
 
-<a id="org436dffc"></a>
+<a id="orgdef98f6"></a>
 
 # Enhancements in Version 4.1.x
 
@@ -164,7 +164,7 @@ There has been minor changes to the API signatures
     information. Expansion and enhancements of test cases.
 
 
-<a id="org627f927"></a>
+<a id="orgfc9300b"></a>
 
 # Documentation
 
@@ -175,12 +175,12 @@ All the methods will return a Promise, except for `on()` and
 `removeListener()`, which are typically only used in special use cases.
 
 
-<a id="org2e64c16"></a>
+<a id="orgb7ace47"></a>
 
 ## Methods
 
 
-<a id="orga990762"></a>
+<a id="org1b1479f"></a>
 
 ### new SftpClient(name) ===> SFTP client object
 
@@ -195,17 +195,17 @@ client has thrown the error.
 2.  Example Use
 
         'use strict';
-
+        
         const Client = require('ssh2-sftp-client');
-
+        
         const config = {
           host: 'example.com',
           user: 'donald',
           password: 'my-secret'
         };
-
+        
         const sftp = new Client('example-client');
-
+        
         sftp.connect(config)
           .then(() => {
             return sftp.cwd();
@@ -219,7 +219,7 @@ client has thrown the error.
           });
 
 
-<a id="orga24c78c"></a>
+<a id="orgd5d4142"></a>
 
 ### connect(config) ===> SFTPstream
 
@@ -233,14 +233,14 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
     connectivity. Many of the connect options provided by that module are less
     relevant for SFTP connections. It is recommended you keep the config options to
     the minimum needed and stick to the options listed in the `commonOpts` below.
-
+    
     The `retries`, `retry_factor` and `retry_minTimeout` options are not part of the
     SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what
     is used to enable retrying of sftp connection attempts. See the documentation
     for that package for an explanation of these values.
-
+    
         // common options
-
+        
         let commonOpts {
           host: 'localhost', // string Hostname or IP of server.
           port: 22, // Port number of the server.
@@ -259,9 +259,9 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
           retry_factor: 2 // integer. Time factor used to calculate time between retries
           retry_minTimeout: 2000 // integer. Minimum timeout between attempts
         };
-
+        
         // rarely used options
-
+        
         let advancedOpts {
           localAddress,
           localPort,
@@ -289,7 +289,7 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
         });
 
 
-<a id="org62856bf"></a>
+<a id="org9a8a36c"></a>
 
 ### list(path, pattern) ==> Array[object]
 
@@ -305,16 +305,16 @@ directory.
 1.  Example Use
 
         const Client = require('ssh2-sftp-client');
-
+        
         const config = {
           host: 'example.com',
           port: 22,
           username: 'red-don',
           password: 'my-secret'
         };
-
+        
         let sftp = new Client;
-
+        
         sftp.connect(config)
           .then(() => {
             return sftp.list('/path/to/remote/dir');
@@ -332,7 +332,7 @@ directory.
 2.  Return Objects
 
     The objects in the array returned by `list()` have the following properties;
-
+    
         {
           type: // file type(-, d, l)
           name: // file name
@@ -352,17 +352,17 @@ directory.
 
     The filter options can be a regular expression (most powerful option) or a
     simple *glob*-like string where \* will match any number of characters, e.g.
-
+    
         foo* => foo, foobar, foobaz
         *bar => bar, foobar, tabbar
         *oo* => foo, foobar, look, book
-
+    
     The *glob*-style matching is very simple. In most cases, you are best off using
     a real regular expression which will allow you to do more powerful matching and
     anchor matches to the beginning/end of the string etc.
 
 
-<a id="orgf1725d7"></a>
+<a id="orga71ff78"></a>
 
 ### exists(path) ==> boolean
 
@@ -372,16 +372,16 @@ if it exists or false if it does not.
 1.  Example Use
 
         const Client = require('ssh2-sftp-client');
-
+        
         const config = {
           host: 'example.com',
           port: 22,
           username: 'red-don',
           password: 'my-secret'
         };
-
+        
         let sftp = new Client;
-
+        
         sftp.connect(config)
           .then(() => {
             return sftp.exists('/path/to/remote/dir');
@@ -397,7 +397,7 @@ if it exists or false if it does not.
           });
 
 
-<a id="orgca82db5"></a>
+<a id="org58db215"></a>
 
 ### stat(path) ==> object
 
@@ -408,7 +408,7 @@ Returns the attributes associated with the object pointed to by `path`.
 1.  Attributes
 
     The `stat()` method returns an object with the following properties;
-
+    
         let stats = {
           mode: 33279, // integer representing type and permissions
           uid: 1000, // user ID
@@ -428,7 +428,7 @@ Returns the attributes associated with the object pointed to by `path`.
 2.  Example Use
 
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.stat('/path/to/remote/file');
@@ -444,7 +444,7 @@ Returns the attributes associated with the object pointed to by `path`.
           });
 
 
-<a id="orgf03d9dc"></a>
+<a id="org7f23e75"></a>
 
 ### get(path, dst, options) ==> String|Stream|Buffer
 
@@ -468,14 +468,14 @@ probably better off using the `fastGet()` method.
 
     The options object can be used to pass options to the underlying readStream used
     to read the data from the remote server.
-
+    
         { flags: 'r',
           encoding: null,
           handle: null,
           mode: 0o666,
           autoClose: true
         }
-
+    
     Most of the time, you won't want to use any options. Sometimes, it may be useful
     to set the encoding. For example, to 'utf-8'. However, it is important not to do
     this for binary files to avoid data corruption.
@@ -483,10 +483,10 @@ probably better off using the `fastGet()` method.
 2.  Example Use
 
         let client = new Client();
-
+        
         let remotePath = '/remote/server/path/file.txt';
         let dst = fs.createWriteStream('/local/file/path/copy.txt');
-
+        
         client.connect(config)
           .then(() => {
             return client.get(remotePath, dst);
@@ -497,14 +497,14 @@ probably better off using the `fastGet()` method.
           .catch(err => {
             console.error(err.message);
           });
-
+    
     -   **Tip:** See examples file in the Git repository for more examples. You can pass
         any writeable stream in as the destination. For example, if you pass in
         `zlib.createGunzip()` writeable stream, you can both download and
         decompress a gzip file 'on the fly'.
 
 
-<a id="org60015f8"></a>
+<a id="org47cafa6"></a>
 
 ### fastGet(remotePath, localPath, options) ===> string
 
@@ -525,7 +525,7 @@ throughput. This is the simplest method if you just want to download a file.
           step: function(total_transferred, chunk, total) // callback called each time a
            // chunk is transferred
         }
-
+    
     -   **Warning:** Some servers do not respond correctly to requests to alter chunk
         size. This can result in lost or corrupted data.
 
@@ -534,7 +534,7 @@ throughput. This is the simplest method if you just want to download a file.
         let client = new Client();
         let remotePath = '/server/path/file.txt';
         let localPath = '/local/path/file.txt';
-
+        
         client.connect(config)
           .then(() => {
             client.fastGet(remotePath, localPath);
@@ -547,7 +547,7 @@ throughput. This is the simplest method if you just want to download a file.
           });
 
 
-<a id="org4c453c1"></a>
+<a id="org2141bca"></a>
 
 ### put(src, remotePath, options) ==> string
 
@@ -566,14 +566,14 @@ stream are piped to the `remotePath` on the server.
 1.  Options
 
     The following options are supported;
-
+    
         {
           flags: 'w',  // w - write and a - append
           encoding: null, // use null for binary files
           mode: 0o666, // mode to use for created file (rwx)
           autoClose: true // automatically close the write stream when finished
         }
-
+    
     The most common options to use are mode and encoding. The values shown above are
     the defaults. You do not have to set encoding to utf-8 for text files, null is
     fine for all file types. However, using utf-8 encoding for binary files will
@@ -582,10 +582,10 @@ stream are piped to the `remotePath` on the server.
 2.  Example Use
 
         let client = new Client();
-
+        
         let data = fs.createReadStream('/path/to/local/file.txt');
         let remote = '/path/to/remote/file.txt';
-
+        
         client.connect(config)
           .then(() => {
             return client.put(data, remote);
@@ -596,11 +596,11 @@ stream are piped to the `remotePath` on the server.
           .catch(err => {
             console.error(err.message);
           });
-
+    
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
 
-<a id="org43ba146"></a>
+<a id="org4df427d"></a>
 
 ### fastPut(localPath, remotePath, options) ==> string
 
@@ -620,7 +620,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           step: function(total_transferred, chunk, total) // function. Called every time
           // a part of a file was transferred
         }
-
+    
     -   **Warning:** There have been reports that some SFTP servers will not honour
         requests for non-default chunk sizes. This can result in data loss
         or corruption.
@@ -630,7 +630,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
         let localFile = '/path/to/file.txt';
         let remoteFile = '/path/to/remote/file.txt';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             client.fastPut(localFile, remoteFile);
@@ -643,7 +643,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           });
 
 
-<a id="orgeb14ec0"></a>
+<a id="orgcda3a57"></a>
 
 ### append(input, remotePath, options) ==> string
 
@@ -659,14 +659,14 @@ in to the file.
 1.  Options
 
     The following options are supported;
-
+    
         {
           flags: 'a',  // w - write and a - append
           encoding: null, // use null for binary files
           mode: 0o666, // mode to use for created file (rwx)
           autoClose: true // automatically close the write stream when finished
         }
-
+    
     The most common options to use are mode and encoding. The values shown above are
     the defaults. You do not have to set encoding to utf-8 for text files, null is
     fine for all file types. Generally, I would not attempt to append binary files.
@@ -675,7 +675,7 @@ in to the file.
 
         let remotePath = '/path/to/remote/file.txt';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.append(Buffer.from('Hello world'), remotePath);
@@ -688,7 +688,7 @@ in to the file.
           });
 
 
-<a id="orge36efb6"></a>
+<a id="org7dd6990"></a>
 
 ### mkdir(path, recursive) ==> string
 
@@ -704,7 +704,7 @@ defaults to false.
 
         let remoteDir = '/path/to/new/dir';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.mkdir(remoteDir, true);
@@ -717,7 +717,7 @@ defaults to false.
           });
 
 
-<a id="org4e9756a"></a>
+<a id="orgbdb68ab"></a>
 
 ### rmdir(path, recursive) ==> string
 
@@ -734,7 +734,7 @@ action will fail.
 
         let remoteDir = '/path/to/remote/dir';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.rmdir(remoteDir, true);
@@ -747,7 +747,7 @@ action will fail.
           });
 
 
-<a id="org5558876"></a>
+<a id="orga187138"></a>
 
 ### delete(path) ==> string
 
@@ -759,7 +759,7 @@ Delete a file on the remote server.
 
         let remoteFile = '/path/to/remote/file.txt';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.delete(remoteFile);
@@ -772,7 +772,7 @@ Delete a file on the remote server.
           });
 
 
-<a id="org8d1ae7f"></a>
+<a id="org28f8692"></a>
 
 ### rename(fromPath, toPath) ==> string
 
@@ -784,7 +784,7 @@ necessary permissions to modify the remote file.
         let from = '/remote/path/to/old.txt';
         let to = '/remote/path/to/new.txt';
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.rename(from, to);
@@ -797,7 +797,7 @@ necessary permissions to modify the remote file.
           });
 
 
-<a id="orgd6f506d"></a>
+<a id="orgab9ddb7"></a>
 
 ### chmod(path, mode) ==> string
 
@@ -812,7 +812,7 @@ directory.
         let path = '/path/to/remote/file.txt';
         let ndwMode = 0o644;  // rw-r-r
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             return client.chmod(path, newMode);
@@ -825,7 +825,7 @@ directory.
           });
 
 
-<a id="orge278e16"></a>
+<a id="org0b60f6d"></a>
 
 ### realPath(path) ===> string
 
@@ -835,14 +835,14 @@ is mainly used internally to resolve remote path names.
 -   **path:** A file path, either relative or absolute
 
 
-<a id="org03d8066"></a>
+<a id="org61dfdbc"></a>
 
 ### cwd() ==> string
 
 Returns what the server believes is the current remote working directory.
 
 
-<a id="org48ede29"></a>
+<a id="org5d530a8"></a>
 
 ### end() ==> boolean
 
@@ -852,7 +852,7 @@ resources. This function also removes all listeners associated with the client.
 1.  Example Use
 
         let client = new Client();
-
+        
         client.connect(config)
           .then(() => {
             // do some sftp stuff
@@ -865,7 +865,7 @@ resources. This function also removes all listeners associated with the client.
           });
 
 
-<a id="orgdb4973a"></a>
+<a id="org151e402"></a>
 
 ### Add and Remove Listeners
 
@@ -891,12 +891,12 @@ them have any meaning in the context of SFTP. These are
     the `end()` method automatically removes all listeners from the client object.
 
 
-<a id="orgd9bd9d8"></a>
+<a id="orgfed9874"></a>
 
 # FAQ
 
 
-<a id="org5abb622"></a>
+<a id="org2ce44f9"></a>
 
 ## Remote server drops connections with only an end event
 
@@ -926,7 +926,7 @@ that the 1st connection has completed authentication before the 11th connection
 is attempted.
 
 
-<a id="org3e21a0f"></a>
+<a id="org0b19ad4"></a>
 
 ## How can you pass writable stream as dst for get method?
 
@@ -942,32 +942,32 @@ gunzip stream from `zlib`, enabling you to decompress remote zipped files as you
 bring them across before saving to local file system.
 
     'use strict';
-
+    
     // Example of using a writeable with get to retrieve a file.
     // This code will read the remote file, convert all characters to upper case
     // and then save it to a local file
-
+    
     const Client = require('../src/index.js');
     const path = require('path');
     const fs = require('fs');
     const through = require('through2');
-
+    
     const config = {
       host: 'arch-vbox',
       port: 22,
       username: 'tim',
       password: 'xxxx'
     };
-
+    
     const sftp = new Client();
     const remoteDir = '/home/tim/testServer';
-
+    
     function toupper() {
       return through(function(buf, enc, next) {
         next(null, buf.toString().toUpperCase());
       });
     }
-
+    
     sftp
       .connect(config)
       .then(() => {
@@ -990,7 +990,7 @@ bring them across before saving to local file system.
       });
 
 
-<a id="orgad53a21"></a>
+<a id="org8d6d766"></a>
 
 ## How can I upload files without having to specify a password?
 
@@ -1025,7 +1025,7 @@ configuration.
     }
 
 
-<a id="org89b487a"></a>
+<a id="org19074b6"></a>
 
 ## How can I connect through a Socks Proxy
 
@@ -1033,10 +1033,10 @@ This solution was provided by @jmorino.
 
     import { SocksClient } from 'socks';
     import SFTPClient from 'ssh2-sftp-client';
-
+    
     const host = 'my-sftp-server.net';
     const port = 22; // default SSH/SFTP port on remote server
-
+    
     // connect to SOCKS 5 proxy
     const { socket } = await SocksClient.createConnection({
       proxy: {
@@ -1047,7 +1047,7 @@ This solution was provided by @jmorino.
       command: 'connect',
       destination: { host, port } // the remote SFTP server
     });
-
+    
     const client = new SFTPClient();
     client.connect({
       host,
@@ -1055,17 +1055,17 @@ This solution was provided by @jmorino.
       username: '.....',
       privateKey: '.....'
     })
-
-
+    
+    
     // client is connected
 
 
-<a id="org74bc7f8"></a>
+<a id="orgcb69ba6"></a>
 
 # Change Log
 
 
-<a id="org135b786"></a>
+<a id="orge10c02d"></a>
 
 ## v4.2.1 (Prod Version)
 
@@ -1079,7 +1079,7 @@ This solution was provided by @jmorino.
     debugging
 
 
-<a id="orgec101e3"></a>
+<a id="org6998a15"></a>
 
 ## v4.2.0
 
@@ -1090,7 +1090,7 @@ This solution was provided by @jmorino.
 -   Added additional examples in `example` directory
 
 
-<a id="org5da0e74"></a>
+<a id="orgd8e8b16"></a>
 
 ## v4.1.0
 
@@ -1107,7 +1107,7 @@ This solution was provided by @jmorino.
 -   Add `cwd()` method
 
 
-<a id="org8266de9"></a>
+<a id="orgb819f33"></a>
 
 ## v4.0.4
 
@@ -1115,7 +1115,7 @@ This solution was provided by @jmorino.
 -   Fix return value from `get()`
 
 
-<a id="orgef2b0c4"></a>
+<a id="org36079a4"></a>
 
 ## v4.0.3
 
@@ -1123,14 +1123,14 @@ This solution was provided by @jmorino.
 -   Modify exists() to always return 'd' if path is '.'
 
 
-<a id="org9e36bec"></a>
+<a id="org9bc7f41"></a>
 
 ## v4.0.2
 
 -   Fix some minor packaging issues
 
 
-<a id="orge515716"></a>
+<a id="org000572a"></a>
 
 ## v4.0.0
 
@@ -1148,7 +1148,7 @@ This solution was provided by @jmorino.
 -   Added the `removeListener()` method to compliment the existing `on()` method.
 
 
-<a id="org453ef69"></a>
+<a id="org570b118"></a>
 
 ## v2.5.2
 
@@ -1156,21 +1156,21 @@ This solution was provided by @jmorino.
 -   Fix error in package.json pointing to wrong repository
 
 
-<a id="org929e671"></a>
+<a id="org977f516"></a>
 
 ## v2.5.1
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
 
-<a id="org09654d5"></a>
+<a id="org3354131"></a>
 
 ## v2.5.0
 
 -   ???
 
 
-<a id="orgc17457a"></a>
+<a id="org4720d99"></a>
 
 ## v2.4.3
 
@@ -1178,7 +1178,7 @@ This solution was provided by @jmorino.
     -   fix connect promise if connection ends
 
 
-<a id="org3708b37"></a>
+<a id="orgfc7cfd0"></a>
 
 ## v2.4.2
 
@@ -1186,7 +1186,7 @@ This solution was provided by @jmorino.
     -   fix windows path
 
 
-<a id="org5293271"></a>
+<a id="org6bcb3c7"></a>
 
 ## v2.4.1
 
@@ -1194,7 +1194,7 @@ This solution was provided by @jmorino.
     -   bug fix
 
 
-<a id="orgaea5aba"></a>
+<a id="orgbe9fa35"></a>
 
 ## v2.4.0
 
@@ -1207,7 +1207,7 @@ This solution was provided by @jmorino.
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
 
-<a id="org65eab1d"></a>
+<a id="org11026d8"></a>
 
 ## v2.3.0
 
@@ -1216,7 +1216,7 @@ This solution was provided by @jmorino.
 -   fix: \`mkdir\` file exists decision logic
 
 
-<a id="orgcb65936"></a>
+<a id="orgba8d0ef"></a>
 
 ## v3.0.0 &#x2013; deprecate this version
 
@@ -1224,7 +1224,7 @@ This solution was provided by @jmorino.
 -   fix: get readable not emitting data events in node 10.0.0
 
 
-<a id="org5324914"></a>
+<a id="orge4cb2b6"></a>
 
 ## v2.1.1
 
@@ -1232,7 +1232,7 @@ This solution was provided by @jmorino.
 -   add: \`get\` or \`put\` method add extra options [pr#52](<https://github.com/jyu213/ssh2-sftp-client/pull/52>)
 
 
-<a id="org7238a3b"></a>
+<a id="org128f12e"></a>
 
 ## v2.0.1
 
@@ -1242,14 +1242,14 @@ This solution was provided by @jmorino.
 -   fix: return Error object on promise rejection [pr#20](<https://github.com/jyu213/ssh2-sftp-client/pull/20>)
 
 
-<a id="org026a96e"></a>
+<a id="org70dea3a"></a>
 
 ## v1.1.0
 
 -   fix: add encoding control support for binary stream
 
 
-<a id="org0e31491"></a>
+<a id="org74bed2c"></a>
 
 ## v1.0.5:
 
@@ -1257,7 +1257,7 @@ This solution was provided by @jmorino.
 -   change: remove \`this.client.sftp\` to \`connect\` function
 
 
-<a id="org4860a8f"></a>
+<a id="org7daebd5"></a>
 
 # Logging Issues
 
@@ -1266,7 +1266,7 @@ requests. Please ensure you include the module version, node version and
 platform.
 
 
-<a id="orgffb1857"></a>
+<a id="orgee6d252"></a>
 
 # Pull Requests
 
@@ -1286,7 +1286,7 @@ your pull request what level of change it represents i.e.
     bug.
 
 
-<a id="org891dcee"></a>
+<a id="orgb456d51"></a>
 
 # Contributors
 
@@ -1298,3 +1298,4 @@ intention is to credit anyone who contributes going forward.
 -   **jyu213:** Original author
 -   **theophilusx:** Current maintainer
 -   **henrytk:** Documentation fix
+
