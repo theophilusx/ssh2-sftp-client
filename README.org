@@ -1126,4 +1126,5 @@ intention is to credit anyone who contributes going forward.
 - jyu213 :: Original author
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
+- waldyrious :: Documentation fixes 
 
