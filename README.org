@@ -115,7 +115,7 @@ client has thrown the error.
 
   const config = {
     host: 'example.com',
-    user: 'donald',
+    username: 'donald',
     password: 'my-secret'
   };
 
@@ -394,7 +394,8 @@ The options object can be used to pass options to the underlying readStream used
 to read the data from the remote server.
 
 #+begin_src js2
-  { flags: 'r',
+  {
+    flags: 'r',
     encoding: null,
     handle: null,
     mode: 0o666,
@@ -451,7 +452,7 @@ throughput. This is the simplest method if you just want to download a file.
     concurrency: 64, // integer. Number of concurrent reads to use
     chunkSize: 32768, // integer. Size of each read in bytes
     step: function(total_transferred, chunk, total) // callback called each time a
-     // chunk is transferred
+                                                    // chunk is transferred
   }
 #+end_src
 
@@ -931,7 +932,7 @@ ssh-agent as part of the login session.
     username: 'YOUR-USERNAME',
     agent: process.env.SSH_AUTH_SOCK
   }).then(() => {
-    sftp.fastPut(....)
+    sftp.fastPut(/* ... */)
   }
 
 #+end_src
@@ -947,7 +948,7 @@ configuration.
     username: 'YOUR-USERNAME',
     privateKey: fs.readFileSync('/path/to/ssh/key')
   }).then(() => {
-    sftp.fastPut(.....)
+    sftp.fastPut(/* ... */)
   }
 
 #+end_src
@@ -981,7 +982,6 @@ This solution was provided by @jmorino.
     username: '.....',
     privateKey: '.....'
   })
-
 
   // client is connected
 #+end_src
