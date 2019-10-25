@@ -7,10 +7,10 @@ const chaiAsPromised = require('chai-as-promised');
 const {
   config,
   getConnection,
-  closeConnection
+  closeConnection,
+  makeRemotePath
 } = require('./hooks/global-hooks');
 const {existSetup, existCleanup} = require('./hooks/exist-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
