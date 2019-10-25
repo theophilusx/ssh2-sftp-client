@@ -32,7 +32,7 @@ describe('Path tests', function() {
   });
 
   after('Exist test cleanup hook', async function() {
-    //await pathCleanup(hookSftp, config.sftpUrl);
+    await pathCleanup(hookSftp, config.sftpUrl);
     await closeConnection('path', sftp);
     await closeConnection('path-hook', hookSftp);
     return true;
