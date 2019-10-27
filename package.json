@@ -34,8 +34,8 @@
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
-    "dotenv": "^8.1.0",
-    "mocha": "^6.2.0",
+    "dotenv": "^8.2.0",
+    "mocha": "^6.2.2",
     "through2": "^3.0.1"
   }
 }
