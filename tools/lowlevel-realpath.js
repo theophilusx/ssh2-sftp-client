@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const dotenvPath = __dirname + '/../.env';
