@@ -9,7 +9,9 @@
 // Put credentials in .env file in repo root and then call the script with
 // 2 args src and dst. Script will upload src to dst on remote server.
 
-const dotenvPath = __dirname + '/../.env';
+const path = require('path');
+
+const dotenvPath = path.join(__dirname, '..', '.env');
 
 console.log(`env path: ${dotenvPath}`);
 

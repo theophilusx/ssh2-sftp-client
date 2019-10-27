@@ -2,7 +2,9 @@
 
 // sample mkdir use
 
-const dotenvPath = __dirname + '/../.env';
+const path = require('path');
+
+const dotenvPath = path.join(__dirname, '..', '.env');
 
 require('dotenv').config({path: dotenvPath});
 
