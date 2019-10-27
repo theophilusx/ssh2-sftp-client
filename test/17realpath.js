@@ -54,7 +54,7 @@ describe('Path tests', function() {
     return expect(config.sftpUrl.startsWith(absPath)).to.equal(true);
   });
 
-  it('Resolve "./testServer" relative path', function() {
+  it('Resolve "./testServer/" relative path', function() {
     return expect(sftp.realPath('./testServer')).to.eventually.equal(
       config.sftpUrl
     );
