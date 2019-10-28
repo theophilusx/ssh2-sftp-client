@@ -36,7 +36,6 @@ npm install ssh2-sftp-client
   }).catch(err => {
     console.log(err, 'catch error');
   });
-
 #+end_src
 
 * Breaking Changes in Version 4.x
@@ -65,6 +64,7 @@ There has been minor changes to the API signatures
   ~isCharacterDevice~, ~isSymbolicLink~, ~isFIFO~ and ~isSocket~ have been added.
 
 * Enhancements in Version 4.2.x
+
   - Added ability to set a client name in ~Client()~ constructor. This can be
     useful when creating multiple clients as the client name will be displayed
     in error messages, providing a clue as to which client has failed.
@@ -78,7 +78,9 @@ There has been minor changes to the API signatures
     server. However, some methods, such as ~fastPut()~ and ~fastGet()~ will use
     concurrency to speed up the transfer of data.
   - Added some more examples in the example directory of the repository
+
 * Enhancements in Version 4.1.x
+
   - Some of the data upload/download methods would create an empty destination
     file when the source file did not exist. This has now been fixed.
   - Handling of relative path names was weak and inconsistent. This has now been
@@ -86,6 +88,7 @@ There has been minor changes to the API signatures
     have been added
   - More error checking and provision of error messages with more meaningful
     information. Expansion and enhancements of test cases.
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -132,7 +135,6 @@ client has thrown the error.
     .catch(err => {
       console.log(`Error: ${err.message}`); // error message will include 'example-client'
     });
-
 #+end_src
 
 *** connect(config) ===> SFTPstream
@@ -193,7 +195,6 @@ for that package for an explanation of these values.
     algorithms,
     compress
   };
-
 #+end_src
 
 **** Example Use
@@ -205,7 +206,6 @@ for that package for an explanation of these values.
     username: 'donald',
     password: 'youarefired'
   });
-
 #+end_src
 
 *** list(path, pattern) ==> Array[object]
@@ -246,7 +246,6 @@ directory.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 **** Return Objects
@@ -268,7 +267,6 @@ The objects in the array returned by ~list()~ have the following properties;
     owner: // user ID
     group: // group ID
   }
-
 #+end_src
 
 **** Pattern Filter
@@ -318,7 +316,6 @@ if it exists or false if it does not.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** stat(path) ==> object
@@ -347,8 +344,8 @@ The ~stat()~ method returns an object with the following properties;
     isFIFO: false, // true if object is a FIFO
     isSocket: false // true if object is a socket
   };
-
 #+end_src
+
 **** Example Use
 
 #+begin_src js2
@@ -367,7 +364,6 @@ The ~stat()~ method returns an object with the following properties;
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** get(path, dst, options) ==> String|Stream|Buffer
@@ -401,7 +397,6 @@ to read the data from the remote server.
     mode: 0o666,
     autoClose: true
   }
-
 #+end_src
 
 Most of the time, you won't want to use any options. Sometimes, it may be useful
@@ -426,7 +421,6 @@ this for binary files to avoid data corruption.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 - Tip :: See examples file in the Git repository for more examples. You can pass
@@ -476,7 +470,6 @@ throughput. This is the simplest method if you just want to download a file.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** put(src, remotePath, options) ==> string
@@ -504,7 +497,6 @@ The following options are supported;
     mode: 0o666, // mode to use for created file (rwx)
     autoClose: true // automatically close the write stream when finished
   }
-
 #+end_src
 
 The most common options to use are mode and encoding. The values shown above are
@@ -530,7 +522,6 @@ often result in data corruption.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 - Tip :: If the src argument is a path string, consider just using ~fastPut()~.
@@ -554,7 +545,6 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     step: function(total_transferred, chunk, total) // function. Called every time
     // a part of a file was transferred
   }
-
 #+end_src
 
 - Warning :: There have been reports that some SFTP servers will not honour
@@ -578,7 +568,6 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** append(input, remotePath, options) ==> string
@@ -603,7 +592,6 @@ The following options are supported;
     mode: 0o666, // mode to use for created file (rwx)
     autoClose: true // automatically close the write stream when finished
   }
-
 #+end_src
 
 The most common options to use are mode and encoding. The values shown above are
@@ -626,7 +614,6 @@ fine for all file types. Generally, I would not attempt to append binary files.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** mkdir(path, recursive) ==> string
@@ -655,7 +642,6 @@ defaults to false.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** rmdir(path, recursive) ==> string
@@ -685,7 +671,6 @@ action will fail.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** delete(path) ==> string
@@ -710,7 +695,6 @@ Delete a file on the remote server.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** rename(fromPath, toPath) ==> string
@@ -735,7 +719,6 @@ necessary permissions to modify the remote file.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** chmod(path, mode) ==> string
@@ -763,7 +746,6 @@ directory.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** realPath(path) ===> string
@@ -797,7 +779,6 @@ resources. This function also removes all listeners associated with the client.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** Add and Remove Listeners
@@ -824,6 +805,7 @@ Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object.
 
 * FAQ
+
 ** Remote server drops connections with only an end event
 
 Many SFTP servers have rate limiting protection which will drop connections once
@@ -912,7 +894,6 @@ bring them across before saving to local file system.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 ** How can I upload files without having to specify a password?
@@ -934,7 +915,6 @@ ssh-agent as part of the login session.
   }).then(() => {
     sftp.fastPut(/* ... */)
   }
-
 #+end_src
 
 Another alternative is to just pass in the SSH key directly as part of the
@@ -950,7 +930,6 @@ configuration.
   }).then(() => {
     sftp.fastPut(/* ... */)
   }
-
 #+end_src
 
 ** How can I connect through a Socks Proxy
@@ -987,11 +966,12 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+
 ** v4.2.2 (Prod Version)
    - Minor documentation fixes
    - Added additional examples in the ~example~ directory
 
-** v4.2.1 
+** v4.2.1
    - Remove default close listener. changes in ssh2 API removed the utility of a
      default close listener
    - Fix path handling. Under mixed environments (where client platform and
@@ -1007,6 +987,7 @@ This solution was provided by @jmorino.
    - Added additional error checking to prevent ~connect()~ being called on
      already connected client
    - Added additional examples in =example= directory
+
 ** v4.1.0
    - move ~end()~ call to resolve into close hook
    - Prevent ~put()~ and ~get()~ from creating empty files in destination when
@@ -1023,11 +1004,14 @@ This solution was provided by @jmorino.
 ** v4.0.4
    - Minor documentation fix
    - Fix return value from ~get()~
+
 ** v4.0.3
   - Fix bug in mkdir() relating to handling of relative paths
   - Modify exists() to always return 'd' if path is '.'
+
 ** v4.0.2
   - Fix some minor packaging issues
+
 ** v4.0.0
    - Remove support for node < 8.x
    - Fix connection retry feature
@@ -1041,9 +1025,11 @@ This solution was provided by @jmorino.
      (same as mode property). Added additional properties describing the type of
      object.
    - Added the ~removeListener()~ method to compliment the existing ~on()~ method.
+
 ** v2.5.2
    - Repository transferred to theophilusx
    - Fix error in package.json pointing to wrong repository
+
 ** v2.5.1
     - Apply 4 pull requests to address minor issues prior to transfer
 
@@ -1130,5 +1116,5 @@ intention is to credit anyone who contributes going forward.
 - jyu213 :: Original author
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
-- waldyrious :: Documentation fixes 
+- waldyrious :: Documentation fixes
 
