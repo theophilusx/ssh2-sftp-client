@@ -994,9 +994,9 @@ This solution was provided by @jmorino.
      unable to read source
    - Expand tests for operations when lacking required permissions
    - Add additional data checks for ~append()~
-       - Verify file exists
-       - Verify file is writeable
-       - Verify file is a regular file
+     - Verify file exists
+     - Verify file is writeable
+     - Verify file is a regular file
    - Fix handling of relative paths
    - Add ~realPath()~ method
    - Add ~cwd()~ method
@@ -1006,11 +1006,11 @@ This solution was provided by @jmorino.
    - Fix return value from ~get()~
 
 ** v4.0.3
-  - Fix bug in mkdir() relating to handling of relative paths
-  - Modify exists() to always return 'd' if path is '.'
+   - Fix bug in mkdir() relating to handling of relative paths
+   - Modify exists() to always return 'd' if path is '.'
 
 ** v4.0.2
-  - Fix some minor packaging issues
+   - Fix some minor packaging issues
 
 ** v4.0.0
    - Remove support for node < 8.x
@@ -1031,57 +1031,57 @@ This solution was provided by @jmorino.
    - Fix error in package.json pointing to wrong repository
 
 ** v2.5.1
-    - Apply 4 pull requests to address minor issues prior to transfer
+   - Apply 4 pull requests to address minor issues prior to transfer
 
 ** v2.5.0
-    - ???
+   - ???
 
 ** v2.4.3
-    - merge #108, #110
-      - fix connect promise if connection ends
+   - merge #108, #110
+     - fix connect promise if connection ends
 
 ** v2.4.2
-    - merge #105
-      - fix windows path
+   - merge #105
+     - fix windows path
 
 ** v2.4.1
-    - merge pr #99, #100
-      - bug fix
+   - merge pr #99, #100
+     - bug fix
 
 ** v2.4.0
-- Requires node.js v7.5.0 or above.
-- merge pr #97, thanks for @theophilusx
-        - Remove emitter.maxListener warnings
-        - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
-        - Enhanced error messages to provide more context and to be more consistent
-        - re-factored test
-        - Added new 'exists' method and re-factored mkdir/rmdir
+   - Requires node.js v7.5.0 or above.
+   - merge pr #97, thanks for @theophilusx
+     - Remove emitter.maxListener warnings
+     - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
+     - Enhanced error messages to provide more context and to be more consistent
+     - re-factored test
+     - Added new 'exists' method and re-factored mkdir/rmdir
 
 ** v2.3.0
-- add: `stat` method
-- add `fastGet` and `fastPut` method.
-- fix: `mkdir` file exists decision logic
+   - add: `stat` method
+   - add `fastGet` and `fastPut` method.
+   - fix: `mkdir` file exists decision logic
 
 ** v3.0.0 -- deprecate this version
-- change: `sftp.get` will return chunk not stream anymore
-- fix: get readable not emitting data events in node 10.0.0
+  - change: `sftp.get` will return chunk not stream anymore
+  - fix: get readable not emitting data events in node 10.0.0
 
 ** v2.1.1
-- add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
-- add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
+   - add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
+   - add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
 
 ** v2.0.1
-- add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
-- update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
-- fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
-- fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
+   - add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
+   - update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
+   - fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
+   - fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
 
 ** v1.1.0
-- fix: add encoding control support for binary stream
+   - fix: add encoding control support for binary stream
 
 ** v1.0.5:
-- fix: multi image upload
-- change: remove `this.client.sftp` to `connect` function
+   - fix: multi image upload
+   - change: remove `this.client.sftp` to `connect` function
 
 * Logging Issues
 
