@@ -1058,30 +1058,30 @@ This solution was provided by @jmorino.
      - Added new 'exists' method and re-factored mkdir/rmdir
 
 ** v2.3.0
-   - add: `stat` method
-   - add `fastGet` and `fastPut` method.
-   - fix: `mkdir` file exists decision logic
+   - add: ~stat~ method
+   - add ~fastGet~ and ~fastPut~ method.
+   - fix: ~mkdir~ file exists decision logic
 
 ** v3.0.0 -- deprecate this version
-  - change: `sftp.get` will return chunk not stream anymore
+  - change: ~sftp.get~ will return chunk not stream anymore
   - fix: get readable not emitting data events in node 10.0.0
 
 ** v2.1.1
-   - add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
-   - add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
+   - add: event listener. [[https://github.com/jyu213/ssh2-sftp-client#Event][doc]]
+   - add: ~get~ or ~put~ method add extra options [[https://github.com/jyu213/ssh2-sftp-client/pull/52][pr#52]]
 
 ** v2.0.1
-   - add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
-   - update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
-   - fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
-   - fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
+   - add: ~chmod~ method [[https://github.com/jyu213/ssh2-sftp-client/pull/33][pr#33]]
+   - update: upgrade ssh2 to V0.5.0 [[https://github.com/jyu213/ssh2-sftp-client/pull/30][pr#30]]
+   - fix: get method stream error reject unwork [[https://github.com/jyu213/ssh2-sftp-client/issues/22][#22]]
+   - fix: return Error object on promise rejection [[https://github.com/jyu213/ssh2-sftp-client/pull/20][pr#20]]
 
 ** v1.1.0
    - fix: add encoding control support for binary stream
 
 ** v1.0.5:
    - fix: multi image upload
-   - change: remove `this.client.sftp` to `connect` function
+   - change: remove ~this.client.sftp~ to ~connect~ function
 
 * Logging Issues
 
