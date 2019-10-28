@@ -987,7 +987,11 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
-** v4.2.1 (Prod Version)
+** v4.2.2 (Prod Version)
+   - Minor documentation fixes
+   - Added additional examples in the ~example~ directory
+
+** v4.2.1 
    - Remove default close listener. changes in ssh2 API removed the utility of a
      default close listener
    - Fix path handling. Under mixed environments (where client platform and
