@@ -36,7 +36,6 @@ npm install ssh2-sftp-client
   }).catch(err => {
     console.log(err, 'catch error');
   });
-
 #+end_src
 
 * Breaking Changes in Version 4.x
@@ -65,6 +64,7 @@ There has been minor changes to the API signatures
   ~isCharacterDevice~, ~isSymbolicLink~, ~isFIFO~ and ~isSocket~ have been added.
 
 * Enhancements in Version 4.2.x
+
   - Added ability to set a client name in ~Client()~ constructor. This can be
     useful when creating multiple clients as the client name will be displayed
     in error messages, providing a clue as to which client has failed.
@@ -78,7 +78,9 @@ There has been minor changes to the API signatures
     server. However, some methods, such as ~fastPut()~ and ~fastGet()~ will use
     concurrency to speed up the transfer of data.
   - Added some more examples in the example directory of the repository
+
 * Enhancements in Version 4.1.x
+
   - Some of the data upload/download methods would create an empty destination
     file when the source file did not exist. This has now been fixed.
   - Handling of relative path names was weak and inconsistent. This has now been
@@ -86,6 +88,7 @@ There has been minor changes to the API signatures
     have been added
   - More error checking and provision of error messages with more meaningful
     information. Expansion and enhancements of test cases.
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -108,7 +111,7 @@ client has thrown the error.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   'use strict';
 
   const Client = require('ssh2-sftp-client');
@@ -132,7 +135,6 @@ client has thrown the error.
     .catch(err => {
       console.log(`Error: ${err.message}`); // error message will include 'example-client'
     });
-
 #+end_src
 
 *** connect(config) ===> SFTPstream
@@ -153,7 +155,7 @@ SSH2 module. These are part of the configuration for the [[https://www.npmjs.com
 is used to enable retrying of sftp connection attempts. See the documentation
 for that package for an explanation of these values.
 
-#+begin_src js2
+#+begin_src javascript
   // common options
 
   let commonOpts {
@@ -193,7 +195,6 @@ for that package for an explanation of these values.
     algorithms,
     compress
   };
-
 #+end_src
 
 **** Example Use
@@ -205,7 +206,6 @@ for that package for an explanation of these values.
     username: 'donald',
     password: 'youarefired'
   });
-
 #+end_src
 
 *** list(path, pattern) ==> Array[object]
@@ -221,7 +221,7 @@ directory.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   const Client = require('ssh2-sftp-client');
 
   const config = {
@@ -246,7 +246,6 @@ directory.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 **** Return Objects
@@ -268,7 +267,6 @@ The objects in the array returned by ~list()~ have the following properties;
     owner: // user ID
     group: // group ID
   }
-
 #+end_src
 
 **** Pattern Filter
@@ -293,7 +291,7 @@ if it exists or false if it does not.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   const Client = require('ssh2-sftp-client');
 
   const config = {
@@ -318,7 +316,6 @@ if it exists or false if it does not.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** stat(path) ==> object
@@ -331,7 +328,7 @@ Returns the attributes associated with the object pointed to by ~path~.
 
 The ~stat()~ method returns an object with the following properties;
 
-#+begin_src js2
+#+begin_src javascript
   let stats = {
     mode: 33279, // integer representing type and permissions
     uid: 1000, // user ID
@@ -347,11 +344,11 @@ The ~stat()~ method returns an object with the following properties;
     isFIFO: false, // true if object is a FIFO
     isSocket: false // true if object is a socket
   };
-
 #+end_src
+
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let client = new Client();
 
   client.connect(config)
@@ -367,7 +364,6 @@ The ~stat()~ method returns an object with the following properties;
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** get(path, dst, options) ==> String|Stream|Buffer
@@ -393,7 +389,7 @@ probably better off using the ~fastGet()~ method.
 The options object can be used to pass options to the underlying readStream used
 to read the data from the remote server.
 
-#+begin_src js2
+#+begin_src javascript
   {
     flags: 'r',
     encoding: null,
@@ -401,7 +397,6 @@ to read the data from the remote server.
     mode: 0o666,
     autoClose: true
   }
-
 #+end_src
 
 Most of the time, you won't want to use any options. Sometimes, it may be useful
@@ -426,7 +421,6 @@ this for binary files to avoid data corruption.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 - Tip :: See examples file in the Git repository for more examples. You can pass
@@ -447,7 +441,7 @@ throughput. This is the simplest method if you just want to download a file.
 
 **** Options
 
-#+begin_src js2
+#+begin_src javascript
   {
     concurrency: 64, // integer. Number of concurrent reads to use
     chunkSize: 32768, // integer. Size of each read in bytes
@@ -476,7 +470,6 @@ throughput. This is the simplest method if you just want to download a file.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** put(src, remotePath, options) ==> string
@@ -497,14 +490,13 @@ stream are piped to the ~remotePath~ on the server.
 
 The following options are supported;
 
-#+begin_src js2
+#+begin_src javascript
   {
     flags: 'w',  // w - write and a - append
     encoding: null, // use null for binary files
     mode: 0o666, // mode to use for created file (rwx)
     autoClose: true // automatically close the write stream when finished
   }
-
 #+end_src
 
 The most common options to use are mode and encoding. The values shown above are
@@ -530,7 +522,6 @@ often result in data corruption.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 - Tip :: If the src argument is a path string, consider just using ~fastPut()~.
@@ -546,7 +537,7 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
 
 **** Options
 
-#+begin_src js2
+#+begin_src javascript
   {
     concurrency: 64, // integer. Number of concurrent reads
     chunkSize: 32768, // integer. Size of each read in bytes
@@ -554,7 +545,6 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     step: function(total_transferred, chunk, total) // function. Called every time
     // a part of a file was transferred
   }
-
 #+end_src
 
 - Warning :: There have been reports that some SFTP servers will not honour
@@ -563,7 +553,7 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let localFile = '/path/to/file.txt';
   let remoteFile = '/path/to/remote/file.txt';
   let client = new Client();
@@ -578,7 +568,6 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** append(input, remotePath, options) ==> string
@@ -596,14 +585,13 @@ in to the file.
 
 The following options are supported;
 
-#+begin_src js2
+#+begin_src javascript
   {
     flags: 'a',  // w - write and a - append
     encoding: null, // use null for binary files
     mode: 0o666, // mode to use for created file (rwx)
     autoClose: true // automatically close the write stream when finished
   }
-
 #+end_src
 
 The most common options to use are mode and encoding. The values shown above are
@@ -612,7 +600,7 @@ fine for all file types. Generally, I would not attempt to append binary files.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let remotePath = '/path/to/remote/file.txt';
   let client = new Client();
 
@@ -626,7 +614,6 @@ fine for all file types. Generally, I would not attempt to append binary files.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** mkdir(path, recursive) ==> string
@@ -655,7 +642,6 @@ defaults to false.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** rmdir(path, recursive) ==> string
@@ -671,7 +657,7 @@ action will fail.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let remoteDir = '/path/to/remote/dir';
   let client = new Client();
 
@@ -685,7 +671,6 @@ action will fail.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** delete(path) ==> string
@@ -696,7 +681,7 @@ Delete a file on the remote server.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let remoteFile = '/path/to/remote/file.txt';
   let client = new Client();
 
@@ -710,7 +695,6 @@ Delete a file on the remote server.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** rename(fromPath, toPath) ==> string
@@ -720,7 +704,7 @@ necessary permissions to modify the remote file.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let from = '/remote/path/to/old.txt';
   let to = '/remote/path/to/new.txt';
   let client = new Client();
@@ -735,7 +719,6 @@ necessary permissions to modify the remote file.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** chmod(path, mode) ==> string
@@ -748,7 +731,7 @@ directory.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let path = '/path/to/remote/file.txt';
   let ndwMode = 0o644;  // rw-r-r
   let client = new Client();
@@ -763,7 +746,6 @@ directory.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** realPath(path) ===> string
@@ -784,7 +766,7 @@ resources. This function also removes all listeners associated with the client.
 
 **** Example Use
 
-#+begin_src js2
+#+begin_src javascript
   let client = new Client();
 
   client.connect(config)
@@ -797,7 +779,6 @@ resources. This function also removes all listeners associated with the client.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 *** Add and Remove Listeners
@@ -824,6 +805,7 @@ Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object.
 
 * FAQ
+
 ** Remote server drops connections with only an end event
 
 Many SFTP servers have rate limiting protection which will drop connections once
@@ -912,7 +894,6 @@ bring them across before saving to local file system.
     .catch(err => {
       console.error(err.message);
     });
-
 #+end_src
 
 ** How can I upload files without having to specify a password?
@@ -934,7 +915,6 @@ ssh-agent as part of the login session.
   }).then(() => {
     sftp.fastPut(/* ... */)
   }
-
 #+end_src
 
 Another alternative is to just pass in the SSH key directly as part of the
@@ -950,14 +930,13 @@ configuration.
   }).then(() => {
     sftp.fastPut(/* ... */)
   }
-
 #+end_src
 
 ** How can I connect through a Socks Proxy
 
 This solution was provided by @jmorino.
 
-#+begin_src js2
+#+begin_src javascript
   import { SocksClient } from 'socks';
   import SFTPClient from 'ssh2-sftp-client';
 
@@ -987,11 +966,12 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+
 ** v4.2.2 (Prod Version)
    - Minor documentation fixes
    - Added additional examples in the ~example~ directory
 
-** v4.2.1 
+** v4.2.1
    - Remove default close listener. changes in ssh2 API removed the utility of a
      default close listener
    - Fix path handling. Under mixed environments (where client platform and
@@ -1007,15 +987,16 @@ This solution was provided by @jmorino.
    - Added additional error checking to prevent ~connect()~ being called on
      already connected client
    - Added additional examples in =example= directory
+
 ** v4.1.0
    - move ~end()~ call to resolve into close hook
    - Prevent ~put()~ and ~get()~ from creating empty files in destination when
      unable to read source
    - Expand tests for operations when lacking required permissions
    - Add additional data checks for ~append()~
-       - Verify file exists
-       - Verify file is writeable
-       - Verify file is a regular file
+     - Verify file exists
+     - Verify file is writeable
+     - Verify file is a regular file
    - Fix handling of relative paths
    - Add ~realPath()~ method
    - Add ~cwd()~ method
@@ -1023,11 +1004,14 @@ This solution was provided by @jmorino.
 ** v4.0.4
    - Minor documentation fix
    - Fix return value from ~get()~
+
 ** v4.0.3
-  - Fix bug in mkdir() relating to handling of relative paths
-  - Modify exists() to always return 'd' if path is '.'
+   - Fix bug in mkdir() relating to handling of relative paths
+   - Modify exists() to always return 'd' if path is '.'
+
 ** v4.0.2
-  - Fix some minor packaging issues
+   - Fix some minor packaging issues
+
 ** v4.0.0
    - Remove support for node < 8.x
    - Fix connection retry feature
@@ -1041,61 +1025,63 @@ This solution was provided by @jmorino.
      (same as mode property). Added additional properties describing the type of
      object.
    - Added the ~removeListener()~ method to compliment the existing ~on()~ method.
+
 ** v2.5.2
    - Repository transferred to theophilusx
    - Fix error in package.json pointing to wrong repository
+
 ** v2.5.1
-    - Apply 4 pull requests to address minor issues prior to transfer
+   - Apply 4 pull requests to address minor issues prior to transfer
 
 ** v2.5.0
-    - ???
+   - ???
 
 ** v2.4.3
-    - merge #108, #110
-      - fix connect promise if connection ends
+   - merge #108, #110
+     - fix connect promise if connection ends
 
 ** v2.4.2
-    - merge #105
-      - fix windows path
+   - merge #105
+     - fix windows path
 
 ** v2.4.1
-    - merge pr #99, #100
-      - bug fix
+   - merge pr #99, #100
+     - bug fix
 
 ** v2.4.0
-- Requires node.js v7.5.0 or above.
-- merge pr #97, thanks for @theophilusx
-        - Remove emitter.maxListener warnings
-        - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
-        - Enhanced error messages to provide more context and to be more consistent
-        - re-factored test
-        - Added new 'exists' method and re-factored mkdir/rmdir
+   - Requires node.js v7.5.0 or above.
+   - merge pr #97, thanks for @theophilusx
+     - Remove emitter.maxListener warnings
+     - Upgraded ssh2 dependency from 0.5.5 to 0.6.1
+     - Enhanced error messages to provide more context and to be more consistent
+     - re-factored test
+     - Added new 'exists' method and re-factored mkdir/rmdir
 
 ** v2.3.0
-- add: `stat` method
-- add `fastGet` and `fastPut` method.
-- fix: `mkdir` file exists decision logic
+   - add: ~stat~ method
+   - add ~fastGet~ and ~fastPut~ method.
+   - fix: ~mkdir~ file exists decision logic
 
 ** v3.0.0 -- deprecate this version
-- change: `sftp.get` will return chunk not stream anymore
-- fix: get readable not emitting data events in node 10.0.0
+  - change: ~sftp.get~ will return chunk not stream anymore
+  - fix: get readable not emitting data events in node 10.0.0
 
 ** v2.1.1
-- add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
-- add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
+   - add: event listener. [[https://github.com/jyu213/ssh2-sftp-client#Event][doc]]
+   - add: ~get~ or ~put~ method add extra options [[https://github.com/jyu213/ssh2-sftp-client/pull/52][pr#52]]
 
 ** v2.0.1
-- add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
-- update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
-- fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
-- fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
+   - add: ~chmod~ method [[https://github.com/jyu213/ssh2-sftp-client/pull/33][pr#33]]
+   - update: upgrade ssh2 to V0.5.0 [[https://github.com/jyu213/ssh2-sftp-client/pull/30][pr#30]]
+   - fix: get method stream error reject unwork [[https://github.com/jyu213/ssh2-sftp-client/issues/22][#22]]
+   - fix: return Error object on promise rejection [[https://github.com/jyu213/ssh2-sftp-client/pull/20][pr#20]]
 
 ** v1.1.0
-- fix: add encoding control support for binary stream
+   - fix: add encoding control support for binary stream
 
 ** v1.0.5:
-- fix: multi image upload
-- change: remove `this.client.sftp` to `connect` function
+   - fix: multi image upload
+   - change: remove ~this.client.sftp~ to ~connect~ function
 
 * Logging Issues
 
@@ -1130,5 +1116,5 @@ intention is to credit anyone who contributes going forward.
 - jyu213 :: Original author
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
-- waldyrious :: Documentation fixes 
+- waldyrious :: Documentation fixes
 
