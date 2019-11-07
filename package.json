@@ -1,6 +1,6 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {

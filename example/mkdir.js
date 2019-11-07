@@ -17,7 +17,7 @@ const config = {
   port: process.env.SFTP_PORT || 22
 };
 
-const path = '/tmp/testing/abc1/abc2';
+const targetPath = process.argv[2];
 
 let client = new Client();
 
@@ -25,21 +25,22 @@ client
   .connect(config)
   .then(() => {
     console.log('Connected. Check if dir already exists');
-    return client.exists(path);
+    return client.exists(targetPath);
   })
   .then(alreadyExists => {
     if (alreadyExists) {
-      console.log(`Path ${path} already exists!`);
+      console.log(`Path ${targetPath} already exists!`);
       return false;
     } else {
       console.log('Making directory');
-      return client.mkdir(path, true);
+      return client.mkdir(targetPath, true);
     }
   })
-  .then(rslt => {
-    console.log(`Result: ${rslt}`);
+  .then(() => {
+    console.log('Directory created');
     return client.end();
   })
   .catch(err => {
     console.log(`Error: ${err.message}`);
+    client.end();
   });

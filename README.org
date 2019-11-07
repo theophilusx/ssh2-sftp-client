@@ -966,8 +966,12 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+** v4.2.3 (Prod Version)
+   - Fix bug in ~exist()~ where tests on root directory returned false
+   - Minor documentation fixes
+   - Clean up mkdir example
 
-** v4.2.2 (Prod Version)
+** v4.2.2 
    - Minor documentation fixes
    - Added additional examples in the ~example~ directory
 

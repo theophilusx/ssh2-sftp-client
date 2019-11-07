@@ -201,25 +201,29 @@ SftpClient.prototype._exists = function(path) {
     const sftp = this.sftp;
 
     let {dir, base} = posix.parse(path);
-
-    sftp.readdir(dir, (err, list) => {
-      if (err) {
-        if (err.code === 2) {
-          resolve(false);
+    if (!base) {
+      // at root
+      resolve('d');
+    } else {
+      sftp.readdir(dir, (err, list) => {
+        if (err) {
+          if (err.code === 2) {
+            resolve(false);
+          } else {
+            reject(formatError(err, 'sftp.exists'));
+          }
         } else {
-          reject(formatError(err, 'sftp.exists'));
+          let [type] = list
+            .filter(item => item.filename === base)
+            .map(item => item.longname.substr(0, 1));
+          if (type) {
+            resolve(type);
+          } else {
+            resolve(false);
+          }
         }
-      } else {
-        let [type] = list
-          .filter(item => item.filename === base)
-          .map(item => item.longname.substr(0, 1));
-        if (type) {
-          resolve(type);
-        } else {
-          resolve(false);
-        }
-      }
-    });
+      });
+    }
   });
 };
 
@@ -625,7 +629,6 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
     if (!recursive) {
       return doMkdir(realPath);
     }
-
     let {dir} = posix.parse(realPath);
     let parent = await this.exists(dir);
     if (!parent) {

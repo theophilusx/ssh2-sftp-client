@@ -108,4 +108,16 @@ describe('mkdir() method tests', function() {
       `${config.sftpUrl}/mkdir-def/ghi directory created`
     );
   });
+
+  it('non-recursive mkdir without permission is rejeted', function() {
+    return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
+      /Permission denied/
+    );
+  });
+
+  it('recursive mkdir without permission is rejeted', function() {
+    return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
+      /Permission denied/
+    );
+  });
 });
