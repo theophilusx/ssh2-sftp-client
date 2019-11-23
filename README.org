@@ -369,15 +369,15 @@ The ~stat()~ method returns an object with the following properties;
 *** get(path, dst, options) ==> String|Stream|Buffer
 
 Retrieve a file from a remote SFTP server. The ~dst~ argument defines the
-destination and can be either a string, a writeable stream or undefined. If it
-is a string, it is interpreted as the path to a location on the local file
-system (path should include the file name). If it is a writeable stream, the
-remote data is piped into that stream. If ~dst~ is undefined, the method will
-put the data into a buffer and return that buffer when the Promise is
-resolved. If ~dst~ is defined, it is returned when the Promise is resolved.
+destination and can be either a string, a stream object or undefined. If it is a
+string, it is interpreted as the path to a location on the local file system
+(path should include the file name). If it is a stream object, the remote data
+is passed to it via a call to pipe(). If ~dst~ is undefined, the method will put
+the data into a buffer and return that buffer when the Promise is resolved. If
+~dst~ is defined, it is returned when the Promise is resolved.
 
 In general, if your going to pass in a string as the destination, you are
-probably better off using the ~fastGet()~ method.
+better off using the ~fastGet()~ method.
 
 - path :: String. Path to the remote file to download
 - dst :: String|Stream. Destination for the data. If a string, it
@@ -966,6 +966,10 @@ This solution was provided by @jmorino.
 #+end_src
 
 * Change Log
+** v4.2.4 (Prod Version)
+   - Bumped ssh2 to v0.8.6
+   - Added exists() usage example to examples directory
+   - Clarify documentation on get() method
 ** v4.2.3 (Prod Version)
    - Fix bug in ~exist()~ where tests on root directory returned false
    - Minor documentation fixes
