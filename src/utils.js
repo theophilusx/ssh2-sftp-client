@@ -9,7 +9,12 @@
  *                              attempts to complete before giving up
  * @returns {Error} New error with custom error message
  */
-function formatError(err, name = 'sftp', retryCount) {
+function formatError(
+  err,
+  name = 'sftp',
+  eCode = 'ERR_GENERIC_CLIENT',
+  retryCount
+) {
   let msg = '';
   let code = '';
 
@@ -17,7 +22,7 @@ function formatError(err, name = 'sftp', retryCount) {
 
   if (typeof err === 'string') {
     msg = `${name}: ${err}`;
-    code = 'ERR_GENERIC_CLIENT';
+    code = eCode;
   } else {
     switch (err.code) {
       case 'ENOTFOUND':
@@ -36,7 +41,11 @@ function formatError(err, name = 'sftp', retryCount) {
       default:
         msg = `${name}: ${err.message}`;
     }
-    code = err.code;
+    if (err.code) {
+      code = err.code;
+    } else {
+      code = eCode;
+    }
   }
 
   if (retryCount) {
