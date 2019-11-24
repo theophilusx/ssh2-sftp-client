@@ -784,6 +784,10 @@ SftpClient.prototype.connect = function(config) {
               self.client.removeAllListeners('end');
               self.client.on('end', utils.makeEndListener(self));
               self.client.on('error', utils.makeErrorListener(self.clientName));
+              self.client.on(
+                'uncaughtException',
+                utils.makeErrorListener(self.clientName)
+              );
               callback(null, sftp);
             });
           })
