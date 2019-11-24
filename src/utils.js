@@ -11,11 +11,13 @@
  */
 function formatError(err, name = 'sftp', retryCount) {
   let msg = '';
+  let code = '';
 
   //console.dir(err);
 
   if (typeof err === 'string') {
     msg = `${name}: ${err}`;
+    code = 'ERR_GENERIC_CLIENT';
   } else {
     switch (err.code) {
       case 'ENOTFOUND':
@@ -34,12 +36,15 @@ function formatError(err, name = 'sftp', retryCount) {
       default:
         msg = `${name}: ${err.message}`;
     }
+    code = err.code;
   }
 
   if (retryCount) {
     msg += ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`;
   }
-  return new Error(msg);
+  let theError = new Error(msg);
+  theError.code = code;
+  return theError;
 }
 
 /**
