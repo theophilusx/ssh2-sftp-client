@@ -9,6 +9,7 @@ const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
 const {posix, normalize} = require('path');
+const utils = require('./utils');
 
 let SftpClient = function(clientName = '') {
   this.client = new Client();
@@ -18,99 +19,27 @@ let SftpClient = function(clientName = '') {
   this.remotePlatform = 'unix';
 };
 
-/**
- * Generate a new Error object with a reformatted error message which
- * is a little more informative and useful to users.
- *
- * @param {Error|string} err - The Error object the new error will be based on
- * @param {number} retryCount - For those functions which use retry. Number of
- *                              attempts to complete before giving up
- * @returns {Error} New error with custom error message
- */
-function formatError(err, name = 'sftp', retryCount) {
-  let msg = '';
-
-  //console.dir(err);
-
-  if (typeof err === 'string') {
-    msg = `${name}: ${err}`;
-  } else {
-    switch (err.code) {
-      case 'ENOTFOUND':
-        msg =
-          `${name}: ` +
-          `${err.level} error. Address lookup failed for host ${err.hostname}`;
-        break;
-      case 'ECONNREFUSED':
-        msg =
-          `${name}: ${err.level} error. Remote host at ` +
-          `${err.address} refused connection`;
-        break;
-      case 'ENOENT':
-        msg = `${name}: ${err.message}`;
-        break;
-      default:
-        msg = `${name}: ${err.message}`;
-    }
-  }
-
-  if (retryCount) {
-    msg += ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`;
-  }
-  return new Error(msg);
-}
-
-/**
- * Remove all ready, error and end listeners.
- *
- * @param {Emitter} emitter - The emitter object to remove listeners from
- */
-function removeListeners(emitter) {
-  let listeners = emitter.eventNames();
-  listeners.forEach(name => {
-    emitter.removeAllListeners(name);
-  });
-}
-
-/**
- * Simple default error listener. Will reformat the error message and
- * throw a new error.
- *
- * @param {Error} err - source for defining new error
- * @throws {Error} Throws new error
- */
-function makeErrorListener(name) {
-  return function(err) {
-    throw formatError(err, name);
-  };
-}
-
-function makeEndListener(client) {
-  return function() {
-    if (!client.endCalled) {
-      client.sftp = undefined;
-      throw formatError('Connection ended unexpectedly', client.clientName);
-    }
-  };
-}
-
 SftpClient.prototype.realPath = function(path) {
   const sftp = this.sftp;
 
   return new Promise((resolve, reject) => {
     try {
       if (!sftp) {
-        reject(formatError('No SFTP connection available', 'sftp.realPath'));
+        reject(
+          utils.formatError('No SFTP connection available', 'sftp.realPath')
+        );
       } else {
         sftp.realpath(path, (err, absPath) => {
           if (err) {
-            reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
+            reject(
+              utils.formatError(`${err.message} ${path}`, 'sftp.realPath')
+            );
           }
           resolve(absPath);
         });
       }
     } catch (err) {
-      reject(formatError(`${err.message} ${path}`, 'sftp.realPath'));
+      reject(utils.formatError(`${err.message} ${path}`, 'sftp.realPath'));
     }
   });
 };
@@ -128,7 +57,7 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
 
     sftp.readdir(path, (err, list) => {
       if (err) {
-        reject(formatError(`${err.message} ${path}`, 'sftp.list'));
+        reject(utils.formatError(`${err.message} ${path}`, 'sftp.list'));
       } else {
         let newList = [];
         // reset file info
@@ -174,7 +103,7 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
  */
 SftpClient.prototype.list = async function(path, pattern = /.*/) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.list');
+    throw utils.formatError('No SFTP connection available', 'sftp.list');
   }
   let absPath = await this.realPath(path);
   return this._list(absPath, pattern);
@@ -210,7 +139,7 @@ SftpClient.prototype._exists = function(path) {
           if (err.code === 2) {
             resolve(false);
           } else {
-            reject(formatError(err, 'sftp.exists'));
+            reject(utils.formatError(err, 'sftp.exists'));
           }
         } else {
           let [type] = list
@@ -241,7 +170,7 @@ SftpClient.prototype._exists = function(path) {
 SftpClient.prototype.exists = async function(remotePath) {
   try {
     if (!this.sftp) {
-      throw formatError('No SFTP connection available', 'sftp.exists');
+      throw utils.formatError('No SFTP connection available', 'sftp.exists');
     }
     let absPath = await this.realPath(remotePath);
     return this._exists(absPath);
@@ -249,7 +178,7 @@ SftpClient.prototype.exists = async function(remotePath) {
     if (err.message.match(/No such file/)) {
       return false;
     }
-    throw formatError(err, 'sftp.exists');
+    throw utils.formatError(err, 'sftp.exists');
   }
 };
 
@@ -259,7 +188,7 @@ SftpClient.prototype._stat = function(remotePath) {
 
     sftp.stat(remotePath, function(err, stats) {
       if (err) {
-        reject(formatError(`${err.message} ${remotePath}`, 'sftp.stat'));
+        reject(utils.formatError(`${err.message} ${remotePath}`, 'sftp.stat'));
       } else {
         resolve({
           mode: stats.mode,
@@ -289,7 +218,7 @@ SftpClient.prototype._stat = function(remotePath) {
  */
 SftpClient.prototype.stat = async function(remotePath) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.stat');
+    throw utils.formatError('No SFTP connection available', 'sftp.stat');
   }
   let absPath = await this.realPath(remotePath);
   return this._stat(absPath);
@@ -301,8 +230,8 @@ SftpClient.prototype._get = function(path, dst, options) {
 
     let rdr = sftp.createReadStream(path, options);
     rdr.on('error', err => {
-      removeListeners(rdr);
-      reject(formatError(`${err.message} ${path}`, 'sftp.get'));
+      utils.removeListeners(rdr);
+      reject(utils.formatError(`${err.message} ${path}`, 'sftp.get'));
     });
 
     if (dst === undefined) {
@@ -322,16 +251,16 @@ SftpClient.prototype._get = function(path, dst, options) {
         wtr = dst;
       }
       wtr.on('error', err => {
-        removeListeners(rdr);
+        utils.removeListeners(rdr);
         reject(
-          formatError(
+          utils.formatError(
             `${err.message} ${typeof dst === 'string' ? dst : ''}`,
             'sftp.get'
           )
         );
       });
       wtr.on('finish', () => {
-        removeListeners(rdr);
+        utils.removeListeners(rdr);
         if (typeof dst === 'string') {
           resolve(dst);
         } else {
@@ -359,14 +288,14 @@ SftpClient.prototype._get = function(path, dst, options) {
  */
 SftpClient.prototype.get = async function(path, dst, options) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.get');
+    throw utils.formatError('No SFTP connection available', 'sftp.get');
   }
 
   let absPath = await this.realPath(path);
 
   let stats = await this.stat(absPath);
   if ((stats.mode & 0o444) === 0) {
-    throw formatError(`No read permission for ${absPath}`, 'sftp.get');
+    throw utils.formatError(`No read permission for ${absPath}`, 'sftp.get');
   }
 
   if (typeof dst === 'string') {
@@ -382,7 +311,9 @@ SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
 
     sftp.fastGet(remotePath, localPath, options, function(err) {
       if (err) {
-        reject(formatError(`${err.message} ${remotePath}`, 'sftp.fastGet'));
+        reject(
+          utils.formatError(`${err.message} ${remotePath}`, 'sftp.fastGet')
+        );
       }
       resolve(`${remotePath} was successfully download to ${localPath}!`);
     });
@@ -403,7 +334,7 @@ SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
  */
 SftpClient.prototype.fastGet = async function(remotePath, localPath, options) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.fastGet');
+    throw utils.formatError('No SFTP connection available', 'sftp.fastGet');
   }
   let src = await this.realPath(remotePath);
   let dst = normalize(localPath);
@@ -417,7 +348,7 @@ SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
     sftp.fastPut(localPath, remotePath, options, function(err) {
       if (err) {
         reject(
-          formatError(
+          utils.formatError(
             `${err.message} Local: ${localPath} Remote: ${remotePath}`,
             'sftp.fastPut'
           )
@@ -443,7 +374,7 @@ SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
  */
 SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.fastPut');
+    throw utils.formatError('No SFTP connection available', 'sftp.fastPut');
   }
   let src = fs.realpathSync(localPath);
   let dst = remotePath;
@@ -464,11 +395,11 @@ SftpClient.prototype._put = function(src, remotePath, options) {
     let stream = sftp.createWriteStream(remotePath, options);
 
     stream.on('error', err => {
-      reject(formatError(`${err.message} ${remotePath}`, 'sftp.put'));
+      reject(utils.formatError(`${err.message} ${remotePath}`, 'sftp.put'));
     });
 
     stream.on('finish', () => {
-      removeListeners(stream);
+      utils.removeListeners(stream);
       resolve(`Uploaded data stream to ${remotePath}`);
     });
 
@@ -482,9 +413,9 @@ SftpClient.prototype._put = function(src, remotePath, options) {
         rdr = src;
       }
       rdr.on('error', err => {
-        removeListeners(stream);
+        utils.removeListeners(stream);
         reject(
-          formatError(
+          utils.formatError(
             `${err.message} ${typeof src === 'string' ? src : ''}`,
             'sftp.put'
           )
@@ -508,7 +439,7 @@ SftpClient.prototype._put = function(src, remotePath, options) {
  */
 SftpClient.prototype.put = async function(localSrc, remotePath, options) {
   if (!this.sftp) {
-    throw formatError('No SFTP connections available', 'sftp.put');
+    throw utils.formatError('No SFTP connections available', 'sftp.put');
   }
   let src = localSrc;
   if (typeof src === 'string') {
@@ -544,12 +475,12 @@ SftpClient.prototype._append = function(input, remotePath, options) {
     let stream = sftp.createWriteStream(remotePath, writerOptions);
 
     stream.on('error', err => {
-      removeListeners(stream);
-      reject(formatError(`${err.message} ${remotePath}`, 'sftp.append'));
+      utils.removeListeners(stream);
+      reject(utils.formatError(`${err.message} ${remotePath}`, 'sftp.append'));
     });
 
     stream.on('finish', () => {
-      removeListeners(stream);
+      utils.removeListeners(stream);
       resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
     });
 
@@ -571,21 +502,21 @@ SftpClient.prototype._append = function(input, remotePath, options) {
  */
 SftpClient.prototype.append = async function(input, remotePath, options) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.append');
+    throw utils.formatError('No SFTP connection available', 'sftp.append');
   }
   if (typeof input === 'string') {
-    throw formatError('Cannot append one file to another', 'sftp.append');
+    throw utils.formatError('Cannot append one file to another', 'sftp.append');
   }
   let absPath = await this.realPath(remotePath);
   let stats = await this.stat(absPath);
   if ((stats.mode & 0o0100000) === 0) {
-    throw formatError(
+    throw utils.formatError(
       `${remotePath} Remote path must be a regular file`,
       'sftp-append'
     );
   }
   if ((stats.mode & 0o0444) === 0) {
-    throw formatError(`${remotePath} No write permission`, 'sftp-append');
+    throw utils.formatError(`${remotePath} No write permission`, 'sftp-append');
   }
   return this._append(input, absPath, options);
 };
@@ -606,7 +537,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
     return new Promise((resolve, reject) => {
       sftp.mkdir(p, err => {
         if (err) {
-          reject(formatError(`${err.message} ${p}`, 'sftp.mkdir'));
+          reject(utils.formatError(`${err.message} ${p}`, 'sftp.mkdir'));
         }
         resolve(`${p} directory created`);
       });
@@ -615,7 +546,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
 
   try {
     if (!sftp) {
-      throw formatError('No SFTP connection available', 'sftp.mkdir');
+      throw utils.formatError('No SFTP connection available', 'sftp.mkdir');
     }
     let realPath = path;
     if (realPath.startsWith('..')) {
@@ -634,11 +565,11 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
     if (!parent) {
       await this.mkdir(dir, true);
     } else if (parent !== 'd') {
-      throw formatError('Bad directory path', 'sftp.mkdir');
+      throw utils.formatError('Bad directory path', 'sftp.mkdir');
     }
     return doMkdir(realPath);
   } catch (err) {
-    throw formatError(err, 'sftp.mkdir');
+    throw utils.formatError(err, 'sftp.mkdir');
   }
 };
 
@@ -660,19 +591,19 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
       try {
         sftp.rmdir(p, err => {
           if (err) {
-            reject(formatError(`${err.message} ${p}`, 'sftp.rmdir'));
+            reject(utils.formatError(`${err.message} ${p}`, 'sftp.rmdir'));
           }
           resolve('Successfully removed directory');
         });
       } catch (err) {
-        reject(formatError(err, 'sftp.rmdir'));
+        reject(utils.formatError(err, 'sftp.rmdir'));
       }
     });
   }
 
   try {
     if (!sftp) {
-      throw formatError('No SFTP connection available', 'sftp.rmdir');
+      throw utils.formatError('No SFTP connection available', 'sftp.rmdir');
     }
     let absPath = await this.realPath(path);
     if (!recursive) {
@@ -686,20 +617,20 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
         try {
           await this.delete(absPath + this.remotePathSep + f.name);
         } catch (err) {
-          throw formatError(err, 'sftp.rmdir');
+          throw utils.formatError(err, 'sftp.rmdir');
         }
       }
       for (let d of dirs) {
         try {
           await this.rmdir(absPath + this.remotePathSep + d.name, true);
         } catch (err) {
-          throw formatError(err, 'sftp.rmdir');
+          throw utils.formatError(err, 'sftp.rmdir');
         }
       }
     }
     return doRmdir(absPath);
   } catch (err) {
-    throw formatError(err, 'sftp.rmdir');
+    throw utils.formatError(err, 'sftp.rmdir');
   }
 };
 
@@ -709,7 +640,7 @@ SftpClient.prototype._delete = function(path) {
 
     sftp.unlink(path, err => {
       if (err) {
-        reject(formatError(`${err.message} ${path}`, 'sftp.delete'));
+        reject(utils.formatError(`${err.message} ${path}`, 'sftp.delete'));
       }
       resolve('Successfully deleted file');
     });
@@ -727,7 +658,7 @@ SftpClient.prototype._delete = function(path) {
  */
 SftpClient.prototype.delete = async function(path) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.delete');
+    throw utils.formatError('No SFTP connection available', 'sftp.delete');
   }
   let absPath = await this.realPath(path);
   return this._delete(absPath);
@@ -740,7 +671,7 @@ SftpClient.prototype._rename = function(fromPath, toPath) {
     sftp.rename(fromPath, toPath, err => {
       if (err) {
         reject(
-          formatError(
+          utils.formatError(
             `${err.message} From: ${fromPath} To: ${toPath}`,
             'sftp.rename'
           )
@@ -764,7 +695,7 @@ SftpClient.prototype._rename = function(fromPath, toPath) {
  */
 SftpClient.prototype.rename = async function(fromPath, toPath) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.rename');
+    throw utils.formatError('No SFTP connection available', 'sftp.rename');
   }
   let src = await this.realPath(fromPath);
   let dst = toPath;
@@ -784,7 +715,7 @@ SftpClient.prototype._chmod = function(remotePath, mode) {
 
     sftp.chmod(remotePath, mode, err => {
       if (err) {
-        reject(formatError(`${err.message} ${remotePath}`, 'sftp.chmod'));
+        reject(utils.formatError(`${err.message} ${remotePath}`, 'sftp.chmod'));
       }
       resolve('Successfully change file mode');
     });
@@ -803,7 +734,7 @@ SftpClient.prototype._chmod = function(remotePath, mode) {
  */
 SftpClient.prototype.chmod = async function(remotePath, mode) {
   if (!this.sftp) {
-    throw formatError('No SFTP connection available', 'sftp.chmod');
+    throw utils.formatError('No SFTP connection available', 'sftp.chmod');
   }
   let path = await this.realPath(remotePath);
   return this._chmod(path, mode);
@@ -835,37 +766,43 @@ SftpClient.prototype.connect = function(config) {
           .on('ready', () => {
             self.client.sftp((err, sftp) => {
               if (err) {
-                removeListeners(self.client);
+                utils.removeListeners(self.client);
                 if (operation.retry(err)) {
                   // failed to connect, but not yet reached max attempt count
                   // remove the listeners and try again
                   return;
                 }
                 // exhausted retries - do callback with error
-                callback(formatError(err, 'sftp.connect', attemptCount), null);
+                callback(
+                  utils.formatError(err, 'sftp.connect', attemptCount),
+                  null
+                );
               }
               self.sftp = sftp;
               // remove retry error listener and add generic error listener
               self.client.removeAllListeners('error');
               self.client.removeAllListeners('end');
-              self.client.on('end', makeEndListener(self));
-              self.client.on('error', makeErrorListener(self.clientName));
+              self.client.on('end', utils.makeEndListener(self));
+              self.client.on('error', utils.makeErrorListener(self.clientName));
               callback(null, sftp);
             });
           })
           .on('error', err => {
-            removeListeners(self.client);
+            utils.removeListeners(self.client);
             if (operation.retry(err)) {
               // failed to connect, but not yet reached max attempt count
               // remove the listeners and try again
               return;
             }
             // exhausted retries - do callback with error
-            callback(formatError(err, 'sftp.connect', attemptCount), null);
+            callback(
+              utils.formatError(err, 'sftp.connect', attemptCount),
+              null
+            );
           })
           .on('end', () => {
             callback(
-              formatError(
+              utils.formatError(
                 'Connection ended unexpectedly by remote server',
                 self.clientName
               )
@@ -874,15 +811,15 @@ SftpClient.prototype.connect = function(config) {
           .connect(config);
       });
     } catch (err) {
-      removeListeners(self.client);
-      callback(formatError(err, 'sftp.connect'), null);
+      utils.removeListeners(self.client);
+      callback(utils.formatError(err, 'sftp.connect'), null);
     }
   }
 
   return new Promise((resolve, reject) => {
     if (self.sftp) {
       reject(
-        formatError(
+        utils.formatError(
           'An existing SFTP connection is already defined',
           'sftp.connect'
         )
@@ -895,7 +832,7 @@ SftpClient.prototype.connect = function(config) {
           sftp.realpath('.', (err, absPath) => {
             if (err) {
               reject(
-                formatError(
+                utils.formatError(
                   `Failed to determine remote server type: ${err.message}`,
                   'sftp.connect'
                 )
@@ -941,12 +878,12 @@ SftpClient.prototype.end = function() {
       self.endCalled = true;
       // debugListeners(this.client);
       self.client.end();
-      removeListeners(self.client);
+      utils.removeListeners(self.client);
       self.sftp = undefined;
       resolve(true);
       self.endCalled = false;
     } catch (err) {
-      reject(formatError(err, 'sftp.end'));
+      reject(utils.formatError(err, 'sftp.end'));
     }
   });
 };
