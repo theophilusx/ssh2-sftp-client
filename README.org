@@ -6,11 +6,11 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v4.1.0*.
+Current stable release is *v4.3.0*.
 
-Code has been tested against Node versions 8.16.1, 10.16.3 and 12.9.1
+Code has been tested against Node versions 10.17.0 and 12.13.1
 
-Node versions < 8.x are not supported.
+Node versions < 10.x are not supported.
 
 * Installation
 
@@ -978,11 +978,17 @@ documentation for details. Getting these parameters correct usually resolves the
 issue. 
 
 * Change Log
-** v4.2.4 (Prod Version)
+** v4.3.0 (Prod Version)
+   - Ensure errors include an err.code property and pass through the error code
+     from the originating error
+   - Change tests for error type to use ~error.code~ instead of matching on
+     ~error.message~.
+
+** v4.2.4 
    - Bumped ssh2 to v0.8.6
    - Added exists() usage example to examples directory
    - Clarify documentation on get() method
-** v4.2.3 (Prod Version)
+** v4.2.3 
    - Fix bug in ~exist()~ where tests on root directory returned false
    - Minor documentation fixes
    - Clean up mkdir example
