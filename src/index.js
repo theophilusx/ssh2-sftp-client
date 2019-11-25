@@ -202,7 +202,7 @@ SftpClient.prototype.exists = async function(remotePath) {
     let absPath = await this.realPath(remotePath);
     return this._exists(absPath);
   } catch (err) {
-    if (err.message.match(/No such file/)) {
+    if (err.code === 2) {
       return false;
     }
     throw utils.formatError(err, 'sftp.exists');
