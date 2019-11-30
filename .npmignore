@@ -15,4 +15,5 @@ env-vbox
 .tern-port
 test-env-template
 tools
+.vscode
 
