@@ -97,6 +97,47 @@ module. For full details, please see [[https://github.com/mscdex/ssh2#user-conte
 All the methods will return a Promise, except for ~on()~ and
 ~removeListener()~, which are typically only used in special use cases.
 
+** Specifying Paths
+
+Both ~./~ and ~../~ are supported in path specifiers. Tilde (~~~) expansion is
+not supported. Relative paths i.e. paths which do not start with a ~/~, will be
+considered to be relative to whatever the remote server considers to be the
+~root~ directory of the login. Depending on how the remote SFTP server is
+configured, this may not always be what you expect. The module also does some
+very basic tests on results returned from the remote server to try and determine
+platform type and will replace path separators with whatever the remote systems
+uses (e.g. replace ~/~ with ~\~ on MS Windows). 
+
+There is a small performance hit for using ~./~ and ~../~ as the module must
+query the remote server to determine what the root path is and derive the
+absolute path. Using absolute paths are therefore more efficient and likely more
+robust. 
+
+When specifying file paths, ensure to include a full path i.e. include the
+remote filename. Don't expect the module to append the local file name to the
+path you provide. For example, the following will not work
+
+ #+begin_src javascript
+   client.put('/home/fred/test.txt', '/remote/dir');
+ #+end_src
+
+will not result in the file ~test.txt~ being copied to
+~/remote/dir/test.txt~. You need to specify the target filename as well e.g.
+
+  #+begin_src javascript
+    client.put('/home/fred/test.txt', '/remote/dir/test.txt');
+  #+end_src
+
+Note that the remote file name does not have to be the same as the local file
+name. The following works fine;
+
+#+begin_src javascript
+  client.put('/home/fred/test.txt', '/remote/dir/test-copy.txt');
+#+end_src
+
+This will copy the local file ~test.txt~ to the remote file ~test-copy.txt~ in
+the directory ~/remote/dir~.
+
 ** Methods
 
 *** new SftpClient(name) ===> SFTP client object
