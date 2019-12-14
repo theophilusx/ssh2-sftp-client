@@ -910,11 +910,13 @@ SftpClient.prototype.connect = function(config) {
               self.client.removeAllListeners('error');
               self.client.removeAllListeners('end');
               self.client.on('end', utils.makeEndListener(self));
+              self.client.on('close', utils.makeCloseListener(self));
               self.client.on('error', utils.makeErrorListener(self.clientName));
-              self.client.on(
-                'uncaughtException',
-                utils.makeErrorListener(self.clientName)
-              );
+              self.client.on('uncaughtException', function(err) {
+                console.error(
+                  `An unexpected and uncaught exception was raised: ${err.message}`
+                );
+              });
               callback(null, sftp);
             });
           })
@@ -1012,9 +1014,9 @@ SftpClient.prototype.end = function() {
       self.endCalled = true;
       // debugListeners(this.client);
       self.client.end();
+      resolve(true);
       utils.removeListeners(self.client);
       self.sftp = undefined;
-      resolve(true);
       self.endCalled = false;
     } catch (err) {
       reject(utils.formatError(err, 'sftp.end', err.code));

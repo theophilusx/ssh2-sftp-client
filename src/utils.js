@@ -77,6 +77,7 @@ function removeListeners(emitter) {
  */
 function makeErrorListener(name) {
   return function(err) {
+    console.log(`${name} Error listener fired: ${err.message}`);
     throw formatError(err, name);
   };
 }
@@ -84,8 +85,17 @@ function makeErrorListener(name) {
 function makeEndListener(client) {
   return function() {
     if (!client.endCalled) {
+      console.log(`${client.clientName} End event fired unexpectedly`);
       client.sftp = undefined;
       throw formatError('Connection ended unexpectedly', client.clientName);
+    }
+  };
+}
+
+function makeCloseListener(client) {
+  return function() {
+    if (!client.endCalled) {
+      console.log(`${client.clientName}: Close event fired unexpectedly`);
     }
   };
 }
@@ -94,5 +104,6 @@ module.exports = {
   formatError,
   removeListeners,
   makeErrorListener,
-  makeEndListener
+  makeEndListener,
+  makeCloseListener
 };
