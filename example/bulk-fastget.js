@@ -4,6 +4,12 @@ const path = require('path');
 const Client = require('../src/index');
 const moment = require('moment');
 
+// simple script used mainly for testing purposes. will download a file
+// multiple times and store it locally (with a different suffix for each one).
+// Idea is to run 100 or 1000 times. Useful for getting some network stats and
+// testing for unreliable networks etc. This version uses fastGet() to do the
+// download
+
 const dotenvPath = path.join(__dirname, '..', '.env');
 
 require('dotenv').config({path: dotenvPath});
