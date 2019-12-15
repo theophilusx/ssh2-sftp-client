@@ -85,9 +85,8 @@ function makeErrorListener(name) {
 function makeEndListener(client) {
   return function() {
     if (!client.endCalled) {
-      console.log(`${client.clientName} End event fired unexpectedly`);
+      console.log(`${client.clientName} Connection ended unexpectedly`);
       client.sftp = undefined;
-      throw formatError('Connection ended unexpectedly', client.clientName);
     }
   };
 }
@@ -95,7 +94,7 @@ function makeEndListener(client) {
 function makeCloseListener(client) {
   return function() {
     if (!client.endCalled) {
-      console.log(`${client.clientName}: Close event fired unexpectedly`);
+      console.log(`${client.clientName}: Connection closed unexpectedly`);
     }
   };
 }

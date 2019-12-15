@@ -1012,12 +1012,13 @@ SftpClient.prototype.end = function() {
   return new Promise((resolve, reject) => {
     try {
       self.endCalled = true;
-      // debugListeners(this.client);
+      self.client.on('close', () => {
+        utils.removeListeners(self.client);
+        resolve(true);
+        self.sftp = undefined;
+        self.endCalled = false;
+      });
       self.client.end();
-      resolve(true);
-      utils.removeListeners(self.client);
-      self.sftp = undefined;
-      self.endCalled = false;
     } catch (err) {
       reject(utils.formatError(err, 'sftp.end', err.code));
     }
