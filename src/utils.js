@@ -78,7 +78,7 @@ function removeListeners(emitter) {
 function makeErrorListener(name) {
   return function(err) {
     console.log(`${name} Error listener fired: ${err.message}`);
-    throw formatError(err, name);
+    //throw formatError(err, name);
   };
 }
 
@@ -86,7 +86,7 @@ function makeEndListener(client) {
   return function() {
     if (!client.endCalled) {
       console.log(`${client.clientName} Connection ended unexpectedly`);
-      client.sftp = undefined;
+      //client.sftp = undefined;
     }
   };
 }
@@ -95,6 +95,7 @@ function makeCloseListener(client) {
   return function() {
     if (!client.endCalled) {
       console.log(`${client.clientName}: Connection closed unexpectedly`);
+      client.sftp = undefined;
     }
   };
 }
