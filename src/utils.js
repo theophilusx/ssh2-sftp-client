@@ -75,10 +75,9 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function makeErrorListener(name) {
+function makeErrorListener(reject) {
   return function(err) {
-    console.log(`${name} Error listener fired: ${err.message}`);
-    //throw formatError(err, name);
+    reject(err.message);
   };
 }
 
