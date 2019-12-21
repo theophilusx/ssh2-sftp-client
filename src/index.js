@@ -1012,7 +1012,6 @@ SftpClient.prototype.connect = function(config) {
               // remove retry error listener and add generic error listener
               self.client.removeAllListeners('error');
               self.client.removeAllListeners('end');
-              self.client.on('end', utils.makeEndListener(self));
               self.client.on('close', utils.makeCloseListener(self));
               callback(null, sftp);
             });

@@ -35,6 +35,9 @@ function formatError(
           `${name}: ${err.level} error. Remote host at ` +
           `${err.address} refused connection`;
         break;
+      case 'ECONNRESET':
+        msg = `${name}: Remote host has reset the connection: ${err.message}`;
+        break;
       case 'ENOENT':
         msg = `${name}: ${err.message}`;
         break;
@@ -77,7 +80,7 @@ function removeListeners(emitter) {
  */
 function makeErrorListener(reject) {
   return function(err) {
-    reject(err.message);
+    reject(formatError(err));
   };
 }
 
