@@ -221,6 +221,10 @@ SftpClient.prototype.exists = async function(remotePath) {
       );
     }
     let absPath = await this.realPath(remotePath);
+    if (remotePath === '.') {
+      // the '.' path will always exist and is always a directory
+      return 'd';
+    }
     return this._exists(absPath);
   } catch (err) {
     if (err.code === 2) {
