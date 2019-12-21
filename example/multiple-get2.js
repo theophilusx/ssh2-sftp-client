@@ -7,7 +7,6 @@ const dotenvPath = path.join(__dirname, '..', '.env');
 require('dotenv').config({path: dotenvPath});
 
 const Client = require('../src/index');
-const path = require('path');
 
 const client = new Client();
 

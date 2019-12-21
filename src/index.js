@@ -27,8 +27,9 @@ let SftpClient = function(clientName = '') {
 };
 
 SftpClient.prototype.realPath = function(path) {
-  const sftp = this.sftp;
-
+  const self = this;
+  const sftp = self.sftp;
+  let errorListener;
   return new Promise((resolve, reject) => {
     try {
       if (!sftp) {
@@ -40,6 +41,8 @@ SftpClient.prototype.realPath = function(path) {
           )
         );
       } else {
+        errorListener = utils.makeErrorListener(reject);
+        self.on('error', errorListener);
         sftp.realpath(path, (err, absPath) => {
           if (err) {
             reject(
@@ -49,14 +52,17 @@ SftpClient.prototype.realPath = function(path) {
                 err.code
               )
             );
+            self.removeListener('error', errorListener);
           }
           resolve(absPath);
+          self.removeListener('error', errorListener);
         });
       }
     } catch (err) {
       reject(
         utils.formatError(`${err.message} ${path}`, 'sftp.realPath', err.code)
       );
+      self.removeListener('error', errorListener);
     }
   });
 };
@@ -66,17 +72,22 @@ SftpClient.prototype.cwd = function() {
 };
 
 SftpClient.prototype._list = function(path, pattern = /.*/) {
-  const _this = this;
+  const self = this;
   const reg = /-/gi;
+  let errorListener;
 
   return new Promise((resolve, reject) => {
-    const sftp = _this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.readdir(path, (err, list) => {
       if (err) {
         reject(
           utils.formatError(`${err.message} ${path}`, 'sftp.list', err.code)
         );
+        self.removeListener('error', errorListener);
       } else {
         let newList = [];
         // reset file info
@@ -107,6 +118,7 @@ SftpClient.prototype._list = function(path, pattern = /.*/) {
           regex = new RegExp(newPattern);
         }
         resolve(newList.filter(item => regex.test(item.name)));
+        self.removeListener('error', errorListener);
       }
     });
   });
@@ -149,13 +161,20 @@ SftpClient.prototype.auxList = function(path, pattern = '*') {
 };
 
 SftpClient.prototype._exists = function(path) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
     const sftp = this.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     let {dir, base} = posix.parse(path);
     if (!base) {
       // at root
       resolve('d');
+      self.removeListener('error', errorListener);
     } else {
       sftp.readdir(dir, (err, list) => {
         if (err) {
@@ -164,6 +183,7 @@ SftpClient.prototype._exists = function(path) {
           } else {
             reject(utils.formatError(err, 'sftp.exists'));
           }
+          self.removeListener('error', errorListener);
         } else {
           let [type] = list
             .filter(item => item.filename === base)
@@ -173,6 +193,7 @@ SftpClient.prototype._exists = function(path) {
           } else {
             resolve(false);
           }
+          self.removeListener('error', errorListener);
         }
       });
     }
@@ -210,8 +231,14 @@ SftpClient.prototype.exists = async function(remotePath) {
 };
 
 SftpClient.prototype._stat = function(remotePath) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    const sftp = this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.stat(remotePath, function(err, stats) {
       if (err) {
@@ -222,6 +249,7 @@ SftpClient.prototype._stat = function(remotePath) {
             err.code
           )
         );
+        self.removeListener('error', errorListener);
       } else {
         resolve({
           mode: stats.mode,
@@ -238,6 +266,7 @@ SftpClient.prototype._stat = function(remotePath) {
           isFIFO: stats.isFIFO(),
           isSocket: stats.isSocket()
         });
+        self.removeListener('error', errorListener);
       }
     });
   });
@@ -262,13 +291,20 @@ SftpClient.prototype.stat = async function(remotePath) {
 };
 
 SftpClient.prototype._get = function(path, dst, options) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    const sftp = this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     let rdr = sftp.createReadStream(path, options);
     rdr.on('error', err => {
       utils.removeListeners(rdr);
       reject(utils.formatError(`${err.message} ${path}`, 'sftp.get', err.code));
+      self.removeListener('error', errorListener);
     });
 
     if (dst === undefined) {
@@ -276,6 +312,7 @@ SftpClient.prototype._get = function(path, dst, options) {
       let concatStream = concat(buff => {
         rdr.removeAllListeners('error');
         resolve(buff);
+        self.removeListener('error', errorListener);
       });
       rdr.pipe(concatStream);
     } else {
@@ -296,6 +333,7 @@ SftpClient.prototype._get = function(path, dst, options) {
             err.code
           )
         );
+        self.removeListener('error', errorListener);
       });
       wtr.on('finish', () => {
         utils.removeListeners(rdr);
@@ -304,6 +342,7 @@ SftpClient.prototype._get = function(path, dst, options) {
         } else {
           resolve(wtr);
         }
+        self.removeListener('error', errorListener);
       });
       rdr.pipe(wtr);
     }
@@ -352,8 +391,14 @@ SftpClient.prototype.get = async function(path, dst, options) {
 };
 
 SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    const sftp = this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.fastGet(remotePath, localPath, options, function(err) {
       if (err) {
@@ -366,6 +411,7 @@ SftpClient.prototype._fastGet = function(remotePath, localPath, options) {
         );
       }
       resolve(`${remotePath} was successfully download to ${localPath}!`);
+      self.removeListener('error', errorListener);
     });
   });
 };
@@ -396,9 +442,14 @@ SftpClient.prototype.fastGet = async function(remotePath, localPath, options) {
 };
 
 SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
-  const sftp = this.sftp;
+  const self = this;
+  const sftp = self.sftp;
+  let errorListener;
 
   return new Promise((resolve, reject) => {
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
+
     sftp.fastPut(localPath, remotePath, options, function(err) {
       if (err) {
         reject(
@@ -410,6 +461,7 @@ SftpClient.prototype._fastPut = function(localPath, remotePath, options) {
         );
       }
       resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+      self.removeListener('error', errorListener);
     });
   });
 };
@@ -448,8 +500,14 @@ SftpClient.prototype.fastPut = async function(localPath, remotePath, options) {
 };
 
 SftpClient.prototype._put = function(src, remotePath, options) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    const sftp = this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     let stream = sftp.createWriteStream(remotePath, options);
 
@@ -457,11 +515,13 @@ SftpClient.prototype._put = function(src, remotePath, options) {
       reject(
         utils.formatError(`${err.message} ${remotePath}`, 'sftp.put', err.code)
       );
+      self.removeListener('error', errorListener);
     });
 
     stream.on('finish', () => {
       utils.removeListeners(stream);
       resolve(`Uploaded data stream to ${remotePath}`);
+      self.removeListener('error', errorListener);
     });
 
     if (src instanceof Buffer) {
@@ -482,6 +542,7 @@ SftpClient.prototype._put = function(src, remotePath, options) {
             err.code
           )
         );
+        self.removeListener('error', errorListener);
       });
       rdr.pipe(stream);
     }
@@ -524,8 +585,14 @@ SftpClient.prototype.put = async function(localSrc, remotePath, options) {
 };
 
 SftpClient.prototype._append = function(input, remotePath, options) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
     const sftp = this.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     let writerOptions;
 
@@ -549,11 +616,13 @@ SftpClient.prototype._append = function(input, remotePath, options) {
           err.code
         )
       );
+      self.removeListener('error', errorListener);
     });
 
     stream.on('finish', () => {
       utils.removeListeners(stream);
       resolve(`sftp.append: Uploaded data stream to ${remotePath}`);
+      self.removeListener('error', errorListener);
     });
 
     if (input instanceof Buffer) {
@@ -616,10 +685,15 @@ SftpClient.prototype.append = async function(input, remotePath, options) {
  * @return {Promise}.
  */
 SftpClient.prototype.mkdir = async function(path, recursive = false) {
-  const sftp = this.sftp;
+  const self = this;
+  const sftp = self.sftp;
+  let errorListener;
 
   function doMkdir(p) {
     return new Promise((resolve, reject) => {
+      errorListener = utils.makeErrorListener(reject);
+      self.on('error', errorListener);
+
       sftp.mkdir(p, err => {
         if (err) {
           reject(
@@ -627,6 +701,7 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
           );
         }
         resolve(`${p} directory created`);
+        self.removeListener('error', errorListener);
       });
     });
   }
@@ -679,10 +754,15 @@ SftpClient.prototype.mkdir = async function(path, recursive = false) {
  * @return {Promise}..
  */
 SftpClient.prototype.rmdir = async function(path, recursive = false) {
-  const sftp = this.sftp;
+  const self = this;
+  const sftp = self.sftp;
+  let errorListener;
 
   function doRmdir(p) {
     return new Promise((resolve, reject) => {
+      errorListener = utils.makeErrorListener(reject);
+      self.on('error', errorListener);
+
       try {
         sftp.rmdir(p, err => {
           if (err) {
@@ -691,9 +771,11 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
             );
           }
           resolve('Successfully removed directory');
+          self.removeListener('error', errorListener);
         });
       } catch (err) {
         reject(utils.formatError(err, 'sftp.rmdir', err.code));
+        self.removeListener('error', errorListener);
       }
     });
   }
@@ -736,8 +818,14 @@ SftpClient.prototype.rmdir = async function(path, recursive = false) {
 };
 
 SftpClient.prototype._delete = function(path) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    let sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.unlink(path, err => {
       if (err) {
@@ -746,6 +834,7 @@ SftpClient.prototype._delete = function(path) {
         );
       }
       resolve('Successfully deleted file');
+      self.removeListener('error', errorListener);
     });
   });
 };
@@ -772,8 +861,14 @@ SftpClient.prototype.delete = async function(path) {
 };
 
 SftpClient.prototype._rename = function(fromPath, toPath) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    let sftp = this.sftp;
+    let sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.rename(fromPath, toPath, err => {
       if (err) {
@@ -786,6 +881,7 @@ SftpClient.prototype._rename = function(fromPath, toPath) {
         );
       }
       resolve(`Successfully renamed ${fromPath} to ${toPath}`);
+      self.removeListener('error', errorListener);
     });
   });
 };
@@ -822,8 +918,14 @@ SftpClient.prototype.rename = async function(fromPath, toPath) {
 };
 
 SftpClient.prototype._chmod = function(remotePath, mode) {
+  const self = this;
+  let errorListener;
+
   return new Promise((resolve, reject) => {
-    const sftp = this.sftp;
+    const sftp = self.sftp;
+
+    errorListener = utils.makeErrorListener(reject);
+    self.on('error', errorListener);
 
     sftp.chmod(remotePath, mode, err => {
       if (err) {
@@ -836,6 +938,7 @@ SftpClient.prototype._chmod = function(remotePath, mode) {
         );
       }
       resolve('Successfully change file mode');
+      self.removeListener('error', errorListener);
     });
   });
 };
@@ -909,12 +1012,7 @@ SftpClient.prototype.connect = function(config) {
               // remove retry error listener and add generic error listener
               self.client.removeAllListeners('error');
               self.client.removeAllListeners('end');
-              self.client.on('end', utils.makeEndListener(self));
-              self.client.on('error', utils.makeErrorListener(self.clientName));
-              self.client.on(
-                'uncaughtException',
-                utils.makeErrorListener(self.clientName)
-              );
+              self.client.on('close', utils.makeCloseListener(self));
               callback(null, sftp);
             });
           })
@@ -1010,12 +1108,13 @@ SftpClient.prototype.end = function() {
   return new Promise((resolve, reject) => {
     try {
       self.endCalled = true;
-      // debugListeners(this.client);
+      self.client.on('close', () => {
+        utils.removeListeners(self.client);
+        resolve(true);
+        self.sftp = undefined;
+        self.endCalled = false;
+      });
       self.client.end();
-      utils.removeListeners(self.client);
-      self.sftp = undefined;
-      resolve(true);
-      self.endCalled = false;
     } catch (err) {
       reject(utils.formatError(err, 'sftp.end', err.code));
     }

@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v4.3.0*.
+Current stable release is *v4.3.1*.
 
 Code has been tested against Node versions 10.17.0 and 12.13.1
 
@@ -1019,6 +1019,12 @@ documentation for details. Getting these parameters correct usually resolves the
 issue. 
 
 * Change Log
+** v4.3.1 (Prod Version)
+   - Updated end() method to resolve once close event fires
+   - Added errorListener to error event in each promise to catch error events
+     and reject the promise. This should resolve the issue of some error events
+     causing uncaughtException erros and causing the process to exit.
+ 
 ** v4.3.0 (Prod Version)
    - Ensure errors include an err.code property and pass through the error code
      from the originating error

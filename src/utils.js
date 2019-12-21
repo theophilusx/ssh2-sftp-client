@@ -35,6 +35,9 @@ function formatError(
           `${name}: ${err.level} error. Remote host at ` +
           `${err.address} refused connection`;
         break;
+      case 'ECONNRESET':
+        msg = `${name}: Remote host has reset the connection: ${err.message}`;
+        break;
       case 'ENOENT':
         msg = `${name}: ${err.message}`;
         break;
@@ -75,17 +78,26 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function makeErrorListener(name) {
+function makeErrorListener(reject) {
   return function(err) {
-    throw formatError(err, name);
+    reject(formatError(err));
   };
 }
 
 function makeEndListener(client) {
   return function() {
     if (!client.endCalled) {
+      console.log(`${client.clientName} Connection ended unexpectedly`);
+      //client.sftp = undefined;
+    }
+  };
+}
+
+function makeCloseListener(client) {
+  return function() {
+    if (!client.endCalled) {
+      console.log(`${client.clientName}: Connection closed unexpectedly`);
       client.sftp = undefined;
-      throw formatError('Connection ended unexpectedly', client.clientName);
     }
   };
 }
@@ -94,5 +106,6 @@ module.exports = {
   formatError,
   removeListeners,
   makeErrorListener,
-  makeEndListener
+  makeEndListener,
+  makeCloseListener
 };
