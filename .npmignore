@@ -17,4 +17,5 @@ env-vbox
 test-env-template
 tools
 .vscode
+.log
 
