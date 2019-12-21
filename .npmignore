@@ -8,6 +8,7 @@ example
 .env
 .prettierrc
 env-turing
+env-turing2
 env-vbox
 .eslintrc.js
 .mocharc.js
