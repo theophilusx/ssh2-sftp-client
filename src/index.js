@@ -26,6 +26,7 @@ class SftpClient {
     this.endCalled = false;
     this.remotePath = '/';
     this.remotePlatform = 'unix';
+    this.errorHandled = false;
   }
 
   /**
@@ -64,13 +65,28 @@ class SftpClient {
     });
 
     const retryConnect = (config, callback) => {
+
       try {
         operation.attempt(attemptCount => {
+          const connectErrorListener = err => {
+            this.removeListener('error', connectErrorListener);
+            if (operation.retry(err)) {
+              // failed to connect, but not yet reached max attempt count
+              // remove the listeners and try again
+              return;
+            }
+            // exhausted retries - do callback with error
+            callback(
+              utils.formatError(err, 'connect', err.code, attemptCount),
+              null
+            );
+          };
+
           this.client
             .on('ready', () => {
               this.client.sftp((err, sftp) => {
                 if (err) {
-                  utils.removeListeners(this.client);
+                  this.client.removeListener('error', connectErrorListener);
                   if (operation.retry(err)) {
                     // failed to connect, but not yet reached max attempt count
                     // remove the listeners and try again
@@ -84,34 +100,20 @@ class SftpClient {
                 }
                 this.sftp = sftp;
                 // remove retry error listener and add generic error listener
-                this.client.removeAllListeners('error');
-                this.client.removeAllListeners('end');
+                this.client.removeListener('error', connectErrorListener);
                 this.client.on('close', utils.makeCloseListener(this));
+                this.client.on('error', err => {
+                  if (!this.errorHandled) {
+                    // error not already handled. Log it. 
+                    console.error(`Error event: ${err.message}`);
+                  }
+                  //need to set to false in case another error raised
+                  this.errorHandled = false;
+                });
                 callback(null, sftp);
               });
             })
-            .on('error', err => {
-              utils.removeListeners(this.client);
-              if (operation.retry(err)) {
-                // failed to connect, but not yet reached max attempt count
-                // remove the listeners and try again
-                return;
-              }
-              // exhausted retries - do callback with error
-              callback(
-                utils.formatError(err, 'connect', err.code, attemptCount),
-                null
-              );
-            })
-            .on('end', () => {
-              callback(
-                utils.formatError(
-                  'Connection ended unexpectedly by remote server',
-                  'connect',
-                  errorCode.connect
-                )
-              );
-            })
+            .on('error', connectErrorListener)
             .connect(config);
         });
       } catch (err) {
@@ -161,9 +163,9 @@ class SftpClient {
   }
 
   realPath(remotePath) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
+
       try {
         if (!this.sftp) {
           reject(
@@ -174,8 +176,8 @@ class SftpClient {
             )
           );
         } else {
-          errorListener = utils.makeErrorListener(reject);
-          this.on('error', errorListener);
+          errorListener = utils.makeErrorListener(reject, this);
+          this.client.prependListener('error', errorListener);
           this.sftp.realpath(remotePath, (err, absPath) => {
             if (err) {
               reject(
@@ -210,12 +212,12 @@ class SftpClient {
 
   _list(remotePath, pattern = /.*/) {
     const reg = /-/gi;
-    let errorListener;
 
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.readdir(remotePath, (err, list) => {
           if (err) {
             reject(
@@ -286,12 +288,11 @@ class SftpClient {
   }
 
   _exists(remotePath) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         let {dir, base} = posix.parse(remotePath);
         if (!base) {
           // at root
@@ -359,13 +360,11 @@ class SftpClient {
   }
 
   _stat(remotePath) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
-
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.stat(remotePath, (err, stats) => {
           if (err) {
             reject(
@@ -420,12 +419,11 @@ class SftpClient {
   }
 
   _get(path, dst, options) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         let rdr = this.sftp.createReadStream(path, options);
         rdr.on('error', err => {
           utils.removeListeners(rdr);
@@ -516,12 +514,11 @@ class SftpClient {
   }
 
   _fastGet(remotePath, localPath, options) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.fastGet(remotePath, localPath, options, err => {
           if (err) {
             reject(
@@ -569,12 +566,11 @@ class SftpClient {
   }
 
   _fastPut(localPath, remotePath, options) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.fastPut(localPath, remotePath, options, err => {
           if (err) {
             reject(
@@ -629,12 +625,11 @@ class SftpClient {
   }
 
   _put(src, remotePath, options) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         let stream = this.sftp.createWriteStream(remotePath, options);
         stream.on('error', err => {
           reject(
@@ -710,12 +705,11 @@ class SftpClient {
   }
 
   _append(input, remotePath, options) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         let writerOptions;
         if (options) {
           writerOptions = options;
@@ -805,13 +799,12 @@ class SftpClient {
    * @return {Promise}.
    */
   async mkdir(path, recursive = false) {
-    let errorListener;
-
     const doMkdir = p => {
       return new Promise((resolve, reject) => {
+        let errorListener;
         try {
-          errorListener = utils.makeErrorListener(reject);
-          this.on('error', errorListener);
+          errorListener = utils.makeErrorListener(reject, this);
+          this.client.prependListener('error', errorListener);
           this.sftp.mkdir(p, err => {
             if (err) {
               reject(
@@ -876,13 +869,12 @@ class SftpClient {
    * @return {Promise}..
    */
   async rmdir(path, recursive = false) {
-    let errorListener;
-
     const doRmdir = p => {
       return new Promise((resolve, reject) => {
+        let errorListener;
         try {
-          errorListener = utils.makeErrorListener(reject);
-          this.on('error', errorListener);
+          errorListener = utils.makeErrorListener(reject, this);
+          this.client.prependListener('error', errorListener);
           this.sftp.rmdir(p, err => {
             if (err) {
               reject(
@@ -937,12 +929,11 @@ class SftpClient {
   }
 
   _delete(path) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.unlink(path, err => {
           if (err) {
             reject(
@@ -981,12 +972,11 @@ class SftpClient {
   }
 
   _rename(fromPath, toPath) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.rename(fromPath, toPath, err => {
           if (err) {
             reject(
@@ -1039,12 +1029,11 @@ class SftpClient {
   }
 
   _chmod(remotePath, mode) {
-    let errorListener;
-
     return new Promise((resolve, reject) => {
+      let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject);
-        this.on('error', errorListener);
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
         this.sftp.chmod(remotePath, mode, err => {
           if (err) {
             reject(
