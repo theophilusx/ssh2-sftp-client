@@ -117,7 +117,7 @@ class SftpClient {
         });
       } catch (err) {
         utils.removeListeners(this.client);
-        callback(utils.formatError(err, 'connect', err.code), null);
+        callback(utils.formatError(err, 'connect'), null);
       }
     };
 
@@ -141,7 +141,7 @@ class SftpClient {
                   utils.formatError(
                     `Failed to determine remote server type: ${err.message}`,
                     'connect',
-                    err.code
+                    errorCode.generic
                   )
                 );
               } else {
@@ -259,7 +259,7 @@ class SftpClient {
           }
         });
       } catch (err) {
-        reject(utils.formatError(err, 'list', err.code));
+        reject(utils.formatError(err, 'list'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -302,7 +302,7 @@ class SftpClient {
               if (err.code === 2) {
                 resolve(false);
               } else {
-                reject(utils.formatError(err, 'sftp.exists'));
+                reject(utils.formatError(err, 'exists'));
               }
             } else {
               let [type] = list
@@ -317,7 +317,7 @@ class SftpClient {
           });
         }
       } catch (err) {
-        reject(utils.formatError(err, 'list', err.code));
+        reject(utils.formatError(err, 'list'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -354,7 +354,7 @@ class SftpClient {
       if (err.code === 2) {
         return false;
       }
-      throw utils.formatError(err, 'sftp.exists');
+      throw utils.formatError(err, 'exists');
     }
   }
 
@@ -392,7 +392,7 @@ class SftpClient {
           }
         });
       } catch (err) {
-        reject(err, 'stat', err.code);
+        reject(utils.formatError(err, 'stat'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -426,9 +426,7 @@ class SftpClient {
         let rdr = this.sftp.createReadStream(path, options);
         rdr.on('error', err => {
           utils.removeListeners(rdr);
-          reject(
-            utils.formatError(`${err.message} ${path}`, 'sftp.get', err.code)
-          );
+          reject(utils.formatError(`${err.message} ${path}`, 'get', err.code));
         });
         if (dst === undefined) {
           // no dst specified, return buffer of data
@@ -467,7 +465,7 @@ class SftpClient {
           rdr.pipe(wtr);
         }
       } catch (err) {
-        reject(utils.formatError(err, 'get', err.code));
+        reject(utils.formatError(err, 'get'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -523,7 +521,7 @@ class SftpClient {
             reject(
               utils.formatError(
                 `${err.message} ${remotePath}`,
-                'sftp.fastGet',
+                'fastGet',
                 err.code
               )
             );
@@ -531,7 +529,7 @@ class SftpClient {
           resolve(`${remotePath} was successfully download to ${localPath}!`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'fastGet', err.code));
+        reject(utils.formatError(err, 'fastGet'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -583,7 +581,7 @@ class SftpClient {
           resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'fastPut', err.code));
+        reject(utils.formatError(err, 'fastPut'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -853,7 +851,7 @@ class SftpClient {
       }
       return doMkdir(realPath);
     } catch (err) {
-      throw utils.formatError(err, 'sftp.mkdir', err.code);
+      throw utils.formatError(err, 'mkdir');
     }
   }
 
@@ -883,7 +881,7 @@ class SftpClient {
             resolve('Successfully removed directory');
           });
         } catch (err) {
-          reject(utils.formatError(err, 'sftp.rmdir', err.code));
+          reject(utils.formatError(err, 'rmdir', err.code));
         } finally {
           this.removeListener('error', errorListener);
         }
@@ -894,7 +892,7 @@ class SftpClient {
       if (!this.sftp) {
         throw utils.formatError(
           'No SFTP connection available',
-          'sftp.rmdir',
+          'rmdir',
           errorCode.connect
         );
       }
@@ -910,20 +908,20 @@ class SftpClient {
           try {
             await this.delete(absPath + this.remotePathSep + f.name);
           } catch (err) {
-            throw utils.formatError(err, 'rmdir', err.code);
+            throw utils.formatError(err, 'rmdir');
           }
         }
         for (let d of dirs) {
           try {
             await this.rmdir(absPath + this.remotePathSep + d.name, true);
           } catch (err) {
-            throw utils.formatError(err, 'rmdir', err.code);
+            throw utils.formatError(err, 'rmdir');
           }
         }
       }
       return doRmdir(absPath);
     } catch (err) {
-      throw utils.formatError(err, 'sftp.rmdir', err.code);
+      throw utils.formatError(err, 'rmdir');
     }
   }
 
@@ -1101,7 +1099,7 @@ class SftpClient {
         });
         this.client.end();
       } catch (err) {
-        reject(utils.formatError(err, 'sftp.end', err.code));
+        reject(utils.formatError(err, 'end'));
       }
     });
   }
