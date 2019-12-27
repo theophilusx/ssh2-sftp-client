@@ -65,7 +65,6 @@ class SftpClient {
     });
 
     const retryConnect = (config, callback) => {
-
       try {
         operation.attempt(attemptCount => {
           const connectErrorListener = err => {
@@ -104,7 +103,7 @@ class SftpClient {
                 this.client.on('close', utils.makeCloseListener(this));
                 this.client.on('error', err => {
                   if (!this.errorHandled) {
-                    // error not already handled. Log it. 
+                    // error not already handled. Log it.
                     console.error(`Error event: ${err.message}`);
                   }
                   //need to set to false in case another error raised
@@ -1085,6 +1084,14 @@ class SftpClient {
   end() {
     return new Promise((resolve, reject) => {
       try {
+        this.client.prependListener('error', err => {
+          // we don't care about errors at this point
+          // so do nothiing
+          this.errorHandled = true;
+          if (err.code !== 'ECONNRESET') {
+            console.log(`end(): Ignoring unexpected error ${err.message}`);
+          }
+        });
         this.endCalled = true;
         this.client.on('close', () => {
           resolve(true);
