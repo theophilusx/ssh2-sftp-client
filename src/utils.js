@@ -19,46 +19,45 @@ function formatError(
 ) {
   let msg = '';
   let code = '';
-
-  //console.dir(err);
+  let retry = retryCount
+    ? ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`
+    : '';
 
   if (typeof err === 'string') {
-    msg = `${name}: ${err}`;
+    msg = `${name}: ${err}${retry}`;
     code = eCode;
+  } else if (err.custom) {
+    msg = `${name}: ${err.message}${retry}`;
+    code = err.code;
   } else {
     switch (err.code) {
       case 'ENOTFOUND':
         msg =
-          `${name}: ` +
-          `${err.level} error. Address lookup failed for host ${err.hostname}`;
+          `${name}: ${err.level} error. ` +
+          `Address lookup failed for host ${err.hostname}${retry}`;
         break;
       case 'ECONNREFUSED':
         msg =
           `${name}: ${err.level} error. Remote host at ` +
-          `${err.address} refused connection`;
+          `${err.address} refused connection${retry}`;
         break;
       case 'ECONNRESET':
-        msg = `${name}: Remote host has reset the connection: ${err.message}`;
+        msg =
+          `${name}: Remote host has reset the connection: ` +
+          `${err.message}${retry}`;
         break;
       case 'ENOENT':
-        msg = `${name}: ${err.message}`;
+        msg = `${name}: ${err.message}${retry}`;
         break;
       default:
-        msg = `${name}: ${err.message}`;
+        msg = `${name}: ${err.message}${retry}`;
     }
-    if (err.code) {
-      code = err.code;
-    } else {
-      code = eCode;
-    }
+    code = err.code ? err.code : eCode;
   }
-
-  if (retryCount) {
-    msg += ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`;
-  }
-  let theError = new Error(msg);
-  theError.code = code;
-  return theError;
+  let newError = new Error(msg);
+  newError.code = code;
+  newError.custom = true;
+  return newError;
 }
 
 /**
@@ -123,13 +122,13 @@ function localAccess(localPath, mode) {
   return new Promise((resolve, reject) => {
     fs.access(localPath, mode, err => {
       if (err) {
-        if (err.code === 'EACCES') {
-          resolve(false);
+        if (err.code === 'EACCES' || err.code === 'ENOENT') {
+          resolve([false, err.code]);
         } else {
           reject(err);
         }
       }
-      resolve(true);
+      resolve([true, undefined]);
     });
   });
 }
