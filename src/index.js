@@ -514,27 +514,25 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let absPath = await this.realPath(remotePath);
-    if (!absPath) {
+    let remoteExists = await this.exists(remotePath);
+    if (!remoteExists) {
       throw utils.formatError(
         `No such file: ${remotePath}`,
         'get',
         errorCode.badpath
       );
     }
-    let stats = await this.stat(absPath);
-    if ((stats.mode & 0o444) === 0) {
+    if (remoteExists === 'd') {
       throw utils.formatError(
-        `No read permission for ${remotePath}`,
+        `Bad path: ${remotePath} must be a file`,
         'get',
-        errorCode.permission
+        errorCode.badPath
       );
     }
     if (typeof dst === 'string') {
-      let dstPath = normalize(dst);
-      return _get(absPath, dstPath, options);
+      dst = normalize(dst);
     }
-    return _get(absPath, dst, options);
+    return _get(remotePath, dst, options);
   }
 
   /**
@@ -558,10 +556,17 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let src = await this.realPath(remotePath);
-    if (!src) {
+    let remoteExists = await this.exists(remotePath);
+    if (!remoteExists) {
       throw utils.formatError(
         `No such file: ${remotePath}`,
+        'fastGet',
+        errorCode.badPath
+      );
+    }
+    if (remoteExists === 'd') {
+      throw utils.formatError(
+        `Bad path: ${remotePath} must be a file`,
         'fastGet',
         errorCode.badPath
       );
@@ -572,11 +577,11 @@ class SftpClient {
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.fastGet(src, dst, options, err => {
+        this.sftp.fastGet(remotePath, dst, options, err => {
           if (err) {
             reject(
               utils.formatError(
-                `${err.message} src: ${src} dst: ${dst}`,
+                `${err.message} src: ${remotePath} dst: ${dst}`,
                 'fastGet',
                 err.code
               )

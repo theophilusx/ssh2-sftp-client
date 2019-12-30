@@ -74,7 +74,7 @@ describe('Bad permission tests', function() {
           makeRemotePath(config.sftpUrl, 'no-access-get.txt'),
           makeLocalPath(config.localUrl, 'no-access-get.txt')
         )
-      ).be.rejectedWith('No read permission');
+      ).be.rejectedWith('Permission denied');
     });
 
     it('list throws exception', function() {
