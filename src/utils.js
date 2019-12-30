@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+
 /**
  * Generate a new Error object with a reformatted error message which
  * is a little more informative and useful to users.
@@ -102,10 +104,42 @@ function makeCloseListener(client) {
   };
 }
 
+function localRealpath(localPath) {
+  return new Promise((resolve, reject) => {
+    fs.realpath(localPath, 'utf8', (err, absPath) => {
+      if (err) {
+        if (err.code === 'ENOENT') {
+          resolve(undefined);
+        } else {
+          reject(err);
+        }
+      }
+      resolve(absPath);
+    });
+  });
+}
+
+function localAccess(localPath, mode) {
+  return new Promise((resolve, reject) => {
+    fs.access(localPath, mode, err => {
+      if (err) {
+        if (err.code === 'EACCES') {
+          resolve(false);
+        } else {
+          reject(err);
+        }
+      }
+      resolve(true);
+    });
+  });
+}
+
 module.exports = {
   formatError,
   removeListeners,
   makeErrorListener,
   makeEndListener,
-  makeCloseListener
+  makeCloseListener,
+  localRealpath,
+  localAccess
 };

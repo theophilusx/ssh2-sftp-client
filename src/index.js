@@ -8,7 +8,7 @@ const Client = require('ssh2').Client;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const {posix, normalize} = require('path');
+const {join, posix, normalize} = require('path');
 const utils = require('./utils');
 
 const errorCode = {
@@ -161,6 +161,18 @@ class SftpClient {
     });
   }
 
+  /**
+   * @async
+   *
+   * Returns the real absolute path on the remote server. Is able to handle
+   * both '.' and '..' in path names, but not '~'. If the path is relative
+   * then the current working directory is prepended to create an absolute path.
+   * Returns undefined if the
+   * path does not exists.
+   *
+   * @param {String} remotePath - remote path, may be relative
+   * @returns {}
+   */
   realPath(remotePath) {
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -179,14 +191,17 @@ class SftpClient {
           this.client.prependListener('error', errorListener);
           this.sftp.realpath(remotePath, (err, absPath) => {
             if (err) {
-              reject(
-                utils.formatError(
-                  `${err.message} ${remotePath}`,
-                  'realPath',
-                  err.code
-                )
-              );
-              this.removeListener('error', errorListener);
+              if (err.code === 2) {
+                resolve(undefined);
+              } else {
+                reject(
+                  utils.formatError(
+                    `${err.message} ${remotePath}`,
+                    'realPath',
+                    err.code
+                  )
+                );
+              }
             }
             resolve(absPath);
           });
@@ -209,15 +224,44 @@ class SftpClient {
     return this.realPath('.');
   }
 
-  _list(remotePath, pattern = /.*/) {
+  /**
+   * @async
+   *
+   * List contents of a remote directory. If a pattern is provided,
+   * filter the results to only include files with names that match
+   * the supplied pattern. Return value is an array of file entry
+   * objects that include properties for type, name, size, modifiyTime,
+   * accessTime, rights {user, group other}, owner and group.
+   *
+   * @param {String} remotePath - path to remote directory
+   * @param {RegExp} pattern - regular expression to match filenames
+   * @returns {Array} file description objects
+   * @throws {Error}
+   */
+  async list(remotePath, pattern = /.*/) {
     const reg = /-/gi;
 
+    if (!this.sftp) {
+      throw utils.formatError(
+        'No SFTP connection available',
+        'list',
+        errorCode.connect
+      );
+    }
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such directory: ${remotePath}`,
+        'list',
+        errorCode.badPath
+      );
+    }
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.readdir(remotePath, (err, list) => {
+        this.sftp.readdir(absPath, (err, fileList) => {
           if (err) {
             reject(
               utils.formatError(
@@ -229,8 +273,8 @@ class SftpClient {
           } else {
             let newList = [];
             // reset file info
-            if (list) {
-              newList = list.map(item => {
+            if (fileList) {
+              newList = fileList.map(item => {
                 return {
                   type: item.longname.substr(0, 1),
                   name: item.filename,
@@ -267,64 +311,6 @@ class SftpClient {
   }
 
   /**
-   * Retrieves a directory listing. The pattern argument may be a regular expression
-   * or simple 'glob' style *.
-   *
-   * @param {String} path, a string containing the path to a directory
-   * @param {regex} pattern - An optional pattern used to filter the list
-   * @return {Promise} data, list info
-   */
-  async list(remotePath, pattern = /.*/) {
-    if (!this.sftp) {
-      throw utils.formatError(
-        'No SFTP connection available',
-        'list',
-        errorCode.connect
-      );
-    }
-    let absPath = await this.realPath(remotePath);
-    return this._list(absPath, pattern);
-  }
-
-  _exists(remotePath) {
-    return new Promise((resolve, reject) => {
-      let errorListener;
-      try {
-        errorListener = utils.makeErrorListener(reject, this);
-        this.client.prependListener('error', errorListener);
-        let {dir, base} = posix.parse(remotePath);
-        if (!base) {
-          // at root
-          resolve('d');
-        } else {
-          this.sftp.readdir(dir, (err, list) => {
-            if (err) {
-              if (err.code === 2) {
-                resolve(false);
-              } else {
-                reject(utils.formatError(err, 'exists'));
-              }
-            } else {
-              let [type] = list
-                .filter(item => item.filename === base)
-                .map(item => item.longname.substr(0, 1));
-              if (type) {
-                resolve(type);
-              } else {
-                resolve(false);
-              }
-            }
-          });
-        }
-      } catch (err) {
-        reject(utils.formatError(err, 'list'));
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
-  }
-
-  /**
    * @async
    *
    * Tests to see if an object exists. If it does, return the type of that object
@@ -336,35 +322,85 @@ class SftpClient {
    *                   object if it does
    */
   async exists(remotePath) {
-    try {
-      if (!this.sftp) {
-        throw utils.formatError(
-          'No SFTP connection available',
-          'exists',
-          errorCode.connect
-        );
-      }
+    if (!this.sftp) {
+      throw utils.formatError(
+        'No SFTP connections available',
+        'exists',
+        errorCode.connect
+      );
+    } else if (remotePath === '.') {
+      return 'd';
+    } else {
       let absPath = await this.realPath(remotePath);
-      if (remotePath === '.') {
-        // the '.' path will always exist and is always a directory
-        return 'd';
-      }
-      return this._exists(absPath);
-    } catch (err) {
-      if (err.code === 2) {
+      if (!absPath) {
         return false;
+      } else {
+        return new Promise((resolve, reject) => {
+          let errorListener;
+          try {
+            errorListener = utils.makeErrorListener(reject, this);
+            this.client.prependListener('error', errorListener);
+            let {dir, base} = posix.parse(absPath);
+            if (!base) {
+              // at root
+              resolve('d');
+            } else {
+              this.sftp.readdir(dir, (err, list) => {
+                if (err) {
+                  if (err.code === 2) {
+                    resolve(false);
+                  } else {
+                    reject(utils.formatError(err, 'exists'));
+                  }
+                } else {
+                  let [type] = list
+                    .filter(i => i.filename === base)
+                    .map(f => f.longname.substr(0, 1));
+                  if (type) {
+                    resolve(type);
+                  }
+                  resolve(false);
+                }
+              });
+            }
+          } catch (err) {
+            reject(utils.formatError(err, 'exists'));
+          } finally {
+            this.removeListener('error', errorListener);
+          }
+        });
       }
-      throw utils.formatError(err, 'exists');
     }
   }
 
-  _stat(remotePath) {
+  /**
+   * Retrieves attributes for path
+   *
+   * @param {String} path, a string containing the path to a file
+   * @return {Promise} stats, attributes info
+   */
+  async stat(remotePath) {
+    if (!this.sftp) {
+      throw utils.formatError(
+        'No SFTP connection available',
+        'stat',
+        errorCode.connect
+      );
+    }
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'stat',
+        errorCode.badPath
+      );
+    }
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.stat(remotePath, (err, stats) => {
+        this.sftp.stat(absPath, (err, stats) => {
           if (err) {
             reject(
               utils.formatError(
@@ -400,79 +436,6 @@ class SftpClient {
   }
 
   /**
-   * Retrieves attributes for path
-   *
-   * @param {String} path, a string containing the path to a file
-   * @return {Promise} stats, attributes info
-   */
-  async stat(remotePath) {
-    if (!this.sftp) {
-      throw utils.formatError(
-        'No SFTP connection available',
-        'stat',
-        errorCode.connect
-      );
-    }
-    let absPath = await this.realPath(remotePath);
-    return this._stat(absPath);
-  }
-
-  _get(path, dst, options) {
-    return new Promise((resolve, reject) => {
-      let errorListener;
-      try {
-        errorListener = utils.makeErrorListener(reject, this);
-        this.client.prependListener('error', errorListener);
-        let rdr = this.sftp.createReadStream(path, options);
-        rdr.on('error', err => {
-          utils.removeListeners(rdr);
-          reject(utils.formatError(`${err.message} ${path}`, 'get', err.code));
-        });
-        if (dst === undefined) {
-          // no dst specified, return buffer of data
-          let concatStream = concat(buff => {
-            rdr.removeAllListeners('error');
-            resolve(buff);
-          });
-          rdr.pipe(concatStream);
-        } else {
-          let wtr;
-          if (typeof dst === 'string') {
-            // dst local file path
-            wtr = fs.createWriteStream(dst);
-          } else {
-            // assume dst is a writeable
-            wtr = dst;
-          }
-          wtr.on('error', err => {
-            utils.removeListeners(rdr);
-            reject(
-              utils.formatError(
-                `${err.message} ${typeof dst === 'string' ? dst : ''}`,
-                'get',
-                err.code
-              )
-            );
-          });
-          wtr.on('finish', () => {
-            utils.removeListeners(rdr);
-            if (typeof dst === 'string') {
-              resolve(dst);
-            } else {
-              resolve(wtr);
-            }
-          });
-          rdr.pipe(wtr);
-        }
-      } catch (err) {
-        reject(utils.formatError(err, 'get'));
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
-  }
-
-  /**
    * get file
    *
    * If a dst argument is provided, it must be either a string, representing the
@@ -486,7 +449,64 @@ class SftpClient {
    *
    * @return {Promise}
    */
-  async get(path, dst, options) {
+  async get(remotePath, dst, options) {
+    const _get = (sftpPath, localDst, options) => {
+      return new Promise((resolve, reject) => {
+        let errorListener;
+        try {
+          errorListener = utils.makeErrorListener(reject, this);
+          this.client.prependListener('error', errorListener);
+          let rdr = this.sftp.createReadStream(sftpPath, options);
+          rdr.on('error', err => {
+            utils.removeListeners(rdr);
+            reject(
+              utils.formatError(`${err.message} ${sftpPath}`, 'get', err.code)
+            );
+          });
+          if (localDst === undefined) {
+            // no dst specified, return buffer of data
+            let concatStream = concat(buff => {
+              rdr.removeAllListeners('error');
+              resolve(buff);
+            });
+            rdr.pipe(concatStream);
+          } else {
+            let wtr;
+            if (typeof localDst === 'string') {
+              // dst local file path
+              wtr = fs.createWriteStream(localDst);
+            } else {
+              // assume dst is a writeable
+              wtr = localDst;
+            }
+            wtr.on('error', err => {
+              utils.removeListeners(rdr);
+              reject(
+                utils.formatError(
+                  `${err.message} ${typeof dst === 'string' ? localDst : ''}`,
+                  'get',
+                  err.code
+                )
+              );
+            });
+            wtr.on('finish', () => {
+              utils.removeListeners(rdr);
+              if (typeof localDst === 'string') {
+                resolve(localDst);
+              } else {
+                resolve(wtr);
+              }
+            });
+            rdr.pipe(wtr);
+          }
+        } catch (err) {
+          reject(utils.formatError(err, 'get'));
+        } finally {
+          this.removeListener('error', errorListener);
+        }
+      });
+    };
+
     if (!this.sftp) {
       throw utils.formatError(
         'No SFTP connection available',
@@ -494,46 +514,27 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let absPath = await this.realPath(path);
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'get',
+        errorCode.badpath
+      );
+    }
     let stats = await this.stat(absPath);
     if ((stats.mode & 0o444) === 0) {
       throw utils.formatError(
-        `No read permission for ${absPath}`,
+        `No read permission for ${remotePath}`,
         'get',
         errorCode.permission
       );
     }
     if (typeof dst === 'string') {
       let dstPath = normalize(dst);
-      return this._get(absPath, dstPath, options);
+      return _get(absPath, dstPath, options);
     }
-    return this._get(absPath, dst, options);
-  }
-
-  _fastGet(remotePath, localPath, options) {
-    return new Promise((resolve, reject) => {
-      let errorListener;
-      try {
-        errorListener = utils.makeErrorListener(reject, this);
-        this.client.prependListener('error', errorListener);
-        this.sftp.fastGet(remotePath, localPath, options, err => {
-          if (err) {
-            reject(
-              utils.formatError(
-                `${err.message} ${remotePath}`,
-                'fastGet',
-                err.code
-              )
-            );
-          }
-          resolve(`${remotePath} was successfully download to ${localPath}!`);
-        });
-      } catch (err) {
-        reject(utils.formatError(err, 'fastGet'));
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
+    return _get(absPath, dst, options);
   }
 
   /**
@@ -558,30 +559,33 @@ class SftpClient {
       );
     }
     let src = await this.realPath(remotePath);
+    if (!src) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'fastGet',
+        errorCode.badPath
+      );
+    }
     let dst = normalize(localPath);
-    return this._fastGet(src, dst, options);
-  }
-
-  _fastPut(localPath, remotePath, options) {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.fastPut(localPath, remotePath, options, err => {
+        this.sftp.fastGet(src, dst, options, err => {
           if (err) {
             reject(
               utils.formatError(
-                `${err.message} Local: ${localPath} Remote: ${remotePath}`,
-                'fastPut',
+                `${err.message} src: ${src} dst: ${dst}`,
+                'fastGet',
                 err.code
               )
             );
           }
-          resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+          resolve(`${remotePath} was successfully download to ${localPath}!`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'fastPut'));
+        reject(utils.formatError(err, 'fastGet'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -609,7 +613,22 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let src = fs.realpathSync(localPath);
+    let src = await utils.localRealpath(localPath);
+    if (!src) {
+      throw utils.formatError(
+        `No such file: ${localPath}`,
+        'fastPut',
+        errorCode.badPath
+      );
+    }
+    let canRead = await utils.localAccess(src, fs.constants.R_OK);
+    if (!canRead) {
+      throw utils.formatError(
+        `Permission denied: ${src}`,
+        'fastPut',
+        errorCode.permission
+      );
+    }
     let dst = remotePath;
     if (dst.startsWith('..')) {
       let root = await this.realPath('..');
@@ -618,24 +637,89 @@ class SftpClient {
       let root = await this.realPath('.');
       dst = root + this.remotePathSep + dst.substring(2);
     }
-    return this._fastPut(src, dst, options);
-  }
-
-  _put(src, remotePath, options) {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        let stream = this.sftp.createWriteStream(remotePath, options);
+        this.sftp.fastPut(src, dst, options, err => {
+          if (err) {
+            reject(
+              utils.formatError(
+                `${err.message} Local: ${src} Remote: ${dst}`,
+                'fastPut',
+                err.code
+              )
+            );
+          }
+          resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
+        });
+      } catch (err) {
+        reject(utils.formatError(err, 'fastPut'));
+      } finally {
+        this.removeListener('error', errorListener);
+      }
+    });
+  }
+
+  /**
+   * Create file a file on the remote server. The 'src' argument
+   * can be a buffer, string or read stream. If 'src' is a string, it
+   * should be the path to a local file.
+   *
+   * @param  {String|Buffer|stream} src - source data to use
+   * @param  {String} remotePath - path to remote file
+   * @param  {Object} options - options used for write stream configuration
+   *                            value supported by node streams.
+   * @return {Promise}
+   */
+  async put(localSrc, remotePath, options) {
+    if (!this.sftp) {
+      throw utils.formatError(
+        'No SFTP connections available',
+        'put',
+        errorCode.connect
+      );
+    }
+    let src = localSrc;
+    if (typeof src === 'string') {
+      src = await utils.localRealpath(src);
+      if (!src) {
+        throw utils.formatError(
+          `No such file: ${localSrc}`,
+          'put',
+          errorCode.badPath
+        );
+      }
+      let canRead = await utils.localAccess(src, fs.constants.R_OK);
+      if (!canRead) {
+        throw utils.formatError(
+          `Permission denied: ${src}`,
+          'put',
+          errorCode.permission
+        );
+      }
+    }
+    let dst = remotePath;
+    if (dst.startsWith('..')) {
+      let root = await this.realPath('..');
+      dst = root + this.remotePathSep + dst.substring(3);
+    } else if (dst.startsWith('.')) {
+      let root = await this.realPath('.');
+      dst = root + this.remotePathSep + dst.substring(2);
+    }
+    return new Promise((resolve, reject) => {
+      let errorListener;
+      try {
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
+        let stream = this.sftp.createWriteStream(dst, options);
         stream.on('error', err => {
-          reject(
-            utils.formatError(`${err.message} ${remotePath}`, 'put', err.code)
-          );
+          reject(utils.formatError(`${err.message} ${dst}`, 'put', err.code));
         });
         stream.on('finish', () => {
           utils.removeListeners(stream);
-          resolve(`Uploaded data stream to ${remotePath}`);
+          resolve(`Uploaded data stream to ${dst}`);
         });
         if (src instanceof Buffer) {
           stream.end(src);
@@ -667,41 +751,51 @@ class SftpClient {
   }
 
   /**
-   * Create file a file on the remote server. The 'src' argument
-   * can be a buffer, string or read stream. If 'src' is a string, it
-   * should be the path to a local file.
+   * Append to an existing remote file
    *
-   * @param  {String|Buffer|stream} src - source data to use
-   * @param  {String} remotePath - path to remote file
-   * @param  {Object} options - options used for write stream configuration
-   *                            value supported by node streams.
+   * @param  {Buffer|stream} input
+   * @param  {String} remotePath,
+   * @param  {Object} options
    * @return {Promise}
    */
-  async put(localSrc, remotePath, options) {
+  async append(input, remotePath, options) {
     if (!this.sftp) {
       throw utils.formatError(
-        'No SFTP connections available',
-        'put',
+        'No SFTP connection available',
+        'append',
         errorCode.connect
       );
     }
-    let src = localSrc;
-    if (typeof src === 'string') {
-      src = fs.realpathSync(src);
-      fs.accessSync(src, fs.constants.R_OK);
+    if (typeof input === 'string') {
+      throw utils.formatError(
+        'Cannot append one file to another',
+        'append',
+        errorCode.badPath
+      );
     }
-    let dst = remotePath;
-    if (dst.startsWith('..')) {
-      let root = await this.realPath('..');
-      dst = root + this.remotePathSep + dst.substring(3);
-    } else if (dst.startsWith('.')) {
-      let root = await this.realPath('.');
-      dst = root + this.remotePathSep + dst.substring(2);
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'append',
+        errorCode.badpath
+      );
     }
-    return this._put(src, dst, options);
-  }
-
-  _append(input, remotePath, options) {
+    let stats = await this.stat(absPath);
+    if ((stats.mode & 0o0100000) === 0) {
+      throw utils.formatError(
+        `${remotePath} Remote path must be a regular file`,
+        'append',
+        errorCode.badPath
+      );
+    }
+    if ((stats.mode & 0o0444) === 0) {
+      throw utils.formatError(
+        `${remotePath} No write permission`,
+        'append',
+        errorCode.permission
+      );
+    }
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
@@ -742,48 +836,6 @@ class SftpClient {
         this.removeListener('error', errorListener);
       }
     });
-  }
-
-  /**
-   * Append to an existing remote file
-   *
-   * @param  {Buffer|stream} input
-   * @param  {String} remotePath,
-   * @param  {Object} options
-   * @return {Promise}
-   */
-  async append(input, remotePath, options) {
-    if (!this.sftp) {
-      throw utils.formatError(
-        'No SFTP connection available',
-        'append',
-        errorCode.connect
-      );
-    }
-    if (typeof input === 'string') {
-      throw utils.formatError(
-        'Cannot append one file to another',
-        'append',
-        errorCode.badPath
-      );
-    }
-    let absPath = await this.realPath(remotePath);
-    let stats = await this.stat(absPath);
-    if ((stats.mode & 0o0100000) === 0) {
-      throw utils.formatError(
-        `${remotePath} Remote path must be a regular file`,
-        'append',
-        errorCode.badPath
-      );
-    }
-    if ((stats.mode & 0o0444) === 0) {
-      throw utils.formatError(
-        `${remotePath} No write permission`,
-        'append',
-        errorCode.permission
-      );
-    }
-    return this._append(input, absPath, options);
   }
 
   /**
@@ -865,7 +917,7 @@ class SftpClient {
    *                             directory
    * @return {Promise}..
    */
-  async rmdir(path, recursive = false) {
+  async rmdir(remotePath, recursive = false) {
     const doRmdir = p => {
       return new Promise((resolve, reject) => {
         let errorListener;
@@ -896,7 +948,14 @@ class SftpClient {
           errorCode.connect
         );
       }
-      let absPath = await this.realPath(path);
+      let absPath = await this.realPath(remotePath);
+      if (!absPath) {
+        throw utils.formatError(
+          `No such directory: ${remotePath}`,
+          'rmdir',
+          errorCode.badpath
+        );
+      }
       if (!recursive) {
         return doRmdir(absPath);
       }
@@ -925,28 +984,6 @@ class SftpClient {
     }
   }
 
-  _delete(path) {
-    return new Promise((resolve, reject) => {
-      let errorListener;
-      try {
-        errorListener = utils.makeErrorListener(reject, this);
-        this.client.prependListener('error', errorListener);
-        this.sftp.unlink(path, err => {
-          if (err) {
-            reject(
-              utils.formatError(`${err.message} ${path}`, 'delete', err.code)
-            );
-          }
-          resolve('Successfully deleted file');
-        });
-      } catch (err) {
-        reject(utils.formatError(err, 'delete'));
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
-  }
-
   /**
    * @async
    *
@@ -956,7 +993,7 @@ class SftpClient {
    * @return {Promise} with string 'Successfully deleeted file' once resolved
    *
    */
-  async delete(path) {
+  async delete(remotePath) {
     if (!this.sftp) {
       throw utils.formatError(
         'No SFTP connection available',
@@ -964,30 +1001,33 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let absPath = await this.realPath(path);
-    return this._delete(absPath);
-  }
-
-  _rename(fromPath, toPath) {
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'delete',
+        errorCode.badPath
+      );
+    }
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.rename(fromPath, toPath, err => {
+        this.sftp.unlink(absPath, err => {
           if (err) {
             reject(
               utils.formatError(
-                `${err.message} From: ${fromPath} To: ${toPath}`,
-                'rename',
+                `${err.message} ${remotePath}`,
+                'delete',
                 err.code
               )
             );
           }
-          resolve(`Successfully renamed ${fromPath} to ${toPath}`);
+          resolve('Successfully deleted file');
         });
       } catch (err) {
-        reject(utils.formatError(err, 'rename'));
+        reject(utils.formatError(err, 'delete'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -1014,6 +1054,13 @@ class SftpClient {
       );
     }
     let src = await this.realPath(fromPath);
+    if (!src) {
+      throw utils.formatError(
+        `No such file: ${fromPath}`,
+        'rename',
+        errorCode.badPath
+      );
+    }
     let dst = toPath;
     if (dst.startsWith('..')) {
       let root = await this.realPath('..');
@@ -1022,29 +1069,25 @@ class SftpClient {
       let root = await this.realPath('.');
       dst = root + this.remotePathSep + dst.substring(2);
     }
-    return this._rename(src, dst);
-  }
-
-  _chmod(remotePath, mode) {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.chmod(remotePath, mode, err => {
+        this.sftp.rename(src, dst, err => {
           if (err) {
             reject(
               utils.formatError(
-                `${err.message} ${remotePath}`,
-                'chmod',
+                `${err.message} From: ${src} To: ${dst}`,
+                'rename',
                 err.code
               )
             );
           }
-          resolve('Successfully change file mode');
+          resolve(`Successfully renamed ${fromPath} to ${toPath}`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'chmod'));
+        reject(utils.formatError(err, 'rename'));
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -1069,8 +1112,92 @@ class SftpClient {
         errorCode.connect
       );
     }
-    let path = await this.realPath(remotePath);
-    return this._chmod(path, mode);
+    let absPath = await this.realPath(remotePath);
+    if (!absPath) {
+      throw utils.formatError(
+        `No such file: ${remotePath}`,
+        'chmod',
+        errorCode.badPath
+      );
+    }
+    return new Promise((resolve, reject) => {
+      let errorListener;
+      try {
+        errorListener = utils.makeErrorListener(reject, this);
+        this.client.prependListener('error', errorListener);
+        this.sftp.chmod(absPath, mode, err => {
+          if (err) {
+            reject(
+              utils.formatError(`${err.message} ${absPath}`, 'chmod', err.code)
+            );
+          }
+          resolve('Successfully change file mode');
+        });
+      } catch (err) {
+        reject(utils.formatError(err, 'chmod'));
+      } finally {
+        this.removeListener('error', errorListener);
+      }
+    });
+  }
+
+  /**
+   * @async
+   *
+   * Upload the specified source directory to the specified destination
+   * directory. All regular files and sub-directories are uploaded to the remote
+   * server.
+   * @param {String} srcDir - local source directory
+   * @param {String} dstDir - remote destination directory
+   * @returns {String}
+   * @throws {Error}
+   */
+  async uploadDir(srcDir, dstDir) {
+    try {
+      if (!this.sftp) {
+        throw utils.formatError(
+          'No SFTP connection available',
+          'uploadDir',
+          errorCode.connect
+        );
+      }
+      let absPath = await this.realPath(dstDir);
+      if (!absPath) {
+        await this.mkdir(absPath, true);
+      } else {
+        let targetType = await this.exists(absPath);
+        if (targetType === '-') {
+          let err = new Error('Destination directory already exists as a file');
+          err.code = errorCode.badPath;
+          throw err;
+        }
+      }
+      let dirEntries = fs.readdirSync(normalize(srcDir), {
+        encoding: 'utf8',
+        withFileTypes: true
+      });
+      for (let e of dirEntries) {
+        if (e.isDirectory()) {
+          await this.uploadDir(
+            join(srcDir, e.name),
+            `${absPath}${this.remotePath}${e.name}`
+          );
+        } else if (e.isFile()) {
+          await this.fastPut(
+            join(srcDir, e.name),
+            `${absPath}${this.remotePath}${e.name}`
+          );
+        } else {
+          console.log(`uploadDir: File ignored: ${e.name} not a regular file`);
+        }
+      }
+      return `${srcDir} uploaded to ${dstDir}`;
+    } catch (err) {
+      throw utils.formatError(
+        `${err.message} src: ${srcDir} dst: ${dstDir}`,
+        'uploadDir'
+      );
+    }
   }
 
   /**

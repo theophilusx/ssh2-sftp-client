@@ -45,7 +45,7 @@ describe('Bad permission tests', function() {
           makeLocalPath(config.localUrl, 'no-access.txt'),
           makeRemotePath(config.sftpUrl, 'no-access1.txt')
         )
-      ).be.rejectedWith('permission denied');
+      ).be.rejectedWith('Permission denied');
     });
 
     it('put throws exception', function() {
@@ -54,7 +54,7 @@ describe('Bad permission tests', function() {
           makeLocalPath(config.localUrl, 'no-access.txt'),
           makeRemotePath(config.sftpUrl, 'no-access1.txt')
         )
-      ).be.rejectedWith('permission denied');
+      ).be.rejectedWith('Permission denied');
     });
   });
 

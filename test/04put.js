@@ -98,7 +98,7 @@ describe('put() method tests', function() {
         makeLocalPath(config.localUrl, 'no-such-file.txt'),
         makeRemotePath(config.sftpUrl, 'mocha-put-no-file.txt')
       )
-    ).to.be.rejectedWith('no such file or directory');
+    ).to.be.rejectedWith('No such file');
   });
 
   it('put with bad dst path should be rejected', function() {

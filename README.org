@@ -44,6 +44,8 @@ npm install ssh2-sftp-client
    - The auxList() method has been removed. This method was flagged as deprecated
      in version 4.x. The functionality provided by ~auxList()~ is available in
      ~list()~, making ~auxList()~ unnecessary.
+   - The realPath() method now returns ~undefined~ if the path does not exist
+     rather than throwing an exception. 
    - Improved error handling. The ~ssh2~ and ~ssh2-streams~ libraries use events
      to signal errors. Providing a clean Promise based API and managing these
      events can be challenging as an error event can fire at any time (including
@@ -173,6 +175,14 @@ it must handle the error. In this case, the handler will log the error to
 further attempts to use it and finally, ensure the ~this.errorHandler~ flag is
 reset to false in preparation for the next error. 
  
+** New Methods
+
+   - Added the method uploadDir(). This method will upload a directory
+     (including any subdirectories) to the remote server. Only directories and
+     regular files are uploaded (no symbolic links, FIFOs, socket FDs etc). Will
+     overwrite existing files or directories, but will not delete any remote
+     files or directories. 
+
 * Version 4.x
 ** Breaking Changes in Version 4.x
 
