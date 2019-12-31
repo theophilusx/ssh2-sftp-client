@@ -207,20 +207,20 @@ package for an explanation of these values.
   // common options
 
   let commonOpts {
-    host: 'localhost', // string Hostname or IP of server.
-    port: 22, // Port number of the server.
+    host: 'localhost', // string Hostname or IP of server
+    port: 22, // port number of the server
     forceIPv4: false, // boolean (optional) Only connect via IPv4 address
     forceIPv6: false, // boolean (optional) Only connect via IPv6 address
-    username: 'donald', // string Username for authentication.
+    username: 'donald', // string Username for authentication
     password: 'borsch', // string Password for password-based user authentication
     agent: process.env.SSH_AGENT, // string - Path to ssh-agent's UNIX socket
-    privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that
+    privateKey: fs.readFileSync('/path/to/key'), // buffer or string that
                                                  // contains the key data
     passphrase; 'a pass phrase', // string - For an encrypted private key
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
     strictVendor: true // boolean - Performs a strict server vendor check
     debug: myDebug // function - Set this to a function that receives a single
-                   // string argument to get detailed (local) debug information.
+                   // string argument to get detailed (local) debug information
     retries: 2 // integer. Number of times to retry connecting
     retry_factor: 2 // integer. Time factor used to calculate time between retries
     retry_minTimeout: 2000 // integer. Minimum timeout between attempts
@@ -383,7 +383,7 @@ The ~stat()~ method returns an object with the following properties;
     uid: 1000, // user ID
     gid: 985, // group ID
     size: 5, // file size
-    accessTime: 1566868566000, // Last access time. milliseconds
+    accessTime: 1566868566000, // last access time. milliseconds
     modifyTime: 1566868566000, // last modify time. milliseconds
     isDirectory: false, // true if object is a directory
     isFile: true, // true if object is a file
@@ -902,7 +902,7 @@ bring them across before saving to local file system.
 
   // Example of using a writeable with get to retrieve a file.
   // This code will read the remote file, convert all characters to upper case
-  // and then save it to a local file
+  // and then save it to a local file.
 
   const Client = require('../src/index.js');
   const path = require('path');
