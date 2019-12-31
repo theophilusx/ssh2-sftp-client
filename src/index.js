@@ -207,13 +207,17 @@ class SftpClient {
           });
         }
       } catch (err) {
-        reject(
-          utils.formatError(
-            `${err.message} ${remotePath}`,
-            'realPath',
-            err.code
-          )
-        );
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(
+            utils.formatError(
+              `${err.message} ${remotePath}`,
+              'realPath',
+              err.code
+            )
+          );
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -303,7 +307,11 @@ class SftpClient {
           }
         });
       } catch (err) {
-        reject(utils.formatError(err, 'list'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'list'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -428,7 +436,11 @@ class SftpClient {
           }
         });
       } catch (err) {
-        reject(utils.formatError(err, 'stat'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'stat'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -590,7 +602,11 @@ class SftpClient {
           resolve(`${remotePath} was successfully download to ${localPath}!`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'fastGet'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'fastGet'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -871,7 +887,11 @@ class SftpClient {
           input.pipe(stream);
         }
       } catch (err) {
-        reject(err, 'put');
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(err, 'put');
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -943,7 +963,11 @@ class SftpClient {
       }
       return doMkdir(realPath);
     } catch (err) {
-      throw utils.formatError(err, 'mkdir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw utils.formatError(err, 'mkdir');
+      }
     }
   }
 
@@ -973,7 +997,11 @@ class SftpClient {
             resolve('Successfully removed directory');
           });
         } catch (err) {
-          reject(utils.formatError(err, 'rmdir', err.code));
+          if (err.custom) {
+            reject(err);
+          } else {
+            reject(utils.formatError(err, 'rmdir', err.code));
+          }
         } finally {
           this.removeListener('error', errorListener);
         }
@@ -1020,7 +1048,11 @@ class SftpClient {
       }
       return doRmdir(absPath);
     } catch (err) {
-      throw utils.formatError(err, 'rmdir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw utils.formatError(err, 'rmdir');
+      }
     }
   }
 
@@ -1067,7 +1099,11 @@ class SftpClient {
           resolve('Successfully deleted file');
         });
       } catch (err) {
-        reject(utils.formatError(err, 'delete'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'delete'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -1127,7 +1163,11 @@ class SftpClient {
           resolve(`Successfully renamed ${fromPath} to ${toPath}`);
         });
       } catch (err) {
-        reject(utils.formatError(err, 'rename'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'rename'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -1174,7 +1214,11 @@ class SftpClient {
           resolve('Successfully change file mode');
         });
       } catch (err) {
-        reject(utils.formatError(err, 'chmod'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'chmod'));
+        }
       } finally {
         this.removeListener('error', errorListener);
       }
@@ -1268,7 +1312,11 @@ class SftpClient {
         });
         this.client.end();
       } catch (err) {
-        reject(utils.formatError(err, 'end'));
+        if (err.custom) {
+          reject(err);
+        } else {
+          reject(utils.formatError(err, 'end'));
+        }
       }
     });
   }
