@@ -1,10 +1,13 @@
 * SSH2 SFTP Client
 
-an SFTP client for node.js, a wrapper around [[https://github.com/mscdex/ssh2][SSH2]]  which provides a high level
-convenience abstraction as well as a Promise based API.
+an SFTP client for node.js, a wrapper around
+[[https://github.com/mscdex/ssh2][SSH2]] which provides a high level convenience
+abstraction as well as a Promise-based API.
 
 Documentation on the methods and available options in the underlying modules can
-be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
+be found on the [[https://github.com/mscdex/ssh2][SSH2]] and
+[[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]
+project pages.
 
 Current stable release is *v4.3.1*.
 
@@ -92,7 +95,8 @@ There has been minor changes to the API signatures
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
-module. For full details, please see [[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]
+module. For full details, please see
+[[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]
 
 All the methods will return a Promise, except for ~on()~ and
 ~removeListener()~, which are typically only used in special use cases.
@@ -174,7 +178,8 @@ client has thrown the error.
       return sftp.end();
     })
     .catch(err => {
-      console.log(`Error: ${err.message}`); // error message will include 'example-client'
+      console.log(`Error: ${err.message}`); // error message will include
+                                            // 'example-client'
     });
 #+end_src
 
@@ -185,16 +190,18 @@ available [[https://github.com/mscdex/ssh2#user-content-client-methods][here]]
 
 **** Connection Options
 
-This module is based on the excellent [[https://github.com/mscdex/ssh2#client][SSH2]] module. That module is a general SSH2
-client and server library and provides much more functionality than just SFTP
-connectivity. Many of the connect options provided by that module are less
+This module is based on the excellent
+[[https://github.com/mscdex/ssh2#client][SSH2]] module. That module is a general
+SSH2 client and server library and provides much more functionality than just
+SFTP connectivity. Many of the connect options provided by that module are less
 relevant for SFTP connections. It is recommended you keep the config options to
 the minimum needed and stick to the options listed in the ~commonOpts~ below.
 
 The ~retries~, ~retry_factor~ and ~retry_minTimeout~ options are not part of the
-SSH2 module. These are part of the configuration for the [[https://www.npmjs.com/package/retry][retry]] package and what
-is used to enable retrying of sftp connection attempts. See the documentation
-for that package for an explanation of these values.
+SSH2 module. These are part of the configuration for the
+[[https://www.npmjs.com/package/retry][retry]] package and what is used to
+enable retrying of sftp connection attempts. See the documentation for that
+package for an explanation of these values.
 
 #+begin_src javascript
   // common options
@@ -207,7 +214,8 @@ for that package for an explanation of these values.
     username: 'donald', // string Username for authentication.
     password: 'borsch', // string Password for password-based user authentication
     agent: process.env.SSH_AGENT, // string - Path to ssh-agent's UNIX socket
-    privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
+    privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that
+                                                 // contains the key data
     passphrase; 'a pass phrase', // string - For an encrypted private key
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
     strictVendor: true // boolean - Performs a strict server vendor check
@@ -256,9 +264,9 @@ realised, returns an array of objects representing items in the remote
 directory.
 
 - path :: {String} Remote directory path
-- pattern :: (optional) {string|RegExp} A pattern used to filter the items included in the returned
-             array. Pattern can be a simple /glob/-style string or a regular
-             expression. Defaults to ~/.*/~.
+- pattern :: (optional) {string|RegExp} A pattern used to filter the items
+             included in the returned array. Pattern can be a simple
+             /glob/-style string or a regular expression. Defaults to ~/.*/~.
 
 **** Example Use
 
@@ -486,8 +494,8 @@ throughput. This is the simplest method if you just want to download a file.
   {
     concurrency: 64, // integer. Number of concurrent reads to use
     chunkSize: 32768, // integer. Size of each read in bytes
-    step: function(total_transferred, chunk, total) // callback called each time a
-                                                    // chunk is transferred
+    step: function(total_transferred, chunk, total) // callback called each time
+                                                    // a chunk is transferred
   }
 #+end_src
 
@@ -570,7 +578,8 @@ often result in data corruption.
 *** fastPut(localPath, remotePath, options) ==> string
 
 Uploads the data in file at ~localPath~ to a new file on remote server at
-~remotePath~ using concurrency. The options object allows tweaking of the fast put process.
+~remotePath~ using concurrency. The options object allows tweaking of the fast
+put process.
 
 - localPath :: string. Path to local file to upload
 - remotePath :: string. Path to remote file to create
@@ -583,8 +592,9 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     concurrency: 64, // integer. Number of concurrent reads
     chunkSize: 32768, // integer. Size of each read in bytes
     mode: 0o755, // mixed. Integer or string representing the file mode to set
-    step: function(total_transferred, chunk, total) // function. Called every time
-    // a part of a file was transferred
+    step: function(total_transferred, chunk, total) // function. Called every
+                                                    // time a part of a file was
+                                                    // transferred
   }
 #+end_src
 
@@ -1090,14 +1100,15 @@ issue.
    - Fix connection retry feature
    - sftp connection object set to null when 'end' signal is raised
    - Removed 'connectMethod' argument from connect method.
-   - Refined adding/removing of listeners in connect() and end() methods to enable
-     errors to be adequately caught and reported.
+   - Refined adding/removing of listeners in connect() and end() methods to
+     enable errors to be adequately caught and reported.
    - Deprecate auxList() and add pattern/regexp filter option to list()
    - Refactored handling of event signals to provide better feedback to clients
    - Removed pointless 'permissions' property from objects returned by ~stat()~
      (same as mode property). Added additional properties describing the type of
      object.
-   - Added the ~removeListener()~ method to compliment the existing ~on()~ method.
+   - Added the ~removeListener()~ method to compliment the existing ~on()~
+     method.
 
 ** v2.5.2
    - Repository transferred to theophilusx
@@ -1140,14 +1151,20 @@ issue.
   - fix: get readable not emitting data events in node 10.0.0
 
 ** v2.1.1
-   - add: event listener. [[https://github.com/jyu213/ssh2-sftp-client#Event][doc]]
-   - add: ~get~ or ~put~ method add extra options [[https://github.com/jyu213/ssh2-sftp-client/pull/52][pr#52]]
+   - add: event listener.
+     [[https://github.com/jyu213/ssh2-sftp-client#Event][doc]]
+   - add: ~get~ or ~put~ method add extra options
+     [[https://github.com/jyu213/ssh2-sftp-client/pull/52][pr#52]]
 
 ** v2.0.1
-   - add: ~chmod~ method [[https://github.com/jyu213/ssh2-sftp-client/pull/33][pr#33]]
-   - update: upgrade ssh2 to V0.5.0 [[https://github.com/jyu213/ssh2-sftp-client/pull/30][pr#30]]
-   - fix: get method stream error reject unwork [[https://github.com/jyu213/ssh2-sftp-client/issues/22][#22]]
-   - fix: return Error object on promise rejection [[https://github.com/jyu213/ssh2-sftp-client/pull/20][pr#20]]
+   - add: ~chmod~ method
+     [[https://github.com/jyu213/ssh2-sftp-client/pull/33][pr#33]]
+   - update: upgrade ssh2 to V0.5.0
+     [[https://github.com/jyu213/ssh2-sftp-client/pull/30][pr#30]]
+   - fix: get method stream error reject unwork
+     [[https://github.com/jyu213/ssh2-sftp-client/issues/22][#22]]
+   - fix: return Error object on promise rejection
+     [[https://github.com/jyu213/ssh2-sftp-client/pull/20][pr#20]]
 
 ** v1.1.0
    - fix: add encoding control support for binary stream
