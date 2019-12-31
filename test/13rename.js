@@ -41,12 +41,13 @@ describe('rename() method tests', function() {
   });
 
   it('rename should return a promise', function() {
-    return expect(
-      sftp.rename(
-        makeRemotePath(config.sftpUrl, 'rename-promise.md'),
-        makeRemotePath(config.sftpUrl, 'rename-promise2.txt')
-      )
-    ).to.be.a('promise');
+    let from = makeRemotePath(config.sftpUrl, 'rename-promise.md');
+    let to = makeRemotePath(config.sftpUrl, 'rename-promise2.txt');
+    let p = sftp.rename(from, to);
+    expect(p).to.be.a('promise');
+    return expect(p).to.eventually.equal(
+      `Successfully renamed ${from} to ${to}`
+    );
   });
 
   it('rename non-existent file is rejected', function() {
@@ -78,7 +79,7 @@ describe('rename() method tests', function() {
         makeRemotePath(config.sftpUrl, 'rename-new.md'),
         makeRemotePath(config.sftpUrl, 'rename-conflict.md')
       )
-    ).to.be.rejectedWith('Failure');
+    ).to.be.rejectedWith('Bad path');
   });
 
   it('rename with relative source 1', function() {

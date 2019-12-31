@@ -101,7 +101,7 @@ describe('Bad permission tests', function() {
           Buffer.from('Should not work'),
           makeRemotePath(config.sftpUrl, 'no-access-get.txt')
         )
-      ).be.rejectedWith('No write permission');
+      ).be.rejectedWith('Permission denied');
     });
 
     it('mkdir throws exception', function() {

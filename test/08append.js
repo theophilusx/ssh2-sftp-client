@@ -119,7 +119,7 @@ describe('append() method tests', function() {
         Buffer.from('should not work'),
         makeRemotePath(config.sftpUrl, 'append-dir-test')
       )
-    ).to.be.rejectedWith('Remote path must be a regular file');
+    ).to.be.rejectedWith('Bad path');
   });
 
   it('append relative remote path 1', function() {
