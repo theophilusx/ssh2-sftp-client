@@ -110,12 +110,12 @@ considered to be relative to whatever the remote server considers to be the
 configured, this may not always be what you expect. The module also does some
 very basic tests on results returned from the remote server to try and determine
 platform type and will replace path separators with whatever the remote systems
-uses (e.g. replace ~/~ with ~\~ on MS Windows). 
+uses (e.g. replace ~/~ with ~\~ on MS Windows).
 
 There is a small performance hit for using ~./~ and ~../~ as the module must
 query the remote server to determine what the root path is and derive the
 absolute path. Using absolute paths are therefore more efficient and likely more
-robust. 
+robust.
 
 When specifying file paths, ensure to include a full path i.e. include the
 remote filename. Don't expect the module to append the local file name to the
@@ -220,7 +220,7 @@ package for an explanation of these values.
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
     strictVendor: true // boolean - Performs a strict server vendor check
     debug: myDebug // function - Set this to a function that receives a single
-                  // string argument to get detailed (local) debug information.
+                   // string argument to get detailed (local) debug information.
     retries: 2 // integer. Number of times to retry connecting
     retry_factor: 2 // integer. Time factor used to calculate time between retries
     retry_minTimeout: 2000 // integer. Minimum timeout between attempts
@@ -357,7 +357,7 @@ if it exists or false if it does not.
       return sftp.exists('/path/to/remote/dir');
     })
     .then(data => {
-      console.log(data);          // will be false or d, -, l (dir, file or link)
+      console.log(data); // will be false or d, -, l (dir, file or link)
     })
     .then(() => {
       sftp.end();
@@ -1016,7 +1016,7 @@ This solution was provided by @jmorino.
   // client is connected
 #+end_src
 
-** Timeout while waiting for handshake or handshake errors 
+** Timeout while waiting for handshake or handshake errors
 
 Some users have encountered the error 'Timeout while waiting for handshake' or
 'Handshake failed, no matching client->server ciphers. This is often due to the
@@ -1026,7 +1026,7 @@ used by ssh2. One of the connect options provided by the ssh2 module is
 exchange, ciphers, hmac and compression algorithms as well as server
 host key used to establish the initial secure connection. See the SSH2
 documentation for details. Getting these parameters correct usually resolves the
-issue. 
+issue.
 
 * Change Log
 ** v4.3.1 (Prod Version)
@@ -1034,23 +1034,23 @@ issue.
    - Added errorListener to error event in each promise to catch error events
      and reject the promise. This should resolve the issue of some error events
      causing uncaughtException erros and causing the process to exit.
- 
+
 ** v4.3.0 (Prod Version)
    - Ensure errors include an err.code property and pass through the error code
      from the originating error
    - Change tests for error type to use ~error.code~ instead of matching on
      ~error.message~.
 
-** v4.2.4 
+** v4.2.4
    - Bumped ssh2 to v0.8.6
    - Added exists() usage example to examples directory
    - Clarify documentation on get() method
-** v4.2.3 
+** v4.2.3
    - Fix bug in ~exist()~ where tests on root directory returned false
    - Minor documentation fixes
    - Clean up mkdir example
 
-** v4.2.2 
+** v4.2.2
    - Minor documentation fixes
    - Added additional examples in the ~example~ directory
 
@@ -1173,7 +1173,7 @@ issue.
    - fix: multi image upload
    - change: remove ~this.client.sftp~ to ~connect~ function
 
-* Troubleshooting 
+* Troubleshooting
 
 The ~ssh2-sftp-client~ module is essentially a wrapper around the ~ssh2~ and
 ~ssh2-streams~ modules, providing a higher level ~promise~ based API. When you
@@ -1184,7 +1184,7 @@ reproducible example which reproduces the issue. Once you have that, try to
 replicate the functionality just using the ~ssh2~ and ~ssh2-streams~ modules. If
 the issue still occurs, then you can be fairly confident it is something related
 to those later 2 modules and therefore and issue which should be referred to the
-maintainer of that module. 
+maintainer of that module.
 
 The ~ssh2~ and ~ssh2-streams~ modules are very solid, high quality modules with
 a large user base. Most of the time, issues with those modules are due to client
@@ -1194,7 +1194,7 @@ these modules have good defaults, the flexibility of the ssh2 protocol means
 that not all options are available by default. You may need to tweak the
 connection options, ssh2 algorithms and ciphers etc for some remote servers. The
 documentation for both the ~ssh2~ and ~ssh2-streams~ module is quite
-comprehensive and there is lots of valuable information in the issue logs. 
+comprehensive and there is lots of valuable information in the issue logs.
 
 If you run into an issue which is not repeatable with just the ~ssh2~ and
 ~ssh2-streams~ modules, then please log an issue against the ~ssh2-sftp-client~
@@ -1203,14 +1203,14 @@ module and I will investigate. Please note the next section on logging issues.
 Note also that in the repository there are two useful directories. The first is
 the examples directory, which contain some examples of using ~ssh2-sftp-client~
 to perform common tasks. A few minutes reviewing these examples can provide that
-additional bit of detail to help fix any problems you are encountering. 
+additional bit of detail to help fix any problems you are encountering.
 
 The second directory is the tools directory. I have some very basic simple
 scripts in this directory which perform basic tasks using only the ~ssh2~ and
 ~ssh2-streams~ modules (no ssh2-sftp-client module). These can be useful when
 trying to determine if the issue is with the underlying ~ssh2~ and
-~ssh2-streams~ modules. 
- 
+~ssh2-streams~ modules.
+
 * Logging Issues
 
 Please log an issue for all bugs, questions, feature and enhancement
@@ -1228,11 +1228,11 @@ the issue. Things which will help
 - Platform and software for the remote SFTP server when possible
 - Example of your code. By far, the most common issue is incorrect use of the
   module API. Example code can usually result in such issues being resolved very
-  quickly. 
+  quickly.
 
 Perhaps the best assistance is a minimal reproducible example of the issue. Once
-the issue can be readily reproduced, it can usually be fixed very quickly. 
- 
+the issue can be readily reproduced, it can usually be fixed very quickly.
+
 * Pull Requests
 
 Pull requests are always welcomed. However, please ensure your changes pass all
