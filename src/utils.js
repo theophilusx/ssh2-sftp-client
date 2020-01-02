@@ -120,17 +120,22 @@ function makeCloseListener(client) {
   };
 }
 
-function localRealpath(localPath) {
+function localExists(localPath) {
   return new Promise((resolve, reject) => {
-    fs.realpath(localPath, 'utf8', (err, absPath) => {
+    fs.stat(localPath, (err, stats) => {
       if (err) {
-        if (err.code === 'ENOENT') {
-          resolve(undefined);
-        } else {
-          reject(err);
-        }
+        console.dir(err);
+        reject(err);
       }
-      resolve(absPath);
+      if (stats.isDirectory()) {
+        resolve('d');
+      } else if (stats.isSymbolicLink()) {
+        resolve('l');
+      } else if (stats.isFile()) {
+        resolve('-');
+      } else {
+        resolve('');
+      }
     });
   });
 }
@@ -140,6 +145,7 @@ function localAccess(localPath, mode = fs.constants.R_OK, full = true) {
     let result = {
       valid: true,
       path: path.normalize(localPath),
+      type: '',
       msg: '',
       code: ''
     };
@@ -243,7 +249,7 @@ module.exports = {
   makeErrorListener,
   makeEndListener,
   makeCloseListener,
-  localRealpath,
+  localExists,
   localAccess,
   checkRemotePath,
   haveConnection

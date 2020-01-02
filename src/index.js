@@ -1057,13 +1057,22 @@ class SftpClient {
       let localInfo = await utils.localAccess(srcDir);
       if (!localInfo.valid) {
         throw utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
+      } else {
+        localInfo.type = await utils.localExists(localInfo.path);
       }
-      let dirExists = await this.exists(dstDir);
-      if (!dirExists) {
-        await this.mkdir(dstDir, true);
-      } else if (dirExists === '-') {
+      if (localInfo.type !== 'd') {
         throw utils.formatError(
-          `Remote path is not a directory: ${dstDir}`,
+          `Bad path: ${localInfo.path} must be a directory`,
+          'uploadDir',
+          errorCode.badPath
+        );
+      }
+      let remoteInfo = await utils.checkRemotePath(this, dstDir, true);
+      if (!remoteInfo.valid) {
+        await this.mkdir(remoteInfo.path, true);
+      } else if (remoteInfo.type !== 'd') {
+        throw utils.formatError(
+          `Bad path: ${dstDir} must be a directory`,
           'uploadDir',
           errorCode.badpath
         );
@@ -1074,19 +1083,19 @@ class SftpClient {
       });
       for (let e of dirEntries) {
         if (e.isDirectory()) {
-          let newSrc = join(srcDir, e.name);
-          let newDst = dstDir + this.remotePathSep + e.name;
+          let newSrc = join(localInfo.path, e.name);
+          let newDst = remoteInfo.path + this.remotePathSep + e.name;
           await this.uploadDir(newSrc, newDst);
         } else if (e.isFile()) {
           await this.fastPut(
-            join(srcDir, e.name),
-            dstDir + this.remotePathSep + e.name
+            join(localInfo.path, e.name),
+            remoteInfo.path + this.remotePathSep + e.name
           );
         } else {
           console.log(`uploadDir: File ignored: ${e.name} not a regular file`);
         }
       }
-      return `${srcDir} uploaded to ${dstDir}`;
+      return `${localInfo.path} uploaded to ${remoteInfo.path}`;
     } catch (err) {
       return utils.handleError(err, 'uploadDir');
     }

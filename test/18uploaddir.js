@@ -95,3 +95,47 @@ describe('Partial file upload', function() {
     ]);
   });
 });
+
+describe('bad path tests', function() {
+  let sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
+  });
+
+  before('UploadDir bad path setup hook', async function() {
+    sftp = await getConnection('upload');
+    return true;
+  });
+
+  after('UploadDir clenaup hook', async function() {
+    await closeConnection('upload', sftp);
+    return true;
+  });
+
+  it('Non-existent source directory is rejected', function() {
+    let localDir = makeLocalPath(config.localUrl, 'no-such-dir');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
+    return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
+      /No such file/
+    );
+  });
+
+  it('Source directory is a file rejected', function() {
+    let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
+    return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
+      /Bad path/
+    );
+  });
+
+  it('Destination directory is a file rejected', function() {
+    let localDir = makeLocalPath(config.localUrl, 'upload-src');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test', 'file1.txt');
+    return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
+      /Bad path/
+    );
+  });
+});
