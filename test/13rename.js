@@ -79,7 +79,7 @@ describe('rename() method tests', function() {
         makeRemotePath(config.sftpUrl, 'rename-new.md'),
         makeRemotePath(config.sftpUrl, 'rename-conflict.md')
       )
-    ).to.be.rejectedWith('Bad path');
+    ).to.be.rejectedWith('Permission denied');
   });
 
   it('rename with relative source 1', function() {

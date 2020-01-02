@@ -39,9 +39,9 @@ describe('list() method tests', function() {
   });
 
   it('list return should be a promise', function() {
-    return expect(
-      sftp.list(makeRemotePath(config.sftpUrl, 'list-test'))
-    ).to.be.a('promise');
+    let p = sftp.list(makeRemotePath(config.sftpUrl, 'list-test'));
+    expect(p).to.be.a('promise');
+    return expect(p).to.be.fulfilled;
   });
 
   it('list return for empty directory should be empty', function() {
@@ -53,7 +53,7 @@ describe('list() method tests', function() {
   it('list non-existent directory rejected', function() {
     return expect(
       sftp.list(makeRemotePath(config.sftpUrl, 'list-test/not-exist'))
-    ).to.be.rejectedWith('No such directory');
+    ).to.be.rejectedWith('No such file');
   });
 
   it('list existing dir returns details of each entry', async function() {

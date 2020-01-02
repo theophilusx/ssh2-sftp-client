@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Generate a new Error object with a reformatted error message which
@@ -58,6 +59,22 @@ function formatError(
   newError.code = code;
   newError.custom = true;
   return newError;
+}
+
+function handleError(err, name, reject) {
+  if (reject) {
+    if (err.custom) {
+      reject(err);
+    } else {
+      reject(formatError(err, name));
+    }
+  } else {
+    if (err.custom) {
+      throw err;
+    } else {
+      throw formatError(err, name);
+    }
+  }
 }
 
 /**
@@ -118,27 +135,116 @@ function localRealpath(localPath) {
   });
 }
 
-function localAccess(localPath, mode) {
+function localAccess(localPath, mode = fs.constants.R_OK, full = true) {
   return new Promise((resolve, reject) => {
-    fs.access(localPath, mode, err => {
-      if (err) {
-        if (err.code === 'EACCES' || err.code === 'ENOENT') {
-          resolve([false, err.code]);
-        } else {
-          reject(err);
-        }
+    let result = {
+      valid: true,
+      path: path.normalize(localPath),
+      msg: '',
+      code: ''
+    };
+    const handleError = (err, testPath) => {
+      if (err.code === 'EACCES') {
+        result.msg = `Permission denied: ${testPath}`;
+        result.code = err.code;
+        result.valid = false;
+      } else if (err.code === 'ENOENT') {
+        result.msg = `No such file: ${testPath}`;
+        result.code = err.code;
+        result.valid = false;
+      } else {
+        reject(err);
       }
-      resolve([true, undefined]);
-    });
+    };
+
+    if (full) {
+      fs.access(result.path, mode, err => {
+        if (err) {
+          handleError(err, result.path);
+        }
+        resolve(result);
+      });
+    } else {
+      let dir = path.posix.parse(result.path).dir;
+      fs.access(dir, mode, err => {
+        if (err) {
+          handleError(err, dir);
+        }
+        resolve(result);
+      });
+    }
   });
+}
+
+async function checkRemotePath(client, remotePath, full = false) {
+  let result = {
+    valid: true,
+    path: remotePath,
+    type: undefined,
+    msg: '',
+    code: ''
+  };
+
+  if (result.path.startsWith('..')) {
+    let root = await client.realPath('..');
+    result.path = root + client.remotePathSep + result.path.substring(3);
+  } else if (result.path.startsWith('.')) {
+    let root = await client.realPath('.');
+    result.path = root + client.remotePathSep + result.path.substring(2);
+  }
+  let dir;
+  if (full) {
+    result.type = await client.exists(result.path);
+  } else {
+    dir = path.posix.parse(result.path).dir;
+    result.type = await client.exists(dir);
+  }
+  if (!result.type) {
+    if (full) {
+      result.msg = `No such file: ${result.path}`;
+      result.code = 'ERR_BAD_PATH';
+      result.valid = false;
+    } else {
+      result.msg = `No such directory: ${dir}`;
+
+      result.valid = false;
+    }
+  } else if (!full && result.type !== 'd') {
+    result.msg = `Bad path: ${dir} must be a directory`;
+    result.valid = false;
+  }
+  if (!result.valid) {
+    result.code = 'ERR_BAD_PATH';
+  }
+  return result;
+}
+
+function haveConnection(client, name, reject) {
+  if (!client.sftp) {
+    let newError = formatError(
+      'No SFTP connection available',
+      name,
+      'ERR_NOT_CONNECTED'
+    );
+    if (reject) {
+      reject(newError);
+      return false;
+    } else {
+      throw newError;
+    }
+  }
+  return true;
 }
 
 module.exports = {
   formatError,
+  handleError,
   removeListeners,
   makeErrorListener,
   makeEndListener,
   makeCloseListener,
   localRealpath,
-  localAccess
+  localAccess,
+  checkRemotePath,
+  haveConnection
 };
