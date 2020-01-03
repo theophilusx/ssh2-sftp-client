@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const constants = require('./constants');
 
 /**
  * Generate a new Error object with a reformatted error message which
@@ -15,7 +16,7 @@ const path = require('path');
 function formatError(
   err,
   name = 'sftp',
-  eCode = 'ERR_GENERIC_CLIENT',
+  eCode = constants.errorCode.generic,
   retryCount
 ) {
   let msg = '';
@@ -140,46 +141,72 @@ function localExists(localPath) {
   });
 }
 
-function localAccess(localPath, mode = fs.constants.R_OK, full = true) {
-  return new Promise((resolve, reject) => {
-    let result = {
-      valid: true,
-      path: path.normalize(localPath),
-      type: '',
-      msg: '',
-      code: ''
+function classifyError(err, testPath) {
+  if (err.code === 'EACCES') {
+    return {
+      msg: `Permission denied: ${testPath}`,
+      code: constants.errorCode.permission
     };
-    const handleError = (err, testPath) => {
-      if (err.code === 'EACCES') {
-        result.msg = `Permission denied: ${testPath}`;
-        result.code = err.code;
-        result.valid = false;
-      } else if (err.code === 'ENOENT') {
-        result.msg = `No such file: ${testPath}`;
-        result.code = err.code;
-        result.valid = false;
-      } else {
-        reject(err);
-      }
+  } else if (err.code === 'ENOENT') {
+    return {
+      msg: `No such file: ${testPath}`,
+      code: constants.errorCode.notexist
     };
+  }
+  return {
+    msg: err.message,
+    code: err.code ? err.code : constants.errorCode.generic
+  };
+}
 
-    if (full) {
-      fs.access(result.path, mode, err => {
-        if (err) {
-          handleError(err, result.path);
-        }
-        resolve(result);
-      });
-    } else {
-      let dir = path.posix.parse(result.path).dir;
-      fs.access(dir, mode, err => {
-        if (err) {
-          handleError(err, dir);
-        }
-        resolve(result);
-      });
+function testLocalAccess(testPath, mode = fs.constants.R_OK, full = true) {
+  return new Promise((resolve, reject) => {
+    try {
+      let r = {
+        path: testPath,
+        valid: true
+      };
+      if (full) {
+        fs.access(testPath, mode, err => {
+          if (err) {
+            let {msg, code} = classifyError(err, testPath);
+            r.valid = false;
+            r.msg = msg;
+            r.code = code;
+          }
+          resolve(r);
+        });
+      } else {
+        let dir = path.posix.parse(testPath).dir;
+        fs.access(dir, mode, err => {
+          if (err) {
+            let {msg, code} = classifyError(err, dir);
+            r.valid = false;
+            r.msg = msg;
+            r.code = code;
+          }
+          resolve(r);
+        });
+      }
+    } catch (err) {
+      reject(err);
     }
   });
+}
+
+async function localAccess(localPath, mode = fs.constants.R_OK, full = true) {
+  try {
+    let result = await testLocalAccess(localPath, mode);
+    if (result.valid && full) {
+      result.type = await localExists(result.path);
+    } else if (result.valid && !full) {
+      let dir = path.posix.parse(result.path).dir;
+      result.type = await localExists(dir);
+    }
+    return result;
+  } catch (err) {
+    throw formatError(err, 'localAccess', constants.errorCode.generic);
+  }
 }
 
 async function checkRemotePath(client, remotePath, full = false) {
@@ -208,19 +235,16 @@ async function checkRemotePath(client, remotePath, full = false) {
   if (!result.type) {
     if (full) {
       result.msg = `No such file: ${result.path}`;
-      result.code = 'ERR_BAD_PATH';
+      result.code = constants.errorCode.notexist;
       result.valid = false;
     } else {
-      result.msg = `No such directory: ${dir}`;
-
+      result.msg = `Bad path: ${dir}`;
+      result.code = constants.errorCode.badPath;
       result.valid = false;
     }
   } else if (!full && result.type !== 'd') {
     result.msg = `Bad path: ${dir} must be a directory`;
     result.valid = false;
-  }
-  if (!result.valid) {
-    result.code = 'ERR_BAD_PATH';
   }
   return result;
 }
@@ -230,7 +254,7 @@ function haveConnection(client, name, reject) {
     let newError = formatError(
       'No SFTP connection available',
       name,
-      'ERR_NOT_CONNECTED'
+      constants.errorCode.connect
     );
     if (reject) {
       reject(newError);

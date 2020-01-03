@@ -96,7 +96,7 @@ describe('Partial file upload', function() {
   });
 });
 
-describe('bad path tests', function() {
+describe('Uploaddir bad path tests', function() {
   let sftp;
 
   before(function(done) {
@@ -136,6 +136,34 @@ describe('bad path tests', function() {
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test', 'file1.txt');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
       /Bad path/
+    );
+  });
+});
+
+describe('Download directory', function() {
+  let sftp;
+
+  before(function(done) {
+    setTimeout(function() {
+      done();
+    }, config.delay);
+  });
+
+  before('Download directory setup hook', async function() {
+    sftp = await getConnection('upload');
+    return true;
+  });
+
+  after('download directory clenaup hook', async function() {
+    await closeConnection('upload', sftp);
+    return true;
+  });
+
+  it('Download directory', function() {
+    let localDir = makeLocalPath(config.localUrl, 'download-test');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
+    return expect(sftp.downloadDir(remoteDir, localDir)).to.eventually.equal(
+      `${remoteDir} downloaded to ${localDir}`
     );
   });
 });

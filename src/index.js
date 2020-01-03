@@ -10,13 +10,7 @@ const concat = require('concat-stream');
 const retry = require('retry');
 const {join, posix, normalize} = require('path');
 const utils = require('./utils');
-
-const errorCode = {
-  generic: 'ERR_GENERIC_CLIENT',
-  connect: 'ERR_NOT_CONNECTED',
-  badPath: 'ERR_BAD_PATH',
-  permission: 'ERR_NO_PERMISSON'
-};
+const {errorCode} = require('./constants');
 
 class SftpClient {
   constructor(clientName) {
@@ -1057,10 +1051,7 @@ class SftpClient {
       let localInfo = await utils.localAccess(srcDir);
       if (!localInfo.valid) {
         throw utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
-      } else {
-        localInfo.type = await utils.localExists(localInfo.path);
-      }
-      if (localInfo.type !== 'd') {
+      } else if (localInfo.type !== 'd') {
         throw utils.formatError(
           `Bad path: ${localInfo.path} must be a directory`,
           'uploadDir',
@@ -1098,6 +1089,46 @@ class SftpClient {
       return `${localInfo.path} uploaded to ${remoteInfo.path}`;
     } catch (err) {
       return utils.handleError(err, 'uploadDir');
+    }
+  }
+
+  async downloadDir(srcDir, dstDir) {
+    try {
+      utils.haveConnection(this, 'downloadDir');
+      let localInfo = await utils.localAccess(dstDir, fs.constants.W_OK);
+      if (!localInfo.valid && localInfo.code === errorCode.notexist) {
+        fs.mkdirSync(localInfo.path, {recursive: true});
+      } else if (!localInfo.valid) {
+        throw utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
+      } else if (localInfo.type !== 'd') {
+        throw utils.formatError(
+          `Bad path: ${localInfo.path} must be a directory`,
+          'downloadDir',
+          errorCode.badPath
+        );
+      }
+      let remoteInfo = await utils.checkRemotePath(this, srcDir, true);
+      if (!remoteInfo.valid) {
+        throw utils.formatError(remoteInfo.msg, 'downloadDir', remoteInfo.code);
+      }
+      let fileList = await this.list(remoteInfo.path);
+      for (let f of fileList) {
+        if (f.type === 'd') {
+          let newSrc = remoteInfo.path + this.remotePathSep + f.name;
+          let newDst = join(localInfo.path, f.name);
+          await this.downloadDir(newSrc, newDst);
+        } else if (f.type === '-') {
+          await this.fastGet(
+            remoteInfo.path + this.remotePathSep + f.name,
+            join(localInfo.path, f.name)
+          );
+        } else {
+          console.log(`downloadDir: File ignored: ${f.name} not regular file`);
+        }
+      }
+      return `${remoteInfo.path} downloaded to ${localInfo.path}`;
+    } catch (err) {
+      return utils.handleError(err, 'downloadDir');
     }
   }
 
