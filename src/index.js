@@ -10,7 +10,7 @@ const concat = require('concat-stream');
 const retry = require('retry');
 const {join, posix, normalize} = require('path');
 const utils = require('./utils');
-const {errorCode} = require('./constants');
+const {errorCode, targetType} = require('./constants');
 
 class SftpClient {
   constructor(clientName) {
@@ -519,23 +519,34 @@ class SftpClient {
         errorCode.badPath
       );
     }
-    let dst = normalize(localPath);
+    let localInfo = await utils.checkLocalPath(localPath, targetType.writeFile);
+    if (!localInfo.valid && !localInfo.parentValid) {
+      throw utils.formatError(
+        localInfo.parentMsg,
+        'fastGet',
+        localInfo.parentCode
+      );
+    } else if (!localInfo.valid && localInfo.code !== errorCode.notexist) {
+      throw utils.formatError(localInfo.msg, 'fastGet', localInfo.code);
+    }
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
         errorListener = utils.makeErrorListener(reject, this);
         this.client.prependListener('error', errorListener);
-        this.sftp.fastGet(pathInfo.path, dst, options, err => {
+        this.sftp.fastGet(pathInfo.path, localInfo.path, options, err => {
           if (err) {
             reject(
               utils.formatError(
-                `${err.message} src: ${pathInfo.path} dst: ${dst}`,
+                `${err.message} src: ${pathInfo.path} dst: ${localInfo.path}`,
                 'fastGet',
                 err.code
               )
             );
           }
-          resolve(`${remotePath} was successfully download to ${localPath}!`);
+          resolve(
+            `${remotePath} was successfully download to ${localInfo.path}!`
+          );
         });
       } catch (err) {
         utils.handleError(err, 'fastGet', reject);
@@ -560,7 +571,7 @@ class SftpClient {
    */
   async fastPut(localPath, remotePath, options) {
     utils.haveConnection(this, 'fastPut');
-    let localInfo = await utils.localAccess(localPath);
+    let localInfo = await utils.checkLocalPath(localPath);
     if (!localInfo.valid) {
       throw utils.formatError(localInfo.msg, 'fastPut', localInfo.code);
     }
@@ -609,7 +620,7 @@ class SftpClient {
   async put(localSrc, remotePath, options) {
     utils.haveConnection(this, 'put');
     if (typeof localSrc === 'string') {
-      let localInfo = await utils.localAccess(localSrc);
+      let localInfo = await utils.checkLocalPath(localSrc);
       if (!localInfo.valid) {
         throw utils.formatError(localInfo.msg, 'put', localInfo.code);
       }
@@ -1048,15 +1059,9 @@ class SftpClient {
   async uploadDir(srcDir, dstDir) {
     try {
       utils.haveConnection(this, 'uploadDir');
-      let localInfo = await utils.localAccess(srcDir);
+      let localInfo = await utils.checkLocalPath(srcDir, targetType.readDir);
       if (!localInfo.valid) {
         throw utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
-      } else if (localInfo.type !== 'd') {
-        throw utils.formatError(
-          `Bad path: ${localInfo.path} must be a directory`,
-          'uploadDir',
-          errorCode.badPath
-        );
       }
       let remoteInfo = await utils.checkRemotePath(this, dstDir, true);
       if (!remoteInfo.valid) {
@@ -1095,21 +1100,23 @@ class SftpClient {
   async downloadDir(srcDir, dstDir) {
     try {
       utils.haveConnection(this, 'downloadDir');
-      let localInfo = await utils.localAccess(dstDir, fs.constants.W_OK);
-      if (!localInfo.valid && localInfo.code === errorCode.notexist) {
-        fs.mkdirSync(localInfo.path, {recursive: true});
-      } else if (!localInfo.valid) {
-        throw utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
-      } else if (localInfo.type !== 'd') {
-        throw utils.formatError(
-          `Bad path: ${localInfo.path} must be a directory`,
-          'downloadDir',
-          errorCode.badPath
-        );
-      }
       let remoteInfo = await utils.checkRemotePath(this, srcDir, true);
       if (!remoteInfo.valid) {
         throw utils.formatError(remoteInfo.msg, 'downloadDir', remoteInfo.code);
+      }
+      let localInfo = await utils.checkLocalPath(dstDir, targetType.writeDir);
+      if (!localInfo.valid && localInfo.code === errorCode.notexist) {
+        if (localInfo.parentValid) {
+          fs.mkdirSync(localInfo.path, {recursive: true});
+        } else {
+          throw utils.formatError(
+            localInfo.parentMsg,
+            'downloadDir',
+            localInfo.parentCode
+          );
+        }
+      } else if (!localInfo.valid) {
+        throw utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
       }
       let fileList = await this.list(remoteInfo.path);
       for (let f of fileList) {

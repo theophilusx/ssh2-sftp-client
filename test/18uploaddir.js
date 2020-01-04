@@ -173,4 +173,20 @@ describe('Download directory', function() {
       `${remoteDir} downloaded to ${localDir}`
     );
   });
+
+  it('Bad src directory', function() {
+    let localDir = makeLocalPath(config.localUrl, 'not-needed');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'no-such-dir');
+    return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
+      'No such file'
+    );
+  });
+
+  it('Bad dst directory', function() {
+    let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
+    return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
+      'Bad path'
+    );
+  });
 });

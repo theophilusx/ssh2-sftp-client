@@ -5,9 +5,18 @@ const errorCode = {
   connect: 'ERR_NOT_CONNECTED',
   badPath: 'ERR_BAD_PATH',
   permission: 'EACCES',
-  notexist: 'ENOENT'
+  notexist: 'ENOENT',
+  notdir: 'ENOTDIR'
+};
+
+const targetType = {
+  writeFile: 1,
+  readFile: 2,
+  writeDir: 3,
+  readDir: 4
 };
 
 module.exports = {
-  errorCode
+  errorCode,
+  targetType
 };

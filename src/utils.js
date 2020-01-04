@@ -142,51 +142,96 @@ function localExists(localPath) {
 }
 
 function classifyError(err, testPath) {
-  if (err.code === 'EACCES') {
-    return {
-      msg: `Permission denied: ${testPath}`,
-      code: constants.errorCode.permission
-    };
-  } else if (err.code === 'ENOENT') {
-    return {
-      msg: `No such file: ${testPath}`,
-      code: constants.errorCode.notexist
-    };
+  switch (err.code) {
+    case 'EACCES':
+      return {
+        msg: `Permission denied: ${testPath}`,
+        code: constants.errorCode.permission
+      };
+    case 'ENOENT':
+      return {
+        msg: `No such file: ${testPath}`,
+        code: constants.errorCode.notexist
+      };
+    case 'ENOTDIR':
+      return {
+        msg: `Not a directory: ${testPath}`,
+        code: constants.errorCode.notdir
+      };
+    default:
+      return {
+        msg: err.message,
+        code: err.code ? err.code : constants.errorCode.generic
+      };
   }
-  return {
-    msg: err.message,
-    code: err.code ? err.code : constants.errorCode.generic
-  };
 }
 
-function testLocalAccess(testPath, mode = fs.constants.R_OK, full = true) {
+function testLocalAccess(testPath, target = constants.targetType.readFile) {
   return new Promise((resolve, reject) => {
     try {
       let r = {
-        path: testPath,
+        path: path.normalize(testPath),
         valid: true
       };
-      if (full) {
-        fs.access(testPath, mode, err => {
-          if (err) {
-            let {msg, code} = classifyError(err, testPath);
-            r.valid = false;
-            r.msg = msg;
-            r.code = code;
-          }
-          resolve(r);
-        });
-      } else {
-        let dir = path.posix.parse(testPath).dir;
-        fs.access(dir, mode, err => {
-          if (err) {
-            let {msg, code} = classifyError(err, dir);
-            r.valid = false;
-            r.msg = msg;
-            r.code = code;
-          }
-          resolve(r);
-        });
+      switch (target) {
+        case constants.targetType.readFile:
+          fs.access(r.path, fs.constants.R_OK, err => {
+            if (err) {
+              let {msg, code} = classifyError(err, r.path);
+              r.valid = false;
+              r.msg = msg;
+              r.code = code;
+            }
+            resolve(r);
+          });
+          break;
+        case constants.targetType.readDir:
+          fs.access(r.path, fs.constants.R_OK || fs.constants.X_OK, err => {
+            if (err) {
+              let {msg, code} = classifyError(err, r.path);
+              r.valid = false;
+              r.msg = msg;
+              r.code = code;
+            }
+            resolve(r);
+          });
+          break;
+        case constants.targetType.writeDir:
+        case constants.targetType.writeFile:
+          fs.access(r.path, fs.constants.W_OK, err => {
+            if (err) {
+              let {msg, code} = classifyError(err, r.path);
+              r.valid = false;
+              r.msg = msg;
+              r.code = code;
+            }
+            if (!r.valid && r.code === constants.errorCode.notexist) {
+              let dir = path.posix.parse(r.path).dir;
+              fs.access(dir, fs.constants.W_OK, err => {
+                if (err) {
+                  let {msg, code} = classifyError(err, dir);
+                  r.parentValid = false;
+                  r.parentMsg = msg;
+                  r.parentCode = code;
+                } else {
+                  r.parentValid = true;
+                }
+                resolve(r);
+              });
+            } else {
+              resolve(r);
+            }
+          });
+          break;
+
+        default:
+          reject(
+            formatError(
+              `Unknown target type: ${target}`,
+              'testLocalAccess',
+              constants.errorCode.generic
+            )
+          );
       }
     } catch (err) {
       reject(err);
@@ -194,18 +239,67 @@ function testLocalAccess(testPath, mode = fs.constants.R_OK, full = true) {
   });
 }
 
-async function localAccess(localPath, mode = fs.constants.R_OK, full = true) {
+async function checkLocalPath(
+  testPath,
+  target = constants.targetType.readFile
+) {
   try {
-    let result = await testLocalAccess(localPath, mode);
-    if (result.valid && full) {
-      result.type = await localExists(result.path);
-    } else if (result.valid && !full) {
-      let dir = path.posix.parse(result.path).dir;
-      result.type = await localExists(dir);
+    switch (target) {
+      case constants.targetType.readFile: {
+        let rslt = await testLocalAccess(testPath, target);
+        if (rslt.valid) {
+          rslt.type = await localExists(rslt.path);
+          if (rslt.type !== '-') {
+            rslt.valid = false;
+            rslt.msg = `Bad path: ${rslt.path} must be a regular file`;
+            rslt.code = constants.errorCode.badPath;
+          }
+        }
+        return rslt;
+      }
+      case constants.targetType.readDir: {
+        let rslt = await testLocalAccess(testPath, target);
+        if (rslt.valid) {
+          rslt.type = await localExists(rslt.path);
+          if (rslt.type !== 'd') {
+            rslt.valid = false;
+            rslt.msg = `Bad path: ${rslt.path} must be a directory`;
+            rslt.code = constants.errorCode.badPath;
+          }
+        }
+        return rslt;
+      }
+      case constants.targetType.writeFile:
+      case constants.targetType.writeDir: {
+        let rslt = await testLocalAccess(testPath, target);
+        if (rslt.valid) {
+          rslt.type = await localExists(rslt.path);
+          if (target === constants.targetType.writeFile && rslt.type !== '-') {
+            rslt.valid = false;
+            rslt.msg = `Bad path: ${rslt.path} must be a file`;
+            rslt.code = constants.errorCode.badPath;
+          } else if (rslt.type !== 'd') {
+            rslt.valid = false;
+            rslt.msg = `Bad path: ${rslt.path} must be a directory`;
+            rslt.code = constants.errorCode.badPath;
+          }
+        } else if (rslt.parentValid) {
+          let dir = path.posix.parse(rslt.path).dir;
+          rslt.parentType = await localExists(dir);
+          if (rslt.parentType !== 'd') {
+            rslt.msg = `Bad path: ${dir} must be a directory`;
+            rslt.code = constants.errorCode.badPath;
+          } else {
+            rslt.parentValid = true;
+          }
+        }
+        return rslt;
+      }
+      default:
+        throw new Error(`Unknown target type: ${target}`);
     }
-    return result;
   } catch (err) {
-    throw formatError(err, 'localAccess', constants.errorCode.generic);
+    throw formatError(err.message, 'checkLocalPath', err.code);
   }
 }
 
@@ -274,7 +368,7 @@ module.exports = {
   makeEndListener,
   makeCloseListener,
   localExists,
-  localAccess,
+  checkLocalPath,
   checkRemotePath,
   haveConnection
 };
