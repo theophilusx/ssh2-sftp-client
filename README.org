@@ -181,59 +181,12 @@ reset to false in preparation for the next error.
      (including any subdirectories) to the remote server. Only directories and
      regular files are uploaded (no symbolic links, FIFOs, socket FDs etc). Will
      overwrite existing files or directories, but will not delete any remote
-     files or directories. 
-
-* Version 4.x
-** Breaking Changes in Version 4.x
-
- There has been minor changes to the API signatures
-
- - The ~connect()~ method no longer accepts a 'connectMethod' argument. It was
-   not clear what this argument was for or what it did.
-
- - Additional options are now available in the configure object passed to the
-   ~connect()~ method to control the connection retry functionality.
-
- - Node versions before 8.x are no longer supported.
-
- - Error message formats have changed. While they are now more consistent, if you
-   have code which parses the messages, it will need to be updated.
-
- - The ~auxList()~ method is deprecated. An additional optional ~pattern~
-   argument has been added to the ~list()~ method to facilitate filtering of
-   results returned by ~list()~. Both 'glob' and regexp pattern styles are
-   supported.
-
- - The properties returned by the ~stat()~ method have changed. The ~permissions~
-   property has been removed as it contained the same information as the ~mode~
-   property. New properties ~isDirectory~, ~isFile~, ~isBlockDevice~,
-   ~isCharacterDevice~, ~isSymbolicLink~, ~isFIFO~ and ~isSocket~ have been added.
-
-** Enhancements in Version 4.2.x
-
-   - Added ability to set a client name in ~Client()~ constructor. This can be
-     useful when creating multiple clients as the client name will be displayed
-     in error messages, providing a clue as to which client has failed.
-   - Added a work-around for the SSH2 bug which results in only an ~end~ event
-     being raised when the remote server drops the connection during the connect
-     process. (see FAQ section below).
-   - Added additional error checking to prevent attempts to call ~connect()~ on
-     an already connected client. While a client can be used to make multiple
-     connections, you must call ~end()~ before calling ~connect()~ again. Each
-     client object can only represent a single connection to an SFTP
-     server. However, some methods, such as ~fastPut()~ and ~fastGet()~ will use
-     concurrency to speed up the transfer of data.
-   - Added some more examples in the example directory of the repository
-
-** Enhancements in Version 4.1.x
-
-   - Some of the data upload/download methods would create an empty destination
-     file when the source file did not exist. This has now been fixed.
-   - Handling of relative path names was weak and inconsistent. This has now been
-     made more consistent and reliable. Two new methods ~realPath()~ and ~cwd()~
-     have been added
-   - More error checking and provision of error messages with more meaningful
-     information. Expansion and enhancements of test cases.
+     files or directories.
+   - Added the method downloadDir(). this method will download a directory
+     (including any subdirectories) to the local file system. Only directories
+     and regular files are downloaded (no symbolic links, FIFOs, socket FDs
+     etc).. Will overwrite existing files or directories, but will not delete
+     any local files in the directories. 
 
 * Documentation
 
@@ -946,6 +899,27 @@ is mainly used internally to resolve remote path names.
 
 Returns what the server believes is the current remote working directory.
 
+*** uploadDir(srcDir, dstDir) ==> string
+
+Upload the directory specified by ~srcDir~ to the remote directory specified by
+~dstDir~. The ~dstDir~ will be created if necessary. Any sub directories within
+~srcDir~ will also be uploaded. Any existing files in the remote path will be
+overwritten.
+
+- srcDir :: A local file path specified as a string
+- dstDir :: A remote file path specified as a string
+
+*** downloadDir(srcDir, dstDir) ==> string
+
+Download the remote directory specified by ~srcDir~ to the local file system
+directory specified by ~dstDir~. The ~dstDir~ directory will be created if
+required. All sub directories within ~srcDir~ will also be copied. Any existing
+files in the local path will be overwritten. No files in the local path will be
+deleted. 
+
+- srcDir :: A remote file path specified as a string
+- dstDir :: A local file path specified as a string 
+ 
 *** end() ==> boolean
 
 Ends the current client session, releasing the client socket and associated
@@ -1165,13 +1139,28 @@ documentation for details. Getting these parameters correct usually resolves the
 issue. 
 
 * Change Log
-** v4.3.1 (Prod Version)
+** v5.0.0 (Prod version)
+   - Added two new methods ~uploadDir()~ and ~downloadDir()~
+   - Removed deprecated ~auxList()~ method
+   - Improved error message consistency
+   - Added additional error checking to enable more accurate and useful error
+     messages.
+   - Added default error handler to deal with event errors which fire outside of
+     active SftpClient methods (i.e. connection unexpectedly reset by remote host).
+   - Modified event handlers to ensure that only event handlers added by the
+     module are removed by the module (users now responsible for removing any
+     custom event handlers they add).
+   - Module error handlers added using ~prependListener~ to ensure they are
+     called before any additional custom handlers added by client code.
+   - Any error events fired during an ~end()~ call are now ignored. 
+
+** v4.3.1 
    - Updated end() method to resolve once close event fires
    - Added errorListener to error event in each promise to catch error events
      and reject the promise. This should resolve the issue of some error events
      causing uncaughtException erros and causing the process to exit.
  
-** v4.3.0 (Prod Version)
+** v4.3.0 
    - Ensure errors include an err.code property and pass through the error code
      from the originating error
    - Change tests for error type to use ~error.code~ instead of matching on

@@ -11,6 +11,7 @@ const {
   makeLocalPath,
   makeRemotePath
 } = require('./hooks/global-hooks');
+const fs = require('fs');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -141,7 +142,7 @@ describe('Uploaddir bad path tests', function() {
 });
 
 describe('Download directory', function() {
-  let sftp;
+  let sftp, sftpHook;
 
   before(function(done) {
     setTimeout(function() {
@@ -150,12 +151,18 @@ describe('Download directory', function() {
   });
 
   before('Download directory setup hook', async function() {
-    sftp = await getConnection('upload');
+    sftp = await getConnection('download');
+    sftpHook = await getConnection('download-hook');
     return true;
   });
 
   after('download directory clenaup hook', async function() {
-    await closeConnection('upload', sftp);
+    let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
+    let localDir = makeLocalPath(config.localUrl, 'download-test');
+    await sftpHook.rmdir(remoteDir, true);
+    fs.rmdirSync(localDir, {recursive: true});
+    await closeConnection('download', sftp);
+    await closeConnection('download-hook', sftpHook);
     return true;
   });
 
