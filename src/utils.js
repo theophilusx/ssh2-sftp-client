@@ -65,6 +65,16 @@ function formatError(
   return newError;
 }
 
+/**
+ * Tests an error to see if it is one which has already been customised
+ * by this module or not. If not, applies appropriate customisation.
+ *
+ * @param {Error} err - an Error object
+ * @param {String} name - name to be used in customised error message
+ * @param {Function} reject - If defined, call this function instead of
+ *                            throwing the error
+ * @throws {Error}
+ */
 function handleError(err, name, reject) {
   if (reject) {
     if (err.custom) {
@@ -124,6 +134,16 @@ function makeCloseListener(client) {
   };
 }
 
+/**
+ * @async
+ *
+ * Tests to see if a path identifies an existing item. Returns either
+ * 'd' = directory, 'l' = sym link or '-' regular file if item exists. Returns
+ * false if it does not
+ *
+ * @param {String} localPath
+ * @returns {Boolean | String}
+ */
 function localExists(localPath) {
   return new Promise((resolve, reject) => {
     fs.stat(localPath, (err, stats) => {
@@ -144,6 +164,14 @@ function localExists(localPath) {
   });
 }
 
+/**
+ * Used by checkRemotePath and checkLocalPath to help ensure consistent
+ * error messages.
+ *
+ * @param {Error} err - original error
+ * @param {String} testPath - path associated with the error
+ * @returns {Object} with properties of 'msg' and 'code'.
+ */
 function classifyError(err, testPath) {
   switch (err.code) {
     case 'EACCES':
@@ -169,7 +197,7 @@ function classifyError(err, testPath) {
   }
 }
 
-function testLocalAccess(testPath, target = targetType.readFile) {
+function testLocalAccess(testPath, target) {
   return new Promise((resolve, reject) => {
     try {
       let r = {
@@ -242,6 +270,34 @@ function testLocalAccess(testPath, target = targetType.readFile) {
   });
 }
 
+/**
+ * @async
+ *
+ * Tests the provided path and returns an object with details that can
+ * be used to determine appropriate action by the client. What is tested
+ * depends on the target type -
+ * readFile: target must be a file and must be readable
+ * readDir: target must be a directory and must be readable
+ * readObj: target can be either file or directory, but must be readable
+ * writeFile: if target exists, must be a file and must be writeable
+ * writeDir: if target exists, must be a directory and must be writeable
+ * writeObj: if target exists, it must be writeable.
+ *
+ * If a write* target does not exist, a test is performed to ensure that the
+ * parent is a directory. It is assumed for write* objects that the module
+ * will create them if they don't exist.
+ *
+ * @param {String} testPath - path to test
+ * @param {Number} target - Type of target (see constants.targetTye)
+ * @returns {Object} Returned object has following properties
+ * path: the real path (with '.' and '..' replaced etc)
+ * valid: boolean - true if exists and is valid, false otherwise
+ * msg: Error message - only if valid is false
+ * code: Error coce - only if valid is false
+ * parentValid: only if valid is false. Weather parent is a directory
+ * parentMsg: Error message associated with parent when parenValid is false
+ * parentCode: error code when parentValid is false
+ */
 async function checkLocalPath(testPath, target = targetType.readFile) {
   try {
     switch (target) {
@@ -423,6 +479,16 @@ async function checkRemotePath(
   }
 }
 
+/**
+ * Check to see if there is an active sftp connection
+ *
+ * @param {Object} client - current sftp object
+ * @param {String} name - name given to this connection
+ * @param {Function} reject - if defined, call this rather than throw
+ *                            an error
+ * @returns {Boolean} True if connection OK
+ * @throws {Error}
+ */
 function haveConnection(client, name, reject) {
   if (!client.sftp) {
     let newError = formatError(

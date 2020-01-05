@@ -1133,11 +1133,7 @@ class SftpClient {
       }
       return `${localInfo.path} uploaded to ${remoteInfo.path}`;
     } catch (err) {
-      if (err === undefined) {
-        console.log('Undefined error? How?');
-      } else {
-        return utils.handleError(err, 'uploadDir');
-      }
+      return utils.handleError(err, 'uploadDir');
     }
   }
 
