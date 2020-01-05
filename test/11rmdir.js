@@ -46,7 +46,7 @@ describe('rmdir() method tests', function() {
   it('rmdir on non-existent directory should be rejected', function() {
     return expect(
       sftp.rmdir(makeRemotePath(config.sftpUrl, 'rmdir-not-exist'), true)
-    ).to.be.rejectedWith('No such file');
+    ).to.be.rejectedWith('No such directory');
   });
 
   it('rmdir without recursion on empty directory', function() {

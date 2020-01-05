@@ -107,7 +107,7 @@ describe('put() method tests', function() {
         makeLocalPath(config.localUrl, 'test-file1.txt'),
         makeRemotePath(config.sftpUrl, 'bad-directory', 'bad-file.txt')
       )
-    ).to.be.rejectedWith('Bad path');
+    ).to.be.rejectedWith('No such directory');
   });
 
   it('put relative remote path 1', async function() {

@@ -53,7 +53,7 @@ describe('list() method tests', function() {
   it('list non-existent directory rejected', function() {
     return expect(
       sftp.list(makeRemotePath(config.sftpUrl, 'list-test/not-exist'))
-    ).to.be.rejectedWith('No such file');
+    ).to.be.rejectedWith('No such directory');
   });
 
   it('list existing dir returns details of each entry', async function() {

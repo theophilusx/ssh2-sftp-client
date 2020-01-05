@@ -13,7 +13,9 @@ const targetType = {
   writeFile: 1,
   readFile: 2,
   writeDir: 3,
-  readDir: 4
+  readDir: 4,
+  readObj: 5,
+  writeObj: 6
 };
 
 module.exports = {

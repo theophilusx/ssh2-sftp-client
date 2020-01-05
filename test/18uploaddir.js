@@ -178,7 +178,7 @@ describe('Download directory', function() {
     let localDir = makeLocalPath(config.localUrl, 'not-needed');
     let remoteDir = makeRemotePath(config.sftpUrl, 'no-such-dir');
     return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
-      'No such file'
+      'No such directory'
     );
   });
 

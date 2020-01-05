@@ -80,7 +80,7 @@ describe('fastPut() method tests', function() {
         makeLocalPath(config.localUrl, 'test-file1.txt'),
         makeRemotePath(config.sftpUrl, 'non-existent-dir', 'fastput-error.txt')
       )
-    ).to.rejectedWith('Bad path');
+    ).to.rejectedWith('No such directory');
   });
 
   it('fastPut remote relative path 1', async function() {
