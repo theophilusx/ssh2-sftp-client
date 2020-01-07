@@ -172,7 +172,7 @@ class SftpClient {
       let errorListener;
 
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'realPath');
         this.client.prependListener('error', errorListener);
         if (utils.haveConnection(this, 'realPath', reject)) {
           this.sftp.realpath(remotePath, (err, absPath) => {
@@ -220,7 +220,7 @@ class SftpClient {
       let errorListener;
 
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'exists');
         this.client.prependListener('error', errorListener);
         if (utils.haveConnection(this, 'exists', reject)) {
           if (remotePath === '.') {
@@ -304,7 +304,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'list');
         this.client.prependListener('error', errorListener);
         this.sftp.readdir(pathInfo.path, (err, fileList) => {
           if (err) {
@@ -374,7 +374,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'stat');
         this.client.prependListener('error', errorListener);
         this.sftp.stat(pathInfo.path, (err, stats) => {
           if (err) {
@@ -430,7 +430,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          errorListener = utils.makeErrorListener(reject, this);
+          errorListener = utils.makeErrorListener(reject, this, 'get');
           this.client.prependListener('error', errorListener);
           let rdr = this.sftp.createReadStream(sftpPath, options);
           rdr.on('error', err => {
@@ -548,7 +548,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'fastGet');
         this.client.prependListener('error', errorListener);
         this.sftp.fastGet(pathInfo.path, localInfo.path, options, err => {
           if (err) {
@@ -608,7 +608,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'fastPut');
         this.client.prependListener('error', errorListener);
         this.sftp.fastPut(localInfo.path, pathInfo.path, options, err => {
           if (err) {
@@ -665,7 +665,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'put');
         this.client.prependListener('error', errorListener);
         let stream = this.sftp.createWriteStream(pathInfo.path, options);
         stream.on('error', err => {
@@ -748,7 +748,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'append');
         this.client.prependListener('error', errorListener);
         let writerOptions;
         if (options) {
@@ -801,7 +801,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          errorListener = utils.makeErrorListener(reject, this);
+          errorListener = utils.makeErrorListener(reject, this, 'mkdir');
           this.client.prependListener('error', errorListener);
           this.sftp.mkdir(p, err => {
             if (err) {
@@ -869,7 +869,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          errorListener = utils.makeErrorListener(reject, this);
+          errorListener = utils.makeErrorListener(reject, this, 'rmdir');
           this.client.prependListener('error', errorListener);
           this.sftp.rmdir(p, err => {
             if (err) {
@@ -951,7 +951,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'delete');
         this.client.prependListener('error', errorListener);
         this.sftp.unlink(pathInfo.path, err => {
           if (err) {
@@ -1008,7 +1008,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'rename');
         this.client.prependListener('error', errorListener);
         this.sftp.rename(fromInfo.path, toInfo.path, err => {
           if (err) {
@@ -1053,7 +1053,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       let errorListener;
       try {
-        errorListener = utils.makeErrorListener(reject, this);
+        errorListener = utils.makeErrorListener(reject, this, 'chmod');
         this.client.prependListener('error', errorListener);
         this.sftp.chmod(pathInfo.path, mode, err => {
           if (err) {

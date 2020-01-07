@@ -110,10 +110,11 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function makeErrorListener(reject, self) {
+function makeErrorListener(reject, self, name) {
   return function(err) {
-    reject(formatError(err));
     self.errorHandled = true;
+    console.debug('Error event caught by method error handler');
+    reject(formatError(err, name));
   };
 }
 
