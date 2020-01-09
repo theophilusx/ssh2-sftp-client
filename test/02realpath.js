@@ -96,7 +96,7 @@ describe('Path tests', function() {
     );
   });
 
-  it('realPath returns undefined for non-existing path', function() {
+  it("realPath returns '' for non-existing path", function() {
     return expect(
       sftp.realPath(
         makeRemotePath(
@@ -106,6 +106,6 @@ describe('Path tests', function() {
           'path-not-exist-file.txt'
         )
       )
-    ).to.eventually.equal(undefined);
+    ).to.eventually.equal('');
   });
 });

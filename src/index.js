@@ -178,7 +178,7 @@ class SftpClient {
           this.sftp.realpath(remotePath, (err, absPath) => {
             if (err) {
               if (err.code === 2) {
-                resolve(undefined);
+                resolve('');
               } else {
                 reject(
                   utils.formatError(
@@ -228,7 +228,8 @@ class SftpClient {
       targetType.readDir
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'list', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'list', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -338,7 +339,8 @@ class SftpClient {
       targetType.readObj
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'stat', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'stat', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -459,7 +461,8 @@ class SftpClient {
       targetType.readFile
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'get', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'get', pathInfo.code);
+      throw e;
     }
     if (typeof dst === 'string') {
       let localInfo = await utils.checkLocalPath(dst, targetType.writeFile);
@@ -469,13 +472,15 @@ class SftpClient {
       ) {
         dst = localInfo.path;
       } else if (!localInfo.parentValid) {
-        throw utils.formatError(
+        let e = utils.formatError(
           localInfo.parentMsg,
           'get',
           localInfo.parentCode
         );
+        throw e;
       } else if (!localInfo.valid) {
-        throw utils.formatError(localInfo.msg, 'get', localInfo.code);
+        let e = utils.formatError(localInfo.msg, 'get', localInfo.code);
+        throw e;
       }
     }
     return _get(pathInfo.path, dst, options);
@@ -502,17 +507,20 @@ class SftpClient {
       targetType.readFile
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'fastGet', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'fastGet', pathInfo.code);
+      throw e;
     }
     let localInfo = await utils.checkLocalPath(localPath, targetType.writeFile);
     if (!localInfo.valid && !localInfo.parentValid) {
-      throw utils.formatError(
+      let e = utils.formatError(
         localInfo.parentMsg,
         'fastGet',
         localInfo.parentCode
       );
+      throw e;
     } else if (!localInfo.valid && localInfo.code !== errorCode.notexist) {
-      throw utils.formatError(localInfo.msg, 'fastGet', localInfo.code);
+      let e = utils.formatError(localInfo.msg, 'fastGet', localInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -558,7 +566,8 @@ class SftpClient {
     utils.haveConnection(this, 'fastPut');
     let localInfo = await utils.checkLocalPath(localPath);
     if (!localInfo.valid) {
-      throw utils.formatError(localInfo.msg, 'fastPut', localInfo.code);
+      let e = utils.formatError(localInfo.msg, 'fastPut', localInfo.code);
+      throw e;
     }
     let pathInfo = await utils.checkRemotePath(
       this,
@@ -566,13 +575,15 @@ class SftpClient {
       targetType.writeFile
     );
     if (!pathInfo.valid && !pathInfo.parentValid) {
-      throw utils.formatError(
+      let e = utils.formatError(
         pathInfo.parentMsg,
         'fastPut',
         pathInfo.parentCode
       );
+      throw e;
     } else if (!pathInfo.valid && pathInfo.code !== errorCode.notexist) {
-      throw utils.formatError(pathInfo.msg, 'fastPut', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'fastPut', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -617,7 +628,8 @@ class SftpClient {
     if (typeof localSrc === 'string') {
       let localInfo = await utils.checkLocalPath(localSrc);
       if (!localInfo.valid) {
-        throw utils.formatError(localInfo.msg, 'put', localInfo.code);
+        let e = utils.formatError(localInfo.msg, 'put', localInfo.code);
+        throw e;
       }
       localSrc = localInfo.path;
     }
@@ -627,9 +639,11 @@ class SftpClient {
       targetType.writeFile
     );
     if (!pathInfo.valid && !pathInfo.parentValid) {
-      throw utils.formatError(pathInfo.parentMsg, 'put', pathInfo.parentCode);
+      let e = utils.formatError(pathInfo.parentMsg, 'put', pathInfo.parentCode);
+      throw e;
     } else if (!pathInfo.valid && pathInfo.code !== errorCode.notexist) {
-      throw utils.formatError(pathInfo.msg, 'put', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'put', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -692,11 +706,12 @@ class SftpClient {
   async append(input, remotePath, options) {
     utils.haveConnection(this, 'append');
     if (typeof input === 'string') {
-      throw utils.formatError(
+      let e = utils.formatError(
         'Cannot append one file to another',
         'append',
         errorCode.badPath
       );
+      throw e;
     }
     let pathInfo = await utils.checkRemotePath(
       this,
@@ -704,15 +719,17 @@ class SftpClient {
       targetType.writeFile
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'append', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'append', pathInfo.code);
+      throw e;
     }
     let stats = await this.stat(pathInfo.path);
     if ((stats.mode & 0o0444) === 0) {
-      throw utils.formatError(
+      let e = utils.formatError(
         `Permission denied: ${remotePath}`,
         'append',
         errorCode.permission
       );
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -811,11 +828,12 @@ class SftpClient {
       if (!parent) {
         await this.mkdir(dir, true);
       } else if (parent !== 'd') {
-        throw utils.formatError(
+        let e = utils.formatError(
           'Bad directory path',
           'mkdir',
           errorCode.badPath
         );
+        throw e;
       }
       return doMkdir(realPath);
     } catch (err) {
@@ -868,7 +886,8 @@ class SftpClient {
         targetType.writeDir
       );
       if (!pathInfo.valid) {
-        throw utils.formatError(pathInfo.msg, 'rmdir', pathInfo.code);
+        let e = utils.formatError(pathInfo.msg, 'rmdir', pathInfo.code);
+        throw e;
       }
       if (!recursive) {
         return doRmdir(pathInfo.path);
@@ -915,7 +934,8 @@ class SftpClient {
       targetType.writeFile
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'delete', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'delete', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -961,18 +981,21 @@ class SftpClient {
       targetType.readObj
     );
     if (!fromInfo.valid) {
-      throw utils.formatError(fromInfo.msg, 'rename', fromInfo.code);
+      let e = utils.formatError(fromInfo.msg, 'rename', fromInfo.code);
+      throw e;
     }
     let toInfo = await utils.checkRemotePath(this, toPath, targetType.writeObj);
     if (toInfo.valid) {
-      throw utils.formatError(
+      let e = utils.formatError(
         `Permission denied: ${toInfo.path} already exists`,
         'rename',
         errorCode.permission
       );
+      throw e;
     }
     if (!toInfo.valid && !toInfo.parentValid) {
-      throw utils.formatError(toInfo.parentMsg, 'rename', toInfo.parentCode);
+      let e = utils.formatError(toInfo.parentMsg, 'rename', toInfo.parentCode);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -1017,7 +1040,8 @@ class SftpClient {
       targetType.readObj
     );
     if (!pathInfo.valid) {
-      throw utils.formatError(pathInfo.msg, 'chmod', pathInfo.code);
+      let e = utils.formatError(pathInfo.msg, 'chmod', pathInfo.code);
+      throw e;
     }
     return new Promise((resolve, reject) => {
       let errorListener;
@@ -1060,7 +1084,8 @@ class SftpClient {
       utils.haveConnection(this, 'uploadDir');
       let localInfo = await utils.checkLocalPath(srcDir, targetType.readDir);
       if (!localInfo.valid) {
-        throw utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
+        let e = utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
+        throw e;
       }
       let remoteInfo = await utils.checkRemotePath(
         this,
@@ -1074,13 +1099,15 @@ class SftpClient {
       ) {
         await this.mkdir(remoteInfo.path, true);
       } else if (!remoteInfo.valid && !remoteInfo.parentValid) {
-        throw utils.formatError(
+        let e = utils.formatError(
           remoteInfo.parentMsg,
           'uploadDir',
           remoteInfo.parentCode
         );
+        throw e;
       } else if (!remoteInfo.valid && remoteInfo.code !== errorCode.notexist) {
-        throw utils.formatError(remoteInfo.msg, 'uploadDir', remoteInfo.code);
+        let e = utils.formatError(remoteInfo.msg, 'uploadDir', remoteInfo.code);
+        throw e;
       }
       let dirEntries = fs.readdirSync(localInfo.path, {
         encoding: 'utf8',
@@ -1115,21 +1142,28 @@ class SftpClient {
         targetType.readDir
       );
       if (!remoteInfo.valid) {
-        throw utils.formatError(remoteInfo.msg, 'downloadDir', remoteInfo.code);
+        let e = utils.formatError(
+          remoteInfo.msg,
+          'downloadDir',
+          remoteInfo.code
+        );
+        throw e;
       }
       let localInfo = await utils.checkLocalPath(dstDir, targetType.writeDir);
       if (!localInfo.valid && localInfo.code === errorCode.notexist) {
         if (localInfo.parentValid) {
           fs.mkdirSync(localInfo.path, {recursive: true});
         } else {
-          throw utils.formatError(
+          let e = utils.formatError(
             localInfo.parentMsg,
             'downloadDir',
             localInfo.parentCode
           );
+          throw e;
         }
       } else if (!localInfo.valid) {
-        throw utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
+        let e = utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
+        throw e;
       }
       let fileList = await this.list(remoteInfo.path);
       for (let f of fileList) {
