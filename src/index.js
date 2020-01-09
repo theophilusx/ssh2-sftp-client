@@ -207,77 +207,6 @@ class SftpClient {
   /**
    * @async
    *
-   * Tests to see if an object exists. If it does, return the type of that object
-   * (in the format returned by list). If it does not exist, return false.
-   *
-   * @param {string} path - path to the object on the sftp server.
-   *
-   * @return {boolean} returns false if object does not exist. Returns type of
-   *                   object if it does
-   */
-  exists(remotePath) {
-    return new Promise((resolve, reject) => {
-      let errorListener;
-
-      try {
-        errorListener = utils.makeErrorListener(reject, this, 'exists');
-        this.client.prependListener('error', errorListener);
-        if (utils.haveConnection(this, 'exists', reject)) {
-          if (remotePath === '.') {
-            resolve('d');
-          } else {
-            this.sftp.realpath(remotePath, (err, absPath) => {
-              if (err) {
-                if (err.code === 2) {
-                  resolve(false);
-                } else {
-                  reject(
-                    utils.formatError(
-                      `${err.message} ${remotePath}`,
-                      'exists',
-                      err.code
-                    )
-                  );
-                }
-              } else {
-                let {root, dir, base} = posix.parse(absPath);
-                if (dir === root && base === '') {
-                  // at root
-                  resolve('d');
-                } else {
-                  this.sftp.readdir(dir, (err, list) => {
-                    if (err) {
-                      if (err.code === 2) {
-                        resolve(false);
-                      } else {
-                        reject(utils.formatError(err, 'exists'));
-                      }
-                    } else {
-                      let [type] = list
-                        .filter(i => i.filename === base)
-                        .map(f => f.longname.substr(0, 1));
-                      if (type) {
-                        resolve(type);
-                      }
-                    }
-                    resolve(false);
-                  });
-                }
-              }
-            });
-          }
-        }
-      } catch (err) {
-        utils.handleError(err, 'exists', reject);
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
-  }
-
-  /**
-   * @async
-   *
    * List contents of a remote directory. If a pattern is provided,
    * filter the results to only include files with names that match
    * the supplied pattern. Return value is an array of file entry
@@ -353,6 +282,46 @@ class SftpClient {
         this.removeListener('error', errorListener);
       }
     });
+  }
+
+  /**
+   * @async
+   *
+   * Tests to see if an object exists. If it does, return the type of that object
+   * (in the format returned by list). If it does not exist, return false.
+   *
+   * @param {string} path - path to the object on the sftp server.
+   *
+   * @return {boolean} returns false if object does not exist. Returns type of
+   *                   object if it does
+   */
+  async exists(remotePath) {
+    try {
+      if (utils.haveConnection(this, 'exists')) {
+        if (remotePath === '.') {
+          return 'd';
+        }
+        let absPath = await this.realPath(remotePath);
+        if (!absPath) {
+          return false;
+        }
+        let {root, dir, base} = posix.parse(absPath);
+        if (dir === root && base === '') {
+          return 'd';
+        }
+        let files = await this.list(dir);
+        for (let f of files) {
+          if (f.name === base) {
+            return f.type;
+          }
+        }
+        return false;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      return utils.handleError(err, 'exists');
+    }
   }
 
   /**
