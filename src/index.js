@@ -1119,10 +1119,10 @@ class SftpClient {
           let newDst = remoteInfo.path + this.remotePathSep + e.name;
           await this.uploadDir(newSrc, newDst);
         } else if (e.isFile()) {
-          await this.fastPut(
-            join(localInfo.path, e.name),
-            remoteInfo.path + this.remotePathSep + e.name
-          );
+          let src = join(localInfo.path, e.name);
+          let dst = remoteInfo.path + this.remotePathSep + e.name;
+          await this.fastPut(src, dst);
+          this.client.emit('upload', {source: src, destination: dst});
         } else {
           console.log(`uploadDir: File ignored: ${e.name} not a regular file`);
         }
@@ -1172,10 +1172,10 @@ class SftpClient {
           let newDst = join(localInfo.path, f.name);
           await this.downloadDir(newSrc, newDst);
         } else if (f.type === '-') {
-          await this.fastGet(
-            remoteInfo.path + this.remotePathSep + f.name,
-            join(localInfo.path, f.name)
-          );
+          let src = remoteInfo.path + this.remotePathSep + f.name;
+          let dst = join(localInfo.path, f.name);
+          await this.fastGet(src, dst);
+          this.client.emit('download', {source: src, destination: dst});
         } else {
           console.log(`downloadDir: File ignored: ${f.name} not regular file`);
         }
