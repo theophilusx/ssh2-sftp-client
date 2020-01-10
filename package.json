@@ -30,13 +30,12 @@
     "ssh2": "^0.8.7"
   },
   "devDependencies": {
-    "@types/ssh2-sftp-client": "^4.1.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
     "dotenv": "^8.2.0",
-    "mocha": "^6.2.2",
+    "mocha": "^7.0.0",
     "through2": "^3.0.1"
   }
 }
