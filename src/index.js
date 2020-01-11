@@ -423,10 +423,9 @@ class SftpClient {
               // dst local file path
               wtr = fs.createWriteStream(localDst);
             } else {
-              // assume dst is a writeable
               wtr = localDst;
             }
-            wtr.on('error', err => {
+            wtr.once('error', err => {
               utils.removeListeners(rdr);
               reject(
                 utils.formatError(
@@ -436,7 +435,7 @@ class SftpClient {
                 )
               );
             });
-            wtr.on('finish', () => {
+            wtr.once('finish', () => {
               utils.removeListeners(rdr);
               if (typeof localDst === 'string') {
                 resolve(localDst);
@@ -624,6 +623,50 @@ class SftpClient {
    * @return {Promise}
    */
   async put(localSrc, remotePath, options) {
+    const _put = (src, dst, opts) => {
+      return new Promise((resolve, reject) => {
+        let errorListener;
+        try {
+          errorListener = utils.makeErrorListener(reject, this, 'put');
+          this.client.prependListener('error', errorListener);
+          let stream = this.sftp.createWriteStream(dst, opts);
+          stream.on('error', err => {
+            reject(utils.formatError(`${err.message} ${dst}`, 'put', err.code));
+          });
+          stream.on('finish', () => {
+            utils.removeListeners(stream);
+            resolve(`Uploaded data stream to ${pathInfo.path}`);
+          });
+          if (src instanceof Buffer) {
+            stream.end(src);
+          } else {
+            let rdr;
+            if (typeof src === 'string') {
+              rdr = fs.createReadStream(src);
+            } else {
+              rdr = src;
+            }
+            rdr.once('error', err => {
+              utils.removeListeners(stream);
+              reject(
+                utils.formatError(
+                  `${err.message} ${
+                    typeof localSrc === 'string' ? localSrc : ''
+                  }`,
+                  'put',
+                  err.code
+                )
+              );
+            });
+            rdr.pipe(stream);
+          }
+        } catch (err) {
+          utils.handleError(err, 'put', reject);
+        } finally {
+          this.removeListener('error', errorListener);
+        }
+      });
+    };
     utils.haveConnection(this, 'put');
     if (typeof localSrc === 'string') {
       let localInfo = await utils.checkLocalPath(localSrc);
@@ -645,54 +688,7 @@ class SftpClient {
       let e = utils.formatError(pathInfo.msg, 'put', pathInfo.code);
       throw e;
     }
-    return new Promise((resolve, reject) => {
-      let errorListener;
-      try {
-        errorListener = utils.makeErrorListener(reject, this, 'put');
-        this.client.prependListener('error', errorListener);
-        let stream = this.sftp.createWriteStream(pathInfo.path, options);
-        stream.on('error', err => {
-          reject(
-            utils.formatError(
-              `${err.message} ${pathInfo.path}`,
-              'put',
-              err.code
-            )
-          );
-        });
-        stream.on('finish', () => {
-          utils.removeListeners(stream);
-          resolve(`Uploaded data stream to ${pathInfo.path}`);
-        });
-        if (localSrc instanceof Buffer) {
-          stream.end(localSrc);
-        } else {
-          let rdr;
-          if (typeof localSrc === 'string') {
-            rdr = fs.createReadStream(localSrc);
-          } else {
-            rdr = localSrc;
-          }
-          rdr.on('error', err => {
-            utils.removeListeners(stream);
-            reject(
-              utils.formatError(
-                `${err.message} ${
-                  typeof localSrc === 'string' ? localSrc : ''
-                }`,
-                'put',
-                err.code
-              )
-            );
-          });
-          rdr.pipe(stream);
-        }
-      } catch (err) {
-        utils.handleError(err, 'put', reject);
-      } finally {
-        this.removeListener('error', errorListener);
-      }
-    });
+    return _put(localSrc, pathInfo.path, options);
   }
 
   /**
