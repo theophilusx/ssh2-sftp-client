@@ -1251,6 +1251,14 @@ host key used to establish the initial secure connection. See the SSH2
 documentation for details. Getting these parameters correct usually resolves the
 issue. 
 
+* Examples 
+
+I have started collecting example scripts in the example directory of the
+repository. These are mainly scripts I have put together in order to investigate
+issues or provide samples for users. They are not robust, lack adequate error
+handling and may contain errors. However, I think they are still useful for
+helping developers see how the module and API can be used. 
+ 
 * Change Log
 ** v5.0.0 (Prod version)
    - Added two new methods ~uploadDir()~ and ~downloadDir()~
