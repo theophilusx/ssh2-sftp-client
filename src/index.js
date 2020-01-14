@@ -404,7 +404,7 @@ class SftpClient {
           errorListener = utils.makeErrorListener(reject, this, 'get');
           this.client.prependListener('error', errorListener);
           let rdr = this.sftp.createReadStream(sftpPath, options);
-          rdr.on('error', err => {
+          rdr.once('error', err => {
             utils.removeListeners(rdr);
             reject(
               utils.formatError(`${err.message} ${sftpPath}`, 'get', err.code)
@@ -630,10 +630,10 @@ class SftpClient {
           errorListener = utils.makeErrorListener(reject, this, 'put');
           this.client.prependListener('error', errorListener);
           let stream = this.sftp.createWriteStream(dst, opts);
-          stream.on('error', err => {
+          stream.once('error', err => {
             reject(utils.formatError(`${err.message} ${dst}`, 'put', err.code));
           });
-          stream.on('finish', () => {
+          stream.once('finish', () => {
             utils.removeListeners(stream);
             resolve(`Uploaded data stream to ${pathInfo.path}`);
           });
