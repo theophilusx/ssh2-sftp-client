@@ -1,0 +1,53 @@
+* Examples
+
+This directory contains some examples of using ~ssh2-sftp-client~. In many
+cases, these examples are the result of issues logged by users and represent my
+implementation of a script to reproduce the issue. By far, the largest group of
+issues currently logged against this module represent misuse of either the
+module or the underlying Promise and async/await technologies. It is hoped that
+by providing these examples, users will see how to use the module and reduce the
+logging of issues. 
+
+Intuitively, this high number of usage issues would indicate the API
+documentation is not clear enough or the API itself is confusing. If you believe
+this is the case, please let me know. Additional documentation or improvements
+to the current documentation will always be welcome. 
+
+** Running The Examples
+
+I use the ~dotenv~ module to manage my configuration. Most of these examples
+will use this module to manage connection credentials. Essentially, you need to
+put the connection details in a file called ~.env~ in the root of the
+repository. At a minimum, this file needs the SFTP host name, user name for the
+connection and password. Other information can also be added to the file. The
+values you add to this file are accessible in your script as environment
+variables, using the ~process.env~ object. A simple example might be
+
+#+begin_src conf
+  SFTP_SERVER=example.com
+  SFTP_USER=sftp-user
+  SFTP_PASSWORD='a secret'
+  SFTP_URL='/path/to/remote/server/data'
+  LOCAL_URL='/path/to/local/host/data'
+
+#+end_src
+
+Once you have a ~.env~ file configured, most of the script can be run with 
+
+ #+begin_example
+node script.js <args> 
+#+end_example
+
+It may be necessary to look at the scripts to determine if they expect any
+command line arguments. 
+
+** Warning
+
+This scripts are simple examples. They are not robust and may not even be
+correct. Some may only work with older versions of the module. Despite this, I
+think they can still be useful and provide some hints or additional clues
+regarding use of the ~ssh2-sftp-client~ module. 
+
+If you find bugs or problems with any of these examples, feel free to submit
+pull requests which fix the issue. Likewise, if you comeup with something that
+you feel others might find useful, feel free to submit it for inclusion. 
