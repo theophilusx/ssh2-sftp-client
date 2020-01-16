@@ -188,6 +188,13 @@ reset to false in preparation for the next error.
      etc).. Will overwrite existing files or directories, but will not delete
      any local files in the directories. 
 
+** Version 5.0.1 
+
+   - The error checking was a little too stringent. The use of exist() to test
+     for file types had a problem when the user does not have read/execute
+     rights on the directory. Replaced with stat() method, which should avoid
+     this issue. 
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1260,7 +1267,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used. 
  
 * Change Log
-** v5.0.0 (Prod version)
+** v5.0.1 (Prod Version)
+   - Turn down error checking to be less stringent and handle situations 
+     where user does not have read permission on parent directory.
+
+** v5.0.0 
    - Added two new methods ~uploadDir()~ and ~downloadDir()~
    - Removed deprecated ~auxList()~ method
    - Improved error message consistency
