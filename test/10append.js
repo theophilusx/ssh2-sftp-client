@@ -101,7 +101,7 @@ describe('append() method tests', function() {
         Buffer.from('hello'),
         makeRemotePath(config.sftpUrl, 'bad-directory', 'bad-file.txt')
       )
-    ).to.be.rejectedWith('No such file');
+    ).to.be.rejectedWith('Bad path');
   });
 
   it('append to non-existing file is rejected', function() {

@@ -32,7 +32,7 @@ function formatError(
     msg = `${name}: ${err}${retry}`;
     code = eCode;
   } else if (err.custom) {
-    msg = `${name}: ${err.message}${retry}`;
+    msg = `${name}->${err.message}${retry}`;
     code = err.code;
   } else {
     switch (err.code) {
@@ -360,117 +360,180 @@ async function checkLocalPath(testPath, target = targetType.readFile) {
   }
 }
 
-async function checkRemotePath(
-  client,
-  remotePath,
-  target = targetType.readFile
-) {
-  let result = {
-    path: remotePath,
-    valid: true,
-    parentValid: true
-  };
-
-  if (result.path.startsWith('..')) {
-    let root = await client.realPath('..');
-    result.path = root + client.remotePathSep + result.path.substring(3);
-  } else if (result.path.startsWith('.')) {
-    let root = await client.realPath('.');
-    result.path = root + client.remotePathSep + result.path.substring(2);
+async function normalizeRemotePath(client, aPath) {
+  try {
+    if (aPath.startsWith('..')) {
+      let root = await client.realPath('..');
+      return root + client.remotePathSep + aPath.substring(3);
+    } else if (aPath.startsWith('.')) {
+      let root = await client.realPath('.');
+      return root + client.remotePathSep + aPath.substring(2);
+    }
+    return aPath;
+  } catch (err) {
+    throw formatError(err, 'normalizeRemotePath');
   }
-  result.type = await client.exists(result.path);
+}
+
+function checkReadObject(aPath, type) {
+  return {
+    path: aPath,
+    type: type,
+    valid: type ? true : false,
+    msg: type ? undefined : `No such file ${aPath}`,
+    code: type ? undefined : errorCode.notexist
+  };
+}
+
+function checkReadFile(aPath, type) {
+  if (!type) {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `No such file: ${aPath}`,
+      code: errorCode.notexist
+    };
+  } else if (type === 'd') {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `Bad path: ${aPath} must be a file`,
+      code: errorCode.badPath
+    };
+  }
+  return {
+    path: aPath,
+    type: type,
+    valid: true
+  };
+}
+
+function checkReadDir(aPath, type) {
+  if (!type) {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `No such directory: ${aPath}`,
+      code: errorCode.notdir
+    };
+  } else if (type !== 'd') {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `Bad path: ${aPath} must be a directory`,
+      code: errorCode.badPath
+    };
+  }
+  return {
+    path: aPath,
+    type: type,
+    valid: true
+  };
+}
+
+async function checkWriteFile(client, aPath, type) {
+  if (type && type === 'd') {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `Bad path: ${aPath} must be a regular file`,
+      code: errorCode.badPath
+    };
+  } else if (!type) {
+    let parentDir = path.posix.parse(aPath).dir;
+    let parentType = await client.exists(parentDir);
+    if (!parentType) {
+      return {
+        path: aPath,
+        type: type,
+        valid: false,
+        msg: `Bad path: ${parentDir} parent not exist`,
+        code: errorCode.badPath
+      };
+    } else if (parentType !== 'd') {
+      return {
+        path: aPath,
+        type: type,
+        valid: false,
+        msg: `Bad path: ${parentDir} must be a directory`,
+        code: errorCode.badPath
+      };
+    }
+    return {
+      path: aPath,
+      type: type,
+      valid: true
+    };
+  }
+  return {
+    path: aPath,
+    type: type,
+    valid: true
+  };
+}
+
+async function checkWriteDir(client, aPath, type) {
+  if (type && type !== 'd') {
+    return {
+      path: aPath,
+      type: type,
+      valid: false,
+      msg: `Bad path: ${aPath} must be a directory`,
+      code: errorCode.badPath
+    };
+  } else if (!type) {
+    let parentDir = path.posix.parse(aPath).dir;
+    let parentType = await client.exists(parentDir);
+    if (parentType && parentType !== 'd') {
+      return {
+        path: aPath,
+        type: type,
+        valid: false,
+        msg: `Bad path: ${parentDir} must be a directory`,
+        code: errorCode.badPath
+      };
+    }
+  }
+  // don't care if parent does not exist as it might be created
+  // via recursive call to mkdir.
+  return {
+    path: aPath,
+    type: type,
+    valid: true
+  };
+}
+
+function checkWriteObject(aPath, type) {
+  // for writeObj, not much error checking we can do
+  // Just return path, type and valid indicator
+  return {
+    path: aPath,
+    type: type,
+    valid: true
+  };
+}
+
+async function checkRemotePath(client, rPath, target = targetType.readFile) {
+  let aPath = await normalizeRemotePath(client, rPath);
+  let type = await client.exists(aPath);
   switch (target) {
     case targetType.readObj:
-      if (!result.type) {
-        result.valid = false;
-        result.msg = `No such file ${result.path}`;
-        result.code = errorCode.notexist;
-      }
-      return result;
+      return checkReadObject(aPath, type);
     case targetType.readFile:
-      if (!result.type) {
-        result.valid = false;
-        result.msg = `No such file: ${result.path}`;
-        result.code = errorCode.notexist;
-      } else if (result.type === 'd') {
-        result.valid = false;
-        result.msg = `Bad path: ${result.path} must be a file`;
-        result.code = errorCode.badPath;
-      }
-      return result;
+      return checkReadFile(aPath, type);
     case targetType.readDir:
-      if (!result.type) {
-        result.valid = false;
-        result.msg = `No such directory: ${result.path}`;
-        result.code = errorCode.notdir;
-      } else if (result.type !== 'd') {
-        result.valid = false;
-        result.msg = `Bad path: ${result.path} must be a directory`;
-        result.code = errorCode.badPath;
-      }
-      return result;
+      return checkReadDir(aPath, type);
     case targetType.writeFile:
-      if (result.type && result.type === 'd') {
-        result.valid = false;
-        result.msg = `Bad path: ${result.path} must be a regular file`;
-        result.code = errorCode.badPath;
-      } else if (!result.type) {
-        result.valid = false;
-        result.msg = `No such file: ${result.path}`;
-        result.code = errorCode.notexist;
-        let dir = path.posix.parse(result.path).dir;
-        result.parentType = await client.exists(dir);
-        if (!result.parentType) {
-          result.parentValid = false;
-          result.parentMsg = `No such directory: ${dir}`;
-          result.parentCode = errorCode.notdir;
-        } else if (result.parentType !== 'd') {
-          result.parentValid = false;
-          result.parentMsg = `Bad path: ${dir} must be a directory`;
-          result.parentCode = errorCode.badPath;
-        }
-      }
-      return result;
+      return checkWriteFile(client, aPath, type);
     case targetType.writeDir:
-      if (result.type && result.type !== 'd') {
-        result.valid = false;
-        result.msg = `Bad path: ${result.path} must be a directory`;
-        result.code = errorCode.badPath;
-      } else if (!result.type) {
-        result.valid = false;
-        result.msg = `No such directory: ${result.path}`;
-        result.code = errorCode.notdir;
-        let dir = path.posix.parse(result.path).dir;
-        result.parentType = await client.exists(dir);
-        if (!result.parentType) {
-          result.parentValid = false;
-          result.parentMsg = `No such directory: ${dir}`;
-          result.parentCode = errorCode.notdir;
-        } else if (result.parentType !== 'd') {
-          result.parentValid = false;
-          result.parentMsg = `Bad path: ${dir} must be a directory`;
-          result.parentCode = errorCode.badPath;
-        }
-      }
-      return result;
+      return checkWriteDir(client, aPath, type);
     case targetType.writeObj:
-      if (!result.type) {
-        result.valid = false;
-        result.msg = `No such file: ${result.path}`;
-        result.code = errorCode.notexist;
-        let dir = path.posix.parse(result.path).dir;
-        result.parentType = await client.exists(dir);
-        if (!result.parentType) {
-          result.parentValid = false;
-          result.parentMsg = `No such directory ${dir}`;
-          result.code = errorCode.notdir;
-        } else if (result.parentType !== 'd') {
-          result.parentValid = false;
-          result.parentMsg = `Bad path: ${dir} must be a directory`;
-          result.parentCode = errorCode.badPath;
-        }
-      }
-      return result;
+      return checkWriteObject(aPath, type);
     default:
       throw formatError(
         `Unknown target type: ${target}`,
@@ -516,6 +579,7 @@ module.exports = {
   makeCloseListener,
   localExists,
   checkLocalPath,
+  normalizeRemotePath,
   checkRemotePath,
   haveConnection
 };
