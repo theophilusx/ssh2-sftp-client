@@ -8,7 +8,7 @@ const Client = require('ssh2').Client;
 const fs = require('fs');
 const concat = require('concat-stream');
 const retry = require('retry');
-const {join, posix} = require('path');
+const {join, parse} = require('path');
 const utils = require('./utils');
 const {errorCode, targetType} = require('./constants');
 
@@ -808,7 +808,7 @@ class SftpClient {
       if (!recursive) {
         return _mkdir(pathInfo.path);
       }
-      let dir = posix.parse(pathInfo.path).dir;
+      let dir = parse(pathInfo.path).dir;
       let parent = await utils.checkRemotePath(this, dir, targetType.writeDir);
       if (parent.valid && !parent.type) {
         await this.mkdir(dir, true);

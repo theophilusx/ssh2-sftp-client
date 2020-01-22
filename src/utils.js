@@ -298,7 +298,7 @@ async function checkLocalWriteFile(localPath, localType) {
       rslt.code = errorCode.badPath;
       return rslt;
     } else if (!localType) {
-      let dir = path.posix.parse(localPath).dir;
+      let dir = path.parse(localPath).dir;
       let parent = await localAccess(dir, fs.constants.W_OK);
       if (parent.valid) {
         rslt.valid = true;
@@ -333,7 +333,7 @@ async function checkLocalWriteDir(localPath, localType) {
       type: localType
     };
     if (!localType) {
-      let parent = path.posix.parse(localPath).dir;
+      let parent = path.parse(localPath).dir;
       let access = await localAccess(parent, fs.constants.W_OK);
       if (access.valid) {
         rslt.valid = true;
@@ -476,7 +476,7 @@ async function checkWriteFile(client, aPath, type) {
       code: errorCode.badPath
     };
   } else if (!type) {
-    let parentDir = path.posix.parse(aPath).dir;
+    let parentDir = path.parse(aPath).dir;
     let parentType = await client.exists(parentDir);
     if (!parentType) {
       return {
@@ -518,7 +518,7 @@ async function checkWriteDir(client, aPath, type) {
       code: errorCode.badPath
     };
   } else if (!type) {
-    let parentDir = path.posix.parse(aPath).dir;
+    let parentDir = path.parse(aPath).dir;
     let parentType = await client.exists(parentDir);
     if (parentType && parentType !== 'd') {
       return {
