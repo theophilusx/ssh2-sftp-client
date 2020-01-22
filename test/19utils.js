@@ -175,7 +175,7 @@ describe('Test checkLocalPath', function() {
       path: config.localUrl,
       type: 'd',
       valid: false,
-      msg: `Bad path: ${config.localUrl} must be a regular file`,
+      msg: `Bad path: ${config.localUrl} must be a file`,
       code: 'ERR_BAD_PATH'
     });
   });
