@@ -120,7 +120,7 @@ describe('Uploaddir bad path tests', function() {
     let localDir = makeLocalPath(config.localUrl, 'no-such-dir');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
-      /No such file/
+      /No such directory/
     );
   });
 

@@ -467,19 +467,9 @@ class SftpClient {
       }
       if (typeof dst === 'string') {
         let localInfo = await utils.checkLocalPath(dst, targetType.writeFile);
-        if (
-          localInfo.valid ||
-          (localInfo.code === errorCode.notexist && localInfo.parentValid)
-        ) {
+        if (localInfo.valid) {
           dst = localInfo.path;
-        } else if (!localInfo.parentValid) {
-          let e = utils.formatError(
-            localInfo.parentMsg,
-            'get',
-            localInfo.parentCode
-          );
-          throw e;
-        } else if (!localInfo.valid) {
+        } else {
           let e = utils.formatError(localInfo.msg, 'get', localInfo.code);
           throw e;
         }
@@ -542,15 +532,12 @@ class SftpClient {
         localPath,
         targetType.writeFile
       );
-      if (!localInfo.valid && !localInfo.parentValid) {
+      if (!localInfo.valid) {
         let e = utils.formatError(
           localInfo.parentMsg,
           'fastGet',
           localInfo.parentCode
         );
-        throw e;
-      } else if (!localInfo.valid && localInfo.code !== errorCode.notexist) {
-        let e = utils.formatError(localInfo.msg, 'fastGet', localInfo.code);
         throw e;
       }
       return _fastGet(pathInfo.path, localInfo.path, options);
@@ -1132,18 +1119,10 @@ class SftpClient {
         throw e;
       }
       let localInfo = await utils.checkLocalPath(dstDir, targetType.writeDir);
-      if (!localInfo.valid && localInfo.code === errorCode.notexist) {
-        if (localInfo.parentValid) {
-          fs.mkdirSync(localInfo.path, {recursive: true});
-        } else {
-          let e = utils.formatError(
-            localInfo.parentMsg,
-            'downloadDir',
-            localInfo.parentCode
-          );
-          throw e;
-        }
-      } else if (!localInfo.valid) {
+      if (localInfo.valid && !localInfo.type) {
+        fs.mkdirSync(localInfo.path, {recursive: true});
+      }
+      if (!localInfo.valid) {
         let e = utils.formatError(localInfo.msg, 'downloadDir', localInfo.code);
         throw e;
       }
