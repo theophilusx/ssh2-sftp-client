@@ -350,7 +350,7 @@ async function checkLocalWriteDir(localPath, localType) {
       rslt.code = errorCode.badPath;
       return rslt;
     } else {
-      let access = localAccess(localPath, fs.constants.W_OK);
+      let access = await localAccess(localPath, fs.constants.W_OK);
       if (access.valid) {
         rslt.valid = true;
         return rslt;
