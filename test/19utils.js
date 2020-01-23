@@ -161,8 +161,7 @@ describe('Test checkLocalPath', function() {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     return expect(
       utils.checkLocalPath(localPath, targetType.readFile)
-    ).to.become({
-      path: localPath,
+    ).to.eventually.containSubset({
       type: '-',
       valid: true
     });
@@ -171,11 +170,9 @@ describe('Test checkLocalPath', function() {
   it('invalid if wrong target type (file)', function() {
     return expect(
       utils.checkLocalPath(config.localUrl, targetType.readFile)
-    ).to.become({
-      path: config.localUrl,
+    ).to.eventually.containSubset({
       type: 'd',
       valid: false,
-      msg: `Bad path: ${config.localUrl} must be a file`,
       code: 'ERR_BAD_PATH'
     });
   });
@@ -184,11 +181,9 @@ describe('Test checkLocalPath', function() {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     return expect(
       utils.checkLocalPath(localPath, targetType.readDir)
-    ).to.become({
-      path: localPath,
+    ).to.eventually.containSubset({
       type: '-',
       valid: false,
-      msg: `Bad path: ${localPath} must be a directory`,
       code: 'ERR_BAD_PATH'
     });
   });
@@ -197,8 +192,7 @@ describe('Test checkLocalPath', function() {
     let localPath = makeLocalPath(config.localUrl, 'no-such-file.gz');
     return expect(
       utils.checkLocalPath(localPath, targetType.writeFile)
-    ).to.become({
-      path: localPath,
+    ).to.eventually.containSubset({
       type: false,
       valid: true
     });
@@ -208,8 +202,7 @@ describe('Test checkLocalPath', function() {
     let localPath = makeLocalPath(config.localUrl, 'no-such-dir');
     return expect(
       utils.checkLocalPath(localPath, targetType.writeDir)
-    ).to.become({
-      path: localPath,
+    ).to.eventually.containSubset({
       type: false,
       valid: true
     });
