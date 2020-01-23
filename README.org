@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.0.1*.
+Current stable release is *v5.0.2*.
 
 Code has been tested against Node versions 10.18.1, 12.14.1 and 13.6.0
 
@@ -194,6 +194,11 @@ reset to false in preparation for the next error.
      for file types had a problem when the user does not have read/execute
      rights on the directory. Replaced with stat() method, which should avoid
      this issue. 
+
+** Version 5.0.2
+   - Fix error in local directory tests due to missing await statement.
+   - Fix path handling under win32. Paths were not being parsed correctly due to
+     the use of path.posix.parse() instead of path.parse(). 
 
 * Documentation
 
@@ -1267,7 +1272,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used. 
  
 * Change Log
-** v5.0.1 (Prod Version)
+** v5.0.2 (Prod Version)
+   - Fix bugs related to win32 platform and local tests for valid directories
+   - Fix problem with parsing of file paths
+
+** v5.0.1 
    - Turn down error checking to be less stringent and handle situations 
      where user does not have read permission on parent directory.
 
