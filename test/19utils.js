@@ -154,7 +154,7 @@ describe('Test checkLocalPath', function() {
   it('Returns valid for local dir', function() {
     return expect(
       utils.checkLocalPath(config.localUrl, targetType.readDir)
-    ).to.become({path: config.localUrl, type: 'd', valid: true});
+    ).to.eventually.containSubset({type: 'd', valid: true});
   });
 
   it('Return valid for local file', function() {
