@@ -50,7 +50,7 @@ describe('uploadDir tests', function() {
       {name: 'file2.txt.gz', type: '-', size: 570314},
       {name: 'sub1', type: 'd'},
       {name: 'sub3', type: 'd'},
-      {name: 'file1.txt', type: '-', size: 6973257}
+      {name: 'file1.txt', type: '-'}
     ]);
   });
 });
@@ -90,9 +90,9 @@ describe('Partial file upload', function() {
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test', 'sub1');
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
-      {name: 'file4.txt.gz', type: '-', size: 570314},
       {name: 'sub2', type: 'd'},
-      {name: 'file3.txt', type: '-', size: 6973257}
+      {name: 'file4.txt.gz', type: '-', size: 570314},
+      {name: 'file3.txt', type: '-'}
     ]);
   });
 });
