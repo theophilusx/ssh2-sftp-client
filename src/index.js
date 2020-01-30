@@ -1171,7 +1171,10 @@ class SftpClient {
           this.sftp = undefined;
           this.endCalled = false;
         });
-        this.client.end();
+        if(this.client.end() === false){
+          this.endCalled = false;
+          reject(false);
+        }
       } catch (err) {
         utils.handleError(err, 'end', reject);
       }
