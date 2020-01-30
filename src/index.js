@@ -1156,6 +1156,7 @@ class SftpClient {
   end() {
     return new Promise((resolve, reject) => {
       try {
+        utils.haveConnection(this, 'end');
         this.client.prependListener('error', err => {
           // we don't care about errors at this point
           // so do nothiing
