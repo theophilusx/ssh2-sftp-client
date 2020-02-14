@@ -18,8 +18,16 @@ const config = {
 };
 
 const targetPath = process.argv[2];
+const debug = process.argv[3] ? true : false;
 
 let client = new Client();
+
+if (debug) {
+  console.log('Debugging enabled');
+  config.debug = data => {
+    console.log(`DEBUG: ${data}`);
+  };
+}
 
 client
   .connect(config)
