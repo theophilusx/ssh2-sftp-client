@@ -24,9 +24,15 @@ class SftpClient {
     this.debug = undefined;
   }
 
-  debugMsg(msg) {
+  debugMsg(msg, obj) {
     if (this.debug) {
-      this.debug(`CLIENT: ${msg}`);
+      if (obj) {
+        this.debug(
+          `CLIENT[${this.clientName}]: ${msg} ${JSON.stringify(obj, null, ' ')}`
+        );
+      } else {
+        this.debug(`CLIENT[${this.clientName}]: ${msg}`);
+      }
     }
   }
 
@@ -76,7 +82,7 @@ class SftpClient {
               // failed to connect, but not yet reached max attempt count
               // remove the listeners and try again
               this.debugMsg(
-                `Connection attempt ${attemptCount} failed. ` + 'Trying again'
+                `Connection attempt ${attemptCount} failed. Trying again.`
               );
               return;
             }
@@ -256,7 +262,7 @@ class SftpClient {
                 );
               }
             } else {
-              this.debugMsg(`stat <- ${JSON.stringify(stats, null, ' ')}`);
+              this.debugMsg('stats <- ', stats);
               resolve({
                 mode: stats.mode,
                 uid: stats.uid,
@@ -310,7 +316,7 @@ class SftpClient {
         try {
           this.debugMsg(`exists -> ${absPath}`);
           let info = await this.stat(absPath);
-          this.debugMsg(`exists <- ${JSON.stringify(info, null, ' ')}`);
+          this.debugMsg('exists <- ', info);
           if (info.isDirectory) {
             return 'd';
           }
@@ -364,7 +370,7 @@ class SftpClient {
               this.debugMsg(`list error ${err.message} code: ${err.code}`);
               reject(utils.formatError(`${err.message} ${aPath}`, '_list'));
             } else {
-              this.debugMsg(`list <- ${JSON.stringify(fileList, null, ' ')}`);
+              this.debugMsg('list <- ', fileList);
               let newList = [];
               // reset file info
               if (fileList) {
@@ -438,9 +444,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          this.debugMsg(
-            `get -> ${sftpPath} ${JSON.stringify(options, null, ' ')}`
-          );
+          this.debugMsg(`get -> ${sftpPath} `, options);
           errorListener = utils.makeErrorListener(reject, this, 'get');
           this.client.prependListener('error', errorListener);
           let rdr = this.sftp.createReadStream(sftpPath, options);
@@ -498,18 +502,14 @@ class SftpClient {
         remotePath,
         targetType.readFile
       );
-      this.debugMsg(
-        `get remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('get remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'get', pathInfo.code);
         throw e;
       }
       if (typeof dst === 'string') {
         let localInfo = await utils.checkLocalPath(dst, targetType.writeFile);
-        this.debugMsg(
-          `get local path info ${JSON.stringify(localInfo, null, ' ')}`
-        );
+        this.debugMsg('get local path info ', localInfo);
         if (localInfo.valid) {
           dst = localInfo.path;
         } else {
@@ -541,9 +541,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          this.debugMsg(
-            `fastGet -> ${from} ${to} ${JSON.stringify(opts, null, ' ')}`
-          );
+          this.debugMsg(`fastGet -> ${from} ${to} `, opts);
           errorListener = utils.makeErrorListener(reject, this, 'fastGet');
           this.client.prependListener('error', errorListener);
           this.sftp.fastGet(from, to, opts, err => {
@@ -571,9 +569,7 @@ class SftpClient {
         remotePath,
         targetType.readFile
       );
-      this.debugMsg(
-        `fastGet remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('fastGet remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'fastGet', pathInfo.code);
         throw e;
@@ -582,9 +578,7 @@ class SftpClient {
         localPath,
         targetType.writeFile
       );
-      this.debugMsg(
-        `fastGet local path info ${JSON.stringify(localInfo, null, ' ')}`
-      );
+      this.debugMsg('fastGet local path info ', localInfo);
       if (!localInfo.valid) {
         let e = utils.formatError(
           localInfo.parentMsg,
@@ -617,13 +611,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          this.debugMsg(
-            `fastPut -> ${localPath} ${remotePath} ${JSON.stringify(
-              options,
-              null,
-              ' '
-            )}`
-          );
+          this.debugMsg(`fastPut -> ${localPath} ${remotePath} `, opts);
           errorListener = utils.makeErrorListener(reject, this, 'fastPut');
           this.client.prependListener('error', errorListener);
           this.sftp.fastPut(from, to, opts, err => {
@@ -647,9 +635,7 @@ class SftpClient {
     try {
       utils.haveConnection(this, 'fastPut');
       let localInfo = await utils.checkLocalPath(localPath);
-      this.debugMsg(
-        `fastPut local path info ${JSON.stringify(localInfo, null, ' ')}`
-      );
+      this.debugMsg('fastPut local path info ', localInfo);
       if (!localInfo.valid) {
         let e = utils.formatError(localInfo.msg, 'fastPut', localInfo.code);
         throw e;
@@ -659,9 +645,7 @@ class SftpClient {
         remotePath,
         targetType.writeFile
       );
-      this.debugMsg(
-        `fastPut remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('fastPut remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'fastPut', pathInfo.code);
         throw e;
@@ -688,7 +672,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          this.debugMsg(`put -> ${dst} ${JSON.stringify(opts, null, ' ')}`);
+          this.debugMsg(`put -> ${dst} `, opts);
           errorListener = utils.makeErrorListener(reject, this, 'put');
           this.client.prependListener('error', errorListener);
           let stream = this.sftp.createWriteStream(dst, opts);
@@ -734,9 +718,7 @@ class SftpClient {
       utils.haveConnection(this, 'put');
       if (typeof localSrc === 'string') {
         let localInfo = await utils.checkLocalPath(localSrc);
-        this.debugMsg(
-          `put local path info ${JSON.stringify(localInfo, null, ' ')}`
-        );
+        this.debugMsg('put local path info ', localInfo);
         if (!localInfo.valid) {
           let e = utils.formatError(localInfo.msg, 'put', localInfo.code);
           throw e;
@@ -748,9 +730,7 @@ class SftpClient {
         remotePath,
         targetType.writeFile
       );
-      this.debugMsg(
-        `put remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('put remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'put', pathInfo.code);
         throw e;
@@ -774,9 +754,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         let errorListener;
         try {
-          this.debugMsg(
-            `append -> ${aPath} ${JSON.stringify(opts, null, ' ')}`
-          );
+          this.debugMsg(`append -> ${aPath} `, opts);
           errorListener = utils.makeErrorListener(reject, this, 'append');
           this.client.prependListener('error', errorListener);
           let writerOptions;
@@ -823,9 +801,7 @@ class SftpClient {
         remotePath,
         targetType.writeFile
       );
-      this.debugMsg(
-        `append remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('append remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'append', pathInfo.code);
         throw e;
@@ -884,9 +860,7 @@ class SftpClient {
         remotePath,
         targetType.writeDir
       );
-      this.debugMsg(
-        `mkdir remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('mkdir remote path info ', pathInfo);
       if (!pathInfo.valid) {
         throw utils.formatError(pathInfo.msg, 'mkdir', pathInfo.code);
       }
@@ -898,9 +872,7 @@ class SftpClient {
       }
       let dir = parse(pathInfo.path).dir;
       let parent = await utils.checkRemotePath(this, dir, targetType.writeDir);
-      this.debugMsg(
-        `mkdir parent path info ${JSON.stringify(parent, null, ' ')}`
-      );
+      this.debugMsg('mkdir parent path info ', parent);
       if (parent.valid && !parent.type) {
         await this.mkdir(dir, true);
       }
@@ -930,7 +902,7 @@ class SftpClient {
           this.client.prependListener('error', errorListener);
           this.sftp.rmdir(p, err => {
             if (err) {
-              this.debugMsg(`rmdir error ${err.message} ${err.code}`);
+              this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
               reject(
                 utils.formatError(`${err.message} ${p}`, '_rmdir', err.code)
               );
@@ -950,9 +922,7 @@ class SftpClient {
         remotePath,
         targetType.writeDir
       );
-      this.debugMsg(
-        `rmdir remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('rmdir remoe path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'rmdir', pathInfo.code);
         throw e;
@@ -964,10 +934,8 @@ class SftpClient {
       if (list.length) {
         let files = list.filter(item => item.type !== 'd');
         let dirs = list.filter(item => item.type === 'd');
-        this.debugMsg(
-          `rmdir file contents ${JSON.stringify(files, null, ' ')}`
-        );
-        this.debugMsg(`rmdir dir contents ${JSON.stringify(dirs, null, ' ')}`);
+        this.debugMsg('rmdir contents (files): ', files);
+        this.debugMsg('rmdir contents (dirs): ', dirs);
         for (let f of files) {
           await this.delete(pathInfo.path + this.remotePathSep + f.name);
         }
@@ -1020,9 +988,7 @@ class SftpClient {
         remotePath,
         targetType.writeFile
       );
-      this.debugMsg(
-        `delete remote path info ${JSON.stringify(pathInfo, null, ' ')}`
-      );
+      this.debugMsg('delete remote path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'delete', pathInfo.code);
         throw e;
@@ -1077,9 +1043,7 @@ class SftpClient {
         fromPath,
         targetType.readObj
       );
-      this.debugMsg(
-        `rename from path info ${JSON.stringify(fromInfo, null, ' ')}`
-      );
+      this.debugMsg('rename from path info ', fromInfo);
       if (!fromInfo.valid) {
         let e = utils.formatError(fromInfo.msg, 'rename', fromInfo.code);
         throw e;
@@ -1089,7 +1053,7 @@ class SftpClient {
         toPath,
         targetType.writeObj
       );
-      this.debugMsg(`rename to path info ${JSON.stringify(toInfo, null, ' ')}`);
+      this.debugMsg('rename to path info ', toInfo);
       if (toInfo.type) {
         let e = utils.formatError(
           `Permission denied: ${toInfo.path} already exists`,
@@ -1149,7 +1113,7 @@ class SftpClient {
         remotePath,
         targetType.readObj
       );
-      this.debugMsg(`chmod path info ${JSON.stringify(pathInfo, null, ' ')}`);
+      this.debugMsg('chmod path info ', pathInfo);
       if (!pathInfo.valid) {
         let e = utils.formatError(pathInfo.msg, 'chmod', pathInfo.code);
         throw e;
@@ -1180,17 +1144,13 @@ class SftpClient {
         let e = utils.formatError(localInfo.msg, 'uploadDir', localInfo.code);
         throw e;
       }
-      this.debugMsg(
-        `uploadDir local path info ${JSON.stringify(localInfo, null, ' ')}`
-      );
+      this.debugMsg('uploadDir local path info ', localInfo);
       let remoteInfo = await utils.checkRemotePath(
         this,
         dstDir,
         targetType.writeDir
       );
-      this.debugMsg(
-        `uploadDir remote path info ${JSON.stringify(remoteInfo, null, ' ')}`
-      );
+      this.debugMsg('uploadDir remote path info ', remoteInfo);
       if (!remoteInfo.valid) {
         let e = utils.formatError(remoteInfo.msg, 'uploadDir', remoteInfo.code);
         throw e;
@@ -1231,9 +1191,7 @@ class SftpClient {
         srcDir,
         targetType.readDir
       );
-      this.debugMsg(
-        `downloadDir remote path info ${JSON.stringify(remoteInfo, null, ' ')}`
-      );
+      this.debugMsg('downloadDir remote path info ', remoteInfo);
       if (!remoteInfo.valid) {
         let e = utils.formatError(
           remoteInfo.msg,
@@ -1243,9 +1201,7 @@ class SftpClient {
         throw e;
       }
       let localInfo = await utils.checkLocalPath(dstDir, targetType.writeDir);
-      this.debugMsg(
-        `downloadDir local path info ${JSON.stringify(localInfo, null, ' ')}`
-      );
+      this.debugMsg('downloadDir lcoal path info ', localInfo);
       if (localInfo.valid && !localInfo.type) {
         fs.mkdirSync(localInfo.path, {recursive: true});
       }

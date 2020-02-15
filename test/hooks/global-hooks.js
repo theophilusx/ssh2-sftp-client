@@ -19,6 +19,12 @@ const config = {
   retries: 1
 };
 
+if (process.env.DEBUG === 'true') {
+  config.debug = msg => {
+    console.error(msg);
+  };
+}
+
 const makeLocalPath = (...args) => {
   return join(...args);
 };
