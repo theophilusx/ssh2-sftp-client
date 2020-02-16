@@ -35,7 +35,7 @@
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
     "dotenv": "^8.2.0",
-    "mocha": "^7.0.0",
+    "mocha": "^7.0.1",
     "through2": "^3.0.1"
   }
 }
