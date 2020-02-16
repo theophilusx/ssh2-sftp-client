@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.0.2*.
+Current stable release is *v5.1.0*.
 
 Code has been tested against Node versions 10.18.1, 12.14.1 and 13.6.0
 
@@ -199,6 +199,13 @@ reset to false in preparation for the next error.
    - Fix error in local directory tests due to missing await statement.
    - Fix path handling under win32. Paths were not being parsed correctly due to
      the use of path.posix.parse() instead of path.parse(). 
+
+** Version 5.1.0
+   - Add missing connection check in end() method
+   - Add debugging support. Now adding a debug property to the connection
+     configuration object will enable debugging. The value of the debug property
+     should be a function which accepts a single string argument. Typically,
+     this function will send the value passed in to stderr or a file.
 
 * Documentation
 
@@ -1469,7 +1476,29 @@ scripts in this directory which perform basic tasks using only the ~ssh2~ and
 ~ssh2-streams~ modules (no ssh2-sftp-client module). These can be useful when
 trying to determine if the issue is with the underlying ~ssh2~ and
 ~ssh2-streams~ modules. 
- 
+
+** Debugging Support 
+
+You can add a ~debug~ property to the config object passed in to ~connect()~ to
+turn on debugging. This will generate quite a lot of output. The value of the
+property should be a function which accepts a single string argument. For example;
+
+#+begin_src javascript
+  config.debug = msg => {
+    console.error(msg);
+  };
+
+#+end_src
+
+Enabling debugging can generate a lot of output. If you use console.error() as
+the output (as in the example above), you can redirect the output to a file
+using shell redirection e.g.
+
+#+begin_src shell
+  node script.js 2> debug.log
+
+#+end_src
+
 * Logging Issues
 
 Please log an issue for all bugs, questions, feature and enhancement
