@@ -477,6 +477,15 @@ async function checkWriteFile(client, aPath, type) {
     };
   } else if (!type) {
     let parentDir = path.parse(aPath).dir;
+    if (!parentDir) {
+      return {
+        path: aPath,
+        type: false,
+        valid: false,
+        msg: `Bad path: ${aPath} cannot determine parent directory`,
+        code: errorCode.badPath
+      };
+    }
     let parentType = await client.exists(parentDir);
     if (!parentType) {
       return {
@@ -519,6 +528,15 @@ async function checkWriteDir(client, aPath, type) {
     };
   } else if (!type) {
     let parentDir = path.parse(aPath).dir;
+    if (!parentDir) {
+      return {
+        path: aPath,
+        type: false,
+        valid: false,
+        msg: `Bad path: ${aPath} cannot determine directory parent`,
+        code: errorCode.badPath
+      };
+    }
     let parentType = await client.exists(parentDir);
     if (parentType && parentType !== 'd') {
       return {
