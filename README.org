@@ -45,7 +45,7 @@ npm install ssh2-sftp-client
      in version 4.x. The functionality provided by ~auxList()~ is available in
      ~list()~, making ~auxList()~ unnecessary.
    - The realPath() method now returns ~''~ if the path does not exist
-     rather than throwing an exception. 
+     rather than throwing an exception.
    - Improved error handling. The ~ssh2~ and ~ssh2-streams~ libraries use events
      to signal errors. Providing a clean Promise based API and managing these
      events can be challenging as an error event can fire at any time (including
@@ -63,14 +63,14 @@ npm install ssh2-sftp-client
      ~end()~ has been called, we don't really care if an error occurs provided
      the connection is closed. Therefore, a new default error listener for the
      ~end()~ method has been added that will simply ignore any errors which
-     occur during a call to end the connection. 
+     occur during a call to end the connection.
 
-*** Error Event Handling 
+*** Error Event Handling
 
     Providing a clean Promise API for the SSH2 to manage basic SFTP functionality
     presents a couple of challenges for managing errors. The ~SSH2~ module uses
     events to communicate various state changes and error conditions. These
-    events can fire at any time. 
+    events can fire at any time.
 
     On the client side, we wrap basic SFTP actions in Javascript Promises,
     allowing clients to use either the standard Promise API or async/await to
@@ -79,7 +79,7 @@ npm install ssh2-sftp-client
     otherwise. Downloading a file using ~get()~ or ~fastGet()~ generates a new
     Promise which is either resolved, indicating file has been successfully
     downloaded or rejected, indicating the download failed. All pretty
-    straight-forward. 
+    straight-forward.
 
     When the Promise is created, an error event handler is added to the SFTP
     object to catch any errors that fire during the execution of the promise. If
@@ -88,7 +88,7 @@ npm install ssh2-sftp-client
     the error listener is removed (the error listener is specific to each promise
     because it needs to call the reject method associated with that promise). As
     a promise can only be resolved or rejected once, after the Promise has
-    completed, the error listener is of no further use. 
+    completed, the error listener is of no further use.
 
     This all works fine when an error event fires during the execution of a
     Promise. However, what about outside promise execution? Consider the
@@ -102,18 +102,18 @@ npm install ssh2-sftp-client
        open connection to the SFTP server, but you are not actively interacting
        with it. There is no active Promise in play.
     4. The remote SFTP server resets the connection for some reason, generating a
-       ECONNRESET error that is emitted as an error event. 
+       ECONNRESET error that is emitted as an error event.
 
     What happens at this point? There is no active promise executing, so no
     Promise specific error handler in play. Your script is off processing the
     data from the previously downloaded file, so there is no currently executing
     try/catch block around the SFTP client object. Basically, there is nothing
-    listening of any errors at this point. What will happen? 
+    listening of any errors at this point. What will happen?
 
     Well, basically, the error event will bubble up to the top level of the node
     process context and cause an uncaughtException error, display the error and
     dump a stack trace and cause the node process to exit. In basic terms, your
-    process will crash. Not a great outcome. 
+    process will crash. Not a great outcome.
 
     There are a number of things we can do to improve the situation. However,
     nearly all of them have some drawbacks. We could -
@@ -128,7 +128,7 @@ npm install ssh2-sftp-client
       and your now being required to add significant additional complexity to
       deal with a rare edge case. However, sometimes, you just need to deal with
       this sort of complexity and the ~client.on()~ method does give you that
-      option. 
+      option.
     - Another alternative is to just add an uncaughtException handler to your Node
       process object. This would also prevent node from dumping the error and
       exiting abruptly. However, now you need to think about ALL the possible
@@ -142,7 +142,7 @@ npm install ssh2-sftp-client
     has fired. All the default error handler does is log the error to
     console.error() and set the SFTP connection to undefined so that any further
     attempts to use the connection will throw an error inside the Promise which
-    attempts to use it. 
+    attempts to use it.
 
     The advantage of this approach is that it stops the abrupt exiting of the
     node script due to an uncaught exception error and provides a reasonable
@@ -156,14 +156,14 @@ npm install ssh2-sftp-client
     take appropriate action to resolve the issue (such as re-connecting to the
     server). On the other hand, if after processing the file your done and just
     want to end, then you can just ignore the error, perform any necessary
-    cleanup work and exit successfully. 
+    cleanup work and exit successfully.
 
 *** Technical Details
 
 The event handlers added by each Promise are added using the ~prependListener()~
 function. This ensures the handler is fired before any other error handlers
 which may be defined. As part of the processing, these error handler set a flag
-property ~this.errorHandled~ to true, indicating the error has been handled. 
+property ~this.errorHandled~ to true, indicating the error has been handled.
 
 In addition to the Promise error handlers, there is a default error handler
 which will fire after any Promise error handler. The default error handler looks
@@ -173,8 +173,8 @@ are ready for the next error). If the flag is false, the default handler knows
 it must handle the error. In this case, the handler will log the error to
 ~console.error()~, will set the SFTP connection to undefined to prevent any
 further attempts to use it and finally, ensure the ~this.errorHandler~ flag is
-reset to false in preparation for the next error. 
- 
+reset to false in preparation for the next error.
+
 ** New Methods
 
    - Added the method uploadDir(). This method will upload a directory
@@ -186,19 +186,19 @@ reset to false in preparation for the next error.
      (including any subdirectories) to the local file system. Only directories
      and regular files are downloaded (no symbolic links, FIFOs, socket FDs
      etc).. Will overwrite existing files or directories, but will not delete
-     any local files in the directories. 
+     any local files in the directories.
 
-** Version 5.0.1 
+** Version 5.0.1
 
    - The error checking was a little too stringent. The use of exist() to test
      for file types had a problem when the user does not have read/execute
      rights on the directory. Replaced with stat() method, which should avoid
-     this issue. 
+     this issue.
 
 ** Version 5.0.2
    - Fix error in local directory tests due to missing await statement.
    - Fix path handling under win32. Paths were not being parsed correctly due to
-     the use of path.posix.parse() instead of path.parse(). 
+     the use of path.posix.parse() instead of path.parse().
 
 ** Version 5.1.0
    - Add missing connection check in end() method
@@ -217,19 +217,25 @@ All the methods will return a Promise, except for ~on()~ and
 
 ** Specifying Paths
 
-Both ~./~ and ~../~ are supported in path specifiers. Tilde (~~~) expansion is
-not supported. Relative paths i.e. paths which do not start with a ~/~, will be
-considered to be relative to whatever the remote server considers to be the
-~root~ directory of the login. Depending on how the remote SFTP server is
-configured, this may not always be what you expect. The module also does some
-very basic tests on results returned from the remote server to try and determine
-platform type and will replace path separators with whatever the remote systems
-uses (e.g. replace ~/~ with ~\~ on MS Windows). 
+All remote paths must either be absolute e.g. ~/absolute/path/to/file~ or they
+can be relative with a prefix of either ~./~ (relative to current remote
+directory) or ~../~ (relative to parent of current remote directory) e.g.
+~./relative/path/to/file~ or ~../relative/to/parent/file~. It is also possible
+to do things like ~../../../file~ to specify the parent of the parent of the
+parent of the current remote directory. The shell tilde (~~~) and common
+environment variables like ~$HOME~ are NOT supported.
+
+It is important to recognise that the current remote directory may not always be
+what you may expect. A lot will depend on the remote platform of the SFTP server
+and how the SFTP server has been configured. When things don't seem to be
+working as expected, it is often a good idea to verify your assumptions
+regarding the remote directory and remote paths. One way to do this is to login
+using a command line program like ~sftp~ or ~lftp~.
 
 There is a small performance hit for using ~./~ and ~../~ as the module must
 query the remote server to determine what the root path is and derive the
 absolute path. Using absolute paths are therefore more efficient and likely more
-robust. 
+robust.
 
 When specifying file paths, ensure to include a full path i.e. include the
 remote filename. Don't expect the module to append the local file name to the
@@ -910,11 +916,11 @@ directory.
 *** realPath(path) ===> string
 
 Converts a relative path to an absolute path on the remote server. This method
-is mainly used internally to resolve remote path names. Returns '' if the 
-path is not valid. 
+is mainly used internally to resolve remote path names. Returns '' if the
+path is not valid.
 
 - path :: A file path, either relative or absolute. Can handle '.' and '..', but
-  does not expand '~'. 
+  does not expand '~'.
 
 *** cwd() ==> string
 
@@ -933,7 +939,7 @@ an object which has properties source and destination. The source property is
 the path of the file uploaded and the destination property is the path to where
 the file was uploaded to. The purpose of this event is to provide some way for
 client code to get feedback on the upload progress. You can add your own lisener
-using the ~on()~ method. 
+using the ~on()~ method.
 
 - srcDir :: A local file path specified as a string
 - dstDir :: A remote file path specified as a string
@@ -992,17 +998,17 @@ Download the remote directory specified by ~srcDir~ to the local file system
 directory specified by ~dstDir~. The ~dstDir~ directory will be created if
 required. All sub directories within ~srcDir~ will also be copied. Any existing
 files in the local path will be overwritten. No files in the local path will be
-deleted. 
+deleted.
 
 The method also emites ~download~ events to provide a way to monitor download
 progress. The download event listener is called with one argument, an object
 with two properties, source and destination. The source property is the path to
 the remote file that has been downloaded and the destination is the local path
 to where the file was downloaded to. You can add a listener for this event using
-the ~on()~ method. 
+the ~on()~ method.
 
 - srcDir :: A remote file path specified as a string
-- dstDir :: A local file path specified as a string 
+- dstDir :: A local file path specified as a string
 
 **** Example
 
@@ -1051,7 +1057,7 @@ the ~on()~ method.
     });
 
 #+end_src
- 
+
 *** end() ==> boolean
 
 Ends the current client session, releasing the client socket and associated
@@ -1258,7 +1264,7 @@ This solution was provided by @jmorino.
   // client is connected
 #+end_src
 
-** Timeout while waiting for handshake or handshake errors 
+** Timeout while waiting for handshake or handshake errors
 
 Some users have encountered the error 'Timeout while waiting for handshake' or
 'Handshake failed, no matching client->server ciphers. This is often due to the
@@ -1268,26 +1274,26 @@ used by ssh2. One of the connect options provided by the ssh2 module is
 exchange, ciphers, hmac and compression algorithms as well as server
 host key used to establish the initial secure connection. See the SSH2
 documentation for details. Getting these parameters correct usually resolves the
-issue. 
+issue.
 
-* Examples 
+* Examples
 
 I have started collecting example scripts in the example directory of the
 repository. These are mainly scripts I have put together in order to investigate
 issues or provide samples for users. They are not robust, lack adequate error
 handling and may contain errors. However, I think they are still useful for
-helping developers see how the module and API can be used. 
- 
+helping developers see how the module and API can be used.
+
 * Change Log
 ** v5.0.2 (Prod Version)
    - Fix bugs related to win32 platform and local tests for valid directories
    - Fix problem with parsing of file paths
 
-** v5.0.1 
-   - Turn down error checking to be less stringent and handle situations 
+** v5.0.1
+   - Turn down error checking to be less stringent and handle situations
      where user does not have read permission on parent directory.
 
-** v5.0.0 
+** v5.0.0
    - Added two new methods ~uploadDir()~ and ~downloadDir()~
    - Removed deprecated ~auxList()~ method
    - Improved error message consistency
@@ -1300,30 +1306,30 @@ helping developers see how the module and API can be used.
      custom event handlers they add).
    - Module error handlers added using ~prependListener~ to ensure they are
      called before any additional custom handlers added by client code.
-   - Any error events fired during an ~end()~ call are now ignored. 
+   - Any error events fired during an ~end()~ call are now ignored.
 
-** v4.3.1 
+** v4.3.1
    - Updated end() method to resolve once close event fires
    - Added errorListener to error event in each promise to catch error events
      and reject the promise. This should resolve the issue of some error events
      causing uncaughtException erros and causing the process to exit.
- 
-** v4.3.0 
+
+** v4.3.0
    - Ensure errors include an err.code property and pass through the error code
      from the originating error
    - Change tests for error type to use ~error.code~ instead of matching on
      ~error.message~.
 
-** v4.2.4 
+** v4.2.4
    - Bumped ssh2 to v0.8.6
    - Added exists() usage example to examples directory
    - Clarify documentation on get() method
-** v4.2.3 
+** v4.2.3
    - Fix bug in ~exist()~ where tests on root directory returned false
    - Minor documentation fixes
    - Clean up mkdir example
 
-** v4.2.2 
+** v4.2.2
    - Minor documentation fixes
    - Added additional examples in the ~example~ directory
 
@@ -1439,7 +1445,7 @@ helping developers see how the module and API can be used.
    - fix: multi image upload
    - change: remove ~this.client.sftp~ to ~connect~ function
 
-* Troubleshooting 
+* Troubleshooting
 
 The ~ssh2-sftp-client~ module is essentially a wrapper around the ~ssh2~ and
 ~ssh2-streams~ modules, providing a higher level ~promise~ based API. When you
@@ -1450,7 +1456,7 @@ reproducible example which reproduces the issue. Once you have that, try to
 replicate the functionality just using the ~ssh2~ and ~ssh2-streams~ modules. If
 the issue still occurs, then you can be fairly confident it is something related
 to those later 2 modules and therefore and issue which should be referred to the
-maintainer of that module. 
+maintainer of that module.
 
 The ~ssh2~ and ~ssh2-streams~ modules are very solid, high quality modules with
 a large user base. Most of the time, issues with those modules are due to client
@@ -1460,7 +1466,7 @@ these modules have good defaults, the flexibility of the ssh2 protocol means
 that not all options are available by default. You may need to tweak the
 connection options, ssh2 algorithms and ciphers etc for some remote servers. The
 documentation for both the ~ssh2~ and ~ssh2-streams~ module is quite
-comprehensive and there is lots of valuable information in the issue logs. 
+comprehensive and there is lots of valuable information in the issue logs.
 
 If you run into an issue which is not repeatable with just the ~ssh2~ and
 ~ssh2-streams~ modules, then please log an issue against the ~ssh2-sftp-client~
@@ -1469,15 +1475,15 @@ module and I will investigate. Please note the next section on logging issues.
 Note also that in the repository there are two useful directories. The first is
 the examples directory, which contain some examples of using ~ssh2-sftp-client~
 to perform common tasks. A few minutes reviewing these examples can provide that
-additional bit of detail to help fix any problems you are encountering. 
+additional bit of detail to help fix any problems you are encountering.
 
 The second directory is the tools directory. I have some very basic simple
 scripts in this directory which perform basic tasks using only the ~ssh2~ and
 ~ssh2-streams~ modules (no ssh2-sftp-client module). These can be useful when
 trying to determine if the issue is with the underlying ~ssh2~ and
-~ssh2-streams~ modules. 
+~ssh2-streams~ modules.
 
-** Debugging Support 
+** Debugging Support
 
 You can add a ~debug~ property to the config object passed in to ~connect()~ to
 turn on debugging. This will generate quite a lot of output. The value of the
@@ -1516,11 +1522,11 @@ the issue. Things which will help
 - Platform and software for the remote SFTP server when possible
 - Example of your code. By far, the most common issue is incorrect use of the
   module API. Example code can usually result in such issues being resolved very
-  quickly. 
+  quickly.
 
 Perhaps the best assistance is a minimal reproducible example of the issue. Once
-the issue can be readily reproduced, it can usually be fixed very quickly. 
- 
+the issue can be readily reproduced, it can usually be fixed very quickly.
+
 * Pull Requests
 
 Pull requests are always welcomed. However, please ensure your changes pass all
@@ -1549,4 +1555,3 @@ intention is to credit anyone who contributes going forward.
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
 - waldyrious :: Documentation fixes
-
