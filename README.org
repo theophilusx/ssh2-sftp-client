@@ -206,6 +206,8 @@ reset to false in preparation for the next error.
      configuration object will enable debugging. The value of the debug property
      should be a function which accepts a single string argument. Typically,
      this function will send the value passed in to stderr or a file.
+   - Fix bug in checkRemotePath() relating to poor path specifications where
+     you cannot determine parent directory.
 
 * Documentation
 
@@ -1285,7 +1287,13 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.0.2 (Prod Version)
+** v5.1.0 (Prod Version)
+   - Fix bug in checkRemotePath() relating to handling of badly
+     specified paths (issue #213)
+   - Added additional debugging support
+   - Add missing test for valid connection in end() method.
+
+** v5.0.2
    - Fix bugs related to win32 platform and local tests for valid directories
    - Fix problem with parsing of file paths
 
