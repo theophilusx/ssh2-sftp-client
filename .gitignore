@@ -1,5 +1,6 @@
 *~
 *.tgz
+*.log
 .DS_Store
 node_modules
 testServer
@@ -11,6 +12,6 @@ package-lock.json
 env-turing
 env-vbox
 env-turing2
+env-win10
 .log
 .vscode
-

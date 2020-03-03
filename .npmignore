@@ -10,6 +10,7 @@ example
 env-turing
 env-turing2
 env-vbox
+env-win10
 .eslintrc.js
 .mocharc.js
 .indium.json
