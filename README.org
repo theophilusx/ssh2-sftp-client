@@ -1292,6 +1292,7 @@ helping developers see how the module and API can be used.
      specified paths (issue #213)
    - Added additional debugging support
    - Add missing test for valid connection in end() method.
+   - Bump ssh2 version to v0.8.8
 
 ** v5.0.2
    - Fix bugs related to win32 platform and local tests for valid directories
