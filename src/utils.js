@@ -113,7 +113,6 @@ function removeListeners(emitter) {
 function makeErrorListener(reject, self, name) {
   return function(err) {
     self.errorHandled = true;
-    console.debug('Error event caught by method error handler');
     reject(formatError(err, name));
   };
 }
@@ -121,15 +120,21 @@ function makeErrorListener(reject, self, name) {
 function makeEndListener(client) {
   return function() {
     if (!client.endCalled) {
-      console.error(`${client.clientName} Connection ended unexpectedly`);
+      console.error(
+        `${client.clientName} End Listener: Connection ended unexpectedly`
+      );
     }
   };
 }
 
-function makeCloseListener(client) {
+function makeCloseListener(client, reject, name) {
   return function() {
     if (!client.endCalled) {
-      console.error(`${client.clientName}: Connection closed unexpectedly`);
+      if (reject) {
+        reject(formatError('Connection closed unepectedly', name));
+      } else {
+        console.error(`${client.clientName}: Connection closed unexpectedly`);
+      }
     }
     client.sftp = undefined;
   };
