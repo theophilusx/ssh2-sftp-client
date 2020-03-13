@@ -101,6 +101,8 @@ class SftpClient {
                 if (err) {
                   this.client.end();
                   this.client.destroy();
+                  this.client = undefined;
+                  this.client = new Client();
                   if (operation.retry(err)) {
                     // failed to connect, but not yet reached max attempt count
                     // remove the listeners and try again
