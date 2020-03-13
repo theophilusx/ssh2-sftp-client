@@ -97,8 +97,10 @@ class SftpClient {
           this.client
             .on('ready', () => {
               this.client.sftp((err, sftp) => {
+                this.client.removeListener('error', connectErrorListener);
                 if (err) {
-                  this.client.removeListener('error', connectErrorListener);
+                  this.client.end();
+                  this.client.destroy();
                   if (operation.retry(err)) {
                     // failed to connect, but not yet reached max attempt count
                     // remove the listeners and try again
@@ -114,7 +116,6 @@ class SftpClient {
                 this.debugMsg('SFTP connection established');
                 this.sftp = sftp;
                 // remove retry error listener and add generic error listener
-                this.client.removeListener('error', connectErrorListener);
                 this.client.on('close', utils.makeCloseListener(this));
                 this.client.on('error', err => {
                   if (!this.errorHandled) {
@@ -125,6 +126,7 @@ class SftpClient {
                   this.errorHandled = false;
                 });
                 callback(null, sftp);
+                return;
               });
             })
             .on('error', connectErrorListener)
