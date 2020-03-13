@@ -77,7 +77,7 @@ class SftpClient {
       try {
         operation.attempt(attemptCount => {
           const connectErrorListener = err => {
-            this.removeListener('error', connectErrorListener);
+            this.client.removeListener('error', connectErrorListener);
             if (operation.retry(err)) {
               // failed to connect, but not yet reached max attempt count
               // remove the listeners and try again
@@ -99,10 +99,10 @@ class SftpClient {
               this.client.sftp((err, sftp) => {
                 this.client.removeListener('error', connectErrorListener);
                 if (err) {
-                  this.client.end();
-                  this.client.destroy();
-                  this.client = undefined;
-                  this.client = new Client();
+                  // this.client.end();
+                  // this.client.destroy();
+                  // this.client = undefined;
+                  // this.client = new Client();
                   if (operation.retry(err)) {
                     // failed to connect, but not yet reached max attempt count
                     // remove the listeners and try again
