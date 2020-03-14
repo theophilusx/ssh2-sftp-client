@@ -109,6 +109,7 @@ class SftpClient {
                     utils.formatError(err, 'connect', err.code, attemptCount),
                     null
                   );
+                  return;
                 }
                 this.debugMsg('SFTP connection established');
                 this.sftp = sftp;
