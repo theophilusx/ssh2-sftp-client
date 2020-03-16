@@ -1745,3 +1745,4 @@ intention is to credit anyone who contributes going forward.
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
 - waldyrious :: Documentation fixes
+- james-pellow :: Cleanup and fix for connect method logic
