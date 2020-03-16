@@ -22,19 +22,6 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.errorHandled = false;
     this.debug = undefined;
-
-    this.client.on('close', utils.makeCloseListener(this));
-    this.client.on('error', err => {
-      if (!this.errorHandled) {
-        // error not already handled. Log it.
-        console.error(`Error event: ${err.message}`);
-      }
-      //need to set to false in case another error raised
-      this.errorHandled = false;
-    });
-
-    this.connectCloseHandler = undefined;
-    this.connectErrorHandler = undefined;
   }
 
   debugMsg(msg, obj) {
