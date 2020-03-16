@@ -22,6 +22,19 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.errorHandled = false;
     this.debug = undefined;
+
+    this.client.on('close', utils.makeCloseListener(this));
+    this.client.on('error', err => {
+      if (!this.errorHandled) {
+        // error not already handled. Log it.
+        console.error(`Error event: ${err.message}`);
+      }
+      //need to set to false in case another error raised
+      this.errorHandled = false;
+    });
+
+    this.connectCloseHandler = undefined;
+    this.connectErrorHandler = undefined;
   }
 
   debugMsg(msg, obj) {
@@ -76,45 +89,7 @@ class SftpClient {
     const retryConnect = (config, callback) => {
       try {
         operation.attempt(attemptCount => {
-          const onceReady = () => {
-            this.client.sftp((err, sftp) => {
-              this.client.removeListener('error', connectErrorListener);
-              if (err) {
-                // this.client.end();
-                // this.client.destroy();
-                // this.client = undefined;
-                // this.client = new Client();
-                if (operation.retry(err)) {
-                  // failed to connect, but not yet reached max attempt count
-                  // remove the listeners and try again
-                  return;
-                }
-                // exhausted retries - do callback with error
-                callback(
-                  utils.formatError(err, 'connect', err.code, attemptCount),
-                  null
-                );
-                return;
-              }
-              this.debugMsg('SFTP connection established');
-              this.sftp = sftp;
-              // remove retry error listener and add generic error listener
-              this.client.on('close', utils.makeCloseListener(this));
-              this.client.on('error', err => {
-                if (!this.errorHandled) {
-                  // error not already handled. Log it.
-                  console.error(`Error event: ${err.message}`);
-                }
-                //need to set to false in case another error raised
-                this.errorHandled = false;
-              });
-              callback(null, sftp);
-              return;
-            });
-          };
-
           const connectErrorListener = err => {
-            this.client.removeListener('error', connectErrorListener);
             this.client.removeListener('ready', onceReady);
             if (operation.retry(err)) {
               // failed to connect, but not yet reached max attempt count
@@ -130,6 +105,29 @@ class SftpClient {
               utils.formatError(err, 'connect', err.code, attemptCount),
               null
             );
+          };
+
+          const onceReady = () => {
+            this.client.sftp((err, sftp) => {
+              this.client.removeListener('error', connectErrorListener);
+              if (err) {
+                if (operation.retry(err)) {
+                  // failed to connect, but not yet reached max attempt count
+                  // remove the listeners and try again
+                  return;
+                }
+                // exhausted retries - do callback with error
+                callback(
+                  utils.formatError(err, 'connect', err.code, attemptCount),
+                  null
+                );
+                return;
+              }
+              this.debugMsg('SFTP connection established');
+              this.sftp = sftp;
+              callback(null, sftp);
+              return;
+            });
           };
 
           this.client
