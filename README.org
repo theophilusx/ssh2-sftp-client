@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.1.0*.
+Current stable release is *v5.1.1*.
 
 Code has been tested against Node versions 10.18.1, 12.14.1 and 13.6.0
 
@@ -209,6 +209,22 @@ reset to false in preparation for the next error.
    - Fix bug in checkRemotePath() relating to poor path specifications where
      you cannot determine parent directory.
 
+** Version 5.1.1 
+   - Bug fix for unexpected close of connections. It would seem that a
+     connections can be unexpectedly closed without an accompanying error event.
+     As methods only looked for error events, the method promise wold never
+     fulfil and the method would appear to hang. Have now added close event
+     handlers to each method that will reject the promise if the connection is
+     closed unexpectedly.
+   - Missing return statement in connect method would result in the connect
+     method attempting to re-connect again after it had reached maximum connect
+     retries. Added the missing return statement.
+   - Added some more troubleshooting documentation. Numerous issues have been
+     raised that turn out to be due to client code failing to return Promises
+     inside promise chains. Common symptom is what appears to be truncated file
+     upload/download. What is really happening is that the end method is being
+     called before the transfer has completed.
+     
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1287,7 +1303,13 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.1.0 (Prod Version)
+** v5.1.1 (Prod Version)
+   - Added separate close handlers to each method. 
+   - Added missing return statement in connect method
+   - Added additional troubleshooting documentation for 
+     common errors.
+
+** v5.1.0 
    - Fix bug in checkRemotePath() relating to handling of badly
      specified paths (issue #213)
    - Added additional debugging support
@@ -1492,6 +1514,165 @@ scripts in this directory which perform basic tasks using only the ~ssh2~ and
 trying to determine if the issue is with the underlying ~ssh2~ and
 ~ssh2-streams~ modules.
 
+** Common Errors
+
+   There are some common errors people tend to make when using Promises or
+   Asyc/Await. These are by far the most common problem found in issues logged
+   against this module. Please check for some of these before logging your
+   issue. 
+
+*** Not returning the promise in a ~then()~ block
+
+    All methods in ~ssh2-sftp-client~ return a Promise. This means methods are
+    executed /asynchrnously/. When you call a method inside the ~then()~ block
+    of a promise chain, it is critical that you return the Promise that call
+    generates. Failing to do this will result in the ~then()~ block completing
+    and your code starting execution of the next ~then()~, ~catch()~ or
+    ~finally()~ block before your promise has been fulfilled. For exmaple, the
+    following will not do what you expect 
+
+    #+begin_src javascript 
+      sftp.connect(config)
+        .then(() => {
+          sftp.fastGet('foo.txt', 'bar.txt');
+        }).then(rslt => {
+          console.log(rslt);
+          sftp.end();
+        }).catch(e => {
+          console.error(e.message);
+        });
+    #+end_src
+   
+    In the above code, the ~sftp.end()~ method will almost certainly be called
+    before ~sftp.gastGet()~ has been fulfilled (unless the /foo.txt/ file is
+    really small!). In fact, the whole promise chain will complete and exit even
+    before the ~sftp.end()~ call has been fulfilled. The correct code would be
+    something like 
+    
+    #+begin_src javascript 
+      sftp.connect(config)
+        .then(() => {
+          return sftp.fastGet('foo.txt', 'bar.txt');
+        }).then(rslt => {
+          console.log(rslt);
+          return sftp.end();
+        }).catch(e => {
+          console.error(e.message);
+        });
+    #+end_src
+    
+    Note the ~return~ statements. These ensure that the Promise returned by the
+    client method is returned into the promise chain. It will be this promise
+    the next block in the chain will wait on to be fulfilled before the next
+    block is executed. Without the return statement, that block will return the
+    default promise for that block, which essentially says /this block has been
+    fulfilled/. What you really want is the promise which says /your sftp client
+    method call has been fulfilled/. 
+
+    A common symptom of this type of error is for file uploads or download to
+    fail to complete or for data in those files to be truncated. What is
+    happening is that the connection is being ended before the transfer has
+    completed. 
+    
+*** Mixing Promise Chains and Async/Await
+
+    Another common error is to mix Promise chains and async/await calls. This is
+    rarely a great idea. While you can do this, it tends to create complicated
+    and difficult to maintain code. Select one approach and stick with it. Both
+    approaches are functionally equivalent, so there is no reason to mix up the
+    two paradigms. My personal preference would be to use async/await as I think
+    that is more /natural/ for most developers. For example, the following is
+    more complex and difficult to follow than necessary (and has a bug!)
+
+    #+begin_src javascript
+      sftp.connect(config)
+        .then(() => {
+          return sftp.cwd();
+        }).then(async (d) => {
+          console.log(`Remote directory is ${d}`);
+          try {
+            await sftp.fastGet(`${d}/foo.txt`, `./bar.txt`);
+          }.catch(e => {
+            console.error(e.message);
+          });
+        }).catch(e => {
+          console.error(e.message);
+        }).finally(() => {
+          sftp.end();
+        });
+    #+end_src
+
+    The main bug in the above code is the ~then()~ block is not returning the
+    Promise generated by the call to ~sftp.fastGet()~. What it is actually
+    returning is a fulfilled promise which says the ~then()~ block has been run
+    (note that the await'ed promise is not being returned and is therefore
+    outside the main Promise chain). As a result, the ~finally()~ block will be
+    executed before the await promise has been fulfilled. 
+
+    Using async/await inside the promise chain has created unnecessary
+    complexity and leads to incorrect assumptions regarding how the code will
+    execute. A quick glance at the code is likely to give the impression that
+    execution will wait for the ~sftp.fastGet()~ call to be fulfilled before
+    continuing. This is not the case. The code would be more clearly expressed
+    as either 
+
+    #+begin_src javascript
+      sftp.connect(config)
+        .then(() => {
+          return sftp.cwd();
+        }).then(d => {
+          console.log(`remote dir ${d}`);
+          return sftp.fastGet(`${d}/foot.txt`, 'bar.txt');
+        }).catch(e => {
+          console.error(e.message);
+        }).finally(() => {
+          return sftp.end();
+        });
+    #+end_src
+    
+   *or, using async/await*
+
+   #+begin_src javascript
+     async function doSftp() {
+       try {
+         let sftp = await sftp.connect(conf);
+         let d = await sftp.cwd();
+         console.log(`remote dir is ${d}`);
+         await sftp.fastGet(`${d}/foo.txt`, 'bat.txt');
+       } catch (e) {
+         console.error(e.message);
+       } finally () {
+         await sftp.end();
+       }
+     }
+   #+end_src
+
+*** Try/catch and Error Handlers
+
+    Another common error is to try and use a try/catch block to catch event
+    signals, such as an error event. In general, you cannot use try/catch blocks
+    for asynchronous code and expect errors to be caught by the ~catch~ block.
+    Handling errors in asynchronous code is one of the key reasons we now have
+    the Promise and async/await frameworks. 
+
+    The basic problem is that the try/catch block will have completed execution
+    before the asynchronous code has completed. If the asynchronous code has not
+    compleed, then there is a potential for it to raise an error. However, as
+    the try/catch block has already completed, there is no /catch/ waiting to
+    catch the error. It will bubble up and probably result in your script
+    exiting with an uncaught exception error. 
+
+    Error events are essentially asynchronous code. You don't know when such
+    events will fire. Therefore, you cannot use a try/catch block to catch such
+    event errors. Even creating an error handler which then throws an exception
+    won't help as the key problem is that your try/catch block has already
+    executed. There are a number of alternative ways to deal with this
+    situation. However, the key symptom is that you see occasional uncaught
+    error exceptions that cause your script to exit abnormally despite having
+    try/catch blocks in your script. What you need to do is look at your code
+    and find where errors are raised asynchronously and use an event handler or
+    some other mechanism to manage any errors raised.  
+    
 ** Debugging Support
 
 You can add a ~debug~ property to the config object passed in to ~connect()~ to
