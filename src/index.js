@@ -22,6 +22,12 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.errorHandled = false;
     this.debug = undefined;
+
+    this.client.on('close', () => {
+      if (!this.endCalled) {
+        this.sftp = undefined;
+      }
+    });
   }
 
   debugMsg(msg, obj) {
@@ -1228,26 +1234,29 @@ class SftpClient {
    */
   end() {
     return new Promise((resolve, reject) => {
+      const endErrorListener = err => {
+        // we don't care about errors at this point
+        // so do nothiing
+        this.errorHandled = true;
+        if (err.code !== 'ECONNRESET') {
+          reject(utils.formatError(err, 'end'));
+        }
+      };
+
       try {
-        utils.haveConnection(this, 'end');
-        this.client.prependListener('error', err => {
-          // we don't care about errors at this point
-          // so do nothiing
-          this.errorHandled = true;
-          if (err.code !== 'ECONNRESET') {
-            console.log(`end(): Ignoring unexpected error ${err.message}`);
-          }
-        });
         this.endCalled = true;
-        this.client.on('close', () => {
+        if (utils.haveConnection(this, 'end', reject)) {
+          this.client.prependListener('error', endErrorListener);
+          this.client.end();
+          this.removeListener('error', endErrorListener);
           resolve(true);
-          utils.removeListeners(this.client);
-          this.sftp = undefined;
-          this.endCalled = false;
-        });
-        this.client.end();
+        }
       } catch (err) {
         utils.handleError(err, 'end', reject);
+      } finally {
+        this.sftp = undefined;
+        this.endCalled = false;
+        //utils.dumpListeners(this.client);
       }
     });
   }

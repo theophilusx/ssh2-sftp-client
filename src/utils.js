@@ -624,6 +624,16 @@ function haveConnection(client, name, reject) {
   return true;
 }
 
+function dumpListeners(emitter) {
+  let eventNames = emitter.eventNames();
+  if (eventNames.length) {
+    console.log('Listener Data');
+    eventNames.map(n => {
+      console.log(`${n}: ${emitter.listenerCount(n)}`);
+    });
+  }
+}
+
 module.exports = {
   formatError,
   handleError,
@@ -635,5 +645,6 @@ module.exports = {
   checkLocalPath,
   normalizeRemotePath,
   checkRemotePath,
-  haveConnection
+  haveConnection,
+  dumpListeners
 };
