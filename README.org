@@ -225,6 +225,14 @@ reset to false in preparation for the next error.
      upload/download. What is really happening is that the end method is being
      called before the transfer has completed.
      
+** Version 5.1.2     
+   - Mainly a bug fix. We needed to add back a global close listener to ensure
+     the sftp object is unset whenever a close event occurs. As close events can 
+     occur outside main method calls, only having method based listeners was not
+     sufficient.
+   - Also added a utils.dumpListeners() method, useful when debugging issues with
+     listener 'leakage' due to failure to remove listeners when no longer required.
+     
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1303,7 +1311,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.1.1 (Prod Version)
+** v5.1.2 (Prod Version)
+   - Added back global close handler
+   - Added dumpListeners() method
+   
+** v5.1.1 
    - Added separate close handlers to each method. 
    - Added missing return statement in connect method
    - Added additional troubleshooting documentation for 
