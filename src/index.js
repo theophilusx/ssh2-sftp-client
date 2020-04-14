@@ -81,8 +81,8 @@ class SftpClient {
 
     const retryConnect = (config, callback) => {
       try {
-        operation.attempt(attemptCount => {
-          const connectErrorListener = err => {
+        operation.attempt((attemptCount) => {
+          const connectErrorListener = (err) => {
             this.client.removeListener('ready', onceReady);
             if (operation.retry(err)) {
               // failed to connect, but not yet reached max attempt count
@@ -235,7 +235,7 @@ class SftpClient {
    * @return {Promise} stats, attributes info
    */
   async stat(remotePath) {
-    const _stat = aPath => {
+    const _stat = (aPath) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`stat -> ${aPath}`);
         let closeListener = utils.makeCloseListener(this, reject, 'stat');
@@ -369,7 +369,7 @@ class SftpClient {
             let newList = [];
             // reset file info
             if (fileList) {
-              newList = fileList.map(item => {
+              newList = fileList.map((item) => {
                 return {
                   type: item.longname.substr(0, 1),
                   name: item.filename,
@@ -394,7 +394,7 @@ class SftpClient {
               let newPattern = filter.replace(/\*([^*])*?/gi, '.*');
               regex = new RegExp(newPattern);
             }
-            resolve(newList.filter(item => regex.test(item.name)));
+            resolve(newList.filter((item) => regex.test(item.name)));
           }
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
@@ -442,7 +442,7 @@ class SftpClient {
         let errorListener = utils.makeErrorListener(reject, this, 'get');
         this.client.prependListener('error', errorListener);
         let rdr = this.sftp.createReadStream(sftpPath, options);
-        rdr.once('error', err => {
+        rdr.once('error', (err) => {
           utils.removeListeners(rdr);
           reject(utils.formatError(`${err.message} ${sftpPath}`, '_get'));
           this.removeListener('error', errorListener);
@@ -451,7 +451,7 @@ class SftpClient {
         if (localDst === undefined) {
           // no dst specified, return buffer of data
           this.debugMsg('get returning buffer of data');
-          let concatStream = concat(buff => {
+          let concatStream = concat((buff) => {
             rdr.removeAllListeners('error');
             resolve(buff);
             this.removeListener('error', errorListener);
@@ -468,7 +468,7 @@ class SftpClient {
             this.debugMsg('get returning data into supplied stream');
             wtr = localDst;
           }
-          wtr.once('error', err => {
+          wtr.once('error', (err) => {
             utils.removeListeners(rdr);
             reject(
               utils.formatError(
@@ -543,7 +543,7 @@ class SftpClient {
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'fastGet');
         this.client.prependListener('error', errorListener);
-        this.sftp.fastGet(from, to, opts, err => {
+        this.sftp.fastGet(from, to, opts, (err) => {
           if (err) {
             this.debugMsg(`fastGet error ${err.message} code: ${err.code}`);
             reject(
@@ -612,7 +612,7 @@ class SftpClient {
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'fastPut');
         this.client.prependListener('error', errorListener);
-        this.sftp.fastPut(from, to, opts, err => {
+        this.sftp.fastPut(from, to, opts, (err) => {
           if (err) {
             this.debugMsg(`fastPut error ${err.message} ${err.code}`);
             reject(
@@ -673,7 +673,7 @@ class SftpClient {
         let errorListener = utils.makeErrorListener(reject, this, 'put');
         this.client.prependListener('error', errorListener);
         let stream = this.sftp.createWriteStream(dst, opts);
-        stream.once('error', err => {
+        stream.once('error', (err) => {
           reject(utils.formatError(`${err.message} ${dst}`, 'put'));
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
@@ -696,7 +696,7 @@ class SftpClient {
             this.debugMsg('put source is a stream');
             rdr = src;
           }
-          rdr.once('error', err => {
+          rdr.once('error', (err) => {
             utils.removeListeners(stream);
             reject(
               utils.formatError(
@@ -767,7 +767,7 @@ class SftpClient {
           };
         }
         let stream = this.sftp.createWriteStream(aPath, writerOptions);
-        stream.once('error', err => {
+        stream.once('error', (err) => {
           utils.removeListeners(stream);
           reject(utils.formatError(`${err.message} ${aPath}`, '_append'));
           this.removeListener('error', errorListener);
@@ -832,14 +832,14 @@ class SftpClient {
    * @return {Promise}.
    */
   async mkdir(remotePath, recursive = false) {
-    const _mkdir = p => {
+    const _mkdir = (p) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`mkdir -> ${p}`);
         let closeListener = utils.makeCloseListener(this, reject, 'mkdir');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'mkdir');
         this.client.prependListener('error', errorListener);
-        this.sftp.mkdir(p, err => {
+        this.sftp.mkdir(p, (err) => {
           if (err) {
             this.debugMsg(`mkdir error ${err.message} code: ${err.code}`);
             reject(
@@ -893,14 +893,14 @@ class SftpClient {
    * @return {Promise}..
    */
   async rmdir(remotePath, recursive = false) {
-    const _rmdir = p => {
+    const _rmdir = (p) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`rmdir -> ${p}`);
         let closeListener = utils.makeCloseListener(this, reject, 'rmdir');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'rmdir');
         this.client.prependListener('error', errorListener);
-        this.sftp.rmdir(p, err => {
+        this.sftp.rmdir(p, (err) => {
           if (err) {
             this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
             reject(
@@ -931,8 +931,8 @@ class SftpClient {
       }
       let list = await this.list(pathInfo.path);
       if (list.length) {
-        let files = list.filter(item => item.type !== 'd');
-        let dirs = list.filter(item => item.type === 'd');
+        let files = list.filter((item) => item.type !== 'd');
+        let dirs = list.filter((item) => item.type === 'd');
         this.debugMsg('rmdir contents (files): ', files);
         this.debugMsg('rmdir contents (dirs): ', dirs);
         for (let f of files) {
@@ -958,14 +958,14 @@ class SftpClient {
    *
    */
   async delete(remotePath) {
-    const _delete = p => {
+    const _delete = (p) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`delete -> ${p}`);
         let closeListener = utils.makeCloseListener(this, reject, 'delete');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'delete');
         this.client.prependListener('error', errorListener);
-        this.sftp.unlink(p, err => {
+        this.sftp.unlink(p, (err) => {
           if (err) {
             this.debugMsg(`delete error ${err.message} code: ${err.code}`);
             reject(
@@ -1016,7 +1016,7 @@ class SftpClient {
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'rename');
         this.client.prependListener('error', errorListener);
-        this.sftp.rename(from, to, err => {
+        this.sftp.rename(from, to, (err) => {
           if (err) {
             this.debugMsg(`rename error ${err.message} code: ${err.code}`);
             reject(
@@ -1091,7 +1091,7 @@ class SftpClient {
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'chmod');
         this.client.prependListener('error', errorListener);
-        this.sftp.chmod(p, m, err => {
+        this.sftp.chmod(p, m, (err) => {
           if (err) {
             reject(utils.formatError(`${err.message} ${p}`, '_chmod'));
           }
@@ -1234,7 +1234,7 @@ class SftpClient {
    */
   end() {
     return new Promise((resolve, reject) => {
-      const endErrorListener = err => {
+      const endErrorListener = (err) => {
         // we don't care about errors at this point
         // so do nothiing
         this.errorHandled = true;
@@ -1244,17 +1244,17 @@ class SftpClient {
       };
 
       try {
+        this.client.prependListener('error', endErrorListener);
         this.endCalled = true;
         if (utils.haveConnection(this, 'end', reject)) {
-          this.client.prependListener('error', endErrorListener);
           this.client.end();
-          this.removeListener('error', endErrorListener);
-          resolve(true);
         }
+        resolve(true);
       } catch (err) {
         utils.handleError(err, 'end', reject);
       } finally {
         this.sftp = undefined;
+        this.removeListener('error', endErrorListener);
         this.endCalled = false;
         //utils.dumpListeners(this.client);
       }
