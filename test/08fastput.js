@@ -4,11 +4,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {
-  config,
-  getConnection,
-  closeConnection
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {fastPutCleanup} = require('./hooks/fastPut-hooks');
 const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 const fs = require('fs');
@@ -16,29 +12,26 @@ const fs = require('fs');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('fastPut() method tests', function() {
-  let hookSftp, sftp;
+describe('fastPut() method tests', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function(done) {
+  //   setTimeout(function() {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('fastPut setup hook', async function() {
-    hookSftp = await getConnection('fastput-hook');
-    sftp = await getConnection('fastput');
+  before('fastPut setup hook', async function () {
+    sftp = await getConnection();
     return true;
   });
 
-  after('fastPut cleanup hook', async function() {
-    await fastPutCleanup(hookSftp, config.sftpUrl);
-    await closeConnection('fastput', sftp);
-    await closeConnection('fastput-hook', hookSftp);
+  after('fastPut cleanup hook', async function () {
+    await fastPutCleanup(sftp, config.sftpUrl);
     return true;
   });
 
-  it('fastPut returns a promise', function() {
+  it('fastPut returns a promise', function () {
     return expect(
       sftp.fastPut(
         makeLocalPath(config.localUrl, 'test-file2.txt.gz'),
@@ -47,7 +40,7 @@ describe('fastPut() method tests', function() {
     ).to.be.a('promise');
   });
 
-  it('fastPut large text file', async function() {
+  it('fastPut large text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remotePath = makeRemotePath(config.sftpUrl, 'fastput-text.txt');
     await sftp.fastPut(localPath, remotePath, {encoding: 'utf8'});
@@ -56,7 +49,7 @@ describe('fastPut() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('fastPut large gzipped file', async function() {
+  it('fastPut large gzipped file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = makeRemotePath(config.sftpUrl, 'fastput-text.txt.gz');
     await sftp.fastPut(localPath, remotePath);
@@ -65,7 +58,7 @@ describe('fastPut() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('fastPut with bad src is rejected', function() {
+  it('fastPut with bad src is rejected', function () {
     return expect(
       sftp.fastPut(
         makeLocalPath(config.localUrl, 'file-not-exist.txt'),
@@ -74,7 +67,7 @@ describe('fastPut() method tests', function() {
     ).to.rejectedWith('No such file');
   });
 
-  it('fastPut with bad destination directory is rejected', function() {
+  it('fastPut with bad destination directory is rejected', function () {
     return expect(
       sftp.fastPut(
         makeLocalPath(config.localUrl, 'test-file1.txt'),
@@ -83,7 +76,7 @@ describe('fastPut() method tests', function() {
     ).to.rejectedWith('Bad path');
   });
 
-  it('fastPut remote relative path 1', async function() {
+  it('fastPut remote relative path 1', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = './testServer/fastput-relative1-gzip.txt.gz';
     await sftp.fastPut(localPath, remotePath);
@@ -92,7 +85,7 @@ describe('fastPut() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('fastPut remote relative path 2', async function() {
+  it('fastPut remote relative path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = `../${config.username}/testServer/fastput-relative2-gzip.txt.gz`;
     await sftp.fastPut(localPath, remotePath);
@@ -101,7 +94,7 @@ describe('fastPut() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('fastPut local relative path 3', async function() {
+  it('fastPut local relative path 3', async function () {
     let localPath = './test/testData/test-file2.txt.gz';
     let remotePath = makeRemotePath(
       config.sftpUrl,
@@ -113,7 +106,7 @@ describe('fastPut() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('fastPut local relative path 4', async function() {
+  it('fastPut local relative path 4', async function () {
     let localPath = '../ssh2-sftp-client/test/testData/test-file2.txt.gz';
     let remotePath = makeRemotePath(
       config.sftpUrl,

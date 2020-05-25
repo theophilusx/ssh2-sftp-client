@@ -20,7 +20,7 @@ const config = {
 };
 
 if (process.env.DEBUG === 'true') {
-  config.debug = msg => {
+  config.debug = (msg) => {
     console.error(msg);
   };
 }
@@ -36,26 +36,31 @@ const makeRemotePath = (...args) => {
   return args.join('\\');
 };
 
-const getConnection = async name => {
+var con = undefined;
+
+const getConnection = async () => {
   try {
-    let con = new Client();
-    await con.connect(config);
+    if (!con) {
+      con = new Client();
+      await con.connect(config);
+    }
     return con;
   } catch (err) {
-    console.error(`${name}: Connect failure ${err.message}`);
+    console.error(`Connect failure ${err.message}`);
     console.dir(config);
     throw err;
   }
 };
 
-const closeConnection = async (name, con) => {
+const closeConnection = async () => {
   try {
     if (con) {
       await con.end();
+      con = undefined;
     }
     return true;
   } catch (err) {
-    console.error(`${name}: Connection close failure: ${err.message}`);
+    console.error(`Connection close failure: ${err.message}`);
     throw err;
   }
 };

@@ -5,11 +5,7 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
-const {
-  config,
-  getConnection,
-  closeConnection
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {putCleanup} = require('./hooks/put-hooks');
 const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 const fs = require('fs');
@@ -17,29 +13,26 @@ const fs = require('fs');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('put() method tests', function() {
-  let hookSftp, sftp;
+describe('put() method tests', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function(done) {
+  //   setTimeout(function() {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('put setup hook', async function() {
-    hookSftp = await getConnection('put-hook');
-    sftp = await getConnection('put');
+  before('put setup hook', async function () {
+    sftp = await getConnection();
     return true;
   });
 
-  after('put cleanup hook', async function() {
-    await putCleanup(hookSftp, config.sftpUrl);
-    await closeConnection('put', sftp);
-    await closeConnection('put-hook', hookSftp);
+  after('put cleanup hook', async function () {
+    await putCleanup(sftp, config.sftpUrl);
     return true;
   });
 
-  it('put should return a promise', function() {
+  it('put should return a promise', function () {
     return expect(
       sftp.put(
         Buffer.from('put promise test'),
@@ -48,7 +41,7 @@ describe('put() method tests', function() {
     ).to.be.a('promise');
   });
 
-  it('put large text file', async function() {
+  it('put large text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remotePath = makeRemotePath(config.sftpUrl, 'put-large.txt');
     await sftp.put(localPath, remotePath);
@@ -57,7 +50,7 @@ describe('put() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('put data from buffer into remote file', function() {
+  it('put data from buffer into remote file', function () {
     return sftp
       .put(
         Buffer.from('hello'),
@@ -69,12 +62,12 @@ describe('put() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'put-buffer.txt'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 5});
       });
   });
 
-  it('put data from stream into remote file', function() {
+  it('put data from stream into remote file', function () {
     let str2 = new stream.Readable();
     str2._read = function noop() {};
     str2.push('your text here');
@@ -87,12 +80,12 @@ describe('put() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'put-stream.txt'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 14});
       });
   });
 
-  it('put with no src file should be rejected', function() {
+  it('put with no src file should be rejected', function () {
     return expect(
       sftp.put(
         makeLocalPath(config.localUrl, 'no-such-file.txt'),
@@ -101,7 +94,7 @@ describe('put() method tests', function() {
     ).to.be.rejectedWith('No such file');
   });
 
-  it('put with bad dst path should be rejected', function() {
+  it('put with bad dst path should be rejected', function () {
     return expect(
       sftp.put(
         makeLocalPath(config.localUrl, 'test-file1.txt'),
@@ -110,7 +103,7 @@ describe('put() method tests', function() {
     ).to.be.rejectedWith('Bad path');
   });
 
-  it('put relative remote path 1', async function() {
+  it('put relative remote path 1', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = './testServer/put-relative1-gzip.txt.gz';
     await sftp.put(localPath, remotePath);
@@ -119,7 +112,7 @@ describe('put() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('put relative remote path 2', async function() {
+  it('put relative remote path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = `../${config.username}/testServer/put-relative2-gzip.txt.gz`;
     await sftp.put(localPath, remotePath);
@@ -128,7 +121,7 @@ describe('put() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('put relative local path 3', async function() {
+  it('put relative local path 3', async function () {
     let localPath = './test/testData/test-file2.txt.gz';
     let remotePath = makeRemotePath(
       config.sftpUrl,
@@ -140,7 +133,7 @@ describe('put() method tests', function() {
     return expect(stats.size).to.equal(localStats.size);
   });
 
-  it('put relative local path 4', async function() {
+  it('put relative local path 4', async function () {
     let localPath = '../ssh2-sftp-client/test/testData/test-file2.txt.gz';
     let remotePath = makeRemotePath(
       config.sftpUrl,

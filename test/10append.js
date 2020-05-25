@@ -5,41 +5,34 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
-const {
-  config,
-  getConnection,
-  closeConnection
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
 const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('append() method tests', function() {
-  let hookSftp, sftp;
+describe('append() method tests', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function(done) {
+  //   setTimeout(function() {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('append test setup hook', async function() {
-    hookSftp = await getConnection('append-hook');
-    sftp = await getConnection('append');
-    await appendSetup(hookSftp, config.sftpUrl);
+  before('append test setup hook', async function () {
+    sftp = await getConnection();
+    await appendSetup(sftp, config.sftpUrl);
     return true;
   });
 
-  after('append test cleanup hook', async function() {
-    await appendCleanup(hookSftp, config.sftpUrl);
-    await closeConnection('append', sftp);
-    await closeConnection('append-hook', hookSftp);
+  after('append test cleanup hook', async function () {
+    await appendCleanup(sftp, config.sftpUrl);
     return true;
   });
 
-  it('append should return a promise', function() {
+  it('append should return a promise', function () {
     return expect(
       sftp.append(
         Buffer.from('append test 1'),
@@ -51,7 +44,7 @@ describe('append() method tests', function() {
     ).to.be.a('promise');
   });
 
-  it('append two files is rejected', function() {
+  it('append two files is rejected', function () {
     return expect(
       sftp.append(
         makeLocalPath(config.localUrl, 'test-file1.txt'),
@@ -60,7 +53,7 @@ describe('append() method tests', function() {
     ).to.be.rejectedWith('Cannot append one file to another');
   });
 
-  it('append buffer to file', function() {
+  it('append buffer to file', function () {
     return sftp
       .append(
         Buffer.from('hello'),
@@ -72,12 +65,12 @@ describe('append() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 23});
       });
   });
 
-  it('append stream to file', function() {
+  it('append stream to file', function () {
     let str2 = new stream.Readable();
     str2._read = function noop() {};
     str2.push('your text here');
@@ -90,12 +83,12 @@ describe('append() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test3'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 32});
       });
   });
 
-  it('append with bad dst path is rejected', function() {
+  it('append with bad dst path is rejected', function () {
     return expect(
       sftp.append(
         Buffer.from('hello'),
@@ -104,7 +97,7 @@ describe('append() method tests', function() {
     ).to.be.rejectedWith('Bad path');
   });
 
-  it('append to non-existing file is rejected', function() {
+  it('append to non-existing file is rejected', function () {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
@@ -113,7 +106,7 @@ describe('append() method tests', function() {
     ).to.be.rejectedWith('No such file');
   });
 
-  it('append to directory is rejected', function() {
+  it('append to directory is rejected', function () {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
@@ -122,7 +115,7 @@ describe('append() method tests', function() {
     ).to.be.rejectedWith('Bad path');
   });
 
-  it('append relative remote path 1', function() {
+  it('append relative remote path 1', function () {
     return sftp
       .append(Buffer.from('hello'), './testServer/append-test2.txt', {
         encoding: 'utf8'
@@ -130,12 +123,12 @@ describe('append() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 28});
       });
   });
 
-  it('append relative remote path 2', function() {
+  it('append relative remote path 2', function () {
     return sftp
       .append(
         Buffer.from('hello'),
@@ -147,7 +140,7 @@ describe('append() method tests', function() {
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })
-      .then(stats => {
+      .then((stats) => {
         return expect(stats).to.containSubset({size: 33});
       });
   });

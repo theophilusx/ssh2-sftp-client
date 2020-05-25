@@ -17,14 +17,14 @@ const {targetType} = require('../src/constants');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('formatError tests', function() {
-  it('formatError returns Error object', function() {
+describe('formatError tests', function () {
+  it('formatError returns Error object', function () {
     return expect(utils.formatError('test msg', 'test', 'error code')).to.be.an(
       'error'
     );
   });
 
-  it('formatError has expected values', function() {
+  it('formatError has expected values', function () {
     return expect(
       utils.formatError('test msg', 'name', 'error code')
     ).to.containSubset({
@@ -33,7 +33,7 @@ describe('formatError tests', function() {
     });
   });
 
-  it('formatError has retry count', function() {
+  it('formatError has retry count', function () {
     return expect(
       utils.formatError('test msg', 'name', 'error code', 4)
     ).to.containSubset({
@@ -42,56 +42,54 @@ describe('formatError tests', function() {
     });
   });
 
-  it('formatError has default error code', function() {
+  it('formatError has default error code', function () {
     return expect(utils.formatError('test msg', 'nme').code).to.equal(
       'ERR_GENERIC_CLIENT'
     );
   });
 
-  it('formatError has default name', function() {
+  it('formatError has default name', function () {
     return expect(utils.formatError('test msg').message).to.equal(
       'sftp: test msg'
     );
   });
 });
 
-describe('Test checkRemotePath', function() {
-  let sftp, sftpHook;
+describe('Test checkRemotePath', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function(done) {
+  //   setTimeout(function() {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('Exist test setup hook', async function() {
-    sftp = await getConnection('utils');
-    sftpHook = await getConnection('utils-hook');
+  before('Exist test setup hook', async function () {
+    sftp = await getConnection();
     let remoteDir = makeRemotePath(config.sftpUrl, 'check-dir');
-    await sftpHook.mkdir(remoteDir, true);
+    await sftp.mkdir(remoteDir, true);
     let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
     let localFile = makeLocalPath(config.localUrl, 'test-file1.txt');
-    await sftpHook.fastPut(localFile, remoteFile);
+    await sftp.fastPut(localFile, remoteFile);
     return true;
   });
 
-  after('Exist test cleanup hook', async function() {
+  after('Exist test cleanup hook', async function () {
     let remoteDir = makeRemotePath(config.sftpUrl, 'check-dir');
     let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
-    await sftpHook.rmdir(remoteDir, true);
-    await sftpHook.delete(remoteFile);
-    await closeConnection('utils', sftp);
-    await closeConnection('utils-hook', sftpHook);
+    await sftp.rmdir(remoteDir, true);
+    await sftp.delete(remoteFile);
+    await closeConnection();
     return true;
   });
 
-  it('Returns valid for remote dir', function() {
+  it('Returns valid for remote dir', function () {
     return expect(
       utils.checkRemotePath(sftp, config.sftpUrl, targetType.readDir)
     ).to.become({path: config.sftpUrl, type: 'd', valid: true});
   });
 
-  it('Returns valid for remote file', function() {
+  it('Returns valid for remote file', function () {
     let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
     return expect(
       utils.checkRemotePath(sftp, remoteFile, targetType.readFile)
@@ -102,7 +100,7 @@ describe('Test checkRemotePath', function() {
     });
   });
 
-  it('Invalid if wrong target type (dir)', function() {
+  it('Invalid if wrong target type (dir)', function () {
     let remotePath = makeRemotePath(config.sftpUrl, 'check-file.txt');
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.readDir)
@@ -115,7 +113,7 @@ describe('Test checkRemotePath', function() {
     });
   });
 
-  it('invalid if wrong target type (file)', function() {
+  it('invalid if wrong target type (file)', function () {
     return expect(
       utils.checkRemotePath(sftp, config.sftpUrl, targetType.readFile)
     ).to.become({
@@ -127,7 +125,7 @@ describe('Test checkRemotePath', function() {
     });
   });
 
-  it('valid but undefined type for non-existent file', function() {
+  it('valid but undefined type for non-existent file', function () {
     let remotePath = makeRemotePath(config.sftpUrl, 'no-such-file.gz');
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.writeFile)
@@ -138,7 +136,7 @@ describe('Test checkRemotePath', function() {
     });
   });
 
-  it('valid but undefined type for non-existent dir', function() {
+  it('valid but undefined type for non-existent dir', function () {
     let remotePath = makeRemotePath(config.sftpUrl, 'no-such-dir');
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.writeDir)
@@ -150,14 +148,14 @@ describe('Test checkRemotePath', function() {
   });
 });
 
-describe('Test checkLocalPath', function() {
-  it('Returns valid for local dir', function() {
+describe('Test checkLocalPath', function () {
+  it('Returns valid for local dir', function () {
     return expect(
       utils.checkLocalPath(config.localUrl, targetType.readDir)
     ).to.eventually.containSubset({type: 'd', valid: true});
   });
 
-  it('Return valid for local file', function() {
+  it('Return valid for local file', function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     return expect(
       utils.checkLocalPath(localPath, targetType.readFile)
@@ -167,7 +165,7 @@ describe('Test checkLocalPath', function() {
     });
   });
 
-  it('invalid if wrong target type (file)', function() {
+  it('invalid if wrong target type (file)', function () {
     return expect(
       utils.checkLocalPath(config.localUrl, targetType.readFile)
     ).to.eventually.containSubset({
@@ -177,7 +175,7 @@ describe('Test checkLocalPath', function() {
     });
   });
 
-  it('Invalid if wrong target type (dir)', function() {
+  it('Invalid if wrong target type (dir)', function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     return expect(
       utils.checkLocalPath(localPath, targetType.readDir)
@@ -188,7 +186,7 @@ describe('Test checkLocalPath', function() {
     });
   });
 
-  it('valid but undefined type for non-existing file', function() {
+  it('valid but undefined type for non-existing file', function () {
     let localPath = makeLocalPath(config.localUrl, 'no-such-file.gz');
     return expect(
       utils.checkLocalPath(localPath, targetType.writeFile)
@@ -198,7 +196,7 @@ describe('Test checkLocalPath', function() {
     });
   });
 
-  it('valid but undefined type for non-existing dir', function() {
+  it('valid but undefined type for non-existing dir', function () {
     let localPath = makeLocalPath(config.localUrl, 'no-such-dir');
     return expect(
       utils.checkLocalPath(localPath, targetType.writeDir)

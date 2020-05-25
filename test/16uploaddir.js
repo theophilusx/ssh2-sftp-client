@@ -7,7 +7,6 @@ const chaiAsPromised = require('chai-as-promised');
 const {
   config,
   getConnection,
-  closeConnection,
   makeLocalPath,
   makeRemotePath
 } = require('./hooks/global-hooks');
@@ -16,26 +15,25 @@ const fs = require('fs');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('uploadDir tests', function() {
+describe('uploadDir tests', function () {
   let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function(done) {
+  //   setTimeout(function() {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('UploadDir setup hook', async function() {
-    sftp = await getConnection('upload');
+  before('UploadDir setup hook', async function () {
+    sftp = await getConnection();
     return true;
   });
 
-  after('UploadDir clenaup hook', async function() {
-    await closeConnection('upload', sftp);
+  after('UploadDir clenaup hook', async function () {
     return true;
   });
 
-  it('Upload directory', function() {
+  it('Upload directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.eventually.equal(
@@ -43,7 +41,7 @@ describe('uploadDir tests', function() {
     );
   });
 
-  it('Uploaded top-level files', async function() {
+  it('Uploaded top-level files', async function () {
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
@@ -55,30 +53,27 @@ describe('uploadDir tests', function() {
   });
 });
 
-describe('Partial file upload', function() {
-  let sftpHook, sftp;
+describe('Partial file upload', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function (done) {
+  //   setTimeout(function () {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('UploadDir setup hook', async function() {
-    sftpHook = await getConnection('upload-hook');
-    sftp = await getConnection('upload');
+  before('UploadDir setup hook', async function () {
+    sftp = await getConnection();
     let remotePath = makeRemotePath(config.sftpUrl, 'upload-test', 'sub1');
-    await sftpHook.rmdir(remotePath, true);
+    await sftp.rmdir(remotePath, true);
     return true;
   });
 
-  after('UploadDir clenaup hook', async function() {
-    await closeConnection('upload', sftp);
-    await closeConnection('upload-hook', sftpHook);
+  after('UploadDir clenaup hook', async function () {
     return true;
   });
 
-  it('Upload directory 2', function() {
+  it('Upload directory 2', function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.eventually.equal(
@@ -86,7 +81,7 @@ describe('Partial file upload', function() {
     );
   });
 
-  it('Uploaded sub-directory files', async function() {
+  it('Uploaded sub-directory files', async function () {
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test', 'sub1');
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
@@ -97,26 +92,25 @@ describe('Partial file upload', function() {
   });
 });
 
-describe('Uploaddir bad path tests', function() {
+describe('Uploaddir bad path tests', function () {
   let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function (done) {
+  //   setTimeout(function () {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('UploadDir bad path setup hook', async function() {
-    sftp = await getConnection('upload');
+  before('UploadDir bad path setup hook', async function () {
+    sftp = await getConnection();
     return true;
   });
 
-  after('UploadDir clenaup hook', async function() {
-    await closeConnection('upload', sftp);
+  after('UploadDir clenaup hook', async function () {
     return true;
   });
 
-  it('Non-existent source directory is rejected', function() {
+  it('Non-existent source directory is rejected', function () {
     let localDir = makeLocalPath(config.localUrl, 'no-such-dir');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
@@ -124,7 +118,7 @@ describe('Uploaddir bad path tests', function() {
     );
   });
 
-  it('Source directory is a file rejected', function() {
+  it('Source directory is a file rejected', function () {
     let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
@@ -132,7 +126,7 @@ describe('Uploaddir bad path tests', function() {
     );
   });
 
-  it('Destination directory is a file rejected', function() {
+  it('Destination directory is a file rejected', function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test', 'file1.txt');
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
@@ -141,28 +135,25 @@ describe('Uploaddir bad path tests', function() {
   });
 });
 
-describe('Download directory', function() {
-  let sftp, sftpHook;
+describe('Download directory', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function (done) {
+  //   setTimeout(function () {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('Download directory setup hook', async function() {
-    sftp = await getConnection('download');
-    sftpHook = await getConnection('download-hook');
+  before('Download directory setup hook', async function () {
+    sftp = await getConnection();
     return true;
   });
 
-  after('download directory clenaup hook', async function() {
-    await closeConnection('download', sftp);
-    await closeConnection('download-hook', sftpHook);
+  after('download directory clenaup hook', async function () {
     return true;
   });
 
-  it('Download directory', function() {
+  it('Download directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.downloadDir(remoteDir, localDir)).to.eventually.equal(
@@ -170,7 +161,7 @@ describe('Download directory', function() {
     );
   });
 
-  it('Bad src directory', function() {
+  it('Bad src directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'not-needed');
     let remoteDir = makeRemotePath(config.sftpUrl, 'no-such-dir');
     return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
@@ -178,7 +169,7 @@ describe('Download directory', function() {
     );
   });
 
-  it('Bad dst directory', function() {
+  it('Bad dst directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
@@ -187,34 +178,31 @@ describe('Download directory', function() {
   });
 });
 
-describe('Partial download dir', function() {
-  let sftp, sftpHook;
+describe('Partial download dir', function () {
+  let sftp;
 
-  before(function(done) {
-    setTimeout(function() {
-      done();
-    }, config.delay);
-  });
+  // before(function (done) {
+  //   setTimeout(function () {
+  //     done();
+  //   }, config.delay);
+  // });
 
-  before('Download directory setup hook', async function() {
-    sftp = await getConnection('download');
-    sftpHook = await getConnection('download-hook');
+  before('Download directory setup hook', async function () {
+    sftp = await getConnection();
     let localDir = makeLocalPath(config.localUrl, 'download-test', 'sub1');
     fs.rmdirSync(localDir, {recursive: true});
     return true;
   });
 
-  after('download directory clenaup hook', async function() {
+  after('download directory clenaup hook', async function () {
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     let localDir = makeLocalPath(config.localUrl, 'download-test');
-    await sftpHook.rmdir(remoteDir, true);
+    await sftp.rmdir(remoteDir, true);
     fs.rmdirSync(localDir, {recursive: true});
-    await closeConnection('download', sftp);
-    await closeConnection('download-hook', sftpHook);
     return true;
   });
 
-  it('Download partial directory', function() {
+  it('Download partial directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     let remoteDir = makeRemotePath(config.sftpUrl, 'upload-test');
     return expect(sftp.downloadDir(remoteDir, localDir)).to.eventually.equal(

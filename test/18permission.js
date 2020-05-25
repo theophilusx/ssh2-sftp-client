@@ -4,11 +4,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {
-  config,
-  getConnection,
-  closeConnection
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {permissionSetup, permissionCleanup} = require('./hooks/permission-hook');
 const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
 
@@ -16,31 +12,28 @@ chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 if (process.platform !== 'win32') {
-  describe('Bad permission tests', function() {
-    let hookSftp, sftp;
+  describe('Bad permission tests', function () {
+    let sftp;
 
-    before(function(done) {
-      setTimeout(function() {
-        done();
-      }, config.delay);
-    });
+    // before(function(done) {
+    //   setTimeout(function() {
+    //     done();
+    //   }, config.delay);
+    // });
 
-    before('FastPut setup hook', async function() {
-      hookSftp = await getConnection('fastput-hook');
-      sftp = await getConnection('fastput');
-      await permissionSetup(hookSftp, config.sftpUrl, config.localUrl);
+    before('FastPut setup hook', async function () {
+      sftp = await getConnection();
+      await permissionSetup(sftp, config.sftpUrl, config.localUrl);
       return true;
     });
 
-    after('FastPut cleanup hook', async function() {
-      await permissionCleanup(hookSftp, config.sftpUrl);
-      await closeConnection('fastput', sftp);
-      await closeConnection('fastput-hook', hookSftp);
+    after('FastPut cleanup hook', async function () {
+      await permissionCleanup(sftp, config.sftpUrl);
       return true;
     });
 
-    describe('No access to local file', function() {
-      it('fastPut throws exception', function() {
+    describe('No access to local file', function () {
+      it('fastPut throws exception', function () {
         return expect(
           sftp.fastPut(
             makeLocalPath(config.localUrl, 'no-access.txt'),
@@ -49,7 +42,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('put throws exception', function() {
+      it('put throws exception', function () {
         return expect(
           sftp.put(
             makeLocalPath(config.localUrl, 'no-access.txt'),
@@ -59,8 +52,8 @@ if (process.platform !== 'win32') {
       });
     });
 
-    describe('No access to remote object', function() {
-      it('fastget throws exception', function() {
+    describe('No access to remote object', function () {
+      it('fastget throws exception', function () {
         return expect(
           sftp.fastGet(
             makeRemotePath(config.sftpUrl, 'no-access-get.txt'),
@@ -69,7 +62,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('get throws exception', function() {
+      it('get throws exception', function () {
         return expect(
           sftp.get(
             makeRemotePath(config.sftpUrl, 'no-access-get.txt'),
@@ -78,25 +71,25 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('list throws exception', function() {
+      it('list throws exception', function () {
         return expect(
           sftp.list(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
         ).be.rejectedWith('Permission denied');
       });
 
-      it('exists throws exception', function() {
+      it('exists throws exception', function () {
         return expect(
           sftp.exists(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
         ).be.rejectedWith('Permission denied');
       });
 
-      it('stat throws exception', function() {
+      it('stat throws exception', function () {
         return expect(
           sftp.stat(makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'))
         ).be.rejectedWith('Permission denied');
       });
 
-      it('append throws exception', function() {
+      it('append throws exception', function () {
         return expect(
           sftp.append(
             Buffer.from('Should not work'),
@@ -105,7 +98,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('mkdir throws exception', function() {
+      it('mkdir throws exception', function () {
         return expect(
           sftp.stat(
             makeRemotePath(config.sftpUrl, 'no-access-dir/not-work'),
@@ -114,7 +107,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('rmdir throws exception', function() {
+      it('rmdir throws exception', function () {
         return expect(
           sftp.rmdir(
             makeRemotePath(config.sftpUrl, 'no-access-dir/sub-dir'),
@@ -123,7 +116,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('delete throws exception', function() {
+      it('delete throws exception', function () {
         return expect(
           sftp.delete(
             makeRemotePath(
@@ -136,7 +129,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('rename throws exception', function() {
+      it('rename throws exception', function () {
         return expect(
           sftp.rename(
             makeRemotePath(
@@ -155,7 +148,7 @@ if (process.platform !== 'win32') {
         ).be.rejectedWith('Permission denied');
       });
 
-      it('chmod throws exception', function() {
+      it('chmod throws exception', function () {
         return expect(
           sftp.chmod(
             makeRemotePath(
