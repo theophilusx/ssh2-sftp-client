@@ -115,7 +115,7 @@ Node versions < 10.x are not supported.
 <a id="orgd5c393f"></a>
 
 # Basic Usage
-
+```js
     let Client = require('ssh2-sftp-client');
     let sftp = new Client();
     
@@ -131,7 +131,7 @@ Node versions < 10.x are not supported.
     }).catch(err => {
       console.log(err, 'catch error');
     });
-
+```
 
 <a id="orga383afe"></a>
 
@@ -402,18 +402,23 @@ When specifying file paths, ensure to include a full path i.e. include the
 remote filename. Don't expect the module to append the local file name to the
 path you provide. For example, the following will not work
 
+```js
     client.put('/home/fred/test.txt', '/remote/dir');
+```
 
 will not result in the file `test.txt` being copied to
 `/remote/dir/test.txt`. You need to specify the target filename as well e.g.
 
+```js
     client.put('/home/fred/test.txt', '/remote/dir/test.txt');
+```
 
 Note that the remote file name does not have to be the same as the local file
 name. The following works fine;
 
+```js
     client.put('/home/fred/test.txt', '/remote/dir/test-copy.txt');
-
+```
 This will copy the local file `test.txt` to the remote file `test-copy.txt` in
 the directory `/remote/dir`.
 
@@ -437,6 +442,7 @@ client has thrown the error.
 
 2.  Example Use
 
+```js
         'use strict';
         
         const Client = require('ssh2-sftp-client');
@@ -460,7 +466,7 @@ client has thrown the error.
           .catch(err => {
             console.log(`Error: ${err.message}`); // error message will include 'example-client'
           });
-
+```
 
 <a id="org1ff0f58"></a>
 
@@ -481,7 +487,8 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
     SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what
     is used to enable retrying of sftp connection attempts. See the documentation
     for that package for an explanation of these values.
-    
+
+    ```js
         // common options
         
         let commonOpts {
@@ -521,9 +528,10 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
           algorithms,
           compress
         };
-
+    ```
+    
 2.  Example Use
-
+    ```js
         sftp.connect({
           host: example.com,
           port: 22,
@@ -531,7 +539,8 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
           password: 'youarefired'
         });
 
-
+    ```
+    
 <a id="org8703568"></a>
 
 ### list(path, pattern) ==> Array[object]
@@ -547,6 +556,7 @@ directory.
 
 1.  Example Use
 
+    ```js
         const Client = require('ssh2-sftp-client');
         
         const config = {
@@ -571,11 +581,13 @@ directory.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
+    
 2.  Return Objects
 
     The objects in the array returned by `list()` have the following properties;
     
+    ```js
         {
           type: // file type(-, d, l)
           name: // file name
@@ -590,7 +602,8 @@ directory.
           owner: // user ID
           group: // group ID
         }
-
+    ```
+    
 3.  Pattern Filter
 
     The filter options can be a regular expression (most powerful option) or a
@@ -614,6 +627,7 @@ if it exists or false if it does not.
 
 1.  Example Use
 
+    ```js
         const Client = require('ssh2-sftp-client');
         
         const config = {
@@ -638,7 +652,7 @@ if it exists or false if it does not.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org4c30788"></a>
 
@@ -652,6 +666,7 @@ Returns the attributes associated with the object pointed to by `path`.
 
     The `stat()` method returns an object with the following properties;
     
+    ```js
         let stats = {
           mode: 33279, // integer representing type and permissions
           uid: 1000, // user ID
@@ -667,9 +682,11 @@ Returns the attributes associated with the object pointed to by `path`.
           isFIFO: false, // true if object is a FIFO
           isSocket: false // true if object is a socket
         };
-
+    ```
+    
 2.  Example Use
 
+    ```js
         let client = new Client();
         
         client.connect(config)
@@ -685,7 +702,7 @@ Returns the attributes associated with the object pointed to by `path`.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org0b9ca27"></a>
 
@@ -712,6 +729,7 @@ better off using the `fastGet()` method.
     The options object can be used to pass options to the underlying readStream used
     to read the data from the remote server.
     
+    ```js
         {
           flags: 'r',
           encoding: null,
@@ -719,13 +737,15 @@ better off using the `fastGet()` method.
           mode: 0o666,
           autoClose: true
         }
+    ```
     
     Most of the time, you won't want to use any options. Sometimes, it may be useful
     to set the encoding. For example, to 'utf-8'. However, it is important not to do
     this for binary files to avoid data corruption.
 
 2.  Example Use
-
+    
+    ```js
         let client = new Client();
         
         let remotePath = '/remote/server/path/file.txt';
@@ -741,6 +761,7 @@ better off using the `fastGet()` method.
           .catch(err => {
             console.error(err.message);
           });
+    ```
     
     -   **Tip:** See examples file in the Git repository for more examples. You can pass
         any writeable stream in as the destination. For example, if you pass in
@@ -762,19 +783,22 @@ throughput. This is the simplest method if you just want to download a file.
 -   **options:** Options for `fastGet()` (see below)
 
 1.  Options
-
+    
+    ```js
         {
           concurrency: 64, // integer. Number of concurrent reads to use
           chunkSize: 32768, // integer. Size of each read in bytes
           step: function(total_transferred, chunk, total) // callback called each time a
                                                           // chunk is transferred
         }
+    ```
     
     -   **Warning:** Some servers do not respond correctly to requests to alter chunk
         size. This can result in lost or corrupted data.
 
 2.  Sample Use
 
+    ```js
         let client = new Client();
         let remotePath = '/server/path/file.txt';
         let localPath = '/local/path/file.txt';
@@ -789,7 +813,7 @@ throughput. This is the simplest method if you just want to download a file.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="orgbbb7529"></a>
 
@@ -811,12 +835,14 @@ stream are piped to the `remotePath` on the server.
 
     The following options are supported;
     
+    ```js
         {
           flags: 'w',  // w - write and a - append
           encoding: null, // use null for binary files
           mode: 0o666, // mode to use for created file (rwx)
           autoClose: true // automatically close the write stream when finished
         }
+    ```
     
     The most common options to use are mode and encoding. The values shown above are
     the defaults. You do not have to set encoding to utf-8 for text files, null is
@@ -824,7 +850,8 @@ stream are piped to the `remotePath` on the server.
     often result in data corruption.
 
 2.  Example Use
-
+    
+    ```js
         let client = new Client();
         
         let data = fs.createReadStream('/path/to/local/file.txt');
@@ -840,6 +867,7 @@ stream are piped to the `remotePath` on the server.
           .catch(err => {
             console.error(err.message);
           });
+    ```
     
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
@@ -856,7 +884,8 @@ Uploads the data in file at `localPath` to a new file on remote server at
 -   **options:** object. Options passed to createWriteStream (see below)
 
 1.  Options
-
+    
+    ```js
         {
           concurrency: 64, // integer. Number of concurrent reads
           chunkSize: 32768, // integer. Size of each read in bytes
@@ -864,6 +893,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           step: function(total_transferred, chunk, total) // function. Called every time
           // a part of a file was transferred
         }
+    ```
     
     -   **Warning:** There have been reports that some SFTP servers will not honour
         requests for non-default chunk sizes. This can result in data loss
@@ -871,6 +901,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
 
 2.  Example Use
 
+    ```js
         let localFile = '/path/to/file.txt';
         let remoteFile = '/path/to/remote/file.txt';
         let client = new Client();
@@ -885,7 +916,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org395f9b0"></a>
 
@@ -904,12 +935,14 @@ in to the file.
 
     The following options are supported;
     
+    ```js
         {
           flags: 'a',  // w - write and a - append
           encoding: null, // use null for binary files
           mode: 0o666, // mode to use for created file (rwx)
           autoClose: true // automatically close the write stream when finished
         }
+    ```
     
     The most common options to use are mode and encoding. The values shown above are
     the defaults. You do not have to set encoding to utf-8 for text files, null is
@@ -917,6 +950,7 @@ in to the file.
 
 2.  Example Use
 
+    ```js
         let remotePath = '/path/to/remote/file.txt';
         let client = new Client();
         
@@ -930,7 +964,7 @@ in to the file.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="orgaa2e982"></a>
 
@@ -946,6 +980,7 @@ defaults to false.
 
 1.  Example Use
 
+    ```js
         let remoteDir = '/path/to/new/dir';
         let client = new Client();
         
@@ -959,7 +994,7 @@ defaults to false.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org36887b6"></a>
 
@@ -976,6 +1011,7 @@ action will fail.
 
 1.  Example Use
 
+    ```js
         let remoteDir = '/path/to/remote/dir';
         let client = new Client();
         
@@ -989,7 +1025,7 @@ action will fail.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org2a7da63"></a>
 
@@ -1001,6 +1037,7 @@ Delete a file on the remote server.
 
 1.  Example Use
 
+    ```js
         let remoteFile = '/path/to/remote/file.txt';
         let client = new Client();
         
@@ -1014,7 +1051,7 @@ Delete a file on the remote server.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org418ebcc"></a>
 
@@ -1025,6 +1062,7 @@ necessary permissions to modify the remote file.
 
 1.  Example Use
 
+    ```js
         let from = '/remote/path/to/old.txt';
         let to = '/remote/path/to/new.txt';
         let client = new Client();
@@ -1039,7 +1077,7 @@ necessary permissions to modify the remote file.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org1c076b7"></a>
 
@@ -1053,6 +1091,7 @@ directory.
 
 1.  Example Use
 
+    ```js
         let path = '/path/to/remote/file.txt';
         let ndwMode = 0o644;  // rw-r-r
         let client = new Client();
@@ -1067,7 +1106,7 @@ directory.
           .catch(err => {
             console.error(err.message);
           });
-
+    ```
 
 <a id="org39dfe89"></a>
 
@@ -1110,6 +1149,7 @@ using the `on()` method.
 
 1.  Example
 
+    ```js
             'use strict';
         
             // Example of using the uploadDir() method to upload a directory
@@ -1152,7 +1192,7 @@ using the `on()` method.
         .catch(err => {
           console.log(`main error: ${err.message}`);
         });
-
+    ```
 
 <a id="org74a33a7"></a>
 
@@ -1176,6 +1216,7 @@ the `on()` method.
 
 1.  Example
 
+    ```js
         'use strict';
         
         // Example of using the downloadDir() method to upload a directory
@@ -1218,7 +1259,7 @@ the `on()` method.
           .catch(err => {
             console.log(`main error: ${err.message}`);
           });
-
+    ```
 
 <a id="org52089bf"></a>
 
@@ -1229,6 +1270,7 @@ resources. This function also removes all listeners associated with the client.
 
 1.  Example Use
 
+    ```js
         let client = new Client();
         
         client.connect(config)
@@ -1241,8 +1283,8 @@ resources. This function also removes all listeners associated with the client.
           .catch(err => {
             console.error(err.message);
           });
-
-
+    ```
+    
 <a id="orgbe02de2"></a>
 
 ### Add and Remove Listeners
@@ -1319,6 +1361,7 @@ saved to the local file system. This could just as easily be something like a
 gunzip stream from `zlib`, enabling you to decompress remote zipped files as you
 bring them across before saving to local file system.
 
+    ```js
     'use strict';
     
     // Example of using a writeable with get to retrieve a file.
@@ -1366,7 +1409,7 @@ bring them across before saving to local file system.
       .catch(err => {
         console.error(err.message);
       });
-
+    ```
 
 <a id="org8925da2"></a>
 
@@ -1379,6 +1422,7 @@ One solution, provided by @KalleVuorjoki is to use the SSH agent
 process. **Note**: SSH<sub>AUTH</sub><sub>SOCK</sub> is normally created by your OS when you load the
 ssh-agent as part of the login session.
 
+    ```js
     let sftp = new Client();
     sftp.connect({
       host: 'YOUR-HOST',
@@ -1388,10 +1432,12 @@ ssh-agent as part of the login session.
     }).then(() => {
       sftp.fastPut(/* ... */)
     }
+    ```
 
 Another alternative is to just pass in the SSH key directly as part of the
 configuration.
 
+    ```js
     let sftp = new Client();
     sftp.connect({
       host: 'YOUR-HOST',
@@ -1401,7 +1447,7 @@ configuration.
     }).then(() => {
       sftp.fastPut(/* ... */)
     }
-
+    ```
 
 <a id="orgf0883f5"></a>
 
@@ -1409,6 +1455,7 @@ configuration.
 
 This solution was provided by @jmorino.
 
+    ```js
     import { SocksClient } from 'socks';
     import SFTPClient from 'ssh2-sftp-client';
     
@@ -1435,7 +1482,7 @@ This solution was provided by @jmorino.
     })
     
     // client is connected
-
+    ```
 
 <a id="orgb31c9b4"></a>
 
@@ -1833,6 +1880,7 @@ and your code starting execution of the next `then()`, `catch()` or
 `finally()` block before your promise has been fulfilled. For exmaple, the
 following will not do what you expect 
 
+    ```js
     sftp.connect(config)
       .then(() => {
         sftp.fastGet('foo.txt', 'bar.txt');
@@ -1842,13 +1890,15 @@ following will not do what you expect
       }).catch(e => {
         console.error(e.message);
       });
+      ```
 
 In the above code, the `sftp.end()` method will almost certainly be called
 before `sftp.gastGet()` has been fulfilled (unless the *foo.txt* file is
 really small!). In fact, the whole promise chain will complete and exit even
 before the `sftp.end()` call has been fulfilled. The correct code would be
 something like 
-
+    
+    ```js
     sftp.connect(config)
       .then(() => {
         return sftp.fastGet('foo.txt', 'bar.txt');
@@ -1858,6 +1908,7 @@ something like
       }).catch(e => {
         console.error(e.message);
       });
+     ```
 
 Note the `return` statements. These ensure that the Promise returned by the
 client method is returned into the promise chain. It will be this promise
@@ -1885,6 +1936,7 @@ two paradigms. My personal preference would be to use async/await as I think
 that is more *natural* for most developers. For example, the following is
 more complex and difficult to follow than necessary (and has a bug!)
 
+    ```js
     sftp.connect(config)
       .then(() => {
         return sftp.cwd();
@@ -1900,6 +1952,7 @@ more complex and difficult to follow than necessary (and has a bug!)
       }).finally(() => {
         sftp.end();
       });
+     ```
 
 The main bug in the above code is the `then()` block is not returning the
 Promise generated by the call to `sftp.fastGet()`. What it is actually
@@ -1915,6 +1968,7 @@ execution will wait for the `sftp.fastGet()` call to be fulfilled before
 continuing. This is not the case. The code would be more clearly expressed
 as either 
 
+    ```js
     sftp.connect(config)
       .then(() => {
         return sftp.cwd();
@@ -1926,9 +1980,11 @@ as either
       }).finally(() => {
         return sftp.end();
       });
-
+    ```
+    
 **or, using async/await**
 
+    ```js
     async function doSftp() {
       try {
         let sftp = await sftp.connect(conf);
@@ -1941,7 +1997,7 @@ as either
         await sftp.end();
       }
     }
-
+    ```
 
 <a id="org5cd8951"></a>
 
@@ -1980,9 +2036,11 @@ You can add a `debug` property to the config object passed in to `connect()` to
 turn on debugging. This will generate quite a lot of output. The value of the
 property should be a function which accepts a single string argument. For example;
 
+    ```js
     config.debug = msg => {
       console.error(msg);
     };
+    ```
 
 Enabling debugging can generate a lot of output. If you use console.error() as
 the output (as in the example above), you can redirect the output to a file
