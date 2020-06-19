@@ -26,6 +26,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "concat-stream": "^2.0.0",
+    "mocha": "^8.0.1",
     "retry": "^0.12.0",
     "ssh2": "^0.8.9"
   },
@@ -35,8 +36,7 @@
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
     "dotenv": "^8.2.0",
-    "mocha": "^7.1.2",
-    "moment": "^2.25.3",
+    "moment": "^2.27.0",
     "through2": "^3.0.1"
   }
 }
