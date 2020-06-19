@@ -11,7 +11,7 @@ const {getSetup, getCleanup} = require('./hooks/get-hooks');
 const {
   makeLocalPath,
   makeRemotePath,
-  splitRemotePath
+  lastRemoteDir
 } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
@@ -112,7 +112,7 @@ describe('get() method tests', function () {
     let localPath = makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz');
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'get-gzip.txt.gz'
     );

@@ -10,7 +10,7 @@ const {putCleanup} = require('./hooks/put-hooks');
 const {
   makeLocalPath,
   makeRemotePath,
-  splitRemotePath
+  lastRemoteDir
 } = require('./hooks/global-hooks');
 const fs = require('fs');
 
@@ -120,7 +120,7 @@ describe('put() method tests', function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'put-relative2-gzip.txt.gz'
     );

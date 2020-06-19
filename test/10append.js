@@ -10,7 +10,7 @@ const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
 const {
   makeLocalPath,
   makeRemotePath,
-  splitRemotePath
+  lastRemoteDir
 } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
@@ -135,7 +135,7 @@ describe('append() method tests', function () {
   it('append relative remote path 2', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'append-test2.txt'
     );

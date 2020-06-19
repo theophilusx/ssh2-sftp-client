@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {chmodSetup, chmodCleanup} = require('./hooks/chmod-hooks');
-const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -106,7 +106,7 @@ describe('chmod() method tests', function () {
   it('chmod on relative file path 2', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'chmod-test.txt'
     );
@@ -152,7 +152,7 @@ describe('chmod() method tests', function () {
   it('chmod on relative path dir 4', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'chmod-test-dir'
     );

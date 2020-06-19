@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {deleteSetup} = require('./hooks/delete-hooks');
-const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -57,7 +57,7 @@ describe('delete() method tests', function () {
   it('delete with relative path 2', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'delete-relative2.txt'
     );

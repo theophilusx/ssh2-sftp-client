@@ -3,7 +3,12 @@
 const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  makeRemotePath,
+  lastRemoteDir
+} = require('./hooks/global-hooks');
 const {pathSetup, pathCleanup} = require('./hooks/path-hooks');
 
 chai.use(chaiAsPromised);
@@ -52,8 +57,10 @@ describe('Path tests', function () {
 
   it('Resolve "../testServer" relative path', function () {
     return expect(
-      sftp.realPath(makeRemotePath('..', 'testServer'))
-    ).to.eventually.equal(makeRemotePath('/', 'testServer'));
+      sftp.realPath(
+        makeRemotePath('..', lastRemoteDir(config.remoteRoot), 'testServer')
+      )
+    ).to.eventually.equal(config.sftpUrl);
   });
 
   it('cwd() returns current working dir', async function () {

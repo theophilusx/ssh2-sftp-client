@@ -45,6 +45,11 @@ const splitRemotePath = (p) => {
   return p.split('\\');
 };
 
+const lastRemoteDir = (p) => {
+  let dirs = splitRemotePath(p);
+  return dirs[dirs.length - 1];
+};
+
 var con = undefined;
 
 const getConnection = async () => {
@@ -52,6 +57,8 @@ const getConnection = async () => {
     if (!con) {
       con = new Client();
       await con.connect(config);
+      let root = await con.realPath('.');
+      config.remoteRoot = root;
     }
     return con;
   } catch (err) {
@@ -79,6 +86,7 @@ module.exports = {
   makeLocalPath,
   makeRemotePath,
   splitRemotePath,
+  lastRemoteDir,
   getConnection,
   closeConnection
 };

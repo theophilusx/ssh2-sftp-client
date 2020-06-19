@@ -9,7 +9,7 @@ const {fastPutCleanup} = require('./hooks/fastPut-hooks');
 const {
   makeLocalPath,
   makeRemotePath,
-  splitRemotePath
+  lastRemoteDir
 } = require('./hooks/global-hooks');
 const fs = require('fs');
 
@@ -93,7 +93,7 @@ describe('fastPut() method tests', function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'fastput-relative2-gzip.txt.gz'
     );

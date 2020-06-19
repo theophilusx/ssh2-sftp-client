@@ -8,7 +8,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {renameSetup, renameCleanup} = require('./hooks/rename-hooks');
-const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -92,7 +92,7 @@ describe('rename() method tests', function () {
   it('rename with relative source 2', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'rename-relative1.md'
     );
@@ -109,7 +109,7 @@ describe('rename() method tests', function () {
   it('rename with relative destination 3', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'rename-relative3.md'
     );
@@ -126,7 +126,7 @@ describe('rename() method tests', function () {
   it('rename with relative destination 4', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'rename-relative4.md'
     );

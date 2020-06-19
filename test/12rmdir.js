@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {rmdirSetup} = require('./hooks/rmdir-hooks');
-const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -72,7 +72,7 @@ describe('rmdir() method tests', function () {
   it('rmdir with relative path 2', function () {
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'rmdir-relative2'
     );

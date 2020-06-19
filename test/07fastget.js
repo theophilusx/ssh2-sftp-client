@@ -10,7 +10,7 @@ const gHooks = require('./hooks/fastGet-hooks');
 const {
   makeLocalPath,
   makeRemotePath,
-  splitRemotePath
+  lastRemoteDir
 } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
@@ -100,7 +100,7 @@ describe('fastGet() method tests', function () {
     );
     let remotePath = makeRemotePath(
       '..',
-      splitRemotePath(config.sftpUrl)[1],
+      lastRemoteDir(config.remoteRoot),
       'testServer',
       'fastget-gzip.txt.gz'
     );
