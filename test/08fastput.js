@@ -6,7 +6,11 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {fastPutCleanup} = require('./hooks/fastPut-hooks');
-const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  makeLocalPath,
+  makeRemotePath,
+  splitRemotePath
+} = require('./hooks/global-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -87,7 +91,12 @@ describe('fastPut() method tests', function () {
 
   it('fastPut remote relative path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
-    let remotePath = `../${config.username}/testServer/fastput-relative2-gzip.txt.gz`;
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'fastput-relative2-gzip.txt.gz'
+    );
     await sftp.fastPut(localPath, remotePath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);

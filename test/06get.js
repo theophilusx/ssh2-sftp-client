@@ -8,7 +8,11 @@ const fs = require('fs');
 const zlib = require('zlib');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {getSetup, getCleanup} = require('./hooks/get-hooks');
-const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  makeLocalPath,
+  makeRemotePath,
+  splitRemotePath
+} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -106,7 +110,12 @@ describe('get() method tests', function () {
 
   it('get with relative remote path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz');
-    let remotePath = `../${config.username}/testServer/get-gzip.txt.gz`;
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'get-gzip.txt.gz'
+    );
     await sftp.get(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);

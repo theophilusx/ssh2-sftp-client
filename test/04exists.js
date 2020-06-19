@@ -58,7 +58,7 @@ describe('exists() method tests', function () {
     return expect(sftp.exists('.')).to.eventually.equal('d');
   });
 
-  it('exists returns true for relative path on existing dir', function () {
+  it('exists returns true for relative path on existing dir', async function () {
     return expect(
       sftp.exists('./testServer/exist-test-dir')
     ).to.eventually.equal('d');

@@ -7,7 +7,11 @@ const chaiAsPromised = require('chai-as-promised');
 const fs = require('fs');
 const {config, getConnection} = require('./hooks/global-hooks');
 const gHooks = require('./hooks/fastGet-hooks');
-const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  makeLocalPath,
+  makeRemotePath,
+  splitRemotePath
+} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -94,7 +98,12 @@ describe('fastGet() method tests', function () {
       config.localUrl,
       'fastget-relative2-gzip.txt.gz'
     );
-    let remotePath = `../${config.username}/testServer/fastget-gzip.txt.gz`;
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'fastget-gzip.txt.gz'
+    );
     await sftp.fastGet(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);

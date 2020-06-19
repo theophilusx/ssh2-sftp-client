@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {chmodSetup, chmodCleanup} = require('./hooks/chmod-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -104,8 +104,14 @@ describe('chmod() method tests', function () {
   });
 
   it('chmod on relative file path 2', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'chmod-test.txt'
+    );
     return sftp
-      .chmod(`../${config.username}/testServer/chmod-test.txt`, 0o600)
+      .chmod(remotePath, 0o600)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -144,8 +150,14 @@ describe('chmod() method tests', function () {
   });
 
   it('chmod on relative path dir 4', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'chmod-test-dir'
+    );
     return sftp
-      .chmod(`../${config.username}/testServer/chmod-test-dir`, 0o777)
+      .chmod(remotePath, 0o777)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })

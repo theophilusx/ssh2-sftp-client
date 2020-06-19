@@ -30,10 +30,19 @@ const makeLocalPath = (...args) => {
 };
 
 const makeRemotePath = (...args) => {
+  let newPath = '';
   if (process.env.TEST_SERVER === 'unix') {
-    return args.join('/');
+    newPath = args.join('/');
+    return newPath.replace(/\/\//gi, '/');
   }
   return args.join('\\');
+};
+
+const splitRemotePath = (p) => {
+  if (process.env.TEST_SERVER === 'unix') {
+    return p.split('/');
+  }
+  return p.split('\\');
 };
 
 var con = undefined;
@@ -69,6 +78,7 @@ module.exports = {
   config,
   makeLocalPath,
   makeRemotePath,
+  splitRemotePath,
   getConnection,
   closeConnection
 };

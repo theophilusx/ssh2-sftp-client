@@ -7,7 +7,11 @@ const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {putCleanup} = require('./hooks/put-hooks');
-const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  makeLocalPath,
+  makeRemotePath,
+  splitRemotePath
+} = require('./hooks/global-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -114,7 +118,12 @@ describe('put() method tests', function () {
 
   it('put relative remote path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file2.txt.gz');
-    let remotePath = `../${config.username}/testServer/put-relative2-gzip.txt.gz`;
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'put-relative2-gzip.txt.gz'
+    );
     await sftp.put(localPath, remotePath);
     let localStats = fs.statSync(localPath);
     let stats = await sftp.stat(remotePath);

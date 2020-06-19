@@ -7,7 +7,11 @@ const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
-const {makeLocalPath, makeRemotePath} = require('./hooks/global-hooks');
+const {
+  makeLocalPath,
+  makeRemotePath,
+  splitRemotePath
+} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -129,14 +133,16 @@ describe('append() method tests', function () {
   });
 
   it('append relative remote path 2', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'append-test2.txt'
+    );
     return sftp
-      .append(
-        Buffer.from('hello'),
-        `../${config.username}/testServer/append-test2.txt`,
-        {
-          encoding: 'utf8'
-        }
-      )
+      .append(Buffer.from('hello'), remotePath, {
+        encoding: 'utf8'
+      })
       .then(() => {
         return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
       })

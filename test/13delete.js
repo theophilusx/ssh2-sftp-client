@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {deleteSetup} = require('./hooks/delete-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -55,8 +55,14 @@ describe('delete() method tests', function () {
   });
 
   it('delete with relative path 2', function () {
-    return expect(
-      sftp.delete(`../${config.username}/testServer/delete-relative2.txt`)
-    ).to.eventually.equal('Successfully deleted file');
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'delete-relative2.txt'
+    );
+    return expect(sftp.delete(remotePath)).to.eventually.equal(
+      'Successfully deleted file'
+    );
   });
 });

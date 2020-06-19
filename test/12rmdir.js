@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {rmdirSetup} = require('./hooks/rmdir-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -70,8 +70,14 @@ describe('rmdir() method tests', function () {
   });
 
   it('rmdir with relative path 2', function () {
-    return expect(
-      sftp.rmdir(`../${config.username}/testServer/rmdir-relative2`)
-    ).to.eventually.equal('Successfully removed directory');
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'rmdir-relative2'
+    );
+    return expect(sftp.rmdir(remotePath)).to.eventually.equal(
+      'Successfully removed directory'
+    );
   });
 });

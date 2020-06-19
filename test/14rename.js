@@ -8,7 +8,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {renameSetup, renameCleanup} = require('./hooks/rename-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -90,11 +90,14 @@ describe('rename() method tests', function () {
   });
 
   it('rename with relative source 2', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'rename-relative1.md'
+    );
     return sftp
-      .rename(
-        `../${config.username}/testServer/rename-relative1.md`,
-        makeRemotePath(config.sftpUrl, 'rename-relative2.md')
-      )
+      .rename(remotePath, makeRemotePath(config.sftpUrl, 'rename-relative2.md'))
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -104,11 +107,14 @@ describe('rename() method tests', function () {
   });
 
   it('rename with relative destination 3', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'rename-relative3.md'
+    );
     return sftp
-      .rename(
-        makeRemotePath(config.sftpUrl, 'rename-relative2.md'),
-        './testServer/rename-relative3.md'
-      )
+      .rename(makeRemotePath(config.sftpUrl, 'rename-relative2.md'), remotePath)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -118,11 +124,14 @@ describe('rename() method tests', function () {
   });
 
   it('rename with relative destination 4', function () {
+    let remotePath = makeRemotePath(
+      '..',
+      splitRemotePath(config.sftpUrl)[1],
+      'testServer',
+      'rename-relative4.md'
+    );
     return sftp
-      .rename(
-        makeRemotePath(config.sftpUrl, 'rename-relative3.md'),
-        `../${config.username}/testServer/rename-relative4.md`
-      )
+      .rename(makeRemotePath(config.sftpUrl, 'rename-relative3.md'), remotePath)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })

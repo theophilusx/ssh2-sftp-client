@@ -4,13 +4,9 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {
-  config,
-  getConnection,
-  closeConnection
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {listSetup, listCleanup} = require('./hooks/list-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
+const {makeRemotePath, splitRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -100,7 +96,7 @@ describe('list() method tests', function () {
     ]);
   });
 
-  it('list with leading /.*txt/ regexp', async function () {
+  it('list with /.*txt/ regexp', async function () {
     let data = await sftp.list(
       makeRemotePath(config.sftpUrl, 'list-test'),
       /.*txt/
@@ -144,7 +140,7 @@ describe('list() method tests', function () {
     ]);
   });
 
-  it('list with leading *txt pattern', async function () {
+  it('list with *txt pattern', async function () {
     let data = await sftp.list(
       makeRemotePath(config.sftpUrl, 'list-test'),
       '*txt'
