@@ -15,12 +15,6 @@ if (process.platform !== 'win32') {
   describe('Bad permission tests', function () {
     let sftp;
 
-    // before(function(done) {
-    //   setTimeout(function() {
-    //     done();
-    //   }, config.delay);
-    // });
-
     before('FastPut setup hook', async function () {
       sftp = await getConnection();
       await permissionSetup(sftp, config.sftpUrl, config.localUrl);

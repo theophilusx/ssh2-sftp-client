@@ -19,12 +19,6 @@ chai.use(chaiAsPromised);
 describe('fastGet() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('FastGet setup hook', async function () {
     sftp = await getConnection();
     await gHooks.fastGetSetup(sftp, config.sftpUrl, config.localUrl);

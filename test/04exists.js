@@ -13,12 +13,6 @@ chai.use(chaiAsPromised);
 describe('exists() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('exists() test setup hook', async function () {
     sftp = await getConnection();
     await existSetup(sftp, config.sftpUrl, config.localUrl);

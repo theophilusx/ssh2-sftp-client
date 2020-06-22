@@ -15,12 +15,6 @@ chai.use(chaiAsPromised);
 describe('put() and get() checksum tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('checksum setup hook', async function () {
     sftp = await getConnection();
     return true;

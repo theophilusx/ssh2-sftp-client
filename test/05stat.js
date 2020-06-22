@@ -14,12 +14,6 @@ chai.use(chaiAsPromised);
 describe('stat() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('stat setup hook', async function () {
     sftp = await getConnection();
     await statSetup(sftp, config.sftpUrl);

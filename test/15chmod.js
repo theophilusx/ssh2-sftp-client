@@ -14,12 +14,6 @@ chai.use(chaiAsPromised);
 describe('chmod() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('chmod setup hook', async function () {
     sftp = await getConnection();
     await chmodSetup(sftp, config.sftpUrl);

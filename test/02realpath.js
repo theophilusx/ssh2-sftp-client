@@ -16,12 +16,6 @@ chai.use(chaiAsPromised);
 describe('Path tests', function () {
   let sftp;
 
-  // before(function (done) {
-  //   setTimeout(function () {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('Exist test setup hook', async function () {
     sftp = await getConnection();
     await pathSetup(sftp, config.sftpUrl, config.localUrl);

@@ -18,12 +18,6 @@ chai.use(chaiAsPromised);
 describe('uploadDir tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('UploadDir setup hook', async function () {
     sftp = await getConnection();
     return true;

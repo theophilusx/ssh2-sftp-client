@@ -14,12 +14,6 @@ chai.use(chaiAsPromised);
 describe('rmdir() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('rmdir() setup hook', async function () {
     sftp = await getConnection();
     await rmdirSetup(sftp, config.sftpUrl);

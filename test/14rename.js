@@ -16,12 +16,6 @@ chai.use(chaiAsPromised);
 describe('rename() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('rename setup hook', async function () {
     sftp = await getConnection();
     await renameSetup(sftp, config.sftpUrl);

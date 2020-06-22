@@ -14,12 +14,6 @@ chai.use(chaiAsPromised);
 describe('delete() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('delete tests setup hook', async function () {
     sftp = await getConnection();
     await deleteSetup(sftp, config.sftpUrl);

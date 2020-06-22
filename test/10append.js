@@ -19,12 +19,6 @@ chai.use(chaiAsPromised);
 describe('append() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('append test setup hook', async function () {
     sftp = await getConnection();
     await appendSetup(sftp, config.sftpUrl);

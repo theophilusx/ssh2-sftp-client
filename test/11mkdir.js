@@ -14,12 +14,6 @@ chai.use(chaiAsPromised);
 describe('mkdir() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('mkdir setup hook', async function () {
     sftp = await getConnection();
     return true;

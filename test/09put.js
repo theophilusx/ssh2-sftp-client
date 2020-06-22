@@ -20,12 +20,6 @@ chai.use(chaiAsPromised);
 describe('put() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('put setup hook', async function () {
     sftp = await getConnection();
     return true;

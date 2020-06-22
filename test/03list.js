@@ -14,13 +14,6 @@ chai.use(chaiAsPromised);
 describe('list() method tests', function () {
   let sftp;
 
-  // before(function (done) {
-  //   setTimeout(function () {
-  //     console.log(`Running timeout after ${config.delay} ms`);
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('List test setup hook', async function () {
     sftp = await getConnection();
     await listSetup(sftp, config.sftpUrl, config.localUrl);

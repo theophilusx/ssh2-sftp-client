@@ -19,12 +19,6 @@ chai.use(chaiAsPromised);
 describe('fastPut() method tests', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('fastPut setup hook', async function () {
     sftp = await getConnection();
     return true;
