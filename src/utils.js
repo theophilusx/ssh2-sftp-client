@@ -98,7 +98,7 @@ function handleError(err, name, reject) {
  */
 function removeListeners(emitter) {
   let listeners = emitter.eventNames();
-  listeners.forEach(name => {
+  listeners.forEach((name) => {
     emitter.removeAllListeners(name);
   });
 }
@@ -111,14 +111,14 @@ function removeListeners(emitter) {
  * @throws {Error} Throws new error
  */
 function makeErrorListener(reject, self, name) {
-  return function(err) {
+  return function (err) {
     self.errorHandled = true;
     reject(formatError(err, name));
   };
 }
 
 function makeEndListener(client) {
-  return function() {
+  return function () {
     if (!client.endCalled) {
       console.error(
         `${client.clientName} End Listener: Connection ended unexpectedly`
@@ -128,7 +128,7 @@ function makeEndListener(client) {
 }
 
 function makeCloseListener(client, reject, name) {
-  return function() {
+  return function () {
     if (!client.endCalled) {
       if (reject) {
         reject(formatError('Connection closed unepectedly', name));
@@ -208,8 +208,8 @@ function classifyError(err, testPath) {
 }
 
 function localAccess(localPath, mode) {
-  return new Promise(resolve => {
-    fs.access(localPath, mode, err => {
+  return new Promise((resolve) => {
+    fs.access(localPath, mode, (err) => {
       if (err) {
         let {msg, code} = classifyError(err, localPath);
         resolve({
@@ -481,8 +481,9 @@ async function checkWriteFile(client, aPath, type) {
       code: errorCode.badPath
     };
   } else if (!type) {
-    let parentDir = path.parse(aPath).dir;
-    if (!parentDir) {
+    let {root, dir} = path.parse(aPath);
+    //let parentDir = path.parse(aPath).dir;
+    if (!dir) {
       return {
         path: aPath,
         type: false,
@@ -491,13 +492,20 @@ async function checkWriteFile(client, aPath, type) {
         code: errorCode.badPath
       };
     }
-    let parentType = await client.exists(parentDir);
+    if (root === dir) {
+      return {
+        path: aPath,
+        type: type,
+        valid: true
+      };
+    }
+    let parentType = await client.exists(dir);
     if (!parentType) {
       return {
         path: aPath,
         type: type,
         valid: false,
-        msg: `Bad path: ${parentDir} parent not exist`,
+        msg: `Bad path: ${dir} parent not exist`,
         code: errorCode.badPath
       };
     } else if (parentType !== 'd') {
@@ -505,7 +513,7 @@ async function checkWriteFile(client, aPath, type) {
         path: aPath,
         type: type,
         valid: false,
-        msg: `Bad path: ${parentDir} must be a directory`,
+        msg: `Bad path: ${dir} must be a directory`,
         code: errorCode.badPath
       };
     }
@@ -532,8 +540,15 @@ async function checkWriteDir(client, aPath, type) {
       code: errorCode.badPath
     };
   } else if (!type) {
-    let parentDir = path.parse(aPath).dir;
-    if (!parentDir) {
+    let {root, dir} = path.parse(aPath);
+    if (root === dir) {
+      return {
+        path: aPath,
+        type: type,
+        valid: true
+      };
+    }
+    if (!dir) {
       return {
         path: aPath,
         type: false,
@@ -542,7 +557,7 @@ async function checkWriteDir(client, aPath, type) {
         code: errorCode.badPath
       };
     }
-    let parentType = await client.exists(parentDir);
+    let parentType = await client.exists(dir);
     if (parentType && parentType !== 'd') {
       return {
         path: aPath,
@@ -628,7 +643,7 @@ function dumpListeners(emitter) {
   let eventNames = emitter.eventNames();
   if (eventNames.length) {
     console.log('Listener Data');
-    eventNames.map(n => {
+    eventNames.map((n) => {
       console.log(`${n}: ${emitter.listenerCount(n)}`);
     });
   }
