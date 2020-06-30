@@ -61,12 +61,14 @@ describe('posixRename() method tests', function () {
   });
 
   it('rename to existing file name is successful', function () {
-    return sftp.posixRename(
+    return sftp
+      .posixRename(
         makeRemotePath(config.sftpUrl, 'rename-new.md'),
         makeRemotePath(config.sftpUrl, 'rename-conflict.md')
-      )      .then(() => {
-      return sftp.list(config.sftpUrl);
-    })
+      )
+      .then(() => {
+        return sftp.list(config.sftpUrl);
+      })
       .then((list) => {
         expect(list).to.not.containSubset([{name: 'rename-new.md'}]);
         return expect(list).to.containSubset([{name: 'rename-conflict.md'}]);
@@ -76,7 +78,7 @@ describe('posixRename() method tests', function () {
   it('rename with relative source 1', function () {
     return sftp
       .posixRename(
-        './testServer/rename-new.md',
+        './testServer/rename-conflict.md',
         makeRemotePath(config.sftpUrl, 'rename-relative1.md')
       )
       .then(() => {
@@ -95,7 +97,10 @@ describe('posixRename() method tests', function () {
       'rename-relative1.md'
     );
     return sftp
-      .posixRename(remotePath, makeRemotePath(config.sftpUrl, 'rename-relative2.md'))
+      .posixRename(
+        remotePath,
+        makeRemotePath(config.sftpUrl, 'rename-relative2.md')
+      )
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -112,7 +117,10 @@ describe('posixRename() method tests', function () {
       'rename-relative3.md'
     );
     return sftp
-      .posixRename(makeRemotePath(config.sftpUrl, 'rename-relative2.md'), remotePath)
+      .posixRename(
+        makeRemotePath(config.sftpUrl, 'rename-relative2.md'),
+        remotePath
+      )
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -129,7 +137,10 @@ describe('posixRename() method tests', function () {
       'rename-relative4.md'
     );
     return sftp
-      .posixRename(makeRemotePath(config.sftpUrl, 'rename-relative3.md'), remotePath)
+      .posixRename(
+        makeRemotePath(config.sftpUrl, 'rename-relative3.md'),
+        remotePath
+      )
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
