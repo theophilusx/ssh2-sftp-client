@@ -1813,8 +1813,11 @@ took over responsibility for maintaining this module. A number of other people
 have contributed to this module, but until now, this was not tracked. My
 intention is to credit anyone who contributes going forward.
 
+Thanks to the following for their contributions -
+
 - jyu213 :: Original author
 - theophilusx :: Current maintainer
 - henrytk :: Documentation fix
 - waldyrious :: Documentation fixes
 - james-pellow :: Cleanup and fix for connect method logic
+- jhorbulyk :: Contributed posixRename() functionality 
