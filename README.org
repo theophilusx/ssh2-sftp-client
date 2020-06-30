@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.1.3*.
+Current stable release is *v5.2.0*.
 
 Code has been tested against Node versions 12.18.0 and 13.14.0
 
@@ -246,6 +246,9 @@ reset to false in preparation for the next error.
   - Fix issue with permissions for writing to root directory
   - Cleanup tests to use less connections and eliminate need for test delays
   - Bumped some dependencies to latest versions  
+** Version 5.2.0
+   - Add posixRename() method. This is an openssh extension added in openssh
+     v4.8 and will only work on servers which support this extension.conflict
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -906,6 +909,10 @@ Delete a file on the remote server.
 Rename a file or directory from ~fromPath~ to ~toPath~. You must have the
 necessary permissions to modify the remote file.
 
+- fromPath :: string. Path to existing file to be renamed 
+- toPath :: string. Path to new file existing file is to be renamed to. Should
+  not already exist.
+
 **** Example Use
 
 #+begin_src javascript
@@ -925,6 +932,38 @@ necessary permissions to modify the remote file.
     });
 #+end_src
 
+*** posixRename(fromPath, toPath) ==> string
+    
+This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8.
+The advantage of this version of rename over standard SFTP rename is that it is
+an atomic operation and will allow renaming a resource where the destination
+name exists. The POSIX rename will also work on some filesystems which do not
+support standard SFTP rename because they don't support the system hardlink()
+call. The POSIX rename extension is available on all openSSH servers from 4.8
+and some other implementations. This is an extension to the standard SFTP
+protocol and therefore is not supported on all sSFTP servers.
+
+- fromPath :: string. Path to existing file to be renamed.
+- toPath :: string. Path for new name. If it already exists, it will be replaced
+  by file specified in fromPath
+
+#+begin_src javascript
+  let from = '/remote/path/to/old.txt';
+  let to = '/remote/path/to/new.txt';
+  let client = new Client();
+
+  client.connect(config)
+    .then(() => {
+      return client.posixRename(from, to);
+    })
+    .then(() => {
+      return client.end();
+    })
+    .catch(err => {
+      console.error(err.message);
+    });
+#+end_src
+    
 *** chmod(path, mode) ==> string
 
 Change the mode (read, write or execute permissions) of a remote file or
@@ -1324,7 +1363,9 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.1.3 (Prod Version)
+** v5.2.0 (Prod Version)
+   - Add new method posixRename() which uses the openSSH POSIX rename extension. 
+** v5.1.3
    - Fix bug when writing to root directory and failure due to not being able to
      determine parent
    - Refactor some tests to eliminate need to have artificial delays between
