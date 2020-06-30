@@ -1,96 +1,99 @@
 
 # Table of Contents
 
-1.  [SSH2 SFTP Client](#org817c449)
-2.  [Installation](#org0eb9834)
-3.  [Basic Usage](#org14a896b)
-4.  [Version 5.x](#org0dbbcb2)
-    1.  [Breaking Changes in Version 5.x](#orgdfd1c90)
-        1.  [Error Event Handling](#org0d66d5b)
-        2.  [Technical Details](#org364c9a6)
-    2.  [New Methods](#org6c43c80)
-    3.  [Version 5.0.1](#org7610374)
-    4.  [Version 5.0.2](#org2cac326)
-    5.  [Version 5.1.0](#org7a66880)
-    6.  [Version 5.1.1](#org74ded7b)
-    7.  [Version 5.1.2](#org3398122)
-    8.  [Version 5.1.3](#org78f7f9b)
-5.  [Documentation](#org1fe4c7b)
-    1.  [Specifying Paths](#orgba93adb)
-    2.  [Methods](#org6886609)
-        1.  [new SftpClient(name) ===> SFTP client object](#org2c18421)
-        2.  [connect(config) ===> SFTPstream](#orgfaa440c)
-        3.  [list(path, pattern) ==> Array[object]](#org4f3bf06)
-        4.  [exists(path) ==> boolean](#org92e158e)
-        5.  [stat(path) ==> object](#org32bc828)
-        6.  [get(path, dst, options) ==> String|Stream|Buffer](#org923d83e)
-        7.  [fastGet(remotePath, localPath, options) ===> string](#org0d24ba1)
-        8.  [put(src, remotePath, options) ==> string](#orge585f36)
-        9.  [fastPut(localPath, remotePath, options) ==> string](#org12220b0)
-        10. [append(input, remotePath, options) ==> string](#org0180b9a)
-        11. [mkdir(path, recursive) ==> string](#orgd067418)
-        12. [rmdir(path, recursive) ==> string](#orgd3f123a)
-        13. [delete(path) ==> string](#org69be9f3)
-        14. [rename(fromPath, toPath) ==> string](#org8d919b1)
-        15. [chmod(path, mode) ==> string](#orgc330621)
-        16. [realPath(path) ===> string](#org66bee8c)
-        17. [cwd() ==> string](#orgd9e2fe1)
-        18. [uploadDir(srcDir, dstDir) ==> string](#orga9b9bbb)
-        19. [downloadDir(srcDir, dstDir) ==> string](#org2635adb)
-        20. [end() ==> boolean](#org4f13080)
-        21. [Add and Remove Listeners](#orgb111ac1)
-6.  [FAQ](#orgdfc9a77)
-    1.  [Remote server drops connections with only an end event](#orga5e9ff3)
-    2.  [How can you pass writable stream as dst for get method?](#org392ed36)
-    3.  [How can I upload files without having to specify a password?](#org3cdd59a)
-    4.  [How can I connect through a Socks Proxy](#org175aa98)
-    5.  [Timeout while waiting for handshake or handshake errors](#orgbe77e2c)
-7.  [Examples](#orgc2dedcc)
-8.  [Change Log](#org7100c74)
-    1.  [v5.1.3 (Prod Version)](#org1247671)
-    2.  [v5.1.2](#org60071d2)
-    3.  [v5.1.1](#orge044f5a)
-    4.  [v5.1.0](#org41bc615)
-    5.  [v5.0.2](#org414cfd0)
-    6.  [v5.0.1](#org9a73980)
-    7.  [v5.0.0](#org4135728)
-    8.  [v4.3.1](#orgee32db2)
-    9.  [v4.3.0](#orgbafeeaa)
-    10. [v4.2.4](#org6613403)
-    11. [v4.2.3](#org2ba5e37)
-    12. [v4.2.2](#org9dd003a)
-    13. [v4.2.1](#orge71a506)
-    14. [v4.2.0](#org8a42572)
-    15. [v4.1.0](#orgad1aca1)
-    16. [v4.0.4](#orgdbd85c3)
-    17. [v4.0.3](#orge83d01d)
-    18. [v4.0.2](#orgcb76f61)
-    19. [v4.0.0](#org332fddb)
-    20. [v2.5.2](#orgcb7140a)
-    21. [v2.5.1](#org0fc2247)
-    22. [v2.5.0](#org0067297)
-    23. [v2.4.3](#orgc107b01)
-    24. [v2.4.2](#org8181847)
-    25. [v2.4.1](#org28b3c6b)
-    26. [v2.4.0](#org2b2a2ec)
-    27. [v2.3.0](#org422a6a5)
-    28. [v3.0.0 &#x2013; deprecate this version](#orgb79562c)
-    29. [v2.1.1](#orgd4575a6)
-    30. [v2.0.1](#orgded1628)
-    31. [v1.1.0](#org22bb045)
-    32. [v1.0.5:](#orga4a5d0c)
-9.  [Troubleshooting](#orgb9e0ec7)
-    1.  [Common Errors](#org058762e)
-        1.  [Not returning the promise in a `then()` block](#org16f7365)
-        2.  [Mixing Promise Chains and Async/Await](#org99740c4)
-        3.  [Try/catch and Error Handlers](#org341d24a)
-    2.  [Debugging Support](#org62acaa5)
-10. [Logging Issues](#org3d76281)
-11. [Pull Requests](#org01b6de9)
-12. [Contributors](#org5eed057)
+1.  [SSH2 SFTP Client](#org8c8ced1)
+2.  [Installation](#org361bff6)
+3.  [Basic Usage](#orged54a1a)
+4.  [Version 5.x](#org27da596)
+    1.  [Breaking Changes in Version 5.x](#org224ac1a)
+        1.  [Error Event Handling](#orga64443a)
+        2.  [Technical Details](#orgc9a1621)
+    2.  [New Methods](#orgcffa249)
+    3.  [Version 5.0.1](#orgdd7aae4)
+    4.  [Version 5.0.2](#orgc20a0fe)
+    5.  [Version 5.1.0](#org8654dc3)
+    6.  [Version 5.1.1](#orga263956)
+    7.  [Version 5.1.2](#org15f011e)
+    8.  [Version 5.1.3](#org83cf815)
+    9.  [Version 5.2.0](#org3ec8712)
+5.  [Documentation](#org82928ba)
+    1.  [Specifying Paths](#org28553a3)
+    2.  [Methods](#orga88e374)
+        1.  [new SftpClient(name) ===> SFTP client object](#org24aa330)
+        2.  [connect(config) ===> SFTPstream](#org0ef4026)
+        3.  [list(path, pattern) ==> Array[object]](#org50ad17f)
+        4.  [exists(path) ==> boolean](#orgd97dc35)
+        5.  [stat(path) ==> object](#orgcdfb62b)
+        6.  [get(path, dst, options) ==> String|Stream|Buffer](#orgd7567a4)
+        7.  [fastGet(remotePath, localPath, options) ===> string](#org9690a5b)
+        8.  [put(src, remotePath, options) ==> string](#org9b0f090)
+        9.  [fastPut(localPath, remotePath, options) ==> string](#org7f94d89)
+        10. [append(input, remotePath, options) ==> string](#org9bbb210)
+        11. [mkdir(path, recursive) ==> string](#org51d83da)
+        12. [rmdir(path, recursive) ==> string](#org0d0d118)
+        13. [delete(path) ==> string](#orga8d6d76)
+        14. [rename(fromPath, toPath) ==> string](#org3d08ebf)
+        15. [posixRename(fromPath, toPath) ==> string](#orga4fa34f)
+        16. [chmod(path, mode) ==> string](#orge88d428)
+        17. [realPath(path) ===> string](#orgaaf961e)
+        18. [cwd() ==> string](#org510e907)
+        19. [uploadDir(srcDir, dstDir) ==> string](#org1eb3812)
+        20. [downloadDir(srcDir, dstDir) ==> string](#org85f1e41)
+        21. [end() ==> boolean](#org61b44f9)
+        22. [Add and Remove Listeners](#orgd534bf8)
+6.  [FAQ](#orga6251f0)
+    1.  [Remote server drops connections with only an end event](#org177fc0d)
+    2.  [How can you pass writable stream as dst for get method?](#org9a3f537)
+    3.  [How can I upload files without having to specify a password?](#orgcb2c786)
+    4.  [How can I connect through a Socks Proxy](#orgefbf3cb)
+    5.  [Timeout while waiting for handshake or handshake errors](#org8a53af4)
+7.  [Examples](#org59fbd3f)
+8.  [Change Log](#org46b9935)
+    1.  [v5.2.0 (Prod Version)](#org6f0e95d)
+    2.  [v5.1.3](#org789e89f)
+    3.  [v5.1.2](#org574d0f2)
+    4.  [v5.1.1](#orgb3ed73b)
+    5.  [v5.1.0](#org2813e85)
+    6.  [v5.0.2](#org8be6b19)
+    7.  [v5.0.1](#org6ef5404)
+    8.  [v5.0.0](#orgcaec74e)
+    9.  [v4.3.1](#orgf06b13b)
+    10. [v4.3.0](#org9a072c1)
+    11. [v4.2.4](#orga1f1b5a)
+    12. [v4.2.3](#orge11a41b)
+    13. [v4.2.2](#orgd13610b)
+    14. [v4.2.1](#orgffb0d32)
+    15. [v4.2.0](#orgd2e1503)
+    16. [v4.1.0](#org43fbc3e)
+    17. [v4.0.4](#org16c6cd3)
+    18. [v4.0.3](#org5348ddc)
+    19. [v4.0.2](#org4cf2512)
+    20. [v4.0.0](#org3e6c697)
+    21. [v2.5.2](#org18c3759)
+    22. [v2.5.1](#org40995d1)
+    23. [v2.5.0](#orgd1ad3d7)
+    24. [v2.4.3](#org3de9e8a)
+    25. [v2.4.2](#org4f7b6ee)
+    26. [v2.4.1](#orgc4a6568)
+    27. [v2.4.0](#org562e282)
+    28. [v2.3.0](#org3c37337)
+    29. [v3.0.0 &#x2013; deprecate this version](#org80a2738)
+    30. [v2.1.1](#orgf273028)
+    31. [v2.0.1](#org9de107d)
+    32. [v1.1.0](#org472e00a)
+    33. [v1.0.5:](#org0dab074)
+9.  [Troubleshooting](#org17ebe81)
+    1.  [Common Errors](#org0df2bd2)
+        1.  [Not returning the promise in a `then()` block](#orgca7a6a5)
+        2.  [Mixing Promise Chains and Async/Await](#orgb63a7b3)
+        3.  [Try/catch and Error Handlers](#org6dacb73)
+    2.  [Debugging Support](#org92e440e)
+10. [Logging Issues](#org7b99385)
+11. [Pull Requests](#org6be2120)
+12. [Contributors](#org6d7cd48)
 
 
-<a id="org817c449"></a>
+<a id="org8c8ced1"></a>
 
 # SSH2 SFTP Client
 
@@ -100,7 +103,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [SSH2](https://github.com/mscdex/ssh2) and [SSH2-STREAMS](https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md)  project pages.
 
-Current stable release is **v5.1.3**.
+Current stable release is **v5.2.0**.
 
 Code has been tested against Node versions 12.18.0 and 13.14.0
 
@@ -116,14 +119,14 @@ performance as fastGet() or fastPut() when they are set to use a concurrency
 of 1. A bug report has been logged against the ssh2-streams library as [issue 156](https://github.com/mscdex/ssh2-streams/issues/156).  
 
 
-<a id="org0eb9834"></a>
+<a id="org361bff6"></a>
 
 # Installation
 
     npm install ssh2-sftp-client
 
 
-<a id="org14a896b"></a>
+<a id="orged54a1a"></a>
 
 # Basic Usage
 
@@ -144,12 +147,12 @@ of 1. A bug report has been logged against the ssh2-streams library as [issue 15
     });
 
 
-<a id="org0dbbcb2"></a>
+<a id="org27da596"></a>
 
 # Version 5.x
 
 
-<a id="orgdfd1c90"></a>
+<a id="org224ac1a"></a>
 
 ## Breaking Changes in Version 5.x
 
@@ -178,7 +181,7 @@ of 1. A bug report has been logged against the ssh2-streams library as [issue 15
     occur during a call to end the connection.
 
 
-<a id="org0d66d5b"></a>
+<a id="orga64443a"></a>
 
 ### Error Event Handling
 
@@ -274,7 +277,7 @@ want to end, then you can just ignore the error, perform any necessary
 cleanup work and exit successfully.
 
 
-<a id="org364c9a6"></a>
+<a id="orgc9a1621"></a>
 
 ### Technical Details
 
@@ -294,7 +297,7 @@ further attempts to use it and finally, ensure the `this.errorHandler` flag is
 reset to false in preparation for the next error.
 
 
-<a id="org6c43c80"></a>
+<a id="orgcffa249"></a>
 
 ## New Methods
 
@@ -310,7 +313,7 @@ reset to false in preparation for the next error.
     any local files in the directories.
 
 
-<a id="org7610374"></a>
+<a id="orgdd7aae4"></a>
 
 ## Version 5.0.1
 
@@ -320,7 +323,7 @@ reset to false in preparation for the next error.
     this issue.
 
 
-<a id="org2cac326"></a>
+<a id="orgc20a0fe"></a>
 
 ## Version 5.0.2
 
@@ -329,7 +332,7 @@ reset to false in preparation for the next error.
     the use of path.posix.parse() instead of path.parse().
 
 
-<a id="org7a66880"></a>
+<a id="org8654dc3"></a>
 
 ## Version 5.1.0
 
@@ -342,7 +345,7 @@ reset to false in preparation for the next error.
     you cannot determine parent directory.
 
 
-<a id="org74ded7b"></a>
+<a id="orga263956"></a>
 
 ## Version 5.1.1
 
@@ -362,7 +365,7 @@ reset to false in preparation for the next error.
     called before the transfer has completed.
 
 
-<a id="org3398122"></a>
+<a id="org15f011e"></a>
 
 ## Version 5.1.2
 
@@ -374,7 +377,7 @@ reset to false in preparation for the next error.
     listener 'leakage' due to failure to remove listeners when no longer required.
 
 
-<a id="org78f7f9b"></a>
+<a id="org83cf815"></a>
 
 ## Version 5.1.3
 
@@ -383,7 +386,15 @@ reset to false in preparation for the next error.
 -   Bumped some dependencies to latest versions
 
 
-<a id="org1fe4c7b"></a>
+<a id="org3ec8712"></a>
+
+## Version 5.2.0
+
+-   Add posixRename() method. This is an openssh extension added in openssh
+    v4.8 and will only work on servers which support this extension.conflict
+
+
+<a id="org82928ba"></a>
 
 # Documentation
 
@@ -394,7 +405,7 @@ All the methods will return a Promise, except for `on()` and
 `removeListener()`, which are typically only used in special use cases.
 
 
-<a id="orgba93adb"></a>
+<a id="org28553a3"></a>
 
 ## Specifying Paths
 
@@ -438,12 +449,12 @@ This will copy the local file `test.txt` to the remote file `test-copy.txt` in
 the directory `/remote/dir`.
 
 
-<a id="org6886609"></a>
+<a id="orga88e374"></a>
 
 ## Methods
 
 
-<a id="org2c18421"></a>
+<a id="org24aa330"></a>
 
 ### new SftpClient(name) ===> SFTP client object
 
@@ -482,7 +493,7 @@ client has thrown the error.
           });
 
 
-<a id="orgfaa440c"></a>
+<a id="org0ef4026"></a>
 
 ### connect(config) ===> SFTPstream
 
@@ -552,7 +563,7 @@ available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
         });
 
 
-<a id="org4f3bf06"></a>
+<a id="org50ad17f"></a>
 
 ### list(path, pattern) ==> Array[object]
 
@@ -625,7 +636,7 @@ directory.
     anchor matches to the beginning/end of the string etc.
 
 
-<a id="org92e158e"></a>
+<a id="orgd97dc35"></a>
 
 ### exists(path) ==> boolean
 
@@ -660,7 +671,7 @@ if it exists or false if it does not.
           });
 
 
-<a id="org32bc828"></a>
+<a id="orgcdfb62b"></a>
 
 ### stat(path) ==> object
 
@@ -707,7 +718,7 @@ Returns the attributes associated with the object pointed to by `path`.
           });
 
 
-<a id="org923d83e"></a>
+<a id="orgd7567a4"></a>
 
 ### get(path, dst, options) ==> String|Stream|Buffer
 
@@ -768,7 +779,7 @@ better off using the `fastGet()` method.
         decompress a gzip file 'on the fly'.
 
 
-<a id="org0d24ba1"></a>
+<a id="org9690a5b"></a>
 
 ### fastGet(remotePath, localPath, options) ===> string
 
@@ -811,7 +822,7 @@ throughput. This is the simplest method if you just want to download a file.
           });
 
 
-<a id="orge585f36"></a>
+<a id="org9b0f090"></a>
 
 ### put(src, remotePath, options) ==> string
 
@@ -864,7 +875,7 @@ stream are piped to the `remotePath` on the server.
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
 
-<a id="org12220b0"></a>
+<a id="org7f94d89"></a>
 
 ### fastPut(localPath, remotePath, options) ==> string
 
@@ -907,7 +918,7 @@ Uploads the data in file at `localPath` to a new file on remote server at
           });
 
 
-<a id="org0180b9a"></a>
+<a id="org9bbb210"></a>
 
 ### append(input, remotePath, options) ==> string
 
@@ -952,7 +963,7 @@ in to the file.
           });
 
 
-<a id="orgd067418"></a>
+<a id="org51d83da"></a>
 
 ### mkdir(path, recursive) ==> string
 
@@ -981,7 +992,7 @@ defaults to false.
           });
 
 
-<a id="orgd3f123a"></a>
+<a id="org0d0d118"></a>
 
 ### rmdir(path, recursive) ==> string
 
@@ -1011,7 +1022,7 @@ action will fail.
           });
 
 
-<a id="org69be9f3"></a>
+<a id="orga8d6d76"></a>
 
 ### delete(path) ==> string
 
@@ -1036,12 +1047,16 @@ Delete a file on the remote server.
           });
 
 
-<a id="org8d919b1"></a>
+<a id="org3d08ebf"></a>
 
 ### rename(fromPath, toPath) ==> string
 
 Rename a file or directory from `fromPath` to `toPath`. You must have the
 necessary permissions to modify the remote file.
+
+-   **fromPath:** string. Path to existing file to be renamed
+-   **toPath:** string. Path to new file existing file is to be renamed to. Should
+    not already exist.
 
 1.  Example Use
 
@@ -1061,7 +1076,40 @@ necessary permissions to modify the remote file.
           });
 
 
-<a id="orgc330621"></a>
+<a id="orga4fa34f"></a>
+
+### posixRename(fromPath, toPath) ==> string
+
+This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8.
+The advantage of this version of rename over standard SFTP rename is that it is
+an atomic operation and will allow renaming a resource where the destination
+name exists. The POSIX rename will also work on some filesystems which do not
+support standard SFTP rename because they don't support the system hardlink()
+call. The POSIX rename extension is available on all openSSH servers from 4.8
+and some other implementations. This is an extension to the standard SFTP
+protocol and therefore is not supported on all sSFTP servers.
+
+-   **fromPath:** string. Path to existing file to be renamed.
+-   **toPath:** string. Path for new name. If it already exists, it will be replaced
+    by file specified in fromPath
+
+    let from = '/remote/path/to/old.txt';
+    let to = '/remote/path/to/new.txt';
+    let client = new Client();
+    
+    client.connect(config)
+      .then(() => {
+        return client.posixRename(from, to);
+      })
+      .then(() => {
+        return client.end();
+      })
+      .catch(err => {
+        console.error(err.message);
+      });
+
+
+<a id="orge88d428"></a>
 
 ### chmod(path, mode) ==> string
 
@@ -1089,7 +1137,7 @@ directory.
           });
 
 
-<a id="org66bee8c"></a>
+<a id="orgaaf961e"></a>
 
 ### realPath(path) ===> string
 
@@ -1101,14 +1149,14 @@ path is not valid.
     does not expand '~'.
 
 
-<a id="orgd9e2fe1"></a>
+<a id="org510e907"></a>
 
 ### cwd() ==> string
 
 Returns what the server believes is the current remote working directory.
 
 
-<a id="orga9b9bbb"></a>
+<a id="org1eb3812"></a>
 
 ### uploadDir(srcDir, dstDir) ==> string
 
@@ -1174,7 +1222,7 @@ using the `on()` method.
         });
 
 
-<a id="org2635adb"></a>
+<a id="org85f1e41"></a>
 
 ### downloadDir(srcDir, dstDir) ==> string
 
@@ -1240,7 +1288,7 @@ the `on()` method.
           });
 
 
-<a id="org4f13080"></a>
+<a id="org61b44f9"></a>
 
 ### end() ==> boolean
 
@@ -1263,7 +1311,7 @@ resources. This function also removes all listeners associated with the client.
           });
 
 
-<a id="orgb111ac1"></a>
+<a id="orgd534bf8"></a>
 
 ### Add and Remove Listeners
 
@@ -1289,12 +1337,12 @@ them have any meaning in the context of SFTP. These are
     the `end()` method automatically removes all listeners from the client object.
 
 
-<a id="orgdfc9a77"></a>
+<a id="orga6251f0"></a>
 
 # FAQ
 
 
-<a id="orga5e9ff3"></a>
+<a id="org177fc0d"></a>
 
 ## Remote server drops connections with only an end event
 
@@ -1324,7 +1372,7 @@ that the 1st connection has completed authentication before the 11th connection
 is attempted.
 
 
-<a id="org392ed36"></a>
+<a id="org9a3f537"></a>
 
 ## How can you pass writable stream as dst for get method?
 
@@ -1388,7 +1436,7 @@ bring them across before saving to local file system.
       });
 
 
-<a id="org3cdd59a"></a>
+<a id="orgcb2c786"></a>
 
 ## How can I upload files without having to specify a password?
 
@@ -1423,7 +1471,7 @@ configuration.
     }
 
 
-<a id="org175aa98"></a>
+<a id="orgefbf3cb"></a>
 
 ## How can I connect through a Socks Proxy
 
@@ -1457,7 +1505,7 @@ This solution was provided by @jmorino.
     // client is connected
 
 
-<a id="orgbe77e2c"></a>
+<a id="org8a53af4"></a>
 
 ## Timeout while waiting for handshake or handshake errors
 
@@ -1472,7 +1520,7 @@ documentation for details. Getting these parameters correct usually resolves the
 issue.
 
 
-<a id="orgc2dedcc"></a>
+<a id="org59fbd3f"></a>
 
 # Examples
 
@@ -1483,14 +1531,21 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 
-<a id="org7100c74"></a>
+<a id="org46b9935"></a>
 
 # Change Log
 
 
-<a id="org1247671"></a>
+<a id="org6f0e95d"></a>
 
-## v5.1.3 (Prod Version)
+## v5.2.0 (Prod Version)
+
+-   Add new method posixRename() which uses the openSSH POSIX rename extension.
+
+
+<a id="org789e89f"></a>
+
+## v5.1.3
 
 -   Fix bug when writing to root directory and failure due to not being able to
     determine parent
@@ -1499,7 +1554,7 @@ helping developers see how the module and API can be used.
 -   Bumped some dependency versions to latest version
 
 
-<a id="org60071d2"></a>
+<a id="org574d0f2"></a>
 
 ## v5.1.2
 
@@ -1507,7 +1562,7 @@ helping developers see how the module and API can be used.
 -   Added dumpListeners() method
 
 
-<a id="orge044f5a"></a>
+<a id="orgb3ed73b"></a>
 
 ## v5.1.1
 
@@ -1517,7 +1572,7 @@ helping developers see how the module and API can be used.
     common errors.
 
 
-<a id="org41bc615"></a>
+<a id="org2813e85"></a>
 
 ## v5.1.0
 
@@ -1528,7 +1583,7 @@ helping developers see how the module and API can be used.
 -   Bump ssh2 version to v0.8.8
 
 
-<a id="org414cfd0"></a>
+<a id="org8be6b19"></a>
 
 ## v5.0.2
 
@@ -1536,7 +1591,7 @@ helping developers see how the module and API can be used.
 -   Fix problem with parsing of file paths
 
 
-<a id="org9a73980"></a>
+<a id="org6ef5404"></a>
 
 ## v5.0.1
 
@@ -1544,7 +1599,7 @@ helping developers see how the module and API can be used.
     where user does not have read permission on parent directory.
 
 
-<a id="org4135728"></a>
+<a id="orgcaec74e"></a>
 
 ## v5.0.0
 
@@ -1563,7 +1618,7 @@ helping developers see how the module and API can be used.
 -   Any error events fired during an `end()` call are now ignored.
 
 
-<a id="orgee32db2"></a>
+<a id="orgf06b13b"></a>
 
 ## v4.3.1
 
@@ -1573,7 +1628,7 @@ helping developers see how the module and API can be used.
     causing uncaughtException erros and causing the process to exit.
 
 
-<a id="orgbafeeaa"></a>
+<a id="org9a072c1"></a>
 
 ## v4.3.0
 
@@ -1583,7 +1638,7 @@ helping developers see how the module and API can be used.
     `error.message`.
 
 
-<a id="org6613403"></a>
+<a id="orga1f1b5a"></a>
 
 ## v4.2.4
 
@@ -1592,7 +1647,7 @@ helping developers see how the module and API can be used.
 -   Clarify documentation on get() method
 
 
-<a id="org2ba5e37"></a>
+<a id="orge11a41b"></a>
 
 ## v4.2.3
 
@@ -1601,7 +1656,7 @@ helping developers see how the module and API can be used.
 -   Clean up mkdir example
 
 
-<a id="org9dd003a"></a>
+<a id="orgd13610b"></a>
 
 ## v4.2.2
 
@@ -1609,7 +1664,7 @@ helping developers see how the module and API can be used.
 -   Added additional examples in the `example` directory
 
 
-<a id="orge71a506"></a>
+<a id="orgffb0d32"></a>
 
 ## v4.2.1
 
@@ -1623,7 +1678,7 @@ helping developers see how the module and API can be used.
     debugging
 
 
-<a id="org8a42572"></a>
+<a id="orgd2e1503"></a>
 
 ## v4.2.0
 
@@ -1634,7 +1689,7 @@ helping developers see how the module and API can be used.
 -   Added additional examples in `example` directory
 
 
-<a id="orgad1aca1"></a>
+<a id="org43fbc3e"></a>
 
 ## v4.1.0
 
@@ -1651,7 +1706,7 @@ helping developers see how the module and API can be used.
 -   Add `cwd()` method
 
 
-<a id="orgdbd85c3"></a>
+<a id="org16c6cd3"></a>
 
 ## v4.0.4
 
@@ -1659,7 +1714,7 @@ helping developers see how the module and API can be used.
 -   Fix return value from `get()`
 
 
-<a id="orge83d01d"></a>
+<a id="org5348ddc"></a>
 
 ## v4.0.3
 
@@ -1667,14 +1722,14 @@ helping developers see how the module and API can be used.
 -   Modify exists() to always return 'd' if path is '.'
 
 
-<a id="orgcb76f61"></a>
+<a id="org4cf2512"></a>
 
 ## v4.0.2
 
 -   Fix some minor packaging issues
 
 
-<a id="org332fddb"></a>
+<a id="org3e6c697"></a>
 
 ## v4.0.0
 
@@ -1692,7 +1747,7 @@ helping developers see how the module and API can be used.
 -   Added the `removeListener()` method to compliment the existing `on()` method.
 
 
-<a id="orgcb7140a"></a>
+<a id="org18c3759"></a>
 
 ## v2.5.2
 
@@ -1700,21 +1755,21 @@ helping developers see how the module and API can be used.
 -   Fix error in package.json pointing to wrong repository
 
 
-<a id="org0fc2247"></a>
+<a id="org40995d1"></a>
 
 ## v2.5.1
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
 
-<a id="org0067297"></a>
+<a id="orgd1ad3d7"></a>
 
 ## v2.5.0
 
 -   ???
 
 
-<a id="orgc107b01"></a>
+<a id="org3de9e8a"></a>
 
 ## v2.4.3
 
@@ -1722,7 +1777,7 @@ helping developers see how the module and API can be used.
     -   fix connect promise if connection ends
 
 
-<a id="org8181847"></a>
+<a id="org4f7b6ee"></a>
 
 ## v2.4.2
 
@@ -1730,7 +1785,7 @@ helping developers see how the module and API can be used.
     -   fix windows path
 
 
-<a id="org28b3c6b"></a>
+<a id="orgc4a6568"></a>
 
 ## v2.4.1
 
@@ -1738,7 +1793,7 @@ helping developers see how the module and API can be used.
     -   bug fix
 
 
-<a id="org2b2a2ec"></a>
+<a id="org562e282"></a>
 
 ## v2.4.0
 
@@ -1751,7 +1806,7 @@ helping developers see how the module and API can be used.
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
 
-<a id="org422a6a5"></a>
+<a id="org3c37337"></a>
 
 ## v2.3.0
 
@@ -1760,7 +1815,7 @@ helping developers see how the module and API can be used.
 -   fix: `mkdir` file exists decision logic
 
 
-<a id="orgb79562c"></a>
+<a id="org80a2738"></a>
 
 ## v3.0.0 &#x2013; deprecate this version
 
@@ -1768,7 +1823,7 @@ helping developers see how the module and API can be used.
 -   fix: get readable not emitting data events in node 10.0.0
 
 
-<a id="orgd4575a6"></a>
+<a id="orgf273028"></a>
 
 ## v2.1.1
 
@@ -1776,7 +1831,7 @@ helping developers see how the module and API can be used.
 -   add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
 
 
-<a id="orgded1628"></a>
+<a id="org9de107d"></a>
 
 ## v2.0.1
 
@@ -1786,14 +1841,14 @@ helping developers see how the module and API can be used.
 -   fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
 
 
-<a id="org22bb045"></a>
+<a id="org472e00a"></a>
 
 ## v1.1.0
 
 -   fix: add encoding control support for binary stream
 
 
-<a id="orga4a5d0c"></a>
+<a id="org0dab074"></a>
 
 ## v1.0.5:
 
@@ -1801,7 +1856,7 @@ helping developers see how the module and API can be used.
 -   change: remove `this.client.sftp` to `connect` function
 
 
-<a id="orgb9e0ec7"></a>
+<a id="org17ebe81"></a>
 
 # Troubleshooting
 
@@ -1842,7 +1897,7 @@ trying to determine if the issue is with the underlying `ssh2` and
 `ssh2-streams` modules.
 
 
-<a id="org058762e"></a>
+<a id="org0df2bd2"></a>
 
 ## Common Errors
 
@@ -1852,7 +1907,7 @@ against this module. Please check for some of these before logging your
 issue. 
 
 
-<a id="org16f7365"></a>
+<a id="orgca7a6a5"></a>
 
 ### Not returning the promise in a `then()` block
 
@@ -1904,7 +1959,7 @@ happening is that the connection is being ended before the transfer has
 completed. 
 
 
-<a id="org99740c4"></a>
+<a id="orgb63a7b3"></a>
 
 ### Mixing Promise Chains and Async/Await
 
@@ -1974,7 +2029,7 @@ as either
     }
 
 
-<a id="org341d24a"></a>
+<a id="org6dacb73"></a>
 
 ### Try/catch and Error Handlers
 
@@ -2003,7 +2058,7 @@ and find where errors are raised asynchronously and use an event handler or
 some other mechanism to manage any errors raised.  
 
 
-<a id="org62acaa5"></a>
+<a id="org92e440e"></a>
 
 ## Debugging Support
 
@@ -2022,7 +2077,7 @@ using shell redirection e.g.
     node script.js 2> debug.log
 
 
-<a id="org3d76281"></a>
+<a id="org7b99385"></a>
 
 # Logging Issues
 
@@ -2047,7 +2102,7 @@ Perhaps the best assistance is a minimal reproducible example of the issue. Once
 the issue can be readily reproduced, it can usually be fixed very quickly.
 
 
-<a id="org01b6de9"></a>
+<a id="org6be2120"></a>
 
 # Pull Requests
 
@@ -2067,7 +2122,7 @@ your pull request what level of change it represents i.e.
     bug.
 
 
-<a id="org5eed057"></a>
+<a id="org6d7cd48"></a>
 
 # Contributors
 

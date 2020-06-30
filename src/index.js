@@ -1002,7 +1002,7 @@ class SftpClient {
    *
    * Rename a file on the remote SFTP repository
    *
-   * @param {string} fromPath - path to the file to be renamced.
+   * @param {string} fromPath - path to the file to be renamed.
    * @param {string} toPath - path to the new name.
    *
    * @return {Promise}
@@ -1070,6 +1070,75 @@ class SftpClient {
       return _rename(fromInfo.path, toInfo.path);
     } catch (err) {
       throw utils.formatError(err, 'rename');
+    }
+  }
+
+  /**
+   * @async
+   *
+   * Rename a file on the remote SFTP repository using the SSH extension
+   * posix-rename@openssh.com using POSIX atomic rename. (Introduced in SSH 4.8)
+   *
+   * @param {string} fromPath - path to the file to be renamed.
+   * @param {string} toPath - path to the new name.
+   *
+   * @return {Promise}
+   *
+   */
+  async posixRename(fromPath, toPath) {
+    const _posixRename = (from, to) => {
+      return new Promise((resolve, reject) => {
+        this.debugMsg(`posixRename -> ${from} ${to}`);
+        let closeListener = utils.makeCloseListener(this, reject, 'posixRename');
+        this.client.prependListener('close', closeListener);
+        let errorListener = utils.makeErrorListener(reject, this, 'posixRename');
+        this.client.prependListener('error', errorListener);
+        this.sftp.ext_openssh_rename(from, to, (err) => {
+          if (err) {
+            this.debugMsg(`posixRename error ${err.message} code: ${err.code}`);
+            reject(
+              utils.formatError(
+                `${err.message} From: ${from} To: ${to}`,
+                '_posixRename'
+              )
+            );
+          }
+          resolve(`Successful POSIX rename ${from} to ${to}`);
+          this.removeListener('error', errorListener);
+          this.removeListener('close', closeListener);
+        });
+      });
+    };
+
+    try {
+      utils.haveConnection(this, 'posixRename');
+      let fromInfo = await utils.checkRemotePath(
+        this,
+        fromPath,
+        targetType.readObj
+      );
+      this.debugMsg('posixRename from path info ', fromInfo);
+      if (!fromInfo.valid) {
+        let e = utils.formatError(fromInfo.msg, 'posixRename', fromInfo.code);
+        throw e;
+      }
+      let toInfo = await utils.checkRemotePath(
+        this,
+        toPath,
+        targetType.writeObj
+      );
+      this.debugMsg('posixRename to path info ', toInfo);
+      if (!toInfo.valid) {
+        let e = utils.formatError(
+          toInfo.parentMsg,
+          'posixRename',
+          toInfo.parentCode
+        );
+        throw e;
+      }
+      return _posixRename(fromInfo.path, toInfo.path);
+    } catch (err) {
+      throw utils.formatError(err, 'posixRename');
     }
   }
 
