@@ -191,11 +191,14 @@ reset to false in preparation for the next error.
      regular files are uploaded (no symbolic links, FIFOs, socket FDs etc). Will
      overwrite existing files or directories, but will not delete any remote
      files or directories.
-   - Added the method downloadDir(). this method will download a directory
+   - Added the method downloadDir(). This method will download a directory
      (including any subdirectories) to the local file system. Only directories
      and regular files are downloaded (no symbolic links, FIFOs, socket FDs
      etc).. Will overwrite existing files or directories, but will not delete
      any local files in the directories.
+   - Added the method posixRename(). This method will use the POSIX atomic
+     rename openSSH extension. As this is an extension to the SFTP protocol, not
+     all servers will support this operation.
 
 ** Version 5.0.1
 
@@ -249,6 +252,8 @@ reset to false in preparation for the next error.
 ** Version 5.2.0
    - Add posixRename() method. This is an openssh extension added in openssh
      v4.8 and will only work on servers which support this extension.conflict
+   - Bumped through2 dependency version to 4.0.2
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
