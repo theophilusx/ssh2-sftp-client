@@ -1,6 +1,6 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
@@ -22,10 +22,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "concat-stream": "^2.0.0",
-    "mocha": "^8.0.1",
     "retry": "^0.12.0",
-    "ssh2": "^0.8.9",
-    "through2": "^4.0.2"
+    "ssh2": "^0.8.9"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -33,6 +31,8 @@
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
     "dotenv": "^8.2.0",
-    "moment": "^2.27.0"
+    "moment": "^2.27.0",
+    "mocha": "^8.0.1",
+    "through2": "^4.0.2"
   }
 }
