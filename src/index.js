@@ -245,7 +245,7 @@ class SftpClient {
         this.sftp.stat(aPath, (err, stats) => {
           if (err) {
             this.debugMsg(`stat error ${err.message} code: ${err.code}`);
-            if (err.code === 2) {
+            if (err.code === 2 || err.code === 4) {
               reject(
                 utils.formatError(
                   `No such file: ${remotePath}`,
