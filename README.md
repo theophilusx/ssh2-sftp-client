@@ -760,6 +760,8 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
 -   **path:** string. Path to remote directory
 -   **recursive:** boolean. If true, remove all files and directories in target directory. Defaults to false
 
+**Note**: There has been at least one report that some SFTP servers will allow non-empty directories to be removed even without the recursive flag being set to true. While this is not standard behaviour, it is recommended that users verify the behaviour of rmdir if there are plans to rely on the recursive flag to prevent removal of non-empty directories.
+
 1.  Example Use
 
     ```javascript
