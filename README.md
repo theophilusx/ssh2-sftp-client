@@ -14,6 +14,7 @@
   - [Version 5.1.3](#sec-4-8)
   - [Version 5.2.0](#sec-4-9)
   - [Version 5.2.1](#sec-4-10)
+  - [Version 5.2.2](#sec-4-11)
 - [Documentation](#sec-5)
   - [Specifying Paths](#sec-5-1)
   - [Methods](#sec-5-2)
@@ -47,41 +48,42 @@
   - [Timeout while waiting for handshake or handshake errors](#sec-6-5)
 - [Examples](#sec-7)
 - [Change Log](#sec-8)
-  - [v5.2.1 (Prod Version)](#sec-8-1)
-  - [v5.2.0](#sec-8-2)
-  - [v5.1.3](#sec-8-3)
-  - [v5.1.2](#sec-8-4)
-  - [v5.1.1](#sec-8-5)
-  - [v5.1.0](#sec-8-6)
-  - [v5.0.2](#sec-8-7)
-  - [v5.0.1](#sec-8-8)
-  - [v5.0.0](#sec-8-9)
-  - [v4.3.1](#sec-8-10)
-  - [v4.3.0](#sec-8-11)
-  - [v4.2.4](#sec-8-12)
-  - [v4.2.3](#sec-8-13)
-  - [v4.2.2](#sec-8-14)
-  - [v4.2.1](#sec-8-15)
-  - [v4.2.0](#sec-8-16)
-  - [v4.1.0](#sec-8-17)
-  - [v4.0.4](#sec-8-18)
-  - [v4.0.3](#sec-8-19)
-  - [v4.0.2](#sec-8-20)
-  - [v4.0.0](#sec-8-21)
-  - [Older Versions](#sec-8-22)
-    - [v2.5.2](#sec-8-22-1)
-    - [v2.5.1](#sec-8-22-2)
-    - [v2.5.0](#sec-8-22-3)
-    - [v2.4.3](#sec-8-22-4)
-    - [v2.4.2](#sec-8-22-5)
-    - [v2.4.1](#sec-8-22-6)
-    - [v2.4.0](#sec-8-22-7)
-    - [v2.3.0](#sec-8-22-8)
-    - [v3.0.0 &#x2013; deprecate this version](#sec-8-22-9)
-    - [v2.1.1](#sec-8-22-10)
-    - [v2.0.1](#sec-8-22-11)
-    - [v1.1.0](#sec-8-22-12)
-    - [v1.0.5:](#sec-8-22-13)
+  - [v5.2.2 (Prod Version)](#sec-8-1)
+  - [v5.2.1](#sec-8-2)
+  - [v5.2.0](#sec-8-3)
+  - [v5.1.3](#sec-8-4)
+  - [v5.1.2](#sec-8-5)
+  - [v5.1.1](#sec-8-6)
+  - [v5.1.0](#sec-8-7)
+  - [v5.0.2](#sec-8-8)
+  - [v5.0.1](#sec-8-9)
+  - [v5.0.0](#sec-8-10)
+  - [v4.3.1](#sec-8-11)
+  - [v4.3.0](#sec-8-12)
+  - [v4.2.4](#sec-8-13)
+  - [v4.2.3](#sec-8-14)
+  - [v4.2.2](#sec-8-15)
+  - [v4.2.1](#sec-8-16)
+  - [v4.2.0](#sec-8-17)
+  - [v4.1.0](#sec-8-18)
+  - [v4.0.4](#sec-8-19)
+  - [v4.0.3](#sec-8-20)
+  - [v4.0.2](#sec-8-21)
+  - [v4.0.0](#sec-8-22)
+  - [Older Versions](#sec-8-23)
+    - [v2.5.2](#sec-8-23-1)
+    - [v2.5.1](#sec-8-23-2)
+    - [v2.5.0](#sec-8-23-3)
+    - [v2.4.3](#sec-8-23-4)
+    - [v2.4.2](#sec-8-23-5)
+    - [v2.4.1](#sec-8-23-6)
+    - [v2.4.0](#sec-8-23-7)
+    - [v2.3.0](#sec-8-23-8)
+    - [v3.0.0 &#x2013; deprecate this version](#sec-8-23-9)
+    - [v2.1.1](#sec-8-23-10)
+    - [v2.0.1](#sec-8-23-11)
+    - [v1.1.0](#sec-8-23-12)
+    - [v1.0.5:](#sec-8-23-13)
 - [Troubleshooting](#sec-9)
   - [Common Errors](#sec-9-1)
     - [Not returning the promise in a `then()` block](#sec-9-1-1)
@@ -104,7 +106,9 @@ Code has been tested against Node versions 12.18.2 and 13.14.0
 
 Node versions < 10.x are not supported.
 
-<span class="underline">WARNING</span> There is currently an issue with both the fastPut() and fastGet() methods when using Node versions greater than 14.0.0. This is a bug in the underlying ssh2-streams library and needs to be fixed upstream. The issue appears to be related to the concurrency operations of these two functions. A workaround is to set concurrency to 1 using the options object. Alternatively, use get() or put(), which do not use concurrency and which will provide the same performance as fastGet() or fastPut() when they are set to use a concurrency of 1. A bug report has been logged against the ssh2-streams library as [issue 156](https://github.com/mscdex/ssh2-streams/issues/156).
+<span class="underline">WARNING</span> There is currently a regression error with versions of node later than version 14.0. It appears that when using streams with chunk sizes which exceed the high water mark for the stream, a drain event is no longer emitted. As a result, streams with sufficient data will hang indefinitely. This appears to affect fastput, fastget, put and possibly get operations. Until this issue is resolved and a new version of ssh2/ssh2-streams is released, using node v14 is not recommended.
+
+A bug report hass been logged against the ssh2-streams library as [issue 156](https://github.com/mscdex/ssh2-streams/issues/156).
 
 # Installation<a id="sec-2"></a>
 
@@ -221,6 +225,10 @@ In addition to the Promise error handlers, there is a default error handler whic
 ## Version 5.2.1<a id="sec-4-10"></a>
 
 -   Move some dev dependencies from dependencies to devDependencies.
+
+## Version 5.2.2<a id="sec-4-11"></a>
+
+-   Bug fix. Some servers appear to issue errors with code 4 instead of code 2 for file not found errors. This version adds checks for error code 4 to the stat() method. Thanks to teenangst for the fix.
 
 # Documentation<a id="sec-5"></a>
 
@@ -1172,48 +1180,53 @@ I have started collecting example scripts in the example directory of the reposi
 
 # Change Log<a id="sec-8"></a>
 
-## v5.2.1 (Prod Version)<a id="sec-8-1"></a>
+## v5.2.2 (Prod Version)<a id="sec-8-1"></a>
+
+-   Bug fix release. Add error code 4 check to stat() method.
+-   bump Mocha version for tests
+
+## v5.2.1<a id="sec-8-2"></a>
 
 -   Move some dependencies into dev-Dependencies
 
-## v5.2.0<a id="sec-8-2"></a>
+## v5.2.0<a id="sec-8-3"></a>
 
 -   Add new method posixRename() which uses the openSSH POSIX rename extension.
 
-## v5.1.3<a id="sec-8-3"></a>
+## v5.1.3<a id="sec-8-4"></a>
 
 -   Fix bug when writing to root directory and failure due to not being able to determine parent
 -   Refactor some tests to eliminate need to have artificial delays between tests
 -   Bumped some dependency versions to latest version
 
-## v5.1.2<a id="sec-8-4"></a>
+## v5.1.2<a id="sec-8-5"></a>
 
 -   Added back global close handler
 -   Added dumpListeners() method
 
-## v5.1.1<a id="sec-8-5"></a>
+## v5.1.1<a id="sec-8-6"></a>
 
 -   Added separate close handlers to each method.
 -   Added missing return statement in connect method
 -   Added additional troubleshooting documentation for common errors.
 
-## v5.1.0<a id="sec-8-6"></a>
+## v5.1.0<a id="sec-8-7"></a>
 
 -   Fix bug in checkRemotePath() relating to handling of badly specified paths (issue #213)
 -   Added additional debugging support
 -   Add missing test for valid connection in end() method.
 -   Bump ssh2 version to v0.8.8
 
-## v5.0.2<a id="sec-8-7"></a>
+## v5.0.2<a id="sec-8-8"></a>
 
 -   Fix bugs related to win32 platform and local tests for valid directories
 -   Fix problem with parsing of file paths
 
-## v5.0.1<a id="sec-8-8"></a>
+## v5.0.1<a id="sec-8-9"></a>
 
 -   Turn down error checking to be less stringent and handle situations where user does not have read permission on parent directory.
 
-## v5.0.0<a id="sec-8-9"></a>
+## v5.0.0<a id="sec-8-10"></a>
 
 -   Added two new methods `uploadDir()` and `downloadDir()`
 -   Removed deprecated `auxList()` method
@@ -1224,47 +1237,47 @@ I have started collecting example scripts in the example directory of the reposi
 -   Module error handlers added using `prependListener` to ensure they are called before any additional custom handlers added by client code.
 -   Any error events fired during an `end()` call are now ignored.
 
-## v4.3.1<a id="sec-8-10"></a>
+## v4.3.1<a id="sec-8-11"></a>
 
 -   Updated end() method to resolve once close event fires
 -   Added errorListener to error event in each promise to catch error events and reject the promise. This should resolve the issue of some error events causing uncaughtException erros and causing the process to exit.
 
-## v4.3.0<a id="sec-8-11"></a>
+## v4.3.0<a id="sec-8-12"></a>
 
 -   Ensure errors include an err.code property and pass through the error code from the originating error
 -   Change tests for error type to use `error.code` instead of matching on `error.message`.
 
-## v4.2.4<a id="sec-8-12"></a>
+## v4.2.4<a id="sec-8-13"></a>
 
 -   Bumped ssh2 to v0.8.6
 -   Added exists() usage example to examples directory
 -   Clarify documentation on get() method
 
-## v4.2.3<a id="sec-8-13"></a>
+## v4.2.3<a id="sec-8-14"></a>
 
 -   Fix bug in `exist()` where tests on root directory returned false
 -   Minor documentation fixes
 -   Clean up mkdir example
 
-## v4.2.2<a id="sec-8-14"></a>
+## v4.2.2<a id="sec-8-15"></a>
 
 -   Minor documentation fixes
 -   Added additional examples in the `example` directory
 
-## v4.2.1<a id="sec-8-15"></a>
+## v4.2.1<a id="sec-8-16"></a>
 
 -   Remove default close listener. changes in ssh2 API removed the utility of a default close listener
 -   Fix path handling. Under mixed environments (where client platform and server platform were different i.e. one windows the other unix), path handling was broken due tot he use of path.join().
 -   Ensure error messages include path details. Instead of errors such as "No such file" now report "No such file /path/to/missing/file" to help with debugging
 
-## v4.2.0<a id="sec-8-16"></a>
+## v4.2.0<a id="sec-8-17"></a>
 
 -   Work-around for SSH2 `end` event bug
 -   Added ability to set client name in constructor method
 -   Added additional error checking to prevent `connect()` being called on already connected client
 -   Added additional examples in `example` directory
 
-## v4.1.0<a id="sec-8-17"></a>
+## v4.1.0<a id="sec-8-18"></a>
 
 -   move `end()` call to resolve into close hook
 -   Prevent `put()` and `get()` from creating empty files in destination when unable to read source
@@ -1277,21 +1290,21 @@ I have started collecting example scripts in the example directory of the reposi
 -   Add `realPath()` method
 -   Add `cwd()` method
 
-## v4.0.4<a id="sec-8-18"></a>
+## v4.0.4<a id="sec-8-19"></a>
 
 -   Minor documentation fix
 -   Fix return value from `get()`
 
-## v4.0.3<a id="sec-8-19"></a>
+## v4.0.3<a id="sec-8-20"></a>
 
 -   Fix bug in mkdir() relating to handling of relative paths
 -   Modify exists() to always return 'd' if path is '.'
 
-## v4.0.2<a id="sec-8-20"></a>
+## v4.0.2<a id="sec-8-21"></a>
 
 -   Fix some minor packaging issues
 
-## v4.0.0<a id="sec-8-21"></a>
+## v4.0.0<a id="sec-8-22"></a>
 
 -   Remove support for node < 8.x
 -   Fix connection retry feature
@@ -1303,37 +1316,37 @@ I have started collecting example scripts in the example directory of the reposi
 -   Removed pointless 'permissions' property from objects returned by `stat()` (same as mode property). Added additional properties describing the type of object.
 -   Added the `removeListener()` method to compliment the existing `on()` method.
 
-## Older Versions<a id="sec-8-22"></a>
+## Older Versions<a id="sec-8-23"></a>
 
-### v2.5.2<a id="sec-8-22-1"></a>
+### v2.5.2<a id="sec-8-23-1"></a>
 
 -   Repository transferred to theophilusx
 -   Fix error in package.json pointing to wrong repository
 
-### v2.5.1<a id="sec-8-22-2"></a>
+### v2.5.1<a id="sec-8-23-2"></a>
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
-### v2.5.0<a id="sec-8-22-3"></a>
+### v2.5.0<a id="sec-8-23-3"></a>
 
 -   ???
 
-### v2.4.3<a id="sec-8-22-4"></a>
+### v2.4.3<a id="sec-8-23-4"></a>
 
 -   merge #108, #110
     -   fix connect promise if connection ends
 
-### v2.4.2<a id="sec-8-22-5"></a>
+### v2.4.2<a id="sec-8-23-5"></a>
 
 -   merge #105
     -   fix windows path
 
-### v2.4.1<a id="sec-8-22-6"></a>
+### v2.4.1<a id="sec-8-23-6"></a>
 
 -   merge pr #99, #100
     -   bug fix
 
-### v2.4.0<a id="sec-8-22-7"></a>
+### v2.4.0<a id="sec-8-23-7"></a>
 
 -   Requires node.js v7.5.0 or above.
 -   merge pr #97, thanks for @theophilusx
@@ -1343,34 +1356,34 @@ I have started collecting example scripts in the example directory of the reposi
     -   re-factored test
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
-### v2.3.0<a id="sec-8-22-8"></a>
+### v2.3.0<a id="sec-8-23-8"></a>
 
 -   add: `stat` method
 -   add `fastGet` and `fastPut` method.
 -   fix: `mkdir` file exists decision logic
 
-### v3.0.0 &#x2013; deprecate this version<a id="sec-8-22-9"></a>
+### v3.0.0 &#x2013; deprecate this version<a id="sec-8-23-9"></a>
 
 -   change: `sftp.get` will return chunk not stream anymore
 -   fix: get readable not emitting data events in node 10.0.0
 
-### v2.1.1<a id="sec-8-22-10"></a>
+### v2.1.1<a id="sec-8-23-10"></a>
 
 -   add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
 -   add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
 
-### v2.0.1<a id="sec-8-22-11"></a>
+### v2.0.1<a id="sec-8-23-11"></a>
 
 -   add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
 -   update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
 -   fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
 -   fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
 
-### v1.1.0<a id="sec-8-22-12"></a>
+### v1.1.0<a id="sec-8-23-12"></a>
 
 -   fix: add encoding control support for binary stream
 
-### v1.0.5:<a id="sec-8-22-13"></a>
+### v1.0.5:<a id="sec-8-23-13"></a>
 
 -   fix: multi image upload
 -   change: remove `this.client.sftp` to `connect` function
@@ -1544,3 +1557,4 @@ Thanks to the following for their contributions -
 -   **waldyrious:** Documentation fixes
 -   **james-pellow:** Cleanup and fix for connect method logic
 -   **jhorbulyk:** Contributed posixRename() functionality
+-   **teenangst:** Contributed fix for error code 4 in stat() method
