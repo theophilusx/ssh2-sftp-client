@@ -12,14 +12,15 @@ Code has been tested against Node versions 12.18.2 and 13.14.0
 
 Node versions < 10.x are not supported.
 
-_WARNING_ There is currently an issue with both the fastPut() and fastGet()
-methods when using Node versions greater than 14.0.0. This is a bug in the
-underlying ssh2-streams library and needs to be fixed upstream. The issue
-appears to be related to the concurrency operations of these two functions. A
-workaround is to set concurrency to 1 using the options object. Alternatively,
-use get() or put(), which do not use concurrency and which will provide the same
-performance as fastGet() or fastPut() when they are set to use a concurrency
-of 1. A bug report has been logged against the ssh2-streams library as [[https://github.com/mscdex/ssh2-streams/issues/156][issue 156]].  
+_WARNING_ There is currently a regression error with versions of node later than
+version 14.0. It appears that when using streams with chunk sizes which exceed
+the high water mark for the stream, a drain event is no longer emitted. As a
+result, streams with sufficient data will hang indefinitely. This appears to
+affect fastput, fastget, put and possibly get operations. Until this issue is
+resolved and a new version of ssh2/ssh2-streams is released, using node v14 is
+not recommended.
+
+A bug report hass been logged against the ssh2-streams library as [[https://github.com/mscdex/ssh2-streams/issues/156][issue 156]].  
 
 * Installation
 
@@ -256,6 +257,11 @@ reset to false in preparation for the next error.
 
 ** Version 5.2.1
    - Move some dev dependencies from dependencies to devDependencies. 
+** Version 5.2.2
+   - Bug fix. Some servers appear to issue errors with code 4 instead of code 2
+     for file not found errors. This version adds checks for error code 4 to the
+     stat() method. Thanks to teenangst for the fix.
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1370,7 +1376,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.2.1 (Prod Version)
+** v5.2.2 (Prod Version)
+   - Bug fix release. Add error code 4 check to stat() method.
+   - bump Mocha version for tests
+
+** v5.2.1
    - Move some dependencies into dev-Dependencies
 ** v5.2.0 
    - Add new method posixRename() which uses the openSSH POSIX rename extension. 
@@ -1830,4 +1840,5 @@ Thanks to the following for their contributions -
 - henrytk :: Documentation fix
 - waldyrious :: Documentation fixes
 - james-pellow :: Cleanup and fix for connect method logic
-- jhorbulyk :: Contributed posixRename() functionality 
+- jhorbulyk :: Contributed posixRename() functionality
+- teenangst :: Contributed fix for error code 4 in stat() method
