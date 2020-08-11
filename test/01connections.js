@@ -15,19 +15,19 @@ const Client = require('../src/index.js');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('Connect Tests', function() {
+describe('Connect Tests', function () {
   let host = process.env.SFTP_SERVER;
   let port = process.env.SFTP_PORT;
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
-  beforeEach(function(done) {
-    setTimeout(function() {
+  beforeEach(function (done) {
+    setTimeout(function () {
       done();
     }, 1000);
   });
 
-  it('connect should return a promise', function() {
+  it('connect should return a promise', function () {
     let client = new Client();
     return expect(
       client
@@ -44,7 +44,7 @@ describe('Connect Tests', function() {
     ).to.be.a('promise');
   });
 
-  it('valid connection', async function() {
+  it('valid connection', async function () {
     let client = new Client();
     await client.connect({
       host: host,
@@ -58,7 +58,7 @@ describe('Connect Tests', function() {
     return expect(type).to.equal('object');
   });
 
-  it('bad host throws exception', function() {
+  it('bad host throws exception', function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -73,7 +73,7 @@ describe('Connect Tests', function() {
     );
   });
 
-  it('bad port throws exception', function() {
+  it('bad port throws exception', function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -88,7 +88,7 @@ describe('Connect Tests', function() {
     );
   });
 
-  it('bad username throws exception', function() {
+  it('bad username throws exception', function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -99,11 +99,11 @@ describe('Connect Tests', function() {
         retries: 1
       })
     ).to.be.rejectedWith(
-      /All configured authentication methods failed|Timed out while waiting for handshake/
+      /All configured authentication methods failed|Timed out while waiting for handshake|connect: connect EHOSTUNREACH/
     );
   });
 
-  it('bad password throws exception', function() {
+  it('bad password throws exception', function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -119,13 +119,13 @@ describe('Connect Tests', function() {
   });
 });
 
-describe('Connect and disconnect', function() {
+describe('Connect and disconnect', function () {
   let host = process.env.SFTP_SERVER;
   let port = process.env.SFTP_PORT;
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
-  it('connect and disconnect returns true', function() {
+  it('connect and disconnect returns true', function () {
     let client = new Client();
     return expect(
       client
@@ -142,7 +142,7 @@ describe('Connect and disconnect', function() {
     ).to.eventually.equal(true);
   });
 
-  it('Connect when connected rejected', function() {
+  it('Connect when connected rejected', function () {
     let client = new Client();
     return expect(
       client
