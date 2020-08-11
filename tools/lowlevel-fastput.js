@@ -28,8 +28,8 @@ const config = {
 
 const options = {
   mode: 0o777,
-  chunkSize: 32768,
-  concurrency: 64,
+  //chunkSize: 32768,
+  concurrency: 1,
   step: function(total_transferred, chunk, total) {
     console.log(
       `Total Transferred: ${total_transferred} Chunk: ${chunk}` +
