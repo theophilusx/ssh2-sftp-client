@@ -162,14 +162,15 @@ class SftpClient {
                   )
                 );
               } else {
-                if (absPath.startsWith('/')) {
-                  this.remotePathSep = '/';
-                  this.remotePlatform = 'unix';
-                  this.debugMsg('Remote platform unix like');
-                } else {
+                this.debugMsg(`absPath = ${absPath}`);
+                if (absPath.match(/^\/[A-Z]:.*/)) {
                   this.remotePathSep = '\\';
                   this.remotePlatform = 'windows';
                   this.debugMsg('remote platform windows like');
+                } else {
+                  this.remotePathSep = '/';
+                  this.remotePlatform = 'unix';
+                  this.debugMsg('Remote platform unix like');
                 }
                 resolve(sftp);
               }
@@ -1089,9 +1090,17 @@ class SftpClient {
     const _posixRename = (from, to) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`posixRename -> ${from} ${to}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'posixRename');
+        let closeListener = utils.makeCloseListener(
+          this,
+          reject,
+          'posixRename'
+        );
         this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(reject, this, 'posixRename');
+        let errorListener = utils.makeErrorListener(
+          reject,
+          this,
+          'posixRename'
+        );
         this.client.prependListener('error', errorListener);
         this.sftp.ext_openssh_rename(from, to, (err) => {
           if (err) {

@@ -21,13 +21,13 @@ describe('Connect Tests', function () {
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
-  beforeEach(function (done) {
-    setTimeout(function () {
-      done();
-    }, 1000);
-  });
+  // beforeEach(function (done) {
+  //   setTimeout(function () {
+  //     done();
+  //   }, 1000);
+  // });
 
-  it('connect should return a promise', function () {
+  it('connect should return a promise', async function () {
     let client = new Client();
     return expect(
       client
@@ -58,7 +58,7 @@ describe('Connect Tests', function () {
     return expect(type).to.equal('object');
   });
 
-  it('bad host throws exception', function () {
+  it('bad host throws exception', async function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -73,7 +73,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad port throws exception', function () {
+  it('bad port throws exception', async function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -88,7 +88,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad username throws exception', function () {
+  it('bad username throws exception', async function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -103,7 +103,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad password throws exception', function () {
+  it('bad password throws exception', async function () {
     let client = new Client();
     return expect(
       client.connect({
@@ -125,7 +125,7 @@ describe('Connect and disconnect', function () {
   let username = process.env.SFTP_USER;
   let password = process.env.SFTP_PASSWORD;
 
-  it('connect and disconnect returns true', function () {
+  it('connect and disconnect returns true', async function () {
     let client = new Client();
     return expect(
       client
@@ -142,7 +142,7 @@ describe('Connect and disconnect', function () {
     ).to.eventually.equal(true);
   });
 
-  it('Connect when connected rejected', function () {
+  it('Connect when connected rejected', async function () {
     let client = new Client();
     return expect(
       client
