@@ -135,7 +135,13 @@ class SftpClient {
     };
 
     return new Promise((resolve, reject) => {
+      if (config.debug) {
+        this.debug = config.debug;
+        this.debugMsg('Debugging turned on');
+      }
+
       if (this.sftp) {
+        this.debugMsg('Already connected - reject');
         reject(
           utils.formatError(
             'An existing SFTP connection is already defined',
@@ -144,16 +150,15 @@ class SftpClient {
           )
         );
       } else {
-        if (config.debug) {
-          this.debug = config.debug;
-          this.debug('Debugging turned on');
-        }
         retryConnect(config, (err, sftp) => {
           if (err) {
+            this.debugMsg('Connection failed - reject');
             reject(err);
           } else {
+            this.debugMsg('Connected - do stage 2 setup');
             sftp.realpath('.', (err, absPath) => {
               if (err) {
+                this.debugMsg('Failed to get remote path');
                 reject(
                   utils.formatError(
                     `Failed to determine remote server type: ${err.message}`,
@@ -164,7 +169,8 @@ class SftpClient {
               } else {
                 this.debugMsg(`absPath = ${absPath}`);
                 if (absPath.match(/^\/[A-Z]:.*/)) {
-                  this.remotePathSep = '\\';
+                  //this.remotePathSep = '\\';
+                  this.remotePathSep = '/';
                   this.remotePlatform = 'windows';
                   this.debugMsg('remote platform windows like');
                 } else {
@@ -172,6 +178,7 @@ class SftpClient {
                   this.remotePlatform = 'unix';
                   this.debugMsg('Remote platform unix like');
                 }
+                this.debugMsg('Connection and setup completed successfully');
                 resolve(sftp);
               }
             });
@@ -1316,25 +1323,36 @@ class SftpClient {
         // we don't care about errors at this point
         // so do nothiing
         this.debugMsg(
-          `endError called with ${err.message} and code ${err.code}`
+          `endErrorListener called with ${err.message} and code ${err.code}`
         );
         this.errorHandled = true;
         if (err.code !== 'ECONNRESET') {
           reject(utils.formatError(err, 'end'));
+        } else {
+          this.debugMsg('Error is ECONNRESET - ignoring error');
         }
       };
 
       try {
-        this.client.prependListener('error', endErrorListener);
+        if (!utils.hasListener(this.client, 'error', 'endErrorListener')) {
+          this.debugMsg('Adding enderrorListener');
+          this.client.prependListener('error', endErrorListener);
+        } else {
+          this.debugMsg('endErrorListener already set');
+        }
         this.endCalled = true;
         if (utils.haveConnection(this, 'end', reject)) {
+          this.debugMsg('Have connection - calling end()');
           this.client.end();
+        } else {
+          this.debugMsg('No connection - skipping call to end()');
         }
         resolve(true);
       } catch (err) {
         utils.handleError(err, 'end', reject);
       } finally {
         this.sftp = undefined;
+        this.endCalled = false;
         // Appears that windows based sftp servers generate a ECONNRESET
         // signal even when normal end() is called. Unfortunately, there is
         // significant delay after end() has run before this signal is raised.
@@ -1344,7 +1362,6 @@ class SftpClient {
         // added and eventually warnings about possible memory leaks. For now
         // leaving the listener in place.
         //this.removeListener('error', endErrorListener);
-        this.endCalled = false;
         //utils.dumpListeners(this.client);
       }
     });
