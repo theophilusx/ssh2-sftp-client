@@ -41,8 +41,9 @@
     - [end() ==> boolean](#sec-5-2-21)
     - [Add and Remove Listeners](#sec-5-2-22)
 - [Platform Quirks & Warnings](#sec-6)
-  - [Windows Based Servers](#sec-6-1)
-  - [Don't Re-use SftpClient Objects](#sec-6-2)
+  - [Promises & Events](#sec-6-1)
+  - [Windows Based Servers](#sec-6-2)
+  - [Don't Re-use SftpClient Objects](#sec-6-3)
 - [FAQ](#sec-7)
   - [Remote server drops connections with only an end event](#sec-7-1)
   - [How can you pass writable stream as dst for get method?](#sec-7-2)
@@ -1046,13 +1047,25 @@ Although normally not required, you can add and remove custom listeners on the s
 
 # Platform Quirks & Warnings<a id="sec-6"></a>
 
-## Windows Based Servers<a id="sec-6-1"></a>
+## Promises & Events<a id="sec-6-1"></a>
+
+The reality of the current Node environment is that Promises and Events don't play nicely together. Part of the problem is that events are asynchronous in nature and can occur at any time. It is very difficult to ensure an event is captured inside a Promise and handled appropriately. More information can be found in the Node documentation for Events.
+
+Node v12 has introduced some experimental features to make working with Events and Promises a little easier. At this stage, we are not using these features because they are experimental and because it would mean you cannot use this module with Node v10. Use of these features will likely be examined more closely once they become stable and non-experimental.
+
+So, what does this mean for this module? The `ssh2-sftp-client` module works hard to ensure things work as expected. In most cases, events are handled appropriately. However, there are some edge cases where events may not be handled and you may see an uncaught error exception. The most common place to see this is when you keep an SFTP connection open, but don't use it for some time. When the connection is open, but no methods are active (running), there are no error handlers defined. Should an error event be emitted (for exmaple, because the network connection has been lost), there is no handler and you will get an uncaught error exception.
+
+One way to handle this is to add your own error handler using the on() method. Note however, you need to be careful how many times your error handler is added. If you begin to see a warning about a possible memory leak, it is an indication your error handler is being added multiple times (Node will generate this warning if it finds more than 11 listeners attached to an event emitter).
+
+The other issue that can occur is that in some rare cases, the error message you get will be potentially misleading. For example, SFTP servers running on Windows appear to emit an *ECONNRESET* error in addition to the main error (for example, for failed authentication). This can result in an error which looks like a connection was reset by the remote host when in fact the real error was due to bad authentication (bad password or bad username). This situation can be made even worse by some platforms which deliberately hide the real error for security reasons e.g. does not report an error indicating a bad username because that information can be used to try and identify legitimate usernames. While this module attempts to provide meaningful error messages which can assist developers track down problems, it is a good idea to consider these errors with a grain of salt and verify the error when possible.
+
+## Windows Based Servers<a id="sec-6-2"></a>
 
 It appears that when the sftp server is running on Windows, a *ECONNRESET* error signal is raised when the end() method is called. Unfortunately, this signal is raised after a considerable delay. This means we cannot remove the error handler used in the end() promise as otherwise you will get an uncaught exception error. Leaving the handler in place, even though we will ignore this error, solves that issue, but unfortunately introduces a new problem. Because we are not removing the listener, if you re-use the client object for subsequent connections, an additional error handler will be added. If this happens more than 11 times, you will eventually see the Node warning about a possible memory leak. This is because node monitors the number of error handlers and if it sees more than 11 added to an object, it assumes there is a problem and generates the warning.
 
 The best way to avoid this issue is to not re-use client objects. Always generate a new sftp client object for each new connection.
 
-## Don't Re-use SftpClient Objects<a id="sec-6-2"></a>
+## Don't Re-use SftpClient Objects<a id="sec-6-3"></a>
 
 Due to an issue with *ECONNRESET* error signals when connecting to Windows based SFTP servers, it is not possible to remove the error handler in the end() method. This means that if you re-use the SftpClient object for multiple connections e.g. calling connect(), then end(), then connect() etc, you run the risk of multiple error handlers being added to the SftpClient object. After 11 handlers have been added, Node will generate a possible memory leak warning.
 
