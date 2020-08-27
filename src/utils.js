@@ -644,9 +644,25 @@ function dumpListeners(emitter) {
   if (eventNames.length) {
     console.log('Listener Data');
     eventNames.map((n) => {
+      let listeners = emitter.listeners(n);
       console.log(`${n}: ${emitter.listenerCount(n)}`);
+      console.dir(listeners);
+      listeners.map((l) => {
+        console.log(`listener name = ${l.name}`);
+      });
     });
   }
+}
+
+function hasListener(emitter, eventName, listenerName) {
+  let listeners = emitter.listeners(eventName);
+  let matches = listeners.filter((l) => l.name == listenerName);
+  if (matches.length) {
+    console.error('hasListener found');
+    return true;
+  }
+  console.error('hasListener not found');
+  return false;
 }
 
 module.exports = {
@@ -661,5 +677,6 @@ module.exports = {
   normalizeRemotePath,
   checkRemotePath,
   haveConnection,
-  dumpListeners
+  dumpListeners,
+  hasListener
 };
