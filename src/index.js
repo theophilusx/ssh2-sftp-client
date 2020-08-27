@@ -73,6 +73,7 @@ class SftpClient {
    *
    */
   connect(config) {
+    let connectErrorListener, onceReady;
     let operation = retry.operation({
       retries: config.retries || 1,
       factor: config.retry_factor || 2,
@@ -82,8 +83,8 @@ class SftpClient {
     const retryConnect = (config, callback) => {
       try {
         operation.attempt((attemptCount) => {
-          const connectErrorListener = (err) => {
-            this.client.removeListener('ready', onceReady);
+          connectErrorListener = (err) => {
+            //this.client.removeListener('ready', onceReady);
             if (operation.retry(err)) {
               // failed to connect, but not yet reached max attempt count
               // remove the listeners and try again
@@ -100,9 +101,9 @@ class SftpClient {
             );
           };
 
-          const onceReady = () => {
+          onceReady = () => {
             this.client.sftp((err, sftp) => {
-              this.client.removeListener('error', connectErrorListener);
+              //this.client.removeListener('error', connectErrorListener);
               if (err) {
                 if (operation.retry(err)) {
                   // failed to connect, but not yet reached max attempt count
@@ -123,10 +124,19 @@ class SftpClient {
             });
           };
 
-          this.client
-            .once('ready', onceReady)
-            .once('error', connectErrorListener)
-            .connect(config);
+          if (!utils.hasListener(this.client, 'ready', 'onceReady')) {
+            this.client.on('ready', onceReady);
+          }
+          if (
+            !utils.hasListener(this.client, 'error', 'connectErrorListener')
+          ) {
+            this.client.on('error', connectErrorListener);
+          }
+          this.client.connect(config);
+          // this.client
+          //   .once('ready', onceReady)
+          //   .once('error', connectErrorListener)
+          //   .connect(config);
         });
       } catch (err) {
         utils.removeListeners(this.client);
@@ -181,8 +191,10 @@ class SftpClient {
                 this.debugMsg('Connection and setup completed successfully');
                 resolve(sftp);
               }
+              this.client.removeListener('error', connectErrorListener);
             });
           }
+          this.client.removeListener('ready', onceReady);
         });
       }
     });
