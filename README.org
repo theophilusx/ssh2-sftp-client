@@ -1200,6 +1200,42 @@ type, which will be true when the client connection was closed due to errors.
 Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object.
 
+* Platform Quirks & Warnings
+
+** Windows Based Servers
+
+   It appears that when the sftp server is running on Windows, a /ECONNRESET/
+   error signal is raised when the end() method is called. Unfortunately, this
+   signal is raised after a considerable delay. This means we cannot remove the
+   error handler used in the end() promise as otherwise you will get an uncaught
+   exception error. Leaving the handler in place, even though we will ignore
+   this error, solves that issue, but unfortunately introduces a new problem.
+   Because we are not removing the listener, if you re-use the client object for
+   subsequent connections, an additional error handler will be added. If this
+   happens more than 11 times, you will eventually see the Node warning about a
+   possible memory leak. This is because node monitors the number of error
+   handlers and if it sees more than 11 added to an object, it assumes there is
+   a problem and generates the warning.
+
+   The best way to avoid this issue is to not re-use client objects. Always
+   generate a new sftp client object for each new connection.
+
+** Don't Re-use SftpClient Objects
+
+   Due to an issue with /ECONNRESET/ error signals when connecting to Windows
+   based SFTP servers, it is not possible to remove the error handler in the
+   end() method. This means that if you re-use the SftpClient object for
+   multiple connections e.g. calling connect(), then end(), then connect() etc,
+   you run the risk of multiple error handlers being added to the SftpClient
+   object. After 11 handlers have been added, Node will generate a possible
+   memory leak warning.
+
+   To avoid this problem, don't re-use SftpClient objects. Generate a new
+   SftpClient object for each connection. You can perform multiple actions with
+   a single connection e.g. upload multiple files, download multiple files etc,
+   but after you have called end(), you should not try to re-use the object with
+   a further connect() call. Create a new object instead.
+   
 * FAQ
 
 ** Remote server drops connections with only an end event

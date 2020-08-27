@@ -40,59 +40,62 @@
     - [downloadDir(srcDir, dstDir) ==> string](#sec-5-2-20)
     - [end() ==> boolean](#sec-5-2-21)
     - [Add and Remove Listeners](#sec-5-2-22)
-- [FAQ](#sec-6)
-  - [Remote server drops connections with only an end event](#sec-6-1)
-  - [How can you pass writable stream as dst for get method?](#sec-6-2)
-  - [How can I upload files without having to specify a password?](#sec-6-3)
-  - [How can I connect through a Socks Proxy](#sec-6-4)
-  - [Timeout while waiting for handshake or handshake errors](#sec-6-5)
-- [Examples](#sec-7)
-- [Change Log](#sec-8)
-  - [v5.2.2 (Prod Version)](#sec-8-1)
-  - [v5.2.1](#sec-8-2)
-  - [v5.2.0](#sec-8-3)
-  - [v5.1.3](#sec-8-4)
-  - [v5.1.2](#sec-8-5)
-  - [v5.1.1](#sec-8-6)
-  - [v5.1.0](#sec-8-7)
-  - [v5.0.2](#sec-8-8)
-  - [v5.0.1](#sec-8-9)
-  - [v5.0.0](#sec-8-10)
-  - [v4.3.1](#sec-8-11)
-  - [v4.3.0](#sec-8-12)
-  - [v4.2.4](#sec-8-13)
-  - [v4.2.3](#sec-8-14)
-  - [v4.2.2](#sec-8-15)
-  - [v4.2.1](#sec-8-16)
-  - [v4.2.0](#sec-8-17)
-  - [v4.1.0](#sec-8-18)
-  - [v4.0.4](#sec-8-19)
-  - [v4.0.3](#sec-8-20)
-  - [v4.0.2](#sec-8-21)
-  - [v4.0.0](#sec-8-22)
-  - [Older Versions](#sec-8-23)
-    - [v2.5.2](#sec-8-23-1)
-    - [v2.5.1](#sec-8-23-2)
-    - [v2.5.0](#sec-8-23-3)
-    - [v2.4.3](#sec-8-23-4)
-    - [v2.4.2](#sec-8-23-5)
-    - [v2.4.1](#sec-8-23-6)
-    - [v2.4.0](#sec-8-23-7)
-    - [v2.3.0](#sec-8-23-8)
-    - [v3.0.0 &#x2013; deprecate this version](#sec-8-23-9)
-    - [v2.1.1](#sec-8-23-10)
-    - [v2.0.1](#sec-8-23-11)
-    - [v1.1.0](#sec-8-23-12)
-    - [v1.0.5:](#sec-8-23-13)
-- [Troubleshooting](#sec-9)
-  - [Common Errors](#sec-9-1)
-    - [Not returning the promise in a `then()` block](#sec-9-1-1)
-    - [Mixing Promise Chains and Async/Await](#sec-9-1-2)
-    - [Try/catch and Error Handlers](#sec-9-1-3)
-  - [Debugging Support](#sec-9-2)
-- [Logging Issues](#sec-10)
-- [Pull Requests](#sec-11)
-- [Contributors](#sec-12)
+- [Platform Quirks & Warnings](#sec-6)
+  - [Windows Based Servers](#sec-6-1)
+  - [Don't Re-use SftpClient Objects](#sec-6-2)
+- [FAQ](#sec-7)
+  - [Remote server drops connections with only an end event](#sec-7-1)
+  - [How can you pass writable stream as dst for get method?](#sec-7-2)
+  - [How can I upload files without having to specify a password?](#sec-7-3)
+  - [How can I connect through a Socks Proxy](#sec-7-4)
+  - [Timeout while waiting for handshake or handshake errors](#sec-7-5)
+- [Examples](#sec-8)
+- [Change Log](#sec-9)
+  - [v5.2.2 (Prod Version)](#sec-9-1)
+  - [v5.2.1](#sec-9-2)
+  - [v5.2.0](#sec-9-3)
+  - [v5.1.3](#sec-9-4)
+  - [v5.1.2](#sec-9-5)
+  - [v5.1.1](#sec-9-6)
+  - [v5.1.0](#sec-9-7)
+  - [v5.0.2](#sec-9-8)
+  - [v5.0.1](#sec-9-9)
+  - [v5.0.0](#sec-9-10)
+  - [v4.3.1](#sec-9-11)
+  - [v4.3.0](#sec-9-12)
+  - [v4.2.4](#sec-9-13)
+  - [v4.2.3](#sec-9-14)
+  - [v4.2.2](#sec-9-15)
+  - [v4.2.1](#sec-9-16)
+  - [v4.2.0](#sec-9-17)
+  - [v4.1.0](#sec-9-18)
+  - [v4.0.4](#sec-9-19)
+  - [v4.0.3](#sec-9-20)
+  - [v4.0.2](#sec-9-21)
+  - [v4.0.0](#sec-9-22)
+  - [Older Versions](#sec-9-23)
+    - [v2.5.2](#sec-9-23-1)
+    - [v2.5.1](#sec-9-23-2)
+    - [v2.5.0](#sec-9-23-3)
+    - [v2.4.3](#sec-9-23-4)
+    - [v2.4.2](#sec-9-23-5)
+    - [v2.4.1](#sec-9-23-6)
+    - [v2.4.0](#sec-9-23-7)
+    - [v2.3.0](#sec-9-23-8)
+    - [v3.0.0 &#x2013; deprecate this version](#sec-9-23-9)
+    - [v2.1.1](#sec-9-23-10)
+    - [v2.0.1](#sec-9-23-11)
+    - [v1.1.0](#sec-9-23-12)
+    - [v1.0.5:](#sec-9-23-13)
+- [Troubleshooting](#sec-10)
+  - [Common Errors](#sec-10-1)
+    - [Not returning the promise in a `then()` block](#sec-10-1-1)
+    - [Mixing Promise Chains and Async/Await](#sec-10-1-2)
+    - [Try/catch and Error Handlers](#sec-10-1-3)
+  - [Debugging Support](#sec-10-2)
+- [Logging Issues](#sec-11)
+- [Pull Requests](#sec-12)
+- [Contributors](#sec-13)
 
 # SSH2 SFTP Client<a id="sec-1"></a>
 
@@ -1041,9 +1044,23 @@ Although normally not required, you can add and remove custom listeners on the s
 
     Removes the specified listener from the event specified in eventType. Note that the `end()` method automatically removes all listeners from the client object.
 
-# FAQ<a id="sec-6"></a>
+# Platform Quirks & Warnings<a id="sec-6"></a>
 
-## Remote server drops connections with only an end event<a id="sec-6-1"></a>
+## Windows Based Servers<a id="sec-6-1"></a>
+
+It appears that when the sftp server is running on Windows, a *ECONNRESET* error signal is raised when the end() method is called. Unfortunately, this signal is raised after a considerable delay. This means we cannot remove the error handler used in the end() promise as otherwise you will get an uncaught exception error. Leaving the handler in place, even though we will ignore this error, solves that issue, but unfortunately introduces a new problem. Because we are not removing the listener, if you re-use the client object for subsequent connections, an additional error handler will be added. If this happens more than 11 times, you will eventually see the Node warning about a possible memory leak. This is because node monitors the number of error handlers and if it sees more than 11 added to an object, it assumes there is a problem and generates the warning.
+
+The best way to avoid this issue is to not re-use client objects. Always generate a new sftp client object for each new connection.
+
+## Don't Re-use SftpClient Objects<a id="sec-6-2"></a>
+
+Due to an issue with *ECONNRESET* error signals when connecting to Windows based SFTP servers, it is not possible to remove the error handler in the end() method. This means that if you re-use the SftpClient object for multiple connections e.g. calling connect(), then end(), then connect() etc, you run the risk of multiple error handlers being added to the SftpClient object. After 11 handlers have been added, Node will generate a possible memory leak warning.
+
+To avoid this problem, don't re-use SftpClient objects. Generate a new SftpClient object for each connection. You can perform multiple actions with a single connection e.g. upload multiple files, download multiple files etc, but after you have called end(), you should not try to re-use the object with a further connect() call. Create a new object instead.
+
+# FAQ<a id="sec-7"></a>
+
+## Remote server drops connections with only an end event<a id="sec-7-1"></a>
 
 Many SFTP servers have rate limiting protection which will drop connections once a limit has been reached. In particular, openSSH has the setting `MaxStartups`, which can be a tuple of the form `max:drop:full` where `max` is the maximum allowed unauthenticated connections, `drop` is a percentage value which specifies percentage of connections to be dropped once `max` connections has been reached and `full` is the number of connections at which point all subsequent connections will be dropped. e.g. `10:30:60` means allow up to 10 unauthenticated connections after which drop 30% of connection attempts until reaching 60 unauthenticated connections, at which time, drop all attempts.
 
@@ -1051,7 +1068,7 @@ Clients first make an unauthenticated connection to the SFTP server to begin neg
 
 One way to avoid this type of issue is to add a delay between connection attempts. It does not need to be a very long delay - just sufficient to permit the previous connection to be authenticated. In fact, the default setting for openSSH is `10:30:60`, so you really just need to have enough delay to ensure that the 1st connection has completed authentication before the 11th connection is attempted.
 
-## How can you pass writable stream as dst for get method?<a id="sec-6-2"></a>
+## How can you pass writable stream as dst for get method?<a id="sec-7-2"></a>
 
 If the dst argument passed to the get method is a writeable stream, the remote file will be piped into that writeable. If the writeable you pass in is a writeable stream created with `fs.createWriteStream()`, the data will be written to the file specified in the constructor call to `createWriteStream()`.
 
@@ -1107,7 +1124,7 @@ sftp
   });
 ```
 
-## How can I upload files without having to specify a password?<a id="sec-6-3"></a>
+## How can I upload files without having to specify a password?<a id="sec-7-3"></a>
 
 There are a couple of ways to do this. Essentially, you want to setup SSH keys and use these for authentication to the remote server.
 
@@ -1139,7 +1156,7 @@ sftp.connect({
 }
 ```
 
-## How can I connect through a Socks Proxy<a id="sec-6-4"></a>
+## How can I connect through a Socks Proxy<a id="sec-7-4"></a>
 
 This solution was provided by @jmorino.
 
@@ -1172,63 +1189,63 @@ client.connect({
 // client is connected
 ```
 
-## Timeout while waiting for handshake or handshake errors<a id="sec-6-5"></a>
+## Timeout while waiting for handshake or handshake errors<a id="sec-7-5"></a>
 
 Some users have encountered the error 'Timeout while waiting for handshake' or 'Handshake failed, no matching client->server ciphers. This is often due to the client not having the correct configuration for the transport layer algorithms used by ssh2. One of the connect options provided by the ssh2 module is `algorithm`, which is an object that allows you to explicitly set the key exchange, ciphers, hmac and compression algorithms as well as server host key used to establish the initial secure connection. See the SSH2 documentation for details. Getting these parameters correct usually resolves the issue.
 
-# Examples<a id="sec-7"></a>
+# Examples<a id="sec-8"></a>
 
 I have started collecting example scripts in the example directory of the repository. These are mainly scripts I have put together in order to investigate issues or provide samples for users. They are not robust, lack adequate error handling and may contain errors. However, I think they are still useful for helping developers see how the module and API can be used.
 
-# Change Log<a id="sec-8"></a>
+# Change Log<a id="sec-9"></a>
 
-## v5.2.2 (Prod Version)<a id="sec-8-1"></a>
+## v5.2.2 (Prod Version)<a id="sec-9-1"></a>
 
 -   Bug fix release. Add error code 4 check to stat() method.
 -   bump Mocha version for tests
 
-## v5.2.1<a id="sec-8-2"></a>
+## v5.2.1<a id="sec-9-2"></a>
 
 -   Move some dependencies into dev-Dependencies
 
-## v5.2.0<a id="sec-8-3"></a>
+## v5.2.0<a id="sec-9-3"></a>
 
 -   Add new method posixRename() which uses the openSSH POSIX rename extension.
 
-## v5.1.3<a id="sec-8-4"></a>
+## v5.1.3<a id="sec-9-4"></a>
 
 -   Fix bug when writing to root directory and failure due to not being able to determine parent
 -   Refactor some tests to eliminate need to have artificial delays between tests
 -   Bumped some dependency versions to latest version
 
-## v5.1.2<a id="sec-8-5"></a>
+## v5.1.2<a id="sec-9-5"></a>
 
 -   Added back global close handler
 -   Added dumpListeners() method
 
-## v5.1.1<a id="sec-8-6"></a>
+## v5.1.1<a id="sec-9-6"></a>
 
 -   Added separate close handlers to each method.
 -   Added missing return statement in connect method
 -   Added additional troubleshooting documentation for common errors.
 
-## v5.1.0<a id="sec-8-7"></a>
+## v5.1.0<a id="sec-9-7"></a>
 
 -   Fix bug in checkRemotePath() relating to handling of badly specified paths (issue #213)
 -   Added additional debugging support
 -   Add missing test for valid connection in end() method.
 -   Bump ssh2 version to v0.8.8
 
-## v5.0.2<a id="sec-8-8"></a>
+## v5.0.2<a id="sec-9-8"></a>
 
 -   Fix bugs related to win32 platform and local tests for valid directories
 -   Fix problem with parsing of file paths
 
-## v5.0.1<a id="sec-8-9"></a>
+## v5.0.1<a id="sec-9-9"></a>
 
 -   Turn down error checking to be less stringent and handle situations where user does not have read permission on parent directory.
 
-## v5.0.0<a id="sec-8-10"></a>
+## v5.0.0<a id="sec-9-10"></a>
 
 -   Added two new methods `uploadDir()` and `downloadDir()`
 -   Removed deprecated `auxList()` method
@@ -1239,47 +1256,47 @@ I have started collecting example scripts in the example directory of the reposi
 -   Module error handlers added using `prependListener` to ensure they are called before any additional custom handlers added by client code.
 -   Any error events fired during an `end()` call are now ignored.
 
-## v4.3.1<a id="sec-8-11"></a>
+## v4.3.1<a id="sec-9-11"></a>
 
 -   Updated end() method to resolve once close event fires
 -   Added errorListener to error event in each promise to catch error events and reject the promise. This should resolve the issue of some error events causing uncaughtException erros and causing the process to exit.
 
-## v4.3.0<a id="sec-8-12"></a>
+## v4.3.0<a id="sec-9-12"></a>
 
 -   Ensure errors include an err.code property and pass through the error code from the originating error
 -   Change tests for error type to use `error.code` instead of matching on `error.message`.
 
-## v4.2.4<a id="sec-8-13"></a>
+## v4.2.4<a id="sec-9-13"></a>
 
 -   Bumped ssh2 to v0.8.6
 -   Added exists() usage example to examples directory
 -   Clarify documentation on get() method
 
-## v4.2.3<a id="sec-8-14"></a>
+## v4.2.3<a id="sec-9-14"></a>
 
 -   Fix bug in `exist()` where tests on root directory returned false
 -   Minor documentation fixes
 -   Clean up mkdir example
 
-## v4.2.2<a id="sec-8-15"></a>
+## v4.2.2<a id="sec-9-15"></a>
 
 -   Minor documentation fixes
 -   Added additional examples in the `example` directory
 
-## v4.2.1<a id="sec-8-16"></a>
+## v4.2.1<a id="sec-9-16"></a>
 
 -   Remove default close listener. changes in ssh2 API removed the utility of a default close listener
 -   Fix path handling. Under mixed environments (where client platform and server platform were different i.e. one windows the other unix), path handling was broken due tot he use of path.join().
 -   Ensure error messages include path details. Instead of errors such as "No such file" now report "No such file /path/to/missing/file" to help with debugging
 
-## v4.2.0<a id="sec-8-17"></a>
+## v4.2.0<a id="sec-9-17"></a>
 
 -   Work-around for SSH2 `end` event bug
 -   Added ability to set client name in constructor method
 -   Added additional error checking to prevent `connect()` being called on already connected client
 -   Added additional examples in `example` directory
 
-## v4.1.0<a id="sec-8-18"></a>
+## v4.1.0<a id="sec-9-18"></a>
 
 -   move `end()` call to resolve into close hook
 -   Prevent `put()` and `get()` from creating empty files in destination when unable to read source
@@ -1292,21 +1309,21 @@ I have started collecting example scripts in the example directory of the reposi
 -   Add `realPath()` method
 -   Add `cwd()` method
 
-## v4.0.4<a id="sec-8-19"></a>
+## v4.0.4<a id="sec-9-19"></a>
 
 -   Minor documentation fix
 -   Fix return value from `get()`
 
-## v4.0.3<a id="sec-8-20"></a>
+## v4.0.3<a id="sec-9-20"></a>
 
 -   Fix bug in mkdir() relating to handling of relative paths
 -   Modify exists() to always return 'd' if path is '.'
 
-## v4.0.2<a id="sec-8-21"></a>
+## v4.0.2<a id="sec-9-21"></a>
 
 -   Fix some minor packaging issues
 
-## v4.0.0<a id="sec-8-22"></a>
+## v4.0.0<a id="sec-9-22"></a>
 
 -   Remove support for node < 8.x
 -   Fix connection retry feature
@@ -1318,37 +1335,37 @@ I have started collecting example scripts in the example directory of the reposi
 -   Removed pointless 'permissions' property from objects returned by `stat()` (same as mode property). Added additional properties describing the type of object.
 -   Added the `removeListener()` method to compliment the existing `on()` method.
 
-## Older Versions<a id="sec-8-23"></a>
+## Older Versions<a id="sec-9-23"></a>
 
-### v2.5.2<a id="sec-8-23-1"></a>
+### v2.5.2<a id="sec-9-23-1"></a>
 
 -   Repository transferred to theophilusx
 -   Fix error in package.json pointing to wrong repository
 
-### v2.5.1<a id="sec-8-23-2"></a>
+### v2.5.1<a id="sec-9-23-2"></a>
 
 -   Apply 4 pull requests to address minor issues prior to transfer
 
-### v2.5.0<a id="sec-8-23-3"></a>
+### v2.5.0<a id="sec-9-23-3"></a>
 
 -   ???
 
-### v2.4.3<a id="sec-8-23-4"></a>
+### v2.4.3<a id="sec-9-23-4"></a>
 
 -   merge #108, #110
     -   fix connect promise if connection ends
 
-### v2.4.2<a id="sec-8-23-5"></a>
+### v2.4.2<a id="sec-9-23-5"></a>
 
 -   merge #105
     -   fix windows path
 
-### v2.4.1<a id="sec-8-23-6"></a>
+### v2.4.1<a id="sec-9-23-6"></a>
 
 -   merge pr #99, #100
     -   bug fix
 
-### v2.4.0<a id="sec-8-23-7"></a>
+### v2.4.0<a id="sec-9-23-7"></a>
 
 -   Requires node.js v7.5.0 or above.
 -   merge pr #97, thanks for @theophilusx
@@ -1358,39 +1375,39 @@ I have started collecting example scripts in the example directory of the reposi
     -   re-factored test
     -   Added new 'exists' method and re-factored mkdir/rmdir
 
-### v2.3.0<a id="sec-8-23-8"></a>
+### v2.3.0<a id="sec-9-23-8"></a>
 
 -   add: `stat` method
 -   add `fastGet` and `fastPut` method.
 -   fix: `mkdir` file exists decision logic
 
-### v3.0.0 &#x2013; deprecate this version<a id="sec-8-23-9"></a>
+### v3.0.0 &#x2013; deprecate this version<a id="sec-9-23-9"></a>
 
 -   change: `sftp.get` will return chunk not stream anymore
 -   fix: get readable not emitting data events in node 10.0.0
 
-### v2.1.1<a id="sec-8-23-10"></a>
+### v2.1.1<a id="sec-9-23-10"></a>
 
 -   add: event listener. [doc](https://github.com/jyu213/ssh2-sftp-client#Event)
 -   add: `get` or `put` method add extra options [pr#52](https://github.com/jyu213/ssh2-sftp-client/pull/52)
 
-### v2.0.1<a id="sec-8-23-11"></a>
+### v2.0.1<a id="sec-9-23-11"></a>
 
 -   add: `chmod` method [pr#33](https://github.com/jyu213/ssh2-sftp-client/pull/33)
 -   update: upgrade ssh2 to V0.5.0 [pr#30](https://github.com/jyu213/ssh2-sftp-client/pull/30)
 -   fix: get method stream error reject unwork [#22](https://github.com/jyu213/ssh2-sftp-client/issues/22)
 -   fix: return Error object on promise rejection [pr#20](https://github.com/jyu213/ssh2-sftp-client/pull/20)
 
-### v1.1.0<a id="sec-8-23-12"></a>
+### v1.1.0<a id="sec-9-23-12"></a>
 
 -   fix: add encoding control support for binary stream
 
-### v1.0.5:<a id="sec-8-23-13"></a>
+### v1.0.5:<a id="sec-9-23-13"></a>
 
 -   fix: multi image upload
 -   change: remove `this.client.sftp` to `connect` function
 
-# Troubleshooting<a id="sec-9"></a>
+# Troubleshooting<a id="sec-10"></a>
 
 The `ssh2-sftp-client` module is essentially a wrapper around the `ssh2` and `ssh2-streams` modules, providing a higher level `promise` based API. When you run into issues, it is important to try and determine where the issue lies - either in the ssh2-sftp-client module or the underlying `ssh2` and `ssh2-streams` modules. One way to do this is to first identify a minimal reproducible example which reproduces the issue. Once you have that, try to replicate the functionality just using the `ssh2` and `ssh2-streams` modules. If the issue still occurs, then you can be fairly confident it is something related to those later 2 modules and therefore and issue which should be referred to the maintainer of that module.
 
@@ -1402,11 +1419,11 @@ Note also that in the repository there are two useful directories. The first is 
 
 The second directory is the tools directory. I have some very basic simple scripts in this directory which perform basic tasks using only the `ssh2` and `ssh2-streams` modules (no ssh2-sftp-client module). These can be useful when trying to determine if the issue is with the underlying `ssh2` and `ssh2-streams` modules.
 
-## Common Errors<a id="sec-9-1"></a>
+## Common Errors<a id="sec-10-1"></a>
 
 There are some common errors people tend to make when using Promises or Asyc/Await. These are by far the most common problem found in issues logged against this module. Please check for some of these before logging your issue.
 
-### Not returning the promise in a `then()` block<a id="sec-9-1-1"></a>
+### Not returning the promise in a `then()` block<a id="sec-10-1-1"></a>
 
 All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For exmaple, the following will not do what you expect
 
@@ -1440,7 +1457,7 @@ Note the `return` statements. These ensure that the Promise returned by the clie
 
 A common symptom of this type of error is for file uploads or download to fail to complete or for data in those files to be truncated. What is happening is that the connection is being ended before the transfer has completed.
 
-### Mixing Promise Chains and Async/Await<a id="sec-9-1-2"></a>
+### Mixing Promise Chains and Async/Await<a id="sec-10-1-2"></a>
 
 Another common error is to mix Promise chains and async/await calls. This is rarely a great idea. While you can do this, it tends to create complicated and difficult to maintain code. Select one approach and stick with it. Both approaches are functionally equivalent, so there is no reason to mix up the two paradigms. My personal preference would be to use async/await as I think that is more *natural* for most developers. For example, the following is more complex and difficult to follow than necessary (and has a bug!)
 
@@ -1497,7 +1514,7 @@ async function doSftp() {
 }
 ```
 
-### Try/catch and Error Handlers<a id="sec-9-1-3"></a>
+### Try/catch and Error Handlers<a id="sec-10-1-3"></a>
 
 Another common error is to try and use a try/catch block to catch event signals, such as an error event. In general, you cannot use try/catch blocks for asynchronous code and expect errors to be caught by the `catch` block. Handling errors in asynchronous code is one of the key reasons we now have the Promise and async/await frameworks.
 
@@ -1505,7 +1522,7 @@ The basic problem is that the try/catch block will have completed execution befo
 
 Error events are essentially asynchronous code. You don't know when such events will fire. Therefore, you cannot use a try/catch block to catch such event errors. Even creating an error handler which then throws an exception won't help as the key problem is that your try/catch block has already executed. There are a number of alternative ways to deal with this situation. However, the key symptom is that you see occasional uncaught error exceptions that cause your script to exit abnormally despite having try/catch blocks in your script. What you need to do is look at your code and find where errors are raised asynchronously and use an event handler or some other mechanism to manage any errors raised.
 
-## Debugging Support<a id="sec-9-2"></a>
+## Debugging Support<a id="sec-10-2"></a>
 
 You can add a `debug` property to the config object passed in to `connect()` to turn on debugging. This will generate quite a lot of output. The value of the property should be a function which accepts a single string argument. For example;
 
@@ -1523,7 +1540,7 @@ node script.js 2> debug.log
 
 ```
 
-# Logging Issues<a id="sec-10"></a>
+# Logging Issues<a id="sec-11"></a>
 
 Please log an issue for all bugs, questions, feature and enhancement requests. Please ensure you include the module version, node version and platform.
 
@@ -1537,7 +1554,7 @@ I am happy to try and help diagnose and fix any issues you encounter while using
 
 Perhaps the best assistance is a minimal reproducible example of the issue. Once the issue can be readily reproduced, it can usually be fixed very quickly.
 
-# Pull Requests<a id="sec-11"></a>
+# Pull Requests<a id="sec-12"></a>
 
 Pull requests are always welcomed. However, please ensure your changes pass all tests and if your adding a new feature, that tests for that feature are included. Likewise, for new features or enhancements, please include any relevant documentation updates.
 
@@ -1547,7 +1564,7 @@ This module will adopt a standard semantic versioning policy. Please indicate in
 -   **Minor:** Minor change, enhancement or new feature which does not change existing API and will not break existing client code.
 -   **Bug Fix:** No change to functionality or features. Simple fix of an existing bug.
 
-# Contributors<a id="sec-12"></a>
+# Contributors<a id="sec-13"></a>
 
 This module was initially written by jyu213. On August 23rd, 2019, theophilusx took over responsibility for maintaining this module. A number of other people have contributed to this module, but until now, this was not tracked. My intention is to credit anyone who contributes going forward.
 
