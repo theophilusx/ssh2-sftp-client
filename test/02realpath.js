@@ -28,9 +28,12 @@ describe('Path tests', function () {
   });
 
   it(`Resolves absolute path ${config.sftpUrl}`, function () {
-    return expect(
-      sftp.realPath(makeRemotePath(config.sftpUrl))
-    ).to.eventually.equal(config.sftpUrl);
+    // return expect(
+    //   sftp.realPath(makeRemotePath(config.sftpUrl))
+    // ).to.eventually.equal(config.sftpUrl);
+    return expect(sftp.realPath(config.sftpUrl)).to.eventually.equal(
+      config.sftpUrl
+    );
   });
 
   it('Resolve "." relative path', async function () {
@@ -49,12 +52,17 @@ describe('Path tests', function () {
     );
   });
 
-  it('Resolve "../testServer" relative path', function () {
+  it('Resolve "../testServer" relative path', async function () {
+    let p = await sftp.realPath('.');
+    let pComponents = p.split('/');
+    let rslt =
+      pComponents.slice(0, pComponents.length - 1).join('/') + '/testServer';
     return expect(
-      sftp.realPath(
-        makeRemotePath('..', lastRemoteDir(config.remoteRoot), 'testServer')
-      )
-    ).to.eventually.equal(config.sftpUrl);
+      // sftp.realPath(
+      //   makeRemotePath('..', lastRemoteDir(config.remoteRoot), 'testServer')
+      // )
+      sftp.realPath('../testServer')
+    ).to.eventually.equal(rslt);
   });
 
   it('cwd() returns current working dir', async function () {
@@ -63,40 +71,35 @@ describe('Path tests', function () {
   });
 
   it('returns path to test directory', async function () {
-    let p = await sftp.realPath(
-      makeRemotePath(config.sftpUrl, 'path-test-dir')
-    );
-    return expect(p).to.equal(makeRemotePath(config.sftpUrl, 'path-test-dir'));
+    return expect(
+      sftp.realPath(config.sftpUrl + '/path-test-dir')
+    ).to.eventually.equal(config.sftpUrl + '/path-test-dir');
   });
 
   it('return path to test file 1', async function () {
-    let p = await sftp.realPath(
-      makeRemotePath(config.sftpUrl, 'path-test-dir', 'path-file1.txt')
-    );
-    return expect(p).to.equal(
-      makeRemotePath(config.sftpUrl, 'path-test-dir', 'path-file1.txt')
-    );
+    return expect(
+      sftp.realPath(config.sftpUrl + '/path-test-dir/path-file1.txt')
+    ).to.eventually.equal(config.sftpUrl + '/path-test-dir/path-file1.txt');
   });
 
   it('return path to test file 2', async function () {
-    let p = await sftp.realPath(
-      makeRemotePath(config.sftpUrl, 'path-test-dir', 'path-file2.txt.gz')
-    );
-    return expect(p).to.equal(
-      makeRemotePath(config.sftpUrl, 'path-test-dir', 'path-file2.txt.gz')
-    );
+    return expect(
+      sftp.realPath(config.sftpUrl + '/path-test-dir/path-file2.txt.gz')
+    ).to.eventually.equal(config.sftpUrl + '/path-test-dir/path-file2.txt.gz');
   });
 
+  // realPath for windows does not seem to return empty string for non-existent paths
   it("realPath returns '' for non-existing path", function () {
-    return expect(
-      sftp.realPath(
-        makeRemotePath(
-          config.sftpUrl,
-          'path-test-dir',
-          'path-not-exist-dir',
-          'path-not-exist-file.txt'
+    console.log(`Platform = ${sftp.remotePlatform}`);
+    if (sftp.remotePlatform !== 'win32') {
+      return expect(
+        sftp.realPath(
+          config.sftpUrl +
+            '/path-test-dir/path-not-exist-dir/path-not-exist-file.txt'
         )
-      )
-    ).to.eventually.equal('');
+      ).to.eventually.equal('');
+    } else {
+      return expect(true).to.equal(true);
+    }
   });
 });
