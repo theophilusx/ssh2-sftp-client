@@ -23,6 +23,12 @@ if (process.env.DEBUG === 'true') {
   config.debug = (msg) => {
     console.error(msg);
   };
+} else if (process.env.DEBUG === 'client') {
+  config.debug = (msg) => {
+    if (msg.startsWith('CLIENT')) {
+      console.error(msg);
+    }
+  };
 }
 
 const makeLocalPath = (...args) => {
