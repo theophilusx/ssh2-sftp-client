@@ -657,12 +657,7 @@ function dumpListeners(emitter) {
 function hasListener(emitter, eventName, listenerName) {
   let listeners = emitter.listeners(eventName);
   let matches = listeners.filter((l) => l.name == listenerName);
-  if (matches.length) {
-    console.error('hasListener found');
-    return true;
-  }
-  console.error('hasListener not found');
-  return false;
+  return matches.length === 0 ? false : true;
 }
 
 module.exports = {
