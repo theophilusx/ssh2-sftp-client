@@ -1315,6 +1315,9 @@ class SftpClient {
       const endErrorListener = (err) => {
         // we don't care about errors at this point
         // so do nothiing
+        this.debugMsg(
+          `endError called with ${err.message} and code ${err.code}`
+        );
         this.errorHandled = true;
         if (err.code !== 'ECONNRESET') {
           reject(utils.formatError(err, 'end'));
@@ -1332,7 +1335,15 @@ class SftpClient {
         utils.handleError(err, 'end', reject);
       } finally {
         this.sftp = undefined;
-        this.removeListener('error', endErrorListener);
+        // Appears that windows based sftp servers generate a ECONNRESET
+        // signal even when normal end() is called. Unfortunately, there is
+        // significant delay after end() has run before this signal is raised.
+        // If we remove the error handler listener before this has occured, then
+        // an uncaught exception is thrown. If we don't remove it, subsequent
+        // re-use of this object will result in multiple error handlers being
+        // added and eventually warnings about possible memory leaks. For now
+        // leaving the listener in place.
+        //this.removeListener('error', endErrorListener);
         this.endCalled = false;
         //utils.dumpListeners(this.client);
       }
