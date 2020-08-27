@@ -181,8 +181,8 @@ class SftpClient {
                 if (absPath.match(/^\/[A-Z]:.*/)) {
                   //this.remotePathSep = '\\';
                   this.remotePathSep = '/';
-                  this.remotePlatform = 'windows';
-                  this.debugMsg('remote platform windows like');
+                  this.remotePlatform = 'win32';
+                  this.debugMsg('remote platform win32 like');
                 } else {
                   this.remotePathSep = '/';
                   this.remotePlatform = 'unix';
