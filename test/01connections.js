@@ -11,77 +11,67 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const Client = require('../src/index.js');
+const {config} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe('Connect Tests', function () {
-  let host = process.env.SFTP_SERVER;
-  let port = process.env.SFTP_PORT;
-  let username = process.env.SFTP_USER;
-  let password = process.env.SFTP_PASSWORD;
-
-  // beforeEach(function (done) {
-  //   setTimeout(function () {
-  //     done();
-  //   }, 1000);
-  // });
+  beforeEach(async function () {
+    return new Promise((resolve, reject) => {
+      try {
+        setTimeout(function () {
+          resolve(true);
+        }, 1000);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
 
   it('connect should return a promise', async function () {
-    let client = new Client();
+    let client = new Client('contest-1');
     return expect(
-      client
-        .connect({
-          host: host,
-          port: port,
-          username: username,
-          password: password,
-          retries: 1
-        })
-        .then(() => {
-          client.end();
-        })
+      client.connect(config).then(() => {
+        client.end();
+      })
     ).to.be.a('promise');
   });
 
   it('valid connection', async function () {
-    let client = new Client();
-    await client.connect({
-      host: host,
-      port: port,
-      username: username,
-      password: password,
-      retries: 1
-    });
+    let client = new Client('contest-2');
+    await client.connect(config);
     let type = typeof client.sftp;
     await client.end();
     return expect(type).to.equal('object');
   });
 
   it('bad host throws exception', async function () {
-    let client = new Client();
+    let client = new Client('contest-3');
     return expect(
       client.connect({
-        host: 'bogus-host',
-        port: port,
-        username: username,
-        password: password,
-        retries: 1
+        host: 'bogus-host.com',
+        port: config.port,
+        username: config.username,
+        password: config.password,
+        retries: config.retries,
+        debug: config.debug
       })
     ).to.be.rejectedWith(
-      /Address lookup failed|Timed out while waiting for handshake/
+      /Address lookup failed|Timed out while waiting for handshake|read ECONNRESET/
     );
   });
 
   it('bad port throws exception', async function () {
-    let client = new Client();
+    let client = new Client('contest-4');
     return expect(
       client.connect({
-        host: host,
+        host: config.host,
         port: 21,
-        username: username,
-        password: password,
-        retries: 1
+        username: config.username,
+        password: config.password,
+        retries: config.retries,
+        debug: config.debug
       })
     ).to.be.rejectedWith(
       /refused connection|Timed out while waiting for handshake/
@@ -89,79 +79,54 @@ describe('Connect Tests', function () {
   });
 
   it('bad username throws exception', async function () {
-    let client = new Client();
+    let client = new Client('contest-5');
     return expect(
       client.connect({
-        host: host,
-        port: port,
+        host: config.host,
+        port: config.port,
         username: 'fred',
-        password: password,
-        retries: 1
+        password: config.password,
+        retries: config.retries,
+        debug: config.debug
       })
     ).to.be.rejectedWith(
-      /All configured authentication methods failed|Timed out while waiting for handshake|connect: connect EHOSTUNREACH/
+      /All configured authentication methods failed|Timed out while waiting for handshake|connect: connect EHOSTUNREACH|connect: Remote host has reset the connection/
     );
   });
 
   it('bad password throws exception', async function () {
-    let client = new Client();
+    let client = new Client('contest-6');
     return expect(
       client.connect({
-        host: host,
-        port: port,
-        username: username,
+        host: config.host,
+        port: config.port,
+        username: config.username,
         password: 'foobar',
-        retries: 1
+        retries: config.retries,
+        debug: config.debug
       })
     ).to.be.rejectedWith(
-      /All configured authentication methods failed|Timed out while waiting for handshake/
+      /All configured authentication methods failed|Timed out while waiting for handshake|connect: Remote host has reset the connection/
     );
   });
 });
 
 describe('Connect and disconnect', function () {
-  let host = process.env.SFTP_SERVER;
-  let port = process.env.SFTP_PORT;
-  let username = process.env.SFTP_USER;
-  let password = process.env.SFTP_PASSWORD;
-
   it('connect and disconnect returns true', async function () {
     let client = new Client();
     return expect(
-      client
-        .connect({
-          host: host,
-          port: port,
-          username: username,
-          password: password,
-          retries: 1
-        })
-        .then(() => {
-          return client.end();
-        })
+      client.connect(config).then(() => {
+        return client.end();
+      })
     ).to.eventually.equal(true);
   });
 
   it('Connect when connected rejected', async function () {
     let client = new Client();
     return expect(
-      client
-        .connect({
-          host: host,
-          port: port,
-          username: username,
-          password: password,
-          retries: 1
-        })
-        .then(() => {
-          return client.connect({
-            host: host,
-            port: port,
-            username: username,
-            password: password,
-            retries: 1
-          });
-        })
+      client.connect(config).then(() => {
+        return client.connect(config);
+      })
     ).to.be.rejectedWith(/An existing SFTP connection is already defined/);
   });
 });
