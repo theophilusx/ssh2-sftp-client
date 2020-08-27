@@ -3,12 +3,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
-const {
-  config,
-  getConnection,
-  makeRemotePath,
-  lastRemoteDir
-} = require('./hooks/global-hooks');
+const {config, getConnection} = require('./hooks/global-hooks');
 const {pathSetup, pathCleanup} = require('./hooks/path-hooks');
 
 chai.use(chaiAsPromised);
@@ -28,9 +23,6 @@ describe('Path tests', function () {
   });
 
   it(`Resolves absolute path ${config.sftpUrl}`, function () {
-    // return expect(
-    //   sftp.realPath(makeRemotePath(config.sftpUrl))
-    // ).to.eventually.equal(config.sftpUrl);
     return expect(sftp.realPath(config.sftpUrl)).to.eventually.equal(
       config.sftpUrl
     );
@@ -57,12 +49,7 @@ describe('Path tests', function () {
     let pComponents = p.split('/');
     let rslt =
       pComponents.slice(0, pComponents.length - 1).join('/') + '/testServer';
-    return expect(
-      // sftp.realPath(
-      //   makeRemotePath('..', lastRemoteDir(config.remoteRoot), 'testServer')
-      // )
-      sftp.realPath('../testServer')
-    ).to.eventually.equal(rslt);
+    return expect(sftp.realPath('../testServer')).to.eventually.equal(rslt);
   });
 
   it('cwd() returns current working dir', async function () {
