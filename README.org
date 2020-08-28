@@ -262,6 +262,18 @@ reset to false in preparation for the next error.
      for file not found errors. This version adds checks for error code 4 to the
      stat() method. Thanks to teenangst for the fix.
 
+** Version 5.3.0
+   - Add code to only add connect() and end() event handlers if they are not
+     already active. For connect(), remove event handlers as late as possible to
+     help catch error events raised late on some platforms (like win32). don't
+     remove end() error handler as some platforms, like win32, send an
+     additional error event even after a successful and requested end() call.
+   - Fix path handling when connecting to a remoe SFTP server running on win32
+     platform. Assume server honours 'nix' path convention rather than using
+     native win32 path format.
+   - Add additional documentation on events/promises, platform quirks and
+     platform differences.
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1511,6 +1523,10 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
+** v5.3.0 (Dev Version)
+   - Refine event handler management
+   - Fix path processing for win32 based sftp servers
+   - Update documentation 
 ** v5.2.2 (Prod Version)
    - Bug fix release. Add error code 4 check to stat() method.
    - bump Mocha version for tests
