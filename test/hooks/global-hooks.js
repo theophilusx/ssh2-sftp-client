@@ -45,10 +45,7 @@ const makeRemotePath = (...args) => {
 };
 
 const splitRemotePath = (p) => {
-  if (process.env.TEST_SERVER === 'unix') {
-    return p.split('/');
-  }
-  return p.split('\\');
+  return p.split('/');
 };
 
 const lastRemoteDir = (p) => {
