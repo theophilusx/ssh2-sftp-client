@@ -6,9 +6,8 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
+const {config, getConnection, lastRemoteDir} = require('./hooks/global-hooks');
 const {renameSetup, renameCleanup} = require('./hooks/rename-hooks');
-const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -28,8 +27,8 @@ describe('posixRename() method tests', function () {
   });
 
   it('rename should return a promise', function () {
-    let from = makeRemotePath(config.sftpUrl, 'rename-promise.md');
-    let to = makeRemotePath(config.sftpUrl, 'rename-promise2.txt');
+    let from = `${config.sftpUrl}/rename-promise.md`;
+    let to = `${config.sftpUrl}/rename-promise2.txt`;
     let p = sftp.posixRename(from, to);
     expect(p).to.be.a('promise');
     return expect(p).to.eventually.equal(
@@ -40,8 +39,8 @@ describe('posixRename() method tests', function () {
   it('rename non-existent file is rejected', function () {
     return expect(
       sftp.posixRename(
-        makeRemotePath(config.sftpUrl, 'no-such-file.txt'),
-        makeRemotePath(config.sftpUrl, 'dummy.md')
+        `${config.sftpUrl}/no-such-file.txt`,
+        `${config.sftpUrl}/dummy.md`
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -49,8 +48,8 @@ describe('posixRename() method tests', function () {
   it('rename file successfully', function () {
     return sftp
       .posixRename(
-        makeRemotePath(config.sftpUrl, 'rename-promise2.txt'),
-        makeRemotePath(config.sftpUrl, 'rename-new.md')
+        `${config.sftpUrl}/rename-promise2.txt`,
+        `${config.sftpUrl}/rename-new.md`
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -63,8 +62,8 @@ describe('posixRename() method tests', function () {
   it('rename to existing file name is successful', function () {
     return sftp
       .posixRename(
-        makeRemotePath(config.sftpUrl, 'rename-new.md'),
-        makeRemotePath(config.sftpUrl, 'rename-conflict.md')
+        `${config.sftpUrl}/rename-new.md`,
+        `${config.sftpUrl}/rename-conflict.md`
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -79,7 +78,7 @@ describe('posixRename() method tests', function () {
     return sftp
       .posixRename(
         './testServer/rename-conflict.md',
-        makeRemotePath(config.sftpUrl, 'rename-relative1.md')
+        `${config.sftpUrl}/rename-relative1.md`
       )
       .then(() => {
         return sftp.list(config.sftpUrl);
@@ -90,17 +89,11 @@ describe('posixRename() method tests', function () {
   });
 
   it('rename with relative source 2', function () {
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'rename-relative1.md'
-    );
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/rename-relative1.md`;
     return sftp
-      .posixRename(
-        remotePath,
-        makeRemotePath(config.sftpUrl, 'rename-relative2.md')
-      )
+      .posixRename(remotePath, `${config.sftpUrl}/rename-relative2.md`)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -110,17 +103,11 @@ describe('posixRename() method tests', function () {
   });
 
   it('rename with relative destination 3', function () {
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'rename-relative3.md'
-    );
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/rename-relative3.md`;
     return sftp
-      .posixRename(
-        makeRemotePath(config.sftpUrl, 'rename-relative2.md'),
-        remotePath
-      )
+      .posixRename(`${config.sftpUrl}/rename-relative2.md`, remotePath)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -130,17 +117,11 @@ describe('posixRename() method tests', function () {
   });
 
   it('rename with relative destination 4', function () {
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'rename-relative4.md'
-    );
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/rename-relative4.md`;
     return sftp
-      .posixRename(
-        makeRemotePath(config.sftpUrl, 'rename-relative3.md'),
-        remotePath
-      )
+      .posixRename(`${config.sftpUrl}/rename-relative3.md`, remotePath)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
