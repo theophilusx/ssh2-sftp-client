@@ -8,11 +8,7 @@ const fs = require('fs');
 const zlib = require('zlib');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {getSetup, getCleanup} = require('./hooks/get-hooks');
-const {
-  makeLocalPath,
-  makeRemotePath,
-  lastRemoteDir
-} = require('./hooks/global-hooks');
+const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -32,23 +28,21 @@ describe('get() method tests', function () {
   });
 
   it('get returns a promise', function () {
-    return expect(
-      sftp.get(makeRemotePath(config.sftpUrl, 'get-promise.txt'))
-    ).to.be.a('promise');
+    return expect(sftp.get(config.sftpUrl + '/get-promise.txt')).to.be.a(
+      'promise'
+    );
   });
 
   it('get the file content', function () {
-    return sftp
-      .get(makeRemotePath(config.sftpUrl, 'get-promise.txt'))
-      .then((data) => {
-        let body = data.toString();
-        return expect(body).to.equal('Get promise test');
-      });
+    return sftp.get(config.sftpUrl + '/get-promise.txt').then((data) => {
+      let body = data.toString();
+      return expect(body).to.equal('Get promise test');
+    });
   });
 
   it('get large text file using a stream', async function () {
     let localPath = makeLocalPath(config.localUrl, 'get-large.txt');
-    let remotePath = makeRemotePath(config.sftpUrl, 'get-large.txt');
+    let remotePath = config.sftpUrl + '/get-large.txt';
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
       encoding: null
@@ -61,7 +55,7 @@ describe('get() method tests', function () {
 
   it('get gzipped file using a stream', async function () {
     let localPath = makeLocalPath(config.localUrl, 'get-gzip.txt.gz');
-    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
       encoding: null
@@ -74,7 +68,7 @@ describe('get() method tests', function () {
 
   it('get gzipped file and gunzip in pipe', async function () {
     let localPath = makeLocalPath(config.localUrl, 'get-unzip.txt');
-    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     let gunzip = zlib.createGunzip();
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
@@ -89,7 +83,7 @@ describe('get() method tests', function () {
 
   it('get non-existent file is rejected', function () {
     return expect(
-      sftp.get(makeRemotePath(config.sftpUrl, 'file-not-exist.md'))
+      sftp.get(config.sftpUrl + '/file-not-exist.md')
     ).to.be.rejectedWith('No such file');
   });
 
@@ -104,12 +98,8 @@ describe('get() method tests', function () {
 
   it('get with relative remote path 2', async function () {
     let localPath = makeLocalPath(config.localUrl, 'get-relative2-gzip.txt.gz');
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'get-gzip.txt.gz'
-    );
+    let remotePath =
+      '../' + lastRemoteDir(config.remoteRoot) + '/testServer/get-gzip.txt.gz';
     await sftp.get(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -118,7 +108,7 @@ describe('get() method tests', function () {
 
   it('get with relative local path 3', async function () {
     let localPath = './test/testData/get-relative3-gzip.txt.gz';
-    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     await sftp.get(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -128,7 +118,7 @@ describe('get() method tests', function () {
   it('get with relative local path 4', async function () {
     let localPath =
       '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz';
-    let remotePath = makeRemotePath(config.sftpUrl, 'get-gzip.txt.gz');
+    let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     await sftp.get(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
