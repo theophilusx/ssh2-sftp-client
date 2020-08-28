@@ -1,6 +1,6 @@
 'use strict';
 
-const {makeLocalPath, makeRemotePath} = require('./global-hooks');
+const {makeLocalPath} = require('./global-hooks');
 const fs = require('fs');
 
 async function permissionSetup(client, sftpUrl, localUrl) {
@@ -8,23 +8,15 @@ async function permissionSetup(client, sftpUrl, localUrl) {
     fs.chmodSync(makeLocalPath(localUrl, 'no-access.txt'), 0o000);
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
-      makeRemotePath(sftpUrl, 'no-access-get.txt')
+      `${sftpUrl}/no-access-get.txt`
     );
-    await client.chmod(makeRemotePath(sftpUrl, 'no-access-get.txt'), '0o000');
-    await client.mkdir(
-      makeRemotePath(sftpUrl, 'no-access-dir', 'sub-dir'),
-      true
-    );
+    await client.chmod(`${sftpUrl}/no-access-get.txt`, '0o000');
+    await client.mkdir(`${sftpUrl}/no-access-dir/sub-dir`, true);
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file2.txt.gz'),
-      makeRemotePath(
-        sftpUrl,
-        'no-access-dir',
-        'sub-dir',
-        'permission-gzip.txt.gz'
-      )
+      `${sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`
     );
-    await client.chmod(makeRemotePath(sftpUrl, 'no-access-dir'), '0o000');
+    await client.chmod(`${sftpUrl}/no-access-dir`, '0o000');
     return true;
   } catch (err) {
     console.error(`permissionSetup: ${err.message}`);
@@ -34,10 +26,10 @@ async function permissionSetup(client, sftpUrl, localUrl) {
 
 async function permissionCleanup(client, sftpUrl) {
   try {
-    await client.chmod(makeRemotePath(sftpUrl, 'no-access-get.txt'), 0o700);
-    await client.delete(makeRemotePath(sftpUrl, 'no-access-get.txt'));
-    await client.chmod(makeRemotePath(sftpUrl, 'no-access-dir'), 0o777);
-    await client.rmdir(makeRemotePath(sftpUrl, 'no-access-dir'), true);
+    await client.chmod(`${sftpUrl}/no-access-get.txt`, 0o700);
+    await client.delete(`${sftpUrl}/no-access-get.txt`);
+    await client.chmod(`${sftpUrl}/no-access-dir`, 0o777);
+    await client.rmdir(`${sftpUrl}/no-access-dir`, true);
     return true;
   } catch (err) {
     console.error(`permissionCleanup: ${err.message}`);
