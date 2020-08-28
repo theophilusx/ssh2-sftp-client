@@ -6,7 +6,6 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {mkdirCleanup} = require('./hooks/mkdir-hooks');
-const {makeRemotePath} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -25,32 +24,22 @@ describe('mkdir() method tests', function () {
   });
 
   it('mkdir should return a promise', function () {
-    return expect(
-      sftp.mkdir(makeRemotePath(config.sftpUrl, 'mkdir-promise'))
-    ).to.be.a('promise');
+    return expect(sftp.mkdir(`${config.sftpUrl}/mkdir-promise`)).to.be.a(
+      'promise'
+    );
   });
 
   it('mkdir without recursive option and bad path should be rejected', function () {
-    return expect(
-      sftp.mkdir(makeRemotePath(config.sftpUrl, 'mocha3', 'mm'))
-    ).to.be.rejectedWith(/No such file/);
+    return expect(sftp.mkdir(`${config.sftpUrl}/mocha3/mm`)).to.be.rejectedWith(
+      /No such file/
+    );
   });
 
   it('mkdir with recursive option should create all directories', function () {
     return sftp
-      .mkdir(
-        makeRemotePath(
-          config.sftpUrl,
-          'mkdir-recursive',
-          'dir-force',
-          'subdir'
-        ),
-        true
-      )
+      .mkdir(`${config.sftpUrl}/mkdir-recursive/dir-force/subdir`, true)
       .then(() => {
-        return sftp.list(
-          makeRemotePath(config.sftpUrl, 'mkdir-recursive', 'dir-force')
-        );
+        return sftp.list(`${config.sftpUrl}/mkdir-recursive/dir-force`);
       })
       .then((list) => {
         return expect(list).to.containSubset([{name: 'subdir'}]);
@@ -59,7 +48,7 @@ describe('mkdir() method tests', function () {
 
   it('mkdir without recursive option creates dir', function () {
     return sftp
-      .mkdir(makeRemotePath(config.sftpUrl, 'mkdir-non-recursive'), false)
+      .mkdir(config.sftpUrl + '/mkdir-non-recursive', false)
       .then(() => {
         return sftp.list(config.sftpUrl);
       })
@@ -96,15 +85,24 @@ describe('mkdir() method tests', function () {
     );
   });
 
+  // permissions don't really work on win32
   it('non-recursive mkdir without permission is rejeted', function () {
-    return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
-      /Permission denied/
-    );
+    if (sftp.remotePlatform !== 'win32') {
+      return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
+        /Permission denied/
+      );
+    } else {
+      return expect(true).to.equal(true);
+    }
   });
 
   it('recursive mkdir without permission is rejeted', function () {
-    return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
-      /Permission denied/
-    );
+    if (sftp.remotePlatform !== 'win32') {
+      return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
+        /Permission denied/
+      );
+    } else {
+      return expect(true).to.equal(true);
+    }
   });
 });
