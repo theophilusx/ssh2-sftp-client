@@ -41,9 +41,10 @@
     - [end() ==> boolean](#sec-5-2-21)
     - [Add and Remove Listeners](#sec-5-2-22)
 - [Platform Quirks & Warnings](#sec-6)
-  - [Promises & Events](#sec-6-1)
-  - [Windows Based Servers](#sec-6-2)
-  - [Don't Re-use SftpClient Objects](#sec-6-3)
+  - [Server Capabilities](#sec-6-1)
+  - [Promises & Events](#sec-6-2)
+  - [Windows Based Servers](#sec-6-3)
+  - [Don't Re-use SftpClient Objects](#sec-6-4)
 - [FAQ](#sec-7)
   - [Remote server drops connections with only an end event](#sec-7-1)
   - [How can you pass writable stream as dst for get method?](#sec-7-2)
@@ -1051,7 +1052,15 @@ Although normally not required, you can add and remove custom listeners on the s
 
 # Platform Quirks & Warnings<a id="sec-6"></a>
 
-## Promises & Events<a id="sec-6-1"></a>
+## Server Capabilities<a id="sec-6-1"></a>
+
+All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-sfto-client` either depend on capabilities of the remote server or the underlying capabilities of the remote server platform. As an example, consider `chmod()`. This command depends on a remote filesystem which implements the 'nix' concept of users and groups. The *win32* platform does not have the same concept of users and groups, so `chmod()` will not behave in the same way.
+
+One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc. You want to use a CLI program which does as little as possible.
+
+One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc.
+
+## Promises & Events<a id="sec-6-2"></a>
 
 The reality of the current Node environment is that Promises and Events don't play nicely together. Part of the problem is that events are asynchronous in nature and can occur at any time. It is very difficult to ensure an event is captured inside a Promise and handled appropriately. More information can be found in the Node documentation for Events.
 
@@ -1063,13 +1072,13 @@ One way to handle this is to add your own error handler using the on() method. N
 
 The other issue that can occur is that in some rare cases, the error message you get will be potentially misleading. For example, SFTP servers running on Windows appear to emit an *ECONNRESET* error in addition to the main error (for example, for failed authentication). This can result in an error which looks like a connection was reset by the remote host when in fact the real error was due to bad authentication (bad password or bad username). This situation can be made even worse by some platforms which deliberately hide the real error for security reasons e.g. does not report an error indicating a bad username because that information can be used to try and identify legitimate usernames. While this module attempts to provide meaningful error messages which can assist developers track down problems, it is a good idea to consider these errors with a grain of salt and verify the error when possible.
 
-## Windows Based Servers<a id="sec-6-2"></a>
+## Windows Based Servers<a id="sec-6-3"></a>
 
 It appears that when the sftp server is running on Windows, a *ECONNRESET* error signal is raised when the end() method is called. Unfortunately, this signal is raised after a considerable delay. This means we cannot remove the error handler used in the end() promise as otherwise you will get an uncaught exception error. Leaving the handler in place, even though we will ignore this error, solves that issue, but unfortunately introduces a new problem. Because we are not removing the listener, if you re-use the client object for subsequent connections, an additional error handler will be added. If this happens more than 11 times, you will eventually see the Node warning about a possible memory leak. This is because node monitors the number of error handlers and if it sees more than 11 added to an object, it assumes there is a problem and generates the warning.
 
 The best way to avoid this issue is to not re-use client objects. Always generate a new sftp client object for each new connection.
 
-## Don't Re-use SftpClient Objects<a id="sec-6-3"></a>
+## Don't Re-use SftpClient Objects<a id="sec-6-4"></a>
 
 Due to an issue with *ECONNRESET* error signals when connecting to Windows based SFTP servers, it is not possible to remove the error handler in the end() method. This means that if you re-use the SftpClient object for multiple connections e.g. calling connect(), then end(), then connect() etc, you run the risk of multiple error handlers being added to the SftpClient object. After 11 handlers have been added, Node will generate a possible memory leak warning.
 
