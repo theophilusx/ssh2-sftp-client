@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {deleteSetup} = require('./hooks/delete-hooks');
-const {makeRemotePath, lastRemoteDir} = require('./hooks/global-hooks');
+const {lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -25,20 +25,20 @@ describe('delete() method tests', function () {
   });
 
   it('delete returns a promise', function () {
-    return expect(
-      sftp.delete(makeRemotePath(config.sftpUrl, 'delete-promise.md'))
-    ).to.be.a('promise');
+    return expect(sftp.delete(`${config.sftpUrl}/delete-promise.md`)).to.be.a(
+      'promise'
+    );
   });
 
   it('delete a file', function () {
     return expect(
-      sftp.delete(makeRemotePath(config.sftpUrl, 'delete-file.md'))
+      sftp.delete(`${config.sftpUrl}/delete-file.md`)
     ).to.eventually.equal('Successfully deleted file');
   });
 
   it('delete non-existent file is rejected', function () {
     return expect(
-      sftp.delete(makeRemotePath(config.sftpUrl, 'no-such-file.txt'))
+      sftp.delete(`${config.sftpUrl}/no-such-file.txt`)
     ).to.be.rejectedWith('No such file');
   });
 
@@ -49,12 +49,9 @@ describe('delete() method tests', function () {
   });
 
   it('delete with relative path 2', function () {
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'delete-relative2.txt'
-    );
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/delete-relative2.txt`;
     return expect(sftp.delete(remotePath)).to.eventually.equal(
       'Successfully deleted file'
     );
