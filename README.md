@@ -242,6 +242,8 @@ All the methods will return a Promise, except for `on()` and `removeListener()`,
 
 ## Specifying Paths<a id="sec-5-1"></a>
 
+The convention with both FTP and SFTP is that paths are specified using a 'nix' style i.e. use '*' as the path separator. This means that even if your SFTP server is running on a win32 platform, you should use '*' instead of '\\' as the path separator. For example, for a win32 path of 'C:\Users\fred' you would actually use '/C:/Users/fred'. If your win32 server does not support the 'nix' path convention, you can try setting the `remotePathSep` property of the `SftpClient` object to the path separator of your remote server. This **might** work, but has not been tested. Please let me know if you need to do this and provide details of the SFTP server so that I can try to create an appropriate environment and adjust things as necessary. At this point, I'm not aware of any win32 based SFTP servers which do not support the 'nix' path convention.
+
 All remote paths must either be absolute e.g. `/absolute/path/to/file` or they can be relative with a prefix of either `./` (relative to current remote directory) or `../` (relative to parent of current remote directory) e.g. `./relative/path/to/file` or `../relative/to/parent/file`. It is also possible to do things like `../../../file` to specify the parent of the parent of the parent of the current remote directory. The shell tilde (`~`) and common environment variables like `$HOME` are NOT supported.
 
 It is important to recognise that the current remote directory may not always be what you may expect. A lot will depend on the remote platform of the SFTP server and how the SFTP server has been configured. When things don't seem to be working as expected, it is often a good idea to verify your assumptions regarding the remote directory and remote paths. One way to do this is to login using a command line program like `sftp` or `lftp`.
@@ -886,7 +888,9 @@ Change the mode (read, write or execute permissions) of a remote file or directo
 
 ### realPath(path) ===> string<a id="sec-5-2-17"></a>
 
-Converts a relative path to an absolute path on the remote server. This method is mainly used internally to resolve remote path names. Returns '' if the path is not valid.
+Converts a relative path to an absolute path on the remote server. This method is mainly used internally to resolve remote path names.
+
+**Warning**: Currently, there is a platform inconsistency with this method on win32 platforms. For servers running on non-win32 platforms, providing a path which does not exist on the remote server will result in an empty e.g. '', absolute path being returned. On servers running on win32 platforms, a normalised path will be returned even if the path does not exist on the remote server. It is therefore advised not to use this method to also verify a path exists. instead, use the `exist()` method.
 
 -   **path:** A file path, either relative or absolute. Can handle '.' and '..', but does not expand '~'.
 
