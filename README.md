@@ -1557,6 +1557,18 @@ node script.js 2> debug.log
 
 ```
 
+If you just want to see debug messages from `ssh2-sftp-client` and exclude debug messages from the underlying `ssh2` and `ssh2-streams` modules, you can filter based on messages which start with 'CLIENT' e.g.
+
+```javascript
+{
+  debug: (msg) => {
+    if (msg.startsWith('CLIENT')) {
+      console.error(msg);
+    }
+  }
+}
+```
+
 # Logging Issues<a id="sec-11"></a>
 
 Please log an issue for all bugs, questions, feature and enhancement requests. Please ensure you include the module version, node version and platform.

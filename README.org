@@ -1893,6 +1893,19 @@ using shell redirection e.g.
 
 #+end_src
 
+If you just want to see debug messages from ~ssh2-sftp-client~ and exclude debug
+messages from the underlying ~ssh2~ and ~ssh2-streams~ modules, you can filter
+based on messages which start with 'CLIENT' e.g.
+
+#+begin_src javascript
+  {
+    debug: (msg) => {
+      if (msg.startsWith('CLIENT')) {
+        console.error(msg);
+      }
+    }
+  }
+#+end_src
 * Logging Issues
 
 Please log an issue for all bugs, questions, feature and enhancement
