@@ -1,19 +1,17 @@
 'use strict';
 
-const {makeRemotePath} = require('./global-hooks');
-
 async function renameSetup(client, sftpUrl) {
   try {
     await client.put(
       Buffer.from('Promise test file'),
-      makeRemotePath(sftpUrl, 'rename-promise.md'),
+      `${sftpUrl}/rename-promise.md`,
       {
         encoding: 'utf8'
       }
     );
     await client.put(
       Buffer.from('conflict file'),
-      makeRemotePath(sftpUrl, 'rename-conflict.md'),
+      `${sftpUrl}/rename-conflict.md`,
       {encoding: 'utf8'}
     );
     return true;
@@ -25,8 +23,8 @@ async function renameSetup(client, sftpUrl) {
 
 async function renameCleanup(client, sftpUrl) {
   try {
-    await client.delete(makeRemotePath(sftpUrl, 'rename-relative4.md'));
-    await client.delete(makeRemotePath(sftpUrl, 'rename-conflict.md'));
+    await client.delete(`${sftpUrl}/rename-relative4.md`);
+    await client.delete(`${sftpUrl}/rename-conflict.md`);
     return true;
   } catch (err) {
     console.error(`renameCleanup: ${err.message}`);
