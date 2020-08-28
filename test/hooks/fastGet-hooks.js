@@ -1,27 +1,27 @@
 'use strict';
 
-const {makeLocalPath, makeRemotePath} = require('./global-hooks');
+const {makeLocalPath} = require('./global-hooks');
 const fs = require('fs');
 
 async function fastGetSetup(client, sftpUrl, localUrl) {
   try {
     await client.put(
       Buffer.from('fastGet promise test'),
-      makeRemotePath(sftpUrl, 'fastget-promise.txt')
+      sftpUrl + '/fastget-promise.txt'
     );
     await client.put(
       Buffer.from('fast get small file'),
-      makeRemotePath(sftpUrl, 'fastget-small.txt'),
+      sftpUrl + '/fastget-small.txt',
       {encoding: 'utf8'}
     );
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
-      makeRemotePath(sftpUrl, 'fastget-large.txt'),
+      sftpUrl + '/fastget-large.txt',
       {encoding: 'utf8'}
     );
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file2.txt.gz'),
-      makeRemotePath(sftpUrl, 'fastget-gzip.txt.gz')
+      sftpUrl + '/fastget-gzip.txt.gz'
     );
     return true;
   } catch (err) {
@@ -32,10 +32,10 @@ async function fastGetSetup(client, sftpUrl, localUrl) {
 
 async function fastGetCleanup(client, sftpUrl, localUrl) {
   try {
-    await client.delete(makeRemotePath(sftpUrl, 'fastget-promise.txt'));
-    await client.delete(makeRemotePath(sftpUrl, 'fastget-small.txt'));
-    await client.delete(makeRemotePath(sftpUrl, 'fastget-large.txt'));
-    await client.delete(makeRemotePath(sftpUrl, 'fastget-gzip.txt.gz'));
+    await client.delete(sftpUrl + '/fastget-promise.txt');
+    await client.delete(sftpUrl + '/fastget-small.txt');
+    await client.delete(sftpUrl + '/fastget-large.txt');
+    await client.delete(sftpUrl + '/fastget-gzip.txt.gz');
     fs.unlinkSync(makeLocalPath(localUrl, 'fastget-promise.txt'));
     fs.unlinkSync(makeLocalPath(localUrl, 'fastget-small.txt'));
     fs.unlinkSync(makeLocalPath(localUrl, 'fastget-large.txt'));
