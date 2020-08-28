@@ -7,11 +7,7 @@ const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
 const {config, getConnection} = require('./hooks/global-hooks');
 const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
-const {
-  makeLocalPath,
-  makeRemotePath,
-  lastRemoteDir
-} = require('./hooks/global-hooks');
+const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -34,7 +30,7 @@ describe('append() method tests', function () {
     return expect(
       sftp.append(
         Buffer.from('append test 1'),
-        makeRemotePath(config.sftpUrl, 'append-promise-test.md'),
+        `${config.sftpUrl}/append-promise-test.md`,
         {
           encoding: 'utf8'
         }
@@ -46,22 +42,18 @@ describe('append() method tests', function () {
     return expect(
       sftp.append(
         makeLocalPath(config.localUrl, 'test-file1.txt'),
-        makeRemotePath(config.sftpUrl, 'append-test1.md')
+        `${config.sftpUrl}/append-test1.md`
       )
     ).to.be.rejectedWith('Cannot append one file to another');
   });
 
   it('append buffer to file', function () {
     return sftp
-      .append(
-        Buffer.from('hello'),
-        makeRemotePath(config.sftpUrl, 'append-test2.txt'),
-        {
-          encoding: 'utf8'
-        }
-      )
+      .append(Buffer.from('hello'), `${config.sftpUrl}/append-test2.txt`, {
+        encoding: 'utf8'
+      })
       .then(() => {
-        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
         return expect(stats).to.containSubset({size: 23});
@@ -75,11 +67,11 @@ describe('append() method tests', function () {
     str2.push(null);
 
     return sftp
-      .append(str2, makeRemotePath(config.sftpUrl, 'append-test3'), {
+      .append(str2, `${config.sftpUrl}/append-test3`, {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test3'));
+        return sftp.stat(`${config.sftpUrl}/append-test3`);
       })
       .then((stats) => {
         return expect(stats).to.containSubset({size: 32});
@@ -90,7 +82,7 @@ describe('append() method tests', function () {
     return expect(
       sftp.append(
         Buffer.from('hello'),
-        makeRemotePath(config.sftpUrl, 'bad-directory', 'bad-file.txt')
+        `${config.sftpUrl}/bad-directory/bad-file.txt`
       )
     ).to.be.rejectedWith('Bad path');
   });
@@ -99,7 +91,7 @@ describe('append() method tests', function () {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
-        makeRemotePath(config.sftpUrl, 'append-no-such-file.txt')
+        config.sftpUrl + '/append-no-such-file.txt'
       )
     ).to.be.rejectedWith('No such file');
   });
@@ -108,7 +100,7 @@ describe('append() method tests', function () {
     return expect(
       sftp.append(
         Buffer.from('should not work'),
-        makeRemotePath(config.sftpUrl, 'append-dir-test')
+        `${config.sftpUrl}/append-dir-test`
       )
     ).to.be.rejectedWith('Bad path');
   });
@@ -119,7 +111,7 @@ describe('append() method tests', function () {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
         return expect(stats).to.containSubset({size: 28});
@@ -127,18 +119,15 @@ describe('append() method tests', function () {
   });
 
   it('append relative remote path 2', function () {
-    let remotePath = makeRemotePath(
-      '..',
-      lastRemoteDir(config.remoteRoot),
-      'testServer',
-      'append-test2.txt'
-    );
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/append-test2.txt`;
     return sftp
       .append(Buffer.from('hello'), remotePath, {
         encoding: 'utf8'
       })
       .then(() => {
-        return sftp.stat(makeRemotePath(config.sftpUrl, 'append-test2.txt'));
+        return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
         return expect(stats).to.containSubset({size: 33});
