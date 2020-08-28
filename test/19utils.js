@@ -8,7 +8,6 @@ const {
   config,
   getConnection,
   closeConnection,
-  makeRemotePath,
   makeLocalPath
 } = require('./hooks/global-hooks');
 const utils = require('../src/utils');
@@ -58,25 +57,19 @@ describe('formatError tests', function () {
 describe('Test checkRemotePath', function () {
   let sftp;
 
-  // before(function(done) {
-  //   setTimeout(function() {
-  //     done();
-  //   }, config.delay);
-  // });
-
   before('Exist test setup hook', async function () {
     sftp = await getConnection();
-    let remoteDir = makeRemotePath(config.sftpUrl, 'check-dir');
+    let remoteDir = `${config.sftpUrl}/check-dir`;
     await sftp.mkdir(remoteDir, true);
-    let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
+    let remoteFile = `${config.sftpUrl}/check-file.txt`;
     let localFile = makeLocalPath(config.localUrl, 'test-file1.txt');
     await sftp.fastPut(localFile, remoteFile);
     return true;
   });
 
   after('Exist test cleanup hook', async function () {
-    let remoteDir = makeRemotePath(config.sftpUrl, 'check-dir');
-    let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
+    let remoteDir = `${config.sftpUrl}/check-dir`;
+    let remoteFile = `${config.sftpUrl}/check-file.txt`;
     await sftp.rmdir(remoteDir, true);
     await sftp.delete(remoteFile);
     await closeConnection();
@@ -90,7 +83,7 @@ describe('Test checkRemotePath', function () {
   });
 
   it('Returns valid for remote file', function () {
-    let remoteFile = makeRemotePath(config.sftpUrl, 'check-file.txt');
+    let remoteFile = `${config.sftpUrl}/check-file.txt`;
     return expect(
       utils.checkRemotePath(sftp, remoteFile, targetType.readFile)
     ).to.become({
@@ -101,7 +94,7 @@ describe('Test checkRemotePath', function () {
   });
 
   it('Invalid if wrong target type (dir)', function () {
-    let remotePath = makeRemotePath(config.sftpUrl, 'check-file.txt');
+    let remotePath = `${config.sftpUrl}/check-file.txt`;
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.readDir)
     ).to.become({
@@ -126,7 +119,7 @@ describe('Test checkRemotePath', function () {
   });
 
   it('valid but undefined type for non-existent file', function () {
-    let remotePath = makeRemotePath(config.sftpUrl, 'no-such-file.gz');
+    let remotePath = `${config.sftpUrl}/no-such-file.gz`;
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.writeFile)
     ).to.become({
@@ -137,7 +130,7 @@ describe('Test checkRemotePath', function () {
   });
 
   it('valid but undefined type for non-existent dir', function () {
-    let remotePath = makeRemotePath(config.sftpUrl, 'no-such-dir');
+    let remotePath = `${config.sftpUrl}/no-such-dir`;
     return expect(
       utils.checkRemotePath(sftp, remotePath, targetType.writeDir)
     ).to.become({
