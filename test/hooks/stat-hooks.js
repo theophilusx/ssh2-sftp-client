@@ -1,12 +1,10 @@
 'use strict';
 
-const {makeRemotePath} = require('./global-hooks');
-
 async function statSetup(client, sftpUrl) {
   try {
     await client.put(
       Buffer.from('# Stat test data'),
-      makeRemotePath(sftpUrl, 'stat-test.md'),
+      sftpUrl + '/stat-test.md',
       {
         encoding: 'utf8',
         mode: 0o777
@@ -21,7 +19,7 @@ async function statSetup(client, sftpUrl) {
 
 async function statCleanup(client, sftpUrl) {
   try {
-    await client.delete(makeRemotePath(sftpUrl, 'stat-test.md'));
+    await client.delete(sftpUrl + '/stat-test.md');
     return true;
   } catch (err) {
     console.error(`statCleanup: ${err.message}`);
