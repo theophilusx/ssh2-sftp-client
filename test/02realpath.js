@@ -77,7 +77,6 @@ describe('Path tests', function () {
 
   // realPath for windows does not seem to return empty string for non-existent paths
   it("realPath returns '' for non-existing path", function () {
-    console.log(`Platform = ${sftp.remotePlatform}`);
     if (sftp.remotePlatform !== 'win32') {
       return expect(
         sftp.realPath(
