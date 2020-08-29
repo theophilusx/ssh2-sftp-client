@@ -133,10 +133,6 @@ class SftpClient {
             this.client.on('error', connectErrorListener);
           }
           this.client.connect(config);
-          // this.client
-          //   .once('ready', onceReady)
-          //   .once('error', connectErrorListener)
-          //   .connect(config);
         });
       } catch (err) {
         utils.removeListeners(this.client);
@@ -179,12 +175,9 @@ class SftpClient {
               } else {
                 this.debugMsg(`absPath = ${absPath}`);
                 if (absPath.match(/^\/[A-Z]:.*/)) {
-                  //this.remotePathSep = '\\';
-                  this.remotePathSep = '/';
                   this.remotePlatform = 'win32';
                   this.debugMsg('remote platform win32 like');
                 } else {
-                  this.remotePathSep = '/';
                   this.remotePlatform = 'unix';
                   this.debugMsg('Remote platform unix like');
                 }
@@ -1365,16 +1358,6 @@ class SftpClient {
       } finally {
         this.sftp = undefined;
         this.endCalled = false;
-        // Appears that windows based sftp servers generate a ECONNRESET
-        // signal even when normal end() is called. Unfortunately, there is
-        // significant delay after end() has run before this signal is raised.
-        // If we remove the error handler listener before this has occured, then
-        // an uncaught exception is thrown. If we don't remove it, subsequent
-        // re-use of this object will result in multiple error handlers being
-        // added and eventually warnings about possible memory leaks. For now
-        // leaving the listener in place.
-        //this.removeListener('error', endErrorListener);
-        //utils.dumpListeners(this.client);
       }
     });
   }
