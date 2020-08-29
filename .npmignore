@@ -12,6 +12,7 @@ env-turing2
 env-vbox
 env-vbox2
 env-win10
+env-win
 .eslintrc.js
 .mocharc.js
 .indium.json
