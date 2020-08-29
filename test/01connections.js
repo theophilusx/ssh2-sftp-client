@@ -17,7 +17,7 @@ chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe('Connect Tests', function () {
-  beforeEach(async function () {
+  beforeEach(function () {
     return new Promise((resolve, reject) => {
       try {
         setTimeout(function () {
@@ -46,7 +46,7 @@ describe('Connect Tests', function () {
     return expect(type).to.equal('object');
   });
 
-  it('bad host throws exception', async function () {
+  it('bad host throws exception', function () {
     let client = new Client('contest-3');
     return expect(
       client.connect({
@@ -62,7 +62,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad port throws exception', async function () {
+  it('bad port throws exception', function () {
     let client = new Client('contest-4');
     return expect(
       client.connect({
@@ -78,7 +78,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad username throws exception', async function () {
+  it('bad username throws exception', function () {
     let client = new Client('contest-5');
     return expect(
       client.connect({
@@ -94,7 +94,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad password throws exception', async function () {
+  it('bad password throws exception', function () {
     let client = new Client('contest-6');
     return expect(
       client.connect({
@@ -121,7 +121,7 @@ describe('Connect and disconnect', function () {
     ).to.eventually.equal(true);
   });
 
-  it('Connect when connected rejected', async function () {
+  it('Connect when connected rejected', function () {
     let client = new Client();
     return expect(
       client.connect(config).then(() => {
