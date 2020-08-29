@@ -19,6 +19,7 @@ async function chmodSetup(client, sftpUrl) {
 
 async function chmodCleanup(client, sftpUrl) {
   try {
+    await client.chmod(`${sftpUrl}/chmod-test.txt`, 0o777);
     await client.delete(`${sftpUrl}/chmod-test.txt`);
     await client.rmdir(`${sftpUrl}/chmod-test-dir`);
     return true;
