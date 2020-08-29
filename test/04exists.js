@@ -30,19 +30,19 @@ describe('exists() method tests', function () {
 
   it('exists returns truthy for existing directory', function () {
     return expect(
-      sftp.exists(config.sftpUrl + '/exist-test-dir')
+      sftp.exists(`${config.sftpUrl}/exist-test-dir`)
     ).to.eventually.equal('d');
   });
 
   it('exist returns truthy for existing file', function () {
     return expect(
-      sftp.exists(config.sftpUrl + '/exist-file.txt')
+      sftp.exists(`${config.sftpUrl}/exist-file.txt`)
     ).to.eventually.equal('-');
   });
 
   it('exist returns true for file in sub-dir', function () {
     return expect(
-      sftp.exists(config.sftpUrl + '/exist-test-dir/exist-gzip.txt.gz')
+      sftp.exists(`${config.sftpUrl}/exist-test-dir/exist-gzip.txt.gz`)
     ).to.eventually.equal('-');
   });
 
@@ -58,7 +58,7 @@ describe('exists() method tests', function () {
 
   it('Exists return false value for non existent dir', function () {
     return expect(
-      sftp.exists(config.sftpUrl + '/no-such-dir/subdir')
+      sftp.exists(`${config.sftpUrl}/no-such-dir/subdir`)
     ).to.eventually.equal(false);
   });
 
