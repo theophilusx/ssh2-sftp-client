@@ -54,8 +54,8 @@
   - [Timeout while waiting for handshake or handshake errors](#sec-7-5)
 - [Examples](#sec-8)
 - [Change Log](#sec-9)
-  - [v5.3.0 (Dev Version)](#sec-9-1)
-  - [v5.2.2 (Prod Version)](#sec-9-2)
+  - [v5.3.0 (Prod Version)](#sec-9-1)
+  - [v5.2.2](#sec-9-2)
   - [v5.2.1](#sec-9-3)
   - [v5.2.0](#sec-9-4)
   - [v5.1.3](#sec-9-5)
@@ -107,7 +107,7 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) and [SSH2-STREAMS](https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md) project pages.
 
-Current stable release is **v5.2.1**.
+Current stable release is **v5.3.0**.
 
 Code has been tested against Node versions 12.18.2 and 13.14.0
 
@@ -1233,13 +1233,13 @@ I have started collecting example scripts in the example directory of the reposi
 
 # Change Log<a id="sec-9"></a>
 
-## v5.3.0 (Dev Version)<a id="sec-9-1"></a>
+## v5.3.0 (Prod Version)<a id="sec-9-1"></a>
 
 -   Refine event handler management
 -   Fix path processing for win32 based sftp servers
 -   Update documentation
 
-## v5.2.2 (Prod Version)<a id="sec-9-2"></a>
+## v5.2.2<a id="sec-9-2"></a>
 
 -   Bug fix release. Add error code 4 check to stat() method.
 -   bump Mocha version for tests

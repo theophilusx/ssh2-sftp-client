@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.2.1*.
+Current stable release is *v5.3.0*.
 
 Code has been tested against Node versions 12.18.2 and 13.14.0
 
@@ -1523,11 +1523,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.3.0 (Dev Version)
+** v5.3.0 (Prod Version)
    - Refine event handler management
    - Fix path processing for win32 based sftp servers
    - Update documentation 
-** v5.2.2 (Prod Version)
+** v5.2.2 
    - Bug fix release. Add error code 4 check to stat() method.
    - bump Mocha version for tests
 
