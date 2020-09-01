@@ -1370,7 +1370,7 @@ openSSH is =10:30:60=, so you really just need to have enough delay to ensure
 that the 1st connection has completed authentication before the 11th connection
 is attempted.
 
-** How can you pass writable stream as dst for get method?
+** How can I pass writable stream as dst for get method?
 
 If the dst argument passed to the get method is a writeable stream, the remote
 file will be piped into that writeable. If the writeable you pass in is a
@@ -1514,6 +1514,42 @@ host key used to establish the initial secure connection. See the SSH2
 documentation for details. Getting these parameters correct usually resolves the
 issue.
 
+** How can I limit upload/download speed
+
+   If you want to limit the amount of bandwidth used during upload/download of
+   data, you can use a stream to limit throughput. The following example was
+   provided by /kennylbj/.
+
+   #+begin_src javascript
+
+     const Throttle = require('throttle');
+     const progress = require('progress-stream');
+
+     // limit download speed
+     const throttleStream = new Throttle(config.throttle);
+
+     // download progress stream
+     const progressStream = progress({
+       length: fileSize,
+       time: 500,
+     });
+     progressStream.on('progress', (progress) => {
+       console.log(progress.percentage.toFixed(2));
+     });
+
+     const outStream = createWriteStream(localPath);
+
+     // pipe streams together
+     throttleStream.pipe(progressStream).pipe(outStream);
+
+     try {
+       await client.get(remotePath, throttleStream);
+     } catch (e) {
+       console.log('sftp error', e);
+     } finally {
+       await client.close();
+     }
+   #+end_src
 * Examples
 
 I have started collecting example scripts in the example directory of the
@@ -2006,3 +2042,5 @@ Thanks to the following for their contributions -
 - james-pellow :: Cleanup and fix for connect method logic
 - jhorbulyk :: Contributed posixRename() functionality
 - teenangst :: Contributed fix for error code 4 in stat() method
+- kennylbj :: Contributed example of using a throttle stream to limit
+  upload/download bandwidth.

@@ -48,10 +48,11 @@
   - [Don't Re-use SftpClient Objects](#sec-6-4)
 - [FAQ](#sec-7)
   - [Remote server drops connections with only an end event](#sec-7-1)
-  - [How can you pass writable stream as dst for get method?](#sec-7-2)
+  - [How can I pass writable stream as dst for get method?](#sec-7-2)
   - [How can I upload files without having to specify a password?](#sec-7-3)
   - [How can I connect through a Socks Proxy](#sec-7-4)
   - [Timeout while waiting for handshake or handshake errors](#sec-7-5)
+  - [How can I limit upload/download speed](#sec-7-6)
 - [Examples](#sec-8)
 - [Change Log](#sec-9)
   - [v5.3.0 (Prod Version)](#sec-9-1)
@@ -1102,7 +1103,7 @@ Clients first make an unauthenticated connection to the SFTP server to begin neg
 
 One way to avoid this type of issue is to add a delay between connection attempts. It does not need to be a very long delay - just sufficient to permit the previous connection to be authenticated. In fact, the default setting for openSSH is `10:30:60`, so you really just need to have enough delay to ensure that the 1st connection has completed authentication before the 11th connection is attempted.
 
-## How can you pass writable stream as dst for get method?<a id="sec-7-2"></a>
+## How can I pass writable stream as dst for get method?<a id="sec-7-2"></a>
 
 If the dst argument passed to the get method is a writeable stream, the remote file will be piped into that writeable. If the writeable you pass in is a writeable stream created with `fs.createWriteStream()`, the data will be written to the file specified in the constructor call to `createWriteStream()`.
 
@@ -1226,6 +1227,41 @@ client.connect({
 ## Timeout while waiting for handshake or handshake errors<a id="sec-7-5"></a>
 
 Some users have encountered the error 'Timeout while waiting for handshake' or 'Handshake failed, no matching client->server ciphers. This is often due to the client not having the correct configuration for the transport layer algorithms used by ssh2. One of the connect options provided by the ssh2 module is `algorithm`, which is an object that allows you to explicitly set the key exchange, ciphers, hmac and compression algorithms as well as server host key used to establish the initial secure connection. See the SSH2 documentation for details. Getting these parameters correct usually resolves the issue.
+
+## How can I limit upload/download speed<a id="sec-7-6"></a>
+
+If you want to limit the amount of bandwidth used during upload/download of data, you can use a stream to limit throughput. The following example was provided by *kennylbj*.
+
+```javascript
+
+const Throttle = require('throttle');
+const progress = require('progress-stream');
+
+// limit download speed
+const throttleStream = new Throttle(config.throttle);
+
+// download progress stream
+const progressStream = progress({
+  length: fileSize,
+  time: 500,
+});
+progressStream.on('progress', (progress) => {
+  console.log(progress.percentage.toFixed(2));
+});
+
+const outStream = createWriteStream(localPath);
+
+// pipe streams together
+throttleStream.pipe(progressStream).pipe(outStream);
+
+try {
+  await client.get(remotePath, throttleStream);
+} catch (e) {
+  console.log('sftp error', e);
+} finally {
+  await client.close();
+}
+```
 
 # Examples<a id="sec-8"></a>
 
@@ -1629,3 +1665,4 @@ Thanks to the following for their contributions -
 -   **james-pellow:** Cleanup and fix for connect method logic
 -   **jhorbulyk:** Contributed posixRename() functionality
 -   **teenangst:** Contributed fix for error code 4 in stat() method
+-   **kennylbj:** Contributed example of using a throttle stream to limit upload/download bandwidth.
