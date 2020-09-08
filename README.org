@@ -1518,9 +1518,13 @@ issue.
 
    If you want to limit the amount of bandwidth used during upload/download of
    data, you can use a stream to limit throughput. The following example was
-   provided by /kennylbj/.
+   provided by /kennylbj/. Note that there is a caveat that we must set the
+   ~autoClose~ flag to false to avoid calling an extra ~_read()~ on a closed stream
+   that may cause _get Permission Denied error in ssh2-streams. 
+
 
    #+begin_src javascript
+
 
      const Throttle = require('throttle');
      const progress = require('progress-stream');
@@ -1543,11 +1547,12 @@ issue.
      throttleStream.pipe(progressStream).pipe(outStream);
 
      try {
-       await client.get(remotePath, throttleStream);
+       // set autoClose to false
+       await client.get(remotePath, throttleStream, { autoClose: false });
      } catch (e) {
        console.log('sftp error', e);
      } finally {
-       await client.close();
+       await client.end();
      }
    #+end_src
 * Examples
