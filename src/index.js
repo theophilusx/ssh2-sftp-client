@@ -446,7 +446,7 @@ class SftpClient {
    *
    * @return {Promise}
    */
-  async get(remotePath, dst, options) {
+  async get(remotePath, dst, options = {}) {
     const _get = (sftpPath, localDst, options) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`get -> ${sftpPath} `, options);
@@ -489,6 +489,9 @@ class SftpClient {
                 '_get'
               )
             );
+            if (options.autoClose === false) {
+              rdr.destroy();
+            }
             this.removeListener('error', errorListener);
             this.removeListener('close', closeListener);
           });
@@ -498,6 +501,9 @@ class SftpClient {
               resolve(localDst);
             } else {
               resolve(wtr);
+            }
+            if (options.autoClose === false) {
+              rdr.destroy();
             }
             this.removeListener('error', errorListener);
             this.removeListener('close', closeListener);
@@ -677,15 +683,15 @@ class SftpClient {
    *                            value supported by node streams.
    * @return {Promise}
    */
-  async put(localSrc, remotePath, options) {
-    const _put = (src, dst, opts) => {
+  async put(localSrc, remotePath, options = {}) {
+    const _put = (src, dst, options) => {
       return new Promise((resolve, reject) => {
-        this.debugMsg(`put -> ${dst} `, opts);
+        this.debugMsg(`put -> ${dst} `, options);
         let closeListener = utils.makeCloseListener(this, reject, 'put');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'put');
         this.client.prependListener('error', errorListener);
-        let stream = this.sftp.createWriteStream(dst, opts);
+        let stream = this.sftp.createWriteStream(dst, options);
         stream.once('error', (err) => {
           reject(utils.formatError(`${err.message} ${dst}`, 'put'));
           this.removeListener('error', errorListener);
@@ -694,6 +700,9 @@ class SftpClient {
         stream.once('finish', () => {
           utils.removeListeners(stream);
           resolve(`Uploaded data stream to ${dst}`);
+          if (options.autoClose === false) {
+            stream.destroy();
+          }
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
         });
@@ -719,6 +728,9 @@ class SftpClient {
                 'put'
               )
             );
+            if (options.autoClose === false) {
+              stream.destroy();
+            }
             this.removeListener('error', errorListener);
             this.removeListener('close', closeListener);
           });
