@@ -23,6 +23,7 @@ async function fastGetSetup(client, sftpUrl, localUrl) {
       makeLocalPath(localUrl, 'test-file2.txt.gz'),
       sftpUrl + '/fastget-gzip.txt.gz'
     );
+    await client.mkdir(`${sftpUrl}/fg-dir`);
     return true;
   } catch (err) {
     console.error(`fastGetSetup: ${err.message}`);
@@ -32,6 +33,7 @@ async function fastGetSetup(client, sftpUrl, localUrl) {
 
 async function fastGetCleanup(client, sftpUrl, localUrl) {
   try {
+    await client.rmdir(`${sftpUrl}/fg-dir`);
     await client.delete(sftpUrl + '/fastget-promise.txt');
     await client.delete(sftpUrl + '/fastget-small.txt');
     await client.delete(sftpUrl + '/fastget-large.txt');

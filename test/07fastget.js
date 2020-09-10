@@ -29,7 +29,7 @@ describe('fastGet() method tests', function () {
   it('fastGet returns a promise', function () {
     return expect(
       sftp.fastGet(
-        config.sftpUrl + '/fastget-promise.txt',
+        `${config.sftpUrl}/fastget-promise.txt`,
         makeLocalPath(config.localUrl, 'fastget-promise.txt')
       )
     ).to.be.a('promise');
@@ -37,7 +37,7 @@ describe('fastGet() method tests', function () {
 
   it('fastGet small text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'fastget-small.txt');
-    let remotePath = config.sftpUrl + '/fastget-small.txt';
+    let remotePath = `${config.sftpUrl}/fastget-small.txt`;
     await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -46,7 +46,7 @@ describe('fastGet() method tests', function () {
 
   it('fastGet large text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'fastget-large.txt');
-    let remotePath = config.sftpUrl + '/fastget-large.txt';
+    let remotePath = `${config.sftpUrl}/fastget-large.txt`;
     await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -55,7 +55,7 @@ describe('fastGet() method tests', function () {
 
   it('fastGet gzipped file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'fastget-gzip.txt.gz');
-    let remotePath = config.sftpUrl + '/fastget-gzip.txt.gz';
+    let remotePath = `${config.sftpUrl}/fastget-gzip.txt.gz`;
     await sftp.fastGet(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -65,7 +65,7 @@ describe('fastGet() method tests', function () {
   it('fastGet non-existent file is rejected', function () {
     return expect(
       sftp.fastGet(
-        config.sftpUrl + '/fastget-not-exist.txt',
+        `${config.sftpUrl}/fastget-not-exist.txt`,
         makeLocalPath(config.localUrl, 'fastget-not-exist.txt')
       )
     ).to.be.rejectedWith('No such file');
@@ -88,10 +88,9 @@ describe('fastGet() method tests', function () {
       config.localUrl,
       'fastget-relative2-gzip.txt.gz'
     );
-    let remotePath =
-      '../' +
-      lastRemoteDir(config.remoteRoot) +
-      '/testServer/fastget-gzip.txt.gz';
+    let remotePath = `../${lastRemoteDir(
+      config.remoteRoot
+    )}/testServer/fastget-gzip.txt.gz`;
     await sftp.fastGet(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -100,7 +99,7 @@ describe('fastGet() method tests', function () {
 
   it('fastGet local relative path 3', async function () {
     let localPath = './test/testData/fastget-relative3-gzip.txt.gz';
-    let remotePath = config.sftpUrl + '/fastget-gzip.txt.gz';
+    let remotePath = `${config.sftpUrl}/fastget-gzip.txt.gz`;
     await sftp.fastGet(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
@@ -108,12 +107,18 @@ describe('fastGet() method tests', function () {
   });
 
   it('fastGet local relative path 4', async function () {
-    let localPath =
-      '../ssh2-sftp-client/test/testData/fastget-relative4-gzip.txt.gz';
-    let remotePath = config.sftpUrl + '/fastget-gzip.txt.gz';
+    let localPath = './test/testData/fastget-relative4-gzip.txt.gz';
+    let remotePath = `${config.sftpUrl}/fastget-gzip.txt.gz`;
     await sftp.fastGet(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(localStats.size).to.equal(stats.size);
+  });
+
+  it('fastGet throws exception when target is a dir', function () {
+    return expect(
+      sftp.fastGet(`${config.sftpUrl}/fg-dir`),
+      './test/testData/fg-dir'
+    ).to.be.rejectedWith(/must be a file/);
   });
 });
