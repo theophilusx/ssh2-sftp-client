@@ -4,9 +4,13 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {fastPutCleanup} = require('./hooks/fastPut-hooks');
-const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  makeLocalPath,
+  lastRemoteDir
+} = require('./hooks/global-hooks');
+const {fastPutSetup, fastPutCleanup} = require('./hooks/fastPut-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -17,11 +21,12 @@ describe('fastPut() method tests', function () {
 
   before('fastPut setup hook', async function () {
     sftp = await getConnection();
+    fastPutSetup(config.localUrl);
     return true;
   });
 
   after('fastPut cleanup hook', async function () {
-    await fastPutCleanup(sftp, config.sftpUrl);
+    await fastPutCleanup(sftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
@@ -106,5 +111,14 @@ describe('fastPut() method tests', function () {
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(stats.size).to.equal(localStats.size);
+  });
+
+  it('fastPut rejected when local target a dir', function () {
+    return expect(
+      sftp.fastPut(
+        makeLocalPath(config.localUrl, 'fp-dir'),
+        `${config.sftpUrl}/fp-dir`
+      )
+    ).to.be.rejectedWith(/must be a file/);
   });
 });
