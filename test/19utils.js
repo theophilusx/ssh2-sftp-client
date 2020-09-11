@@ -12,6 +12,7 @@ const {
 } = require('./hooks/global-hooks');
 const utils = require('../src/utils');
 const {targetType} = require('../src/constants');
+const path = require('path');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -82,12 +83,32 @@ describe('Test checkRemotePath', function () {
     ).to.become({path: config.sftpUrl, type: 'd', valid: true});
   });
 
+  it('Returns valid for relative remote dir', function () {
+    return expect(
+      utils.checkRemotePath(sftp, './testServer', targetType.readDir)
+    ).to.become({path: config.sftpUrl, type: 'd', valid: true});
+  });
+
   it('Returns valid for remote file', function () {
     let remoteFile = `${config.sftpUrl}/check-file.txt`;
     return expect(
       utils.checkRemotePath(sftp, remoteFile, targetType.readFile)
     ).to.become({
       path: remoteFile,
+      type: '-',
+      valid: true
+    });
+  });
+
+  it('Returns valid for relative remote file', function () {
+    return expect(
+      utils.checkRemotePath(
+        sftp,
+        './testServer/check-file.txt',
+        targetType.readfile
+      )
+    ).to.become({
+      path: `${config.sftpUrl}/check-file.txt`,
       type: '-',
       valid: true
     });
@@ -142,9 +163,17 @@ describe('Test checkRemotePath', function () {
 });
 
 describe('Test checkLocalPath', function () {
+  console.log(`__dirname = ${__dirname}`);
+  console.log(`. = ${path.resolve('.')}`);
   it('Returns valid for local dir', function () {
     return expect(
       utils.checkLocalPath(config.localUrl, targetType.readDir)
+    ).to.eventually.containSubset({type: 'd', valid: true});
+  });
+
+  it('Returns valid for relative local dir', function () {
+    return expect(
+      utils.checkLocalPath('./test', targetType.readDir)
     ).to.eventually.containSubset({type: 'd', valid: true});
   });
 
@@ -156,6 +185,15 @@ describe('Test checkLocalPath', function () {
       type: '-',
       valid: true
     });
+  });
+
+  it('Return valid for relative local file', function () {
+    return expect(
+      utils.checkLocalPath(
+        './test/testData/test-file1.txt',
+        targetType.readFile
+      )
+    ).to.eventually.containSubset({type: '-', valid: true});
   });
 
   it('invalid if wrong target type (file)', function () {
