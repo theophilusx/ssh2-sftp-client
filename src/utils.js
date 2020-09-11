@@ -373,7 +373,7 @@ async function checkLocalWriteDir(localPath, localType) {
 
 async function checkLocalPath(lPath, target = targetType.readFile) {
   try {
-    let localPath = path.normalize(lPath);
+    let localPath = path.resolve(lPath);
     let type = await localExists(localPath);
     switch (target) {
       case targetType.readFile:
