@@ -497,13 +497,13 @@ class SftpClient {
           });
           wtr.once('finish', () => {
             utils.removeListeners(rdr);
+            if (options.autoClose === false) {
+              rdr.destroy();
+            }
             if (typeof localDst === 'string') {
               resolve(localDst);
             } else {
               resolve(wtr);
-            }
-            if (options.autoClose === false) {
-              rdr.destroy();
             }
             this.removeListener('error', errorListener);
             this.removeListener('close', closeListener);
@@ -699,10 +699,10 @@ class SftpClient {
         });
         stream.once('finish', () => {
           utils.removeListeners(stream);
-          resolve(`Uploaded data stream to ${dst}`);
           if (options.autoClose === false) {
             stream.destroy();
           }
+          resolve(`Uploaded data stream to ${dst}`);
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
         });
