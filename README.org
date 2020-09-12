@@ -6,7 +6,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
 
-Current stable release is *v5.3.0*.
+Current stable release is *v5.3.1*.
 
 Code has been tested against Node versions 12.18.2 and 13.14.0
 
@@ -274,6 +274,15 @@ reset to false in preparation for the next error.
    - Add additional documentation on events/promises, platform quirks and
      platform differences.
 
+** Version 5.3.1
+   - Fix bug in handling of relative local paths
+   - Modified ~get()~ and ~put()~ methods to support special purpose streams
+     which require ~autoClose~ to be ~false~. These methods will now look for
+     the ~autoClose: false~ property in the options object and if it is false,
+     will issue a ~destroy()~ on the underlying stream just before the promise
+     is resolved. The default is ~autoClose: true~ and this default should be
+     used unless there is a known specific reason to change it to false.
+     
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -1564,7 +1573,11 @@ handling and may contain errors. However, I think they are still useful for
 helping developers see how the module and API can be used.
 
 * Change Log
-** v5.3.0 (Prod Version)
+** V5.3.1 (Prod Version)
+   - Fix bug in handling of relative local paths
+   - Change handling of stream closures in ~get()~ and ~put()~ methods
+
+** v5.3.0 
    - Refine event handler management
    - Fix path processing for win32 based sftp servers
    - Update documentation 
