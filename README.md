@@ -1,4 +1,4 @@
-- [SSH2 SFTP Client](#sec-1)
+- [Overview](#sec-1)
 - [Installation](#sec-2)
 - [Basic Usage](#sec-3)
 - [Version 5.x](#sec-4)
@@ -66,7 +66,7 @@
 - [Contributors](#sec-12)
 
 
-# SSH2 SFTP Client<a id="sec-1"></a>
+# Overview<a id="sec-1"></a>
 
 an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ssh2) which provides a high level convenience abstraction as well as a Promise based API.
 

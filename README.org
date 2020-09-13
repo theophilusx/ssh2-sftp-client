@@ -1,6 +1,7 @@
 #+OPTONS: H:2 toc:2
+#+TITLE: SSH2 SFTP Client
 
-* SSH2 SFTP Client
+* Overview
 
 an SFTP client for node.js, a wrapper around [[https://github.com/mscdex/ssh2][SSH2]]  which provides a high level
 convenience abstraction as well as a Promise based API.
