@@ -1,4 +1,4 @@
-#+OPTONS: H:2
+#+OPTONS: H:2 toc:2
 
 * SSH2 SFTP Client
 
