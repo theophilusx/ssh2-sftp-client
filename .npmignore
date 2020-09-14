@@ -1,6 +1,7 @@
 *.tgz
 .DS_Store
 README.org
+CHANGELOG.org
 node_modules
 tmp
 test
@@ -23,6 +24,4 @@ tools
 .log
 *~
 mate-vbox
-CHANGELOG.org
-README.org
 
