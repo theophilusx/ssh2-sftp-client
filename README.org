@@ -1032,7 +1032,7 @@ directory.
 
 #+begin_src javascript
   let path = '/path/to/remote/file.txt';
-  let ndwMode = 0o644;  // rw-r-r
+  let newMode = 0o644;  // rw-r-r
   let client = new Client();
 
   client.connect(config)
