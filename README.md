@@ -850,7 +850,7 @@ Change the mode (read, write or execute permissions) of a remote file or directo
 
     ```javascript
     let path = '/path/to/remote/file.txt';
-    let ndwMode = 0o644;  // rw-r-r
+    let newMode = 0o644;  // rw-r-r
     let client = new Client();
     
     client.connect(config)
