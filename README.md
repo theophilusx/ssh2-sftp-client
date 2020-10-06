@@ -1421,3 +1421,4 @@ Thanks to the following for their contributions -
 -   **jhorbulyk:** Contributed posixRename() functionality
 -   **teenangst:** Contributed fix for error code 4 in stat() method
 -   **kennylbj:** Contributed example of using a throttle stream to limit upload/download bandwidth.
+-   **anton-erofeev:** Documentation fix
