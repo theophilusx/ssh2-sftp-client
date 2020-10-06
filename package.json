@@ -7,7 +7,11 @@
     "type": "git",
     "url": "https://github.com/theophilusx/ssh2-sftp-client"
   },
-  "keywords": ["sftp", "nodejs", "promises"],
+  "keywords": [
+    "sftp",
+    "nodejs",
+    "promises"
+  ],
   "scripts": {
     "test": "mocha"
   },
@@ -32,7 +36,7 @@
     "checksum": "^0.1.1",
     "dotenv": "^8.2.0",
     "mocha": "^8.1.3",
-    "moment": "^2.27.0",
+    "moment": "^2.29.0",
     "through2": "^4.0.2"
   }
 }

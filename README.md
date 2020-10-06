@@ -850,7 +850,7 @@ Change the mode (read, write or execute permissions) of a remote file or directo
 
     ```javascript
     let path = '/path/to/remote/file.txt';
-    let ndwMode = 0o644;  // rw-r-r
+    let newMode = 0o644;  // rw-r-r
     let client = new Client();
     
     client.connect(config)
@@ -1421,3 +1421,4 @@ Thanks to the following for their contributions -
 -   **jhorbulyk:** Contributed posixRename() functionality
 -   **teenangst:** Contributed fix for error code 4 in stat() method
 -   **kennylbj:** Contributed example of using a throttle stream to limit upload/download bandwidth.
+-   **anton-erofeev:** Documentation fix
