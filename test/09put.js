@@ -81,7 +81,7 @@ describe('put() method tests', function () {
         makeLocalPath(config.localUrl, 'no-such-file.txt'),
         `${config.sftpUrl}/mocha-put-no-file.txt`
       )
-    ).to.be.rejectedWith('No such file');
+    ).to.be.rejectedWith('no such file');
   });
 
   it('put with bad dst path should be rejected', function () {
@@ -90,7 +90,7 @@ describe('put() method tests', function () {
         makeLocalPath(config.localUrl, 'test-file1.txt'),
         `${config.sftpUrl}/bad-directory/bad-file.txt`
       )
-    ).to.be.rejectedWith('Bad path');
+    ).to.be.rejectedWith('No such file');
   });
 
   it('put relative remote path 1', async function () {

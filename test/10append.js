@@ -84,16 +84,18 @@ describe('append() method tests', function () {
         Buffer.from('hello'),
         `${config.sftpUrl}/bad-directory/bad-file.txt`
       )
-    ).to.be.rejectedWith('Bad path');
+    ).to.be.rejectedWith('No such file');
   });
 
-  it('append to non-existing file is rejected', function () {
+  it('append to non-existing file creates the file', function () {
     return expect(
       sftp.append(
-        Buffer.from('should not work'),
-        config.sftpUrl + '/append-no-such-file.txt'
+        Buffer.from('this should create a file'),
+        config.sftpUrl + '/append-new-file.txt'
       )
-    ).to.be.rejectedWith('No such file');
+    ).to.eventually.equal(
+      `Appended data to ${config.sftpUrl}/append-new-file.txt`
+    );
   });
 
   it('append to directory is rejected', function () {
@@ -102,7 +104,7 @@ describe('append() method tests', function () {
         Buffer.from('should not work'),
         `${config.sftpUrl}/append-dir-test`
       )
-    ).to.be.rejectedWith('Bad path');
+    ).to.be.rejectedWith('Failure');
   });
 
   it('append relative remote path 1', function () {
