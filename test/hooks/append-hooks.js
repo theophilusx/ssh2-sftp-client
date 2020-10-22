@@ -33,6 +33,7 @@ async function appendCleanup(client, sftpUrl) {
     await client.delete(`${sftpUrl}/append-test1.md`);
     await client.delete(`${sftpUrl}/append-test2.txt`);
     await client.delete(`${sftpUrl}/append-test3`);
+    await client.delete(`${sftpUrl}/append-new-file.txt`);
     await client.rmdir(`${sftpUrl}/append-dir-test`);
     return true;
   } catch (err) {

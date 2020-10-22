@@ -63,7 +63,7 @@ describe('fastPut() method tests', function () {
         makeLocalPath(config.localUrl, 'file-not-exist.txt'),
         config.sftpUrl + '/fastput-error.txt'
       )
-    ).to.rejectedWith('No such file');
+    ).to.rejectedWith('no such file');
   });
 
   it('fastPut with bad destination directory is rejected', function () {
@@ -72,7 +72,7 @@ describe('fastPut() method tests', function () {
         makeLocalPath(config.localUrl, 'test-file1.txt'),
         config.sftpUrl + '/non-existent-dir/fastput-error.txt'
       )
-    ).to.rejectedWith('Bad path');
+    ).to.rejectedWith('No such file');
   });
 
   it('fastPut remote relative path 1', async function () {
@@ -119,6 +119,6 @@ describe('fastPut() method tests', function () {
         makeLocalPath(config.localUrl, 'fp-dir'),
         `${config.sftpUrl}/fp-dir`
       )
-    ).to.be.rejectedWith(/must be a file/);
+    ).to.be.rejectedWith(/illegal operation on a directory/);
   });
 });
