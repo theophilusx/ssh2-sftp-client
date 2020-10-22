@@ -131,7 +131,7 @@ function makeCloseListener(client, reject, name) {
   return function () {
     if (!client.endCalled) {
       if (reject) {
-        reject(formatError('Connection closed unepectedly', name));
+        reject(formatError('Connection closed unexpectedly', name));
       } else {
         console.error(`${client.clientName}: Connection closed unexpectedly`);
       }
