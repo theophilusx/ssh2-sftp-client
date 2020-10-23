@@ -801,35 +801,26 @@ class SftpClient {
 
     try {
       utils.haveConnection(this, 'rmdir');
-      let pathInfo = await utils.checkRemotePath(
-        this,
-        remotePath,
-        targetType.writeDir
-      );
-      this.debugMsg('rmdir remoe path info ', pathInfo);
-      if (!pathInfo.valid) {
-        let e = utils.formatError(pathInfo.msg, 'rmdir', pathInfo.code);
-        throw e;
-      }
+      let absPath = await utils.normalizeRemotePath(this, remotePath);
       if (!recursive) {
-        return _rmdir(pathInfo.path);
+        return _rmdir(absPath);
       }
-      let list = await this.list(pathInfo.path);
+      let list = await this.list(absPath);
       if (list.length) {
         let files = list.filter((item) => item.type !== 'd');
         let dirs = list.filter((item) => item.type === 'd');
         this.debugMsg('rmdir contents (files): ', files);
         this.debugMsg('rmdir contents (dirs): ', dirs);
         for (let f of files) {
-          await this.delete(pathInfo.path + this.remotePathSep + f.name);
+          await this.delete(`${absPath}${this.remotePathSep}${f.name}`);
         }
         for (let d of dirs) {
-          await this.rmdir(pathInfo.path + this.remotePathSep + d.name, true);
+          await this.rmdir(`${absPath}${this.remotePathSep}${d.name}`, true);
         }
       }
-      return _rmdir(pathInfo.path);
+      return _rmdir(absPath);
     } catch (err) {
-      throw utils.formatError(err, 'rmdir');
+      throw utils.formatError(err, 'rmdir', err.code);
     }
   }
 
@@ -842,44 +833,31 @@ class SftpClient {
    * @return {Promise} with string 'Successfully deleeted file' once resolved
    *
    */
-  async delete(remotePath) {
-    const _delete = (p) => {
-      return new Promise((resolve, reject) => {
-        this.debugMsg(`delete -> ${p}`);
+  delete(remotePath) {
+    return new Promise((resolve, reject) => {
+      if (utils.haveConnection(this, 'delete', reject)) {
+        this.debugMsg(`delete -> ${remotePath}`);
         let closeListener = utils.makeCloseListener(this, reject, 'delete');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'delete');
         this.client.prependListener('error', errorListener);
-        this.sftp.unlink(p, (err) => {
+        this.sftp.unlink(remotePath, (err) => {
           if (err) {
             this.debugMsg(`delete error ${err.message} code: ${err.code}`);
             reject(
-              utils.formatError(`${err.message} ${p}`, '_delete', err.code)
+              utils.formatError(
+                `${err.message} ${remotePath}`,
+                'delete',
+                err.code
+              )
             );
           }
-          resolve('Successfully deleted file');
+          resolve(`Successfully deleted ${remotePath}`);
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
         });
-      });
-    };
-
-    try {
-      utils.haveConnection(this, 'delete');
-      let pathInfo = await utils.checkRemotePath(
-        this,
-        remotePath,
-        targetType.writeFile
-      );
-      this.debugMsg('delete remote path info ', pathInfo);
-      if (!pathInfo.valid) {
-        let e = utils.formatError(pathInfo.msg, 'delete', pathInfo.code);
-        throw e;
       }
-      return _delete(pathInfo.path);
-    } catch (err) {
-      throw utils.formatError(err, 'delete');
-    }
+    });
   }
 
   /**
@@ -893,69 +871,31 @@ class SftpClient {
    * @return {Promise}
    *
    */
-  async rename(fromPath, toPath) {
-    const _rename = (from, to) => {
-      return new Promise((resolve, reject) => {
-        this.debugMsg(`rename -> ${from} ${to}`);
+  rename(fromPath, toPath) {
+    return new Promise((resolve, reject) => {
+      if (utils.haveConnection(this, 'rename', reject)) {
+        this.debugMsg(`rename -> ${fromPath} ${toPath}`);
         let closeListener = utils.makeCloseListener(this, reject, 'rename');
         this.client.prependListener('close', closeListener);
         let errorListener = utils.makeErrorListener(reject, this, 'rename');
         this.client.prependListener('error', errorListener);
-        this.sftp.rename(from, to, (err) => {
+        this.sftp.rename(fromPath, toPath, (err) => {
           if (err) {
             this.debugMsg(`rename error ${err.message} code: ${err.code}`);
             reject(
               utils.formatError(
-                `${err.message} From: ${from} To: ${to}`,
-                '_rename'
+                `${err.message} From: ${fromPath} To: ${toPath}`,
+                'rename',
+                err.code
               )
             );
           }
-          resolve(`Successfully renamed ${from} to ${to}`);
+          resolve(`Successfully renamed ${fromPath} to ${toPath}`);
           this.removeListener('error', errorListener);
           this.removeListener('close', closeListener);
         });
-      });
-    };
-
-    try {
-      utils.haveConnection(this, 'rename');
-      let fromInfo = await utils.checkRemotePath(
-        this,
-        fromPath,
-        targetType.readObj
-      );
-      this.debugMsg('rename from path info ', fromInfo);
-      if (!fromInfo.valid) {
-        let e = utils.formatError(fromInfo.msg, 'rename', fromInfo.code);
-        throw e;
       }
-      let toInfo = await utils.checkRemotePath(
-        this,
-        toPath,
-        targetType.writeObj
-      );
-      this.debugMsg('rename to path info ', toInfo);
-      if (toInfo.type) {
-        let e = utils.formatError(
-          `Permission denied: ${toInfo.path} already exists`,
-          'rename',
-          errorCode.permission
-        );
-        throw e;
-      }
-      if (!toInfo.valid) {
-        let e = utils.formatError(
-          toInfo.parentMsg,
-          'rename',
-          toInfo.parentCode
-        );
-        throw e;
-      }
-      return _rename(fromInfo.path, toInfo.path);
-    } catch (err) {
-      throw utils.formatError(err, 'rename');
-    }
+    });
   }
 
   /**
