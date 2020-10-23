@@ -838,7 +838,11 @@ class SftpClient {
       }
       return _rmdir(absPath);
     } catch (err) {
+<<<<<<< HEAD
       return utils.handleError(err, 'rmdir');
+=======
+      throw utils.formatError(err, 'rmdir', err.code);
+>>>>>>> 79bbc2b... (WIP) Remove additional error checking
     }
   }
 
