@@ -33,7 +33,9 @@ describe('delete() method tests', function () {
   it('delete a file', function () {
     return expect(
       sftp.delete(`${config.sftpUrl}/delete-file.md`)
-    ).to.eventually.equal('Successfully deleted file');
+    ).to.eventually.equal(
+      `Successfully deleted ${config.sftpUrl}/delete-file.md`
+    );
   });
 
   it('delete non-existent file is rejected', function () {
@@ -45,7 +47,9 @@ describe('delete() method tests', function () {
   it('delete with relative path 1', function () {
     return expect(
       sftp.delete('./testServer/delete-relative1.txt')
-    ).to.eventually.equal('Successfully deleted file');
+    ).to.eventually.equal(
+      'Successfully deleted ./testServer/delete-relative1.txt'
+    );
   });
 
   it('delete with relative path 2', function () {
@@ -53,7 +57,7 @@ describe('delete() method tests', function () {
       config.remoteRoot
     )}/testServer/delete-relative2.txt`;
     return expect(sftp.delete(remotePath)).to.eventually.equal(
-      'Successfully deleted file'
+      `Successfully deleted ${remotePath}`
     );
   });
 });
