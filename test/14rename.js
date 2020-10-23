@@ -66,7 +66,7 @@ describe('rename() method tests', function () {
         `${config.sftpUrl}/rename-new.md`,
         `${config.sftpUrl}/rename-conflict.md`
       )
-    ).to.be.rejectedWith('Permission denied');
+    ).to.be.rejectedWith('Failure');
   });
 
   it('rename with relative source 1', function () {
