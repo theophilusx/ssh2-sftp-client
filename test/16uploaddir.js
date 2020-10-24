@@ -91,7 +91,7 @@ describe('Uploaddir bad path tests', function () {
     let localDir = makeLocalPath(config.localUrl, 'no-such-dir');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
-      /No such directory/
+      /no such file or directory/
     );
   });
 
@@ -99,7 +99,7 @@ describe('Uploaddir bad path tests', function () {
     let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
-      /Bad path/
+      /not a directory/
     );
   });
 
@@ -136,7 +136,7 @@ describe('Download directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'not-needed');
     let remoteDir = `${config.sftpUrl}/no-such-dir`;
     return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
-      'No such directory'
+      'No such file'
     );
   });
 
