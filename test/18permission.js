@@ -32,14 +32,14 @@ if (process.platform !== 'win32') {
             makeLocalPath(config.localUrl, 'no-access.txt'),
             `${config.sftpUrl}/no-access1.txt`
           )
-        ).be.rejectedWith('Permission denied');
+        ).be.rejectedWith('permission denied');
       });
 
       it('put throws exception', function () {
         return expect(
           sftp.put(
             makeLocalPath(config.localUrl, 'no-access.txt'),
-            `${config.sftpUrl}/no-access1.txt`
+            `${config.sftpUrl}/no-access2.txt`
           )
         ).be.rejectedWith('Permission denied');
       });

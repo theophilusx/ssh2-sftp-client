@@ -81,7 +81,7 @@ describe('put() method tests', function () {
         makeLocalPath(config.localUrl, 'no-such-file.txt'),
         `${config.sftpUrl}/mocha-put-no-file.txt`
       )
-    ).to.be.rejectedWith('no such file');
+    ).to.be.rejectedWith('Bad path');
   });
 
   it('put with bad dst path should be rejected', function () {
