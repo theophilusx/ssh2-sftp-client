@@ -1,8 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const path = require('path');
-const {errorCode, targetType} = require('./constants');
+const {errorCode} = require('./constants');
 
 /**
  * Generate a new Error object with a reformatted error message which
@@ -86,7 +85,7 @@ function handleError(err, name, reject) {
     if (err.custom) {
       throw err;
     } else {
-      throw formatError(err, name);
+      throw formatError(err, name, err.code);
     }
   }
 }
@@ -110,9 +109,9 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function makeErrorListener(reject, self, name) {
+function makeErrorListener(client, reject, name) {
   return function (err) {
-    self.errorHandled = true;
+    client.errorHandled = true;
     reject(formatError(err, name));
   };
 }
@@ -174,228 +173,6 @@ function localExists(localPath) {
   });
 }
 
-/**
- * Used by checkRemotePath and checkLocalPath to help ensure consistent
- * error messages.
- *
- * @param {Error} err - original error
- * @param {String} testPath - path associated with the error
- * @returns {Object} with properties of 'msg' and 'code'.
- */
-function classifyError(err, testPath) {
-  switch (err.code) {
-    case 'EACCES':
-      return {
-        msg: `Permission denied: ${testPath}`,
-        code: errorCode.permission
-      };
-    case 'ENOENT':
-      return {
-        msg: `No such file: ${testPath}`,
-        code: errorCode.notexist
-      };
-    case 'ENOTDIR':
-      return {
-        msg: `Not a directory: ${testPath}`,
-        code: errorCode.notdir
-      };
-    default:
-      return {
-        msg: err.message,
-        code: err.code ? err.code : errorCode.generic
-      };
-  }
-}
-
-function localAccess(localPath, mode) {
-  return new Promise((resolve) => {
-    fs.access(localPath, mode, (err) => {
-      if (err) {
-        let {msg, code} = classifyError(err, localPath);
-        resolve({
-          path: localPath,
-          valid: false,
-          msg: msg,
-          code: code
-        });
-      } else {
-        resolve({
-          path: localPath,
-          valid: true
-        });
-      }
-    });
-  });
-}
-
-async function checkLocalReadFile(localPath, localType) {
-  try {
-    let rslt = {
-      path: localPath,
-      type: localType
-    };
-    if (localType === 'd') {
-      rslt.valid = false;
-      rslt.msg = `Bad path: ${localPath} must be a file`;
-      rslt.code = errorCode.badPath;
-      return rslt;
-    } else {
-      let access = await localAccess(localPath, fs.constants.R_OK);
-      if (access.valid) {
-        rslt.valid = true;
-        return rslt;
-      } else {
-        rslt.valid = false;
-        rslt.msg = access.msg;
-        rslt.code = access.code;
-        return rslt;
-      }
-    }
-  } catch (err) {
-    throw formatError(err, 'checkLocalReadFile');
-  }
-}
-
-async function checkLocalReadDir(localPath, localType) {
-  try {
-    let rslt = {
-      path: localPath,
-      type: localType
-    };
-    if (!localType) {
-      rslt.valid = false;
-      rslt.msg = `No such directory: ${localPath}`;
-      rslt.code = errorCode.notdir;
-      return rslt;
-    } else if (localType !== 'd') {
-      rslt.valid = false;
-      rslt.msg = `Bad path: ${localPath} must be a directory`;
-      rslt.code = errorCode.badPath;
-      return rslt;
-    } else {
-      let access = await localAccess(
-        localPath,
-        fs.constants.R_OK | fs.constants.X_OK
-      );
-      if (!access.valid) {
-        rslt.valid = false;
-        rslt.msg = access.msg;
-        rslt.code = access.code;
-        return rslt;
-      }
-      rslt.valid = true;
-      return rslt;
-    }
-  } catch (err) {
-    throw formatError(err, 'checkLocalReadDir');
-  }
-}
-
-async function checkLocalWriteFile(localPath, localType) {
-  try {
-    let rslt = {
-      path: localPath,
-      type: localType
-    };
-    if (localType === 'd') {
-      rslt.valid = false;
-      rslt.msg = `Bad path: ${localPath} must be a file`;
-      rslt.code = errorCode.badPath;
-      return rslt;
-    } else if (!localType) {
-      let dir = path.parse(localPath).dir;
-      let parent = await localAccess(dir, fs.constants.W_OK);
-      if (parent.valid) {
-        rslt.valid = true;
-        return rslt;
-      } else {
-        rslt.valid = false;
-        rslt.msg = parent.msg;
-        rslt.code = parent.code;
-        return rslt;
-      }
-    } else {
-      let access = await localAccess(localPath, fs.constants.W_OK);
-      if (access.valid) {
-        rslt.valid = true;
-        return rslt;
-      } else {
-        rslt.valid = false;
-        rslt.msg = access.msg;
-        rslt.code = access.code;
-        return rslt;
-      }
-    }
-  } catch (err) {
-    throw formatError(err, 'checkLocalWriteFile');
-  }
-}
-
-async function checkLocalWriteDir(localPath, localType) {
-  try {
-    let rslt = {
-      path: localPath,
-      type: localType
-    };
-    if (!localType) {
-      let parent = path.parse(localPath).dir;
-      let access = await localAccess(parent, fs.constants.W_OK);
-      if (access.valid) {
-        rslt.valid = true;
-        return rslt;
-      } else {
-        rslt.valid = false;
-        rslt.msg = access.msg;
-        rslt.code = access.code;
-        return rslt;
-      }
-    } else if (localType !== 'd') {
-      rslt.valid = false;
-      rslt.msg = `Bad path: ${localPath} must be a directory`;
-      rslt.code = errorCode.badPath;
-      return rslt;
-    } else {
-      let access = await localAccess(localPath, fs.constants.W_OK);
-      if (access.valid) {
-        rslt.valid = true;
-        return rslt;
-      } else {
-        rslt.valid = false;
-        rslt.msg = access.msg;
-        rslt.code = access.code;
-        return rslt;
-      }
-    }
-  } catch (err) {
-    throw formatError(err, 'checkLocalWriteDir');
-  }
-}
-
-async function checkLocalPath(lPath, target = targetType.readFile) {
-  try {
-    let localPath = path.resolve(lPath);
-    let type = await localExists(localPath);
-    switch (target) {
-      case targetType.readFile:
-        return checkLocalReadFile(localPath, type);
-      case targetType.readDir:
-        return checkLocalReadDir(localPath, type);
-      case targetType.writeFile:
-        return checkLocalWriteFile(localPath, type);
-      case targetType.writeDir:
-        return checkLocalWriteDir(localPath, type);
-      default:
-        return {
-          path: localPath,
-          type: type,
-          valid: true
-        };
-    }
-  } catch (err) {
-    throw formatError(err, 'checkLocalPath');
-  }
-}
-
 async function normalizeRemotePath(client, aPath) {
   try {
     if (aPath.startsWith('..')) {
@@ -408,207 +185,6 @@ async function normalizeRemotePath(client, aPath) {
     return aPath;
   } catch (err) {
     throw formatError(err, 'normalizeRemotePath');
-  }
-}
-
-function checkReadObject(aPath, type) {
-  return {
-    path: aPath,
-    type: type,
-    valid: type ? true : false,
-    msg: type ? undefined : `No such file ${aPath}`,
-    code: type ? undefined : errorCode.notexist
-  };
-}
-
-function checkReadFile(aPath, type) {
-  if (!type) {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `No such file: ${aPath}`,
-      code: errorCode.notexist
-    };
-  } else if (type === 'd') {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `Bad path: ${aPath} must be a file`,
-      code: errorCode.badPath
-    };
-  }
-  return {
-    path: aPath,
-    type: type,
-    valid: true
-  };
-}
-
-function checkReadDir(aPath, type) {
-  if (!type) {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `No such directory: ${aPath}`,
-      code: errorCode.notdir
-    };
-  } else if (type !== 'd') {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `Bad path: ${aPath} must be a directory`,
-      code: errorCode.badPath
-    };
-  }
-  return {
-    path: aPath,
-    type: type,
-    valid: true
-  };
-}
-
-async function checkWriteFile(client, aPath, type) {
-  if (type && type === 'd') {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `Bad path: ${aPath} must be a regular file`,
-      code: errorCode.badPath
-    };
-  } else if (!type) {
-    let {root, dir} = path.parse(aPath);
-    //let parentDir = path.parse(aPath).dir;
-    if (!dir) {
-      return {
-        path: aPath,
-        type: false,
-        valid: false,
-        msg: `Bad path: ${aPath} cannot determine parent directory`,
-        code: errorCode.badPath
-      };
-    }
-    if (root === dir) {
-      return {
-        path: aPath,
-        type: type,
-        valid: true
-      };
-    }
-    let parentType = await client.exists(dir);
-    if (!parentType) {
-      return {
-        path: aPath,
-        type: type,
-        valid: false,
-        msg: `Bad path: ${dir} parent not exist`,
-        code: errorCode.badPath
-      };
-    } else if (parentType !== 'd') {
-      return {
-        path: aPath,
-        type: type,
-        valid: false,
-        msg: `Bad path: ${dir} must be a directory`,
-        code: errorCode.badPath
-      };
-    }
-    return {
-      path: aPath,
-      type: type,
-      valid: true
-    };
-  }
-  return {
-    path: aPath,
-    type: type,
-    valid: true
-  };
-}
-
-async function checkWriteDir(client, aPath, type) {
-  if (type && type !== 'd') {
-    return {
-      path: aPath,
-      type: type,
-      valid: false,
-      msg: `Bad path: ${aPath} must be a directory`,
-      code: errorCode.badPath
-    };
-  } else if (!type) {
-    let {root, dir} = path.parse(aPath);
-    if (root === dir) {
-      return {
-        path: aPath,
-        type: type,
-        valid: true
-      };
-    }
-    if (!dir) {
-      return {
-        path: aPath,
-        type: false,
-        valid: false,
-        msg: `Bad path: ${aPath} cannot determine directory parent`,
-        code: errorCode.badPath
-      };
-    }
-    let parentType = await client.exists(dir);
-    if (parentType && parentType !== 'd') {
-      return {
-        path: aPath,
-        type: type,
-        valid: false,
-        msg: `Bad path: ${parentDir} must be a directory`,
-        code: errorCode.badPath
-      };
-    }
-  }
-  // don't care if parent does not exist as it might be created
-  // via recursive call to mkdir.
-  return {
-    path: aPath,
-    type: type,
-    valid: true
-  };
-}
-
-function checkWriteObject(aPath, type) {
-  // for writeObj, not much error checking we can do
-  // Just return path, type and valid indicator
-  return {
-    path: aPath,
-    type: type,
-    valid: true
-  };
-}
-
-async function checkRemotePath(client, rPath, target = targetType.readFile) {
-  let aPath = await normalizeRemotePath(client, rPath);
-  let type = await client.exists(aPath);
-  switch (target) {
-    case targetType.readObj:
-      return checkReadObject(aPath, type);
-    case targetType.readFile:
-      return checkReadFile(aPath, type);
-    case targetType.readDir:
-      return checkReadDir(aPath, type);
-    case targetType.writeFile:
-      return checkWriteFile(client, aPath, type);
-    case targetType.writeDir:
-      return checkWriteDir(client, aPath, type);
-    case targetType.writeObj:
-      return checkWriteObject(aPath, type);
-    default:
-      throw formatError(
-        `Unknown target type: ${target}`,
-        'checkRemotePath',
-        errorCode.generic
-      );
   }
 }
 
@@ -668,9 +244,7 @@ module.exports = {
   makeEndListener,
   makeCloseListener,
   localExists,
-  checkLocalPath,
   normalizeRemotePath,
-  checkRemotePath,
   haveConnection,
   dumpListeners,
   hasListener
