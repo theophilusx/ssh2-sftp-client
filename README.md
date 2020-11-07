@@ -309,7 +309,7 @@ Connect to an sftp server. Full documentation for connection options is availabl
       password: 'borsch', // string Password for password-based user authentication
       agent: process.env.SSH_AGENT, // string - Path to ssh-agent's UNIX socket
       privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
-      passphrase; 'a pass phrase', // string - For an encrypted private key
+      passphrase: 'a pass phrase', // string - For an encrypted private key
       readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
       strictVendor: true // boolean - Performs a strict server vendor check
       debug: myDebug // function - Set this to a function that receives a single
