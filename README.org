@@ -23,7 +23,19 @@ affect fastput, fastget, put and possibly get operations. Until this issue is
 resolved and a new version of ssh2/ssh2-streams is released, using node v14 is
 not recommended.
 
-A bug report hass been logged against the ssh2-streams library as [[https://github.com/mscdex/ssh2-streams/issues/156][issue 156]].  
+A bug report hass been logged against the ssh2-streams library as [[https://github.com/mscdex/ssh2-streams/issues/156][issue 156]].
+
+_UPDATE_: The author of the upstream ssh2 and ssh2-streams module has decided on
+a re-write of the ssh2 module to address the above issues as well as some other
+design limitations and to allow the module to better fit in with newer versions
+of node. As part of that process, the functionality of ssh2-streams is being
+incorporated into the main ssh2 module and the ssh2-streams module is being
+deprecated. This will require a significant update to this module and may result
+in some API changes, depending on what changes in the re-write of ssh2.
+
+To support these changes, a new branch called /version-6/ has been created. This
+branch will use the newest version of ssh2 and for now is very much experimental
+and subject to change.
 
 * Installation
 
@@ -225,7 +237,7 @@ reset to false in preparation for the next error.
    - Fix bug in checkRemotePath() relating to poor path specifications where
      you cannot determine parent directory.
 
-** Version 5.1.1 
+** Version 5.1.1
    - Bug fix for unexpected close of connections. It would seem that a
      connections can be unexpectedly closed without an accompanying error event.
      As methods only looked for error events, the method promise wold never
@@ -240,26 +252,26 @@ reset to false in preparation for the next error.
      inside promise chains. Common symptom is what appears to be truncated file
      upload/download. What is really happening is that the end method is being
      called before the transfer has completed.
-     
-** Version 5.1.2 
+
+** Version 5.1.2
    - Mainly a bug fix. We needed to add back a global close listener to ensure
-     the sftp object is unset whenever a close event occurs. As close events can 
+     the sftp object is unset whenever a close event occurs. As close events can
      occur outside main method calls, only having method based listeners was not
      sufficient.
    - Also added a utils.dumpListeners() method, useful when debugging issues with
      listener 'leakage' due to failure to remove listeners when no longer required.
-     
+
 ** Version 5.1.3
   - Fix issue with permissions for writing to root directory
   - Cleanup tests to use less connections and eliminate need for test delays
-  - Bumped some dependencies to latest versions  
+  - Bumped some dependencies to latest versions
 ** Version 5.2.0
    - Add posixRename() method. This is an openssh extension added in openssh
      v4.8 and will only work on servers which support this extension.conflict
    - Bumped through2 dependency version to 4.0.2
 
 ** Version 5.2.1
-   - Move some dev dependencies from dependencies to devDependencies. 
+   - Move some dev dependencies from dependencies to devDependencies.
 ** Version 5.2.2
    - Bug fix. Some servers appear to issue errors with code 4 instead of code 2
      for file not found errors. This version adds checks for error code 4 to the
@@ -285,7 +297,7 @@ reset to false in preparation for the next error.
      will issue a ~destroy()~ on the underlying stream just before the promise
      is resolved. The default is ~autoClose: true~ and this default should be
      used unless there is a known specific reason to change it to false.
-     
+
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
@@ -424,7 +436,7 @@ for that package for an explanation of these values.
     password: 'borsch', // string Password for password-based user authentication
     agent: process.env.SSH_AGENT, // string - Path to ssh-agent's UNIX socket
     privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
-    passphrase; 'a pass phrase', // string - For an encrypted private key
+    passphrase: 'a pass phrase', // string - For an encrypted private key
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
     strictVendor: true // boolean - Performs a strict server vendor check
     debug: myDebug // function - Set this to a function that receives a single
@@ -965,7 +977,7 @@ Delete a file on the remote server.
 Rename a file or directory from ~fromPath~ to ~toPath~. You must have the
 necessary permissions to modify the remote file.
 
-- fromPath :: string. Path to existing file to be renamed 
+- fromPath :: string. Path to existing file to be renamed
 - toPath :: string. Path to new file existing file is to be renamed to. Should
   not already exist.
 
@@ -989,7 +1001,7 @@ necessary permissions to modify the remote file.
 #+end_src
 
 *** posixRename(fromPath, toPath) ==> string
-    
+
 This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8.
 The advantage of this version of rename over standard SFTP rename is that it is
 an atomic operation and will allow renaming a resource where the destination
@@ -1019,7 +1031,7 @@ protocol and therefore is not supported on all sSFTP servers.
       console.error(err.message);
     });
 #+end_src
-    
+
 *** chmod(path, mode) ==> string
 
 Change the mode (read, write or execute permissions) of a remote file or
@@ -1050,7 +1062,7 @@ directory.
 *** realPath(path) ===> string
 
 Converts a relative path to an absolute path on the remote server. This method
-is mainly used internally to resolve remote path names. 
+is mainly used internally to resolve remote path names.
 
 *Warning*: Currently, there is a platform inconsistency with this method on
 win32 platforms. For servers running on non-win32 platforms, providing a path
@@ -1100,36 +1112,36 @@ using the ~on()~ method.
        require('dotenv').config({path: dotenvPath});
 
        const config = {
-	 host: process.env.SFTP_SERVER,
-	 username: process.env.SFTP_USER,
-	 password: process.env.SFTP_PASSWORD,
-	 port: process.env.SFTP_PORT || 22
+   host: process.env.SFTP_SERVER,
+   username: process.env.SFTP_USER,
+   password: process.env.SFTP_PASSWORD,
+   port: process.env.SFTP_PORT || 22
        };
 
        async function main() {
-	 const client = new SftpClient('upload-test');
-	 const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
-	 const dst = '/home/tim/upload-test';
+   const client = new SftpClient('upload-test');
+   const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
+   const dst = '/home/tim/upload-test';
 
-	 try {
-	   await client.connect(config);
-	   client.on('upload', info => {
-	     console.log(`Listener: Uploaded ${info.source}`);
-	   });
-	   let rslt = await client.uploadDir(src, dst);
-	   return rslt;
-	 } finally {
-	   client.end();
-	 }
+   try {
+     await client.connect(config);
+     client.on('upload', info => {
+       console.log(`Listener: Uploaded ${info.source}`);
+     });
+     let rslt = await client.uploadDir(src, dst);
+     return rslt;
+   } finally {
+     client.end();
+   }
        }
 
        main()
-	 .then(msg => {
-	   console.log(msg);
-	 })
-	 .catch(err => {
-	   console.log(`main error: ${err.message}`);
-	 });
+   .then(msg => {
+     console.log(msg);
+   })
+   .catch(err => {
+     console.log(`main error: ${err.message}`);
+   });
 
      #+end_src
 
@@ -1180,7 +1192,7 @@ the ~on()~ method.
     try {
       await client.connect(config);
       client.on('download', info => {
-	console.log(`Listener: Download ${info.source}`);
+  console.log(`Listener: Download ${info.source}`);
       });
       let rslt = await client.downloadDir(src, dst);
       return rslt;
@@ -1245,7 +1257,7 @@ Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object.
 
 * Platform Quirks & Warnings
-** Server Capabilities 
+** Server Capabilities
 
    All SFTP servers and platforms are not equal. Some facilities provided by
    ~ssh2-sfto-client~ either depend on capabilities of the remote server or the
@@ -1352,7 +1364,7 @@ the ~end()~ method automatically removes all listeners from the client object.
    a single connection e.g. upload multiple files, download multiple files etc,
    but after you have called end(), you should not try to re-use the object with
    a further connect() call. Create a new object instead.
-   
+
 * FAQ
 
 ** Remote server drops connections with only an end event
@@ -1532,7 +1544,7 @@ issue.
    data, you can use a stream to limit throughput. The following example was
    provided by /kennylbj/. Note that there is a caveat that we must set the
    ~autoClose~ flag to false to avoid calling an extra ~_read()~ on a closed stream
-   that may cause _get Permission Denied error in ssh2-streams. 
+   that may cause _get Permission Denied error in ssh2-streams.
 
 
    #+begin_src javascript
@@ -1618,7 +1630,7 @@ trying to determine if the issue is with the underlying ~ssh2~ and
    There are some common errors people tend to make when using Promises or
    Asyc/Await. These are by far the most common problem found in issues logged
    against this module. Please check for some of these before logging your
-   issue. 
+   issue.
 
 *** Not returning the promise in a ~then()~ block
 
@@ -1628,9 +1640,9 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     generates. Failing to do this will result in the ~then()~ block completing
     and your code starting execution of the next ~then()~, ~catch()~ or
     ~finally()~ block before your promise has been fulfilled. For exmaple, the
-    following will not do what you expect 
+    following will not do what you expect
 
-    #+begin_src javascript 
+    #+begin_src javascript
       sftp.connect(config)
         .then(() => {
           sftp.fastGet('foo.txt', 'bar.txt');
@@ -1641,14 +1653,14 @@ trying to determine if the issue is with the underlying ~ssh2~ and
           console.error(e.message);
         });
     #+end_src
-   
+
     In the above code, the ~sftp.end()~ method will almost certainly be called
     before ~sftp.gastGet()~ has been fulfilled (unless the /foo.txt/ file is
     really small!). In fact, the whole promise chain will complete and exit even
     before the ~sftp.end()~ call has been fulfilled. The correct code would be
-    something like 
-    
-    #+begin_src javascript 
+    something like
+
+    #+begin_src javascript
       sftp.connect(config)
         .then(() => {
           return sftp.fastGet('foo.txt', 'bar.txt');
@@ -1659,20 +1671,20 @@ trying to determine if the issue is with the underlying ~ssh2~ and
           console.error(e.message);
         });
     #+end_src
-    
+
     Note the ~return~ statements. These ensure that the Promise returned by the
     client method is returned into the promise chain. It will be this promise
     the next block in the chain will wait on to be fulfilled before the next
     block is executed. Without the return statement, that block will return the
     default promise for that block, which essentially says /this block has been
     fulfilled/. What you really want is the promise which says /your sftp client
-    method call has been fulfilled/. 
+    method call has been fulfilled/.
 
     A common symptom of this type of error is for file uploads or download to
     fail to complete or for data in those files to be truncated. What is
     happening is that the connection is being ended before the transfer has
-    completed. 
-    
+    completed.
+
 *** Mixing Promise Chains and Async/Await
 
     Another common error is to mix Promise chains and async/await calls. This is
@@ -1706,14 +1718,14 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     returning is a fulfilled promise which says the ~then()~ block has been run
     (note that the await'ed promise is not being returned and is therefore
     outside the main Promise chain). As a result, the ~finally()~ block will be
-    executed before the await promise has been fulfilled. 
+    executed before the await promise has been fulfilled.
 
     Using async/await inside the promise chain has created unnecessary
     complexity and leads to incorrect assumptions regarding how the code will
     execute. A quick glance at the code is likely to give the impression that
     execution will wait for the ~sftp.fastGet()~ call to be fulfilled before
     continuing. This is not the case. The code would be more clearly expressed
-    as either 
+    as either
 
     #+begin_src javascript
       sftp.connect(config)
@@ -1728,7 +1740,7 @@ trying to determine if the issue is with the underlying ~ssh2~ and
           return sftp.end();
         });
     #+end_src
-    
+
    *or, using async/await*
 
    #+begin_src javascript
@@ -1752,14 +1764,14 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     signals, such as an error event. In general, you cannot use try/catch blocks
     for asynchronous code and expect errors to be caught by the ~catch~ block.
     Handling errors in asynchronous code is one of the key reasons we now have
-    the Promise and async/await frameworks. 
+    the Promise and async/await frameworks.
 
     The basic problem is that the try/catch block will have completed execution
     before the asynchronous code has completed. If the asynchronous code has not
     compleed, then there is a potential for it to raise an error. However, as
     the try/catch block has already completed, there is no /catch/ waiting to
     catch the error. It will bubble up and probably result in your script
-    exiting with an uncaught exception error. 
+    exiting with an uncaught exception error.
 
     Error events are essentially asynchronous code. You don't know when such
     events will fire. Therefore, you cannot use a try/catch block to catch such
@@ -1770,8 +1782,8 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     error exceptions that cause your script to exit abnormally despite having
     try/catch blocks in your script. What you need to do is look at your code
     and find where errors are raised asynchronously and use an event handler or
-    some other mechanism to manage any errors raised.  
-    
+    some other mechanism to manage any errors raised.
+
 ** Debugging Support
 
 You can add a ~debug~ property to the config object passed in to ~connect()~ to
@@ -1864,4 +1876,4 @@ Thanks to the following for their contributions -
 - teenangst :: Contributed fix for error code 4 in stat() method
 - kennylbj :: Contributed example of using a throttle stream to limit
   upload/download bandwidth.
-- anton-erofeev :: Documentation fix 
+- anton-erofeev :: Documentation fix
