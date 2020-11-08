@@ -23,7 +23,7 @@
   "dependencies": {
     "concat-stream": "^2.0.0",
     "retry": "^0.12.0",
-    "ssh2": "^0.8.9"
+    "ssh2": "mscdex/ssh2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
