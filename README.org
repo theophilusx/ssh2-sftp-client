@@ -37,6 +37,10 @@ To support these changes, a new branch called /version-6/ has been created. This
 branch will use the newest version of ssh2 and for now is very much experimental
 and subject to change.
 
+_UPDATE_: Apparently the change in core node which cause the issue with ssh2 has
+been rolled back in node version 15.3.0. Testing seems to indicate the above
+issue does not exist in that version of node.
+
 * Installation
 
 #+begin_src shell
