@@ -598,9 +598,9 @@ class SftpClient {
       this.debugMsg('fastGet local path info ', localInfo);
       if (!localInfo.valid) {
         let e = utils.formatError(
-          localInfo.parentMsg,
+          localInfo.msg,
           'fastGet',
-          localInfo.parentCode
+          localInfo.code
         );
         throw e;
       }
