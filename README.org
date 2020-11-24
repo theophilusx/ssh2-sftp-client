@@ -1655,7 +1655,7 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     #+end_src
 
     In the above code, the ~sftp.end()~ method will almost certainly be called
-    before ~sftp.gastGet()~ has been fulfilled (unless the /foo.txt/ file is
+    before ~sftp.fastGet()~ has been fulfilled (unless the /foo.txt/ file is
     really small!). In fact, the whole promise chain will complete and exit even
     before the ~sftp.end()~ call has been fulfilled. The correct code would be
     something like
