@@ -17,6 +17,7 @@
   - [Version 5.2.2](#sec-4-11)
   - [Version 5.3.0](#sec-4-12)
   - [Version 5.3.1](#sec-4-13)
+  - [Version 5.3.2](#sec-4-14)
 - [Documentation](#sec-5)
   - [Specifying Paths](#sec-5-1)
   - [Methods](#sec-5-2)
@@ -72,7 +73,7 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) and [SSH2-STREAMS](https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md) project pages.
 
-Current stable release is **v5.3.1**.
+Current stable release is **v5.3.2**.
 
 Code has been tested against Node versions 12.18.2 and 13.14.0
 
@@ -218,6 +219,11 @@ In addition to the Promise error handlers, there is a default error handler whic
 
 -   Fix bug in handling of relative local paths
 -   Modified `get()` and `put()` methods to support special purpose streams which require `autoClose` to be `false`. These methods will now look for the `autoClose: false` property in the options object and if it is false, will issue a `destroy()` on the underlying stream just before the promise is resolved. The default is `autoClose: true` and this default should be used unless there is a known specific reason to change it to false.
+
+## Version 5.3.2<a id="sec-4-14"></a>
+
+-   Minor README typo fixes
+-   Fix error in local file path checks (#294)
 
 # Documentation<a id="sec-5"></a>
 
