@@ -306,10 +306,7 @@ class SftpClient {
     const _stat = (aPath) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`stat -> ${aPath}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'stat');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'stat');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'stat', reject);
         this.sftp.stat(aPath, (err, stats) => {
           if (err) {
             this.debugMsg(`stat error ${err.message} code: ${err.code}`);
@@ -348,8 +345,7 @@ class SftpClient {
               isSocket: stats.isSocket()
             });
           }
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       });
     };
@@ -428,10 +424,7 @@ class SftpClient {
       if (utils.haveConnection(this, 'list', reject)) {
         const reg = /-/gi;
         this.debugMsg(`list -> ${remotePath} filter -> ${pattern}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'list');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'list');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'list', reject);
         this.sftp.readdir(remotePath, (err, fileList) => {
           if (err) {
             this.debugMsg(`list error ${err.message} code: ${err.code}`);
@@ -474,8 +467,7 @@ class SftpClient {
             }
             resolve(newList.filter((item) => regex.test(item.name)));
           }
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       }
     });
@@ -499,18 +491,14 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       if (utils.haveConnection(this, 'get', reject)) {
         this.debugMsg(`get -> ${remotePath} `, options);
-        let closeListener = utils.makeCloseListener(this, reject, 'get');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'get');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'get', reject);
         let rdr = this.sftp.createReadStream(remotePath, options);
         rdr.once('error', (err) => {
           utils.removeListeners(rdr);
           reject(
             utils.formatError(`${err.message} ${remotePath}`, 'get', err.code)
           );
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
         if (dst === undefined) {
           // no dst specified, return buffer of data
@@ -518,8 +506,7 @@ class SftpClient {
           let concatStream = concat((buff) => {
             rdr.removeAllListeners('error');
             resolve(buff);
-            this.removeListener('error', errorListener);
-            this.removeListener('close', closeListener);
+            utils.removeTempListeners(this.client);
           });
           rdr.pipe(concatStream);
         } else {
@@ -544,8 +531,7 @@ class SftpClient {
             if (options.autoClose === false) {
               rdr.destroy();
             }
-            this.removeListener('error', errorListener);
-            this.removeListener('close', closeListener);
+            utils.removeTempListeners(this.client);
           });
           wtr.once('finish', () => {
             utils.removeListeners(rdr);
@@ -557,8 +543,7 @@ class SftpClient {
             } else {
               resolve(wtr);
             }
-            this.removeListener('error', errorListener);
-            this.removeListener('close', closeListener);
+            utils.removeTempListeners(this.client);
           });
           rdr.pipe(wtr);
         }
@@ -586,18 +571,14 @@ class SftpClient {
           `fastGet -> remote: ${remotePath} local: ${localPath} `,
           options
         );
-        let closeListener = utils.makeCloseListener(this, reject, 'fastGet');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'fastGet');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'fastGet', reject);
         this.sftp.fastGet(remotePath, localPath, options, (err) => {
           if (err) {
             this.debugMsg(`fastGet error ${err.message} code: ${err.code}`);
             reject(utils.formatError(err, 'fastGet'));
           }
           resolve(`${remotePath} was successfully download to ${localPath}!`);
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       }
     });
@@ -651,18 +632,7 @@ class SftpClient {
               `fastPut -> local: ${localPath} remote: ${remotePath} `,
               options
             );
-            let closeListener = utils.makeCloseListener(
-              this,
-              reject,
-              'fastPut'
-            );
-            this.client.prependListener('close', closeListener);
-            let errorListener = utils.makeErrorListener(
-              this,
-              reject,
-              'fastPut'
-            );
-            this.client.prependListener('error', errorListener);
+            utils.addTempListeners(this, 'fastPut', reject);
             this.sftp.fastPut(localPath, remotePath, options, (err) => {
               if (err) {
                 this.debugMsg(`fastPut error ${err.message} ${err.code}`);
@@ -677,8 +647,7 @@ class SftpClient {
               resolve(
                 `${localPath} was successfully uploaded to ${remotePath}!`
               );
-              this.removeListener('error', errorListener);
-              this.removeListener('close', closeListener);
+              utils.removeTempListeners(this.client);
             });
           }
         });
@@ -742,10 +711,7 @@ class SftpClient {
       .then(() => {
         return new Promise((resolve, reject) => {
           if (utils.haveConnection(this, 'put', reject)) {
-            let closeListener = utils.makeCloseListener(this, reject, 'put');
-            this.client.prependListener('close', closeListener);
-            let errorListener = utils.makeErrorListener(this, reject, 'put');
-            this.client.prependListener('error', errorListener);
+            utils.addTempListeners(this, 'put', reject);
             let stream = this.sftp.createWriteStream(remotePath, options);
             stream.once('error', (err) => {
               reject(
@@ -755,8 +721,7 @@ class SftpClient {
                   err.code
                 )
               );
-              this.removeListener('error', errorListener);
-              this.removeListener('close', closeListener);
+              utils.removeTempListeners(this.client);
             });
             stream.once('finish', () => {
               utils.removeListeners(stream);
@@ -764,8 +729,7 @@ class SftpClient {
                 stream.destroy();
               }
               resolve(`Uploaded data stream to ${remotePath}`);
-              this.removeListener('error', errorListener);
-              this.removeListener('close', closeListener);
+              utils.removeTempListeners(this.client);
             });
             if (localSrc instanceof Buffer) {
               this.debugMsg('put source is a buffer');
@@ -793,8 +757,7 @@ class SftpClient {
                 if (options.autoClose === false) {
                   stream.destroy();
                 }
-                this.removeListener('error', errorListener);
-                this.removeListener('close', closeListener);
+                utils.removeTempListeners(this.client);
               });
               rdr.pipe(stream);
             }
@@ -820,10 +783,7 @@ class SftpClient {
           );
         } else {
           this.debugMsg(`append -> remote: ${remotePath} `, options);
-          let closeListener = utils.makeCloseListener(this, reject, 'append');
-          this.client.prependListener('close', closeListener);
-          let errorListener = utils.makeErrorListener(this, reject, 'append');
-          this.client.prependListener('error', errorListener);
+          utils.addTempListeners(this, 'append', reject);
           options.flags = 'a';
           let stream = this.sftp.createWriteStream(remotePath, options);
           stream.once('error', (err) => {
@@ -835,14 +795,12 @@ class SftpClient {
                 err.code
               )
             );
-            this.removeListener('error', errorListener);
-            this.removeListener('close', closeListener);
+            utils.removeTempListeners(this.client);
           });
           stream.once('finish', () => {
             utils.removeListeners(stream);
             resolve(`Appended data to ${remotePath}`);
-            this.removeListener('error', errorListener);
-            this.removeListener('close', closeListener);
+            utils.removeTempListeners(this.client);
           });
           if (input instanceof Buffer) {
             stream.end(input);
@@ -867,10 +825,7 @@ class SftpClient {
     const _mkdir = (p) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`mkdir -> ${p}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'mkdir');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'mkdir');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'mkdir', reject);
         this.sftp.mkdir(p, (err) => {
           if (err) {
             this.debugMsg(`mkdir error ${err.message} code: ${err.code}`);
@@ -879,8 +834,7 @@ class SftpClient {
             );
           }
           resolve(`${p} directory created`);
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       });
     };
@@ -918,10 +872,7 @@ class SftpClient {
     const _rmdir = (p) => {
       return new Promise((resolve, reject) => {
         this.debugMsg(`rmdir -> ${p}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'rmdir');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'rmdir');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'rmdir', reject);
         this.sftp.rmdir(p, (err) => {
           if (err) {
             this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
@@ -930,8 +881,7 @@ class SftpClient {
             );
           }
           resolve('Successfully removed directory');
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       });
     };
@@ -974,10 +924,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       if (utils.haveConnection(this, 'delete', reject)) {
         this.debugMsg(`delete -> ${remotePath}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'delete');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'delete');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'delete', reject);
         this.sftp.unlink(remotePath, (err) => {
           if (err) {
             this.debugMsg(`delete error ${err.message} code: ${err.code}`);
@@ -990,8 +937,7 @@ class SftpClient {
             );
           }
           resolve(`Successfully deleted ${remotePath}`);
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       }
     });
@@ -1012,10 +958,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       if (utils.haveConnection(this, 'rename', reject)) {
         this.debugMsg(`rename -> ${fromPath} ${toPath}`);
-        let closeListener = utils.makeCloseListener(this, reject, 'rename');
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(this, reject, 'rename');
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'rename', reject);
         this.sftp.rename(fromPath, toPath, (err) => {
           if (err) {
             this.debugMsg(`rename error ${err.message} code: ${err.code}`);
@@ -1028,8 +971,7 @@ class SftpClient {
             );
           }
           resolve(`Successfully renamed ${fromPath} to ${toPath}`);
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       }
     });
@@ -1051,18 +993,7 @@ class SftpClient {
     return new Promise((resolve, reject) => {
       if (utils.haveConnection(this, 'posixRename', reject)) {
         this.debugMsg(`posixRename -> ${fromPath} ${toPath}`);
-        let closeListener = utils.makeCloseListener(
-          this,
-          reject,
-          'posixRename'
-        );
-        this.client.prependListener('close', closeListener);
-        let errorListener = utils.makeErrorListener(
-          this,
-          reject,
-          'posixRename'
-        );
-        this.client.prependListener('error', errorListener);
+        utils.addTempListeners(this, 'posixRename', reject);
         this.sftp.ext_openssh_rename(fromPath, toPath, (err) => {
           if (err) {
             this.debugMsg(`posixRename error ${err.message} code: ${err.code}`);
@@ -1075,8 +1006,7 @@ class SftpClient {
             );
           }
           resolve(`Successful POSIX rename ${fromPath} to ${toPath}`);
-          this.removeListener('error', errorListener);
-          this.removeListener('close', closeListener);
+          utils.removeTempListeners(this.client);
         });
       }
     });
@@ -1095,10 +1025,7 @@ class SftpClient {
   chmod(remotePath, mode) {
     return new Promise((resolve, reject) => {
       this.debugMsg(`chmod -> ${remotePath} ${mode}`);
-      let closeListener = utils.makeCloseListener(this, reject, 'chmod');
-      this.client.prependListener('close', closeListener);
-      let errorListener = utils.makeErrorListener(this, reject, 'chmod');
-      this.client.prependListener('error', errorListener);
+      utils.addTempListeners(this, 'chmod', reject);
       this.sftp.chmod(remotePath, mode, (err) => {
         if (err) {
           reject(
@@ -1106,8 +1033,7 @@ class SftpClient {
           );
         }
         resolve('Successfully change file mode');
-        this.removeListener('error', errorListener);
-        this.removeListener('close', closeListener);
+        utils.removeTempListeners(this.client);
       });
     });
   }
