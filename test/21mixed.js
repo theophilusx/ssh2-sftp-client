@@ -196,4 +196,25 @@ describe('Mixed tests', function () {
       ).to.eventually.equal('-');
     });
   });
+
+  describe('Mixed stat tests', async () => {
+    before('stat setup hook', async function () {
+      await hooks.statSetup(sftp, config.sftpUrl);
+      return true;
+    });
+
+    after('stat cleanup hook', async function () {
+      await hooks.statCleanup(sftp, config.sftpUrl);
+      return true;
+    });
+
+    it('stat on existing file returns stat data', async function () {
+      let stats = await sftp.stat(config.sftpUrl + '/stat-test.md');
+
+      return expect(stats).to.containSubset({
+        size: 16,
+        isFile: true
+      });
+    });
+  });
 });
