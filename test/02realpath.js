@@ -7,16 +7,11 @@ const {config, getConnection} = require('./hooks/global-hooks');
 
 chai.use(chaiAsPromised);
 
-describe('Path tests', function () {
+describe('Path tests', async () => {
   let sftp;
 
-  before('Exist test setup hook', async function () {
+  before('realpath setup hook', async function () {
     sftp = await getConnection();
-    return true;
-  });
-
-  after('Exist test cleanup hook', async function () {
-    await sftp.end();
     return true;
   });
 
