@@ -2,7 +2,7 @@
 
 const {makeLocalPath, makeRemotePath} = require('./global-hooks');
 
-async function pathSetup(client, sftpUrl, localUrl) {
+async function mixedSetup(client, sftpUrl, localUrl) {
   try {
     await client.mkdir(makeRemotePath(sftpUrl, 'path-test-dir'));
     await client.fastPut(
@@ -15,22 +15,22 @@ async function pathSetup(client, sftpUrl, localUrl) {
     );
     return true;
   } catch (err) {
-    console.error(`pathSetup: ${err.message}`);
+    console.error(`mixedSetup: ${err.message}`);
     return false;
   }
 }
 
-async function pathCleanup(client, sftpUrl) {
+async function mixedCleanup(client, sftpUrl) {
   try {
     await client.rmdir(makeRemotePath(sftpUrl, 'path-test-dir'), true);
     return true;
   } catch (err) {
-    console.log(`pathClenaup: ${err.message}`);
+    console.log(`mixedClenaup: ${err.message}`);
     return false;
   }
 }
 
 module.exports = {
-  pathSetup,
-  pathCleanup
+  mixedSetup,
+  mixedCleanup
 };

@@ -4,7 +4,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 const {config, getConnection} = require('./hooks/global-hooks');
-const {pathSetup, pathCleanup} = require('./hooks/path-hooks');
 
 chai.use(chaiAsPromised);
 
@@ -13,12 +12,11 @@ describe('Path tests', function () {
 
   before('Exist test setup hook', async function () {
     sftp = await getConnection();
-    await pathSetup(sftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
   after('Exist test cleanup hook', async function () {
-    await pathCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 
@@ -55,37 +53,5 @@ describe('Path tests', function () {
   it('cwd() returns current working dir', async function () {
     let pwd = await sftp.cwd();
     return expect(config.sftpUrl.startsWith(pwd)).to.equal(true);
-  });
-
-  it('returns path to test directory', async function () {
-    return expect(
-      sftp.realPath(config.sftpUrl + '/path-test-dir')
-    ).to.eventually.equal(config.sftpUrl + '/path-test-dir');
-  });
-
-  it('return path to test file 1', async function () {
-    return expect(
-      sftp.realPath(config.sftpUrl + '/path-test-dir/path-file1.txt')
-    ).to.eventually.equal(config.sftpUrl + '/path-test-dir/path-file1.txt');
-  });
-
-  it('return path to test file 2', async function () {
-    return expect(
-      sftp.realPath(config.sftpUrl + '/path-test-dir/path-file2.txt.gz')
-    ).to.eventually.equal(config.sftpUrl + '/path-test-dir/path-file2.txt.gz');
-  });
-
-  // realPath for windows does not seem to return empty string for non-existent paths
-  it("realPath returns '' for non-existing path", function () {
-    if (sftp.remotePlatform !== 'win32') {
-      return expect(
-        sftp.realPath(
-          config.sftpUrl +
-            '/path-test-dir/path-not-exist-dir/path-not-exist-file.txt'
-        )
-      ).to.eventually.equal('');
-    } else {
-      return expect(true).to.equal(true);
-    }
   });
 });
