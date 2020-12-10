@@ -1,5 +1,6 @@
 'use strict';
 
+const {prependListener} = require('cluster');
 const fs = require('fs');
 const {errorCode} = require('./constants');
 
@@ -12,12 +13,7 @@ const {errorCode} = require('./constants');
  *                              attempts to complete before giving up
  * @returns {Error} New error with custom error message
  */
-function formatError(
-  err,
-  name = 'sftp',
-  eCode = errorCode.generic,
-  retryCount
-) {
+function formatError(err, name = 'sftp', eCode, retryCount) {
   let msg = '';
   let code = '';
   let retry = retryCount
@@ -29,7 +25,7 @@ function formatError(
     code = errorCode.generic;
   } else if (typeof err === 'string') {
     msg = `${name}: ${err}${retry}`;
-    code = eCode;
+    code = eCode ? eCode : errorCode.generic;
   } else if (err.custom) {
     msg = `${name}->${err.message}${retry}`;
     code = err.code;
@@ -56,7 +52,7 @@ function formatError(
       default:
         msg = `${name}: ${err.message}${retry}`;
     }
-    code = err.code ? err.code : eCode;
+    code = err.code ? err.code : errorCode.generic;
   }
   let newError = new Error(msg);
   newError.code = code;
@@ -102,6 +98,8 @@ function removeListeners(emitter) {
   });
 }
 
+let tempListeners = [];
+
 /**
  * Simple default error listener. Will reformat the error message and
  * throw a new error.
@@ -109,34 +107,65 @@ function removeListeners(emitter) {
  * @param {Error} err - source for defining new error
  * @throws {Error} Throws new error
  */
-function makeErrorListener(client, reject, name) {
-  return function (err) {
-    client.errorHandled = true;
-    reject(formatError(err, name));
-  };
-}
-
-function makeEndListener(client) {
-  return function () {
-    if (!client.endCalled) {
-      console.error(
-        `${client.clientName} End Listener: Connection ended unexpectedly`
-      );
-    }
-  };
-}
-
-function makeCloseListener(client, reject, name) {
-  return function () {
-    if (!client.endCalled) {
+function errorListener(client, name, reject) {
+  let fn = function (err) {
+    if (!client.errorHandled) {
+      client.errorHandled = true;
       if (reject) {
-        reject(formatError('Connection closed unexpectedly', name));
+        reject(formatError(err, name, err.code));
       } else {
-        console.error(`${client.clientName}: Connection closed unexpectedly`);
+        throw formatError(err, name, err.code);
       }
     }
+    client.debugMsg(`Handled Error: ${err.message} ${err.code}`);
+  };
+  tempListeners.push(['error', fn]);
+  return fn;
+}
+
+function endListener(client, name, reject) {
+  let fn = function () {
+    if (!client.endCalled) {
+      if (reject) {
+        reject(formatError('Unexpected end event raised', name));
+      } else {
+        throw formatError('Unexpected end event raised', name);
+      }
+    }
+    client.debugMsg(`Handled end event for ${name}`);
     client.sftp = undefined;
   };
+  tempListeners.push(['end', fn]);
+  return fn;
+}
+
+function closeListener(client, name, reject) {
+  let fn = function () {
+    if (!client.endCalled) {
+      if (reject) {
+        reject(formatError('Unexpected close event raised', name));
+      } else {
+        throw formatError('Unexpected close event raised', name);
+      }
+    }
+    client.debugMsg(`handled close event for ${name}`);
+    client.sftp = undefined;
+  };
+  tempListeners.push(['close', fn]);
+  return fn;
+}
+
+function addTempListeners(obj, name, reject) {
+  obj.client.prependListener('end', endListener(obj, name, reject));
+  obj.client.prependListener('close', closeListener(obj, name, reject));
+  obj.client.prependListener('error', errorListener(obj, name, reject));
+}
+
+function removeTempListeners(client) {
+  tempListeners.forEach(([e, fn]) => {
+    client.removeListener(e, fn);
+  });
+  tempListeners = [];
 }
 
 /**
@@ -240,9 +269,11 @@ module.exports = {
   formatError,
   handleError,
   removeListeners,
-  makeErrorListener,
-  makeEndListener,
-  makeCloseListener,
+  errorListener,
+  endListener,
+  closeListener,
+  addTempListeners,
+  removeTempListeners,
   localExists,
   normalizeRemotePath,
   haveConnection,
