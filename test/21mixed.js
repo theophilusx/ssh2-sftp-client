@@ -28,7 +28,7 @@ describe('Mixed tests', function () {
     });
 
     after('realpath cleanup', async function () {
-      await hooks.realpathcleanup(sftp, config.sftpUrl);
+      await hooks.realpathCleanup(sftp, config.sftpUrl);
       return true;
     });
 

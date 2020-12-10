@@ -31,18 +31,19 @@ describe('fastPut() method tests', function () {
   });
 
   it('fastPut returns a promise', function () {
-    return expect(
-      sftp.fastPut(
-        makeLocalPath(config.localUrl, 'test-file2.txt.gz'),
-        config.sftpUrl + '/fastput-promise-test.gz'
-      )
-    ).to.be.a('promise');
+    let p = sftp.fastPut(
+      makeLocalPath(config.localUrl, 'test-file2.txt.gz'),
+      config.sftpUrl + '/fastput-promise-test.gz'
+    );
+    expect(p).to.be.a('promise');
+    return expect(p).to.be.fulfilled;
   });
 
   it('fastPut large text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remotePath = config.sftpUrl + '/fastput-text.txt';
-    await sftp.fastPut(localPath, remotePath, {encoding: 'utf8'});
+    // await sftp.fastPut(localPath, remotePath, {encoding: 'utf8'});
+    await sftp.fastPut(localPath, remotePath);
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(stats.size).to.equal(localStats.size);

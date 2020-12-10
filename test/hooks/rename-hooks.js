@@ -23,8 +23,8 @@ async function renameSetup(client, sftpUrl) {
 
 async function renameCleanup(client, sftpUrl) {
   try {
-    await client.delete(`${sftpUrl}/rename-relative4.md`);
-    await client.delete(`${sftpUrl}/rename-conflict.md`);
+    await client.delete(`${sftpUrl}/rename-relative4.md`, true);
+    await client.delete(`${sftpUrl}/rename-conflict.md`, true);
     return true;
   } catch (err) {
     console.error(`renameCleanup: ${err.message}`);

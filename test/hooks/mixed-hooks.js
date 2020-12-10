@@ -91,7 +91,7 @@ async function existSetup(client, sftpUrl, localUrl) {
 
 async function existCleanup(client, sftpUrl) {
   try {
-    await client.delete(sftpUrl + '/exist-file.txt');
+    await client.delete(sftpUrl + '/exist-file.txt', true);
     await client.rmdir(sftpUrl + '/exist-test-dir', true);
     return true;
   } catch (err) {
@@ -119,7 +119,7 @@ async function statSetup(client, sftpUrl) {
 
 async function statCleanup(client, sftpUrl) {
   try {
-    await client.delete(sftpUrl + '/stat-test.md');
+    await client.delete(sftpUrl + '/stat-test.md', true);
     return true;
   } catch (err) {
     console.error(`statCleanup: ${err.message}`);

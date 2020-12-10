@@ -598,10 +598,13 @@ class SftpClient {
    * @return {Promise} the result of downloading the file
    */
   fastPut(localPath, remotePath, options) {
+    this.debugMsg(`fastPut -> local ${localPath} remote ${remotePath}`);
     return utils
       .localExists(localPath)
       .then((localStatus) => {
+        this.debugMsg(`fastPut <- localStatus ${localStatus}`);
         if (localStatus !== '-') {
+          this.debugMsg('fastPut reject bad source path');
           return Promise.reject(
             utils.formatError(
               `Bad path ${localPath}`,
@@ -613,6 +616,7 @@ class SftpClient {
         return new Promise((resolve, reject) => {
           fs.access(localPath, fs.constants.F_OK | fs.constants.R_OK, (err) => {
             if (err) {
+              this.debugMsg('fastPut reject no access source');
               reject(
                 utils.formatError(
                   `${err.message} ${localPath}`,
@@ -620,8 +624,10 @@ class SftpClient {
                   err.code
                 )
               );
+            } else {
+              this.debugMsg('fastPut source access ok');
+              resolve(true);
             }
-            resolve(true);
           });
         });
       })
@@ -629,8 +635,9 @@ class SftpClient {
         return new Promise((resolve, reject) => {
           if (utils.haveConnection(this, 'fastPut', reject)) {
             this.debugMsg(
-              `fastPut -> local: ${localPath} remote: ${remotePath} `,
-              options
+              `fastPut -> local: ${localPath} remote: ${remotePath} opts: ${JSON.stringify(
+                options
+              )}`
             );
             utils.addTempListeners(this, 'fastPut', reject);
             this.sftp.fastPut(localPath, remotePath, options, (err) => {
@@ -644,18 +651,22 @@ class SftpClient {
                   )
                 );
               }
+              this.debugMsg('fastPut file transferred');
               resolve(
                 `${localPath} was successfully uploaded to ${remotePath}!`
               );
-              utils.removeTempListeners(this.client);
             });
           }
         });
+      })
+      .then((msg) => {
+        utils.removeTempListeners(this.client);
+        return msg;
       });
   }
 
   /**
-   * Create file a file on the remote server. The 'src' argument
+   * Create a file on the remote server. The 'src' argument
    * can be a buffer, string or read stream. If 'src' is a string, it
    * should be the path to a local file.
    *
@@ -917,10 +928,12 @@ class SftpClient {
    * Delete a file on the remote SFTP server
    *
    * @param {string} path - path to the file to delete
+   * @param {boolean} notFoundOK - if true, ignore errors for missing target.
+   *                               Default is false.
    * @return {Promise} with string 'Successfully deleeted file' once resolved
    *
    */
-  delete(remotePath) {
+  delete(remotePath, notFoundOK = false) {
     return new Promise((resolve, reject) => {
       if (utils.haveConnection(this, 'delete', reject)) {
         this.debugMsg(`delete -> ${remotePath}`);
@@ -928,13 +941,18 @@ class SftpClient {
         this.sftp.unlink(remotePath, (err) => {
           if (err) {
             this.debugMsg(`delete error ${err.message} code: ${err.code}`);
-            reject(
-              utils.formatError(
-                `${err.message} ${remotePath}`,
-                'delete',
-                err.code
-              )
-            );
+            if (notFoundOK && err.code === 2) {
+              this.debugMsg('delete ignore missing target error');
+              resolve(`Successfully deleted ${remotePath}`);
+            } else {
+              reject(
+                utils.formatError(
+                  `${err.message} ${remotePath}`,
+                  'delete',
+                  err.code
+                )
+              );
+            }
           }
           resolve(`Successfully deleted ${remotePath}`);
           utils.removeTempListeners(this.client);
