@@ -565,23 +565,39 @@ class SftpClient {
    * @return {Promise} the result of downloading the file
    */
   fastGet(remotePath, localPath, options) {
-    return new Promise((resolve, reject) => {
-      if (utils.haveConnection(this, 'fastGet', reject)) {
-        this.debugMsg(
-          `fastGet -> remote: ${remotePath} local: ${localPath} `,
-          options
-        );
-        utils.addTempListeners(this, 'fastGet', reject);
-        this.sftp.fastGet(remotePath, localPath, options, (err) => {
-          if (err) {
-            this.debugMsg(`fastGet error ${err.message} code: ${err.code}`);
-            reject(utils.formatError(err, 'fastGet'));
+    return this.exists(remotePath)
+      .then((ftype) => {
+        if (ftype !== '-') {
+          let msg =
+            ftype === false
+              ? `No such file ${remotePath}`
+              : `Not a regular file ${remotePath}`;
+          return Promise.reject(
+            utils.formatError(msg, 'fastGet', errorCode.badPath)
+          );
+        }
+      })
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          if (utils.haveConnection(this, 'fastGet', reject)) {
+            this.debugMsg(
+              `fastGet -> remote: ${remotePath} local: ${localPath} `,
+              options
+            );
+            utils.addTempListeners(this, 'fastGet', reject);
+            this.sftp.fastGet(remotePath, localPath, options, (err) => {
+              if (err) {
+                this.debugMsg(`fastGet error ${err.message} code: ${err.code}`);
+                reject(utils.formatError(err, 'fastGet'));
+              }
+              resolve(
+                `${remotePath} was successfully download to ${localPath}!`
+              );
+              utils.removeTempListeners(this.client);
+            });
           }
-          resolve(`${remotePath} was successfully download to ${localPath}!`);
-          utils.removeTempListeners(this.client);
         });
-      }
-    });
+      });
   }
 
   /**
