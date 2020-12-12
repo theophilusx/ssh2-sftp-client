@@ -118,7 +118,7 @@ describe('fastGet() method tests', function () {
   it('fastGet throws exception when target is a dir', function () {
     return expect(
       sftp.fastGet(`${config.sftpUrl}/fg-dir`, './test/testData/fg-dir')
-    ).to.be.rejectedWith(/Failure/);
+    ).to.be.rejectedWith(/Not a regular file/);
   });
 });
 
