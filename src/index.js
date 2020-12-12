@@ -4,10 +4,11 @@
 
 'use strict';
 
-const Client = require('ssh2').Client;
+const {Client} = require('ssh2');
 const fs = require('fs');
 const concat = require('concat-stream');
-const retry = require('retry');
+//const retry = require('retry');
+const promiseRetry = require('promise-retry');
 const {join, parse} = require('path');
 const utils = require('./utils');
 const {errorCode} = require('./constants');
@@ -90,127 +91,6 @@ class SftpClient {
    * @return {Promise} which will resolve to an sftp client object
    *
    */
-  // connect(config) {
-  //   let connectErrorListener, onceReady;
-  //   let operation = retry.operation({
-  //     retries: config.retries || 1,
-  //     factor: config.retry_factor || 2,
-  //     minTimeout: config.retry_minTimeout || 1000
-  //   });
-
-  //   const retryConnect = (config, callback) => {
-  //     try {
-  //       operation.attempt((attemptCount) => {
-  //         connectErrorListener = (err) => {
-  //           //this.client.removeListener('ready', onceReady);
-  //           if (operation.retry(err)) {
-  //             // failed to connect, but not yet reached max attempt count
-  //             // remove the listeners and try again
-  //             this.debugMsg(
-  //               `Connection attempt ${attemptCount} failed. Trying again.`
-  //             );
-  //             return;
-  //           }
-  //           // exhausted retries - do callback with error
-  //           this.debugMsg('Exhausted all connection attempts. Giving up');
-  //           callback(
-  //             utils.formatError(err, 'connect', err.code, attemptCount),
-  //             null
-  //           );
-  //         };
-
-  //         onceReady = () => {
-  //           this.client.sftp((err, sftp) => {
-  //             //this.client.removeListener('error', connectErrorListener);
-  //             if (err) {
-  //               if (operation.retry(err)) {
-  //                 // failed to connect, but not yet reached max attempt count
-  //                 // remove the listeners and try again
-  //                 return;
-  //               }
-  //               // exhausted retries - do callback with error
-  //               callback(
-  //                 utils.formatError(err, 'connect', err.code, attemptCount),
-  //                 null
-  //               );
-  //               return;
-  //             }
-  //             this.debugMsg('SFTP connection established');
-  //             this.sftp = sftp;
-  //             callback(null, sftp);
-  //             return;
-  //           });
-  //         };
-
-  //         if (!utils.hasListener(this.client, 'ready', 'onceReady')) {
-  //           this.client.on('ready', onceReady);
-  //         }
-  //         if (
-  //           !utils.hasListener(this.client, 'error', 'connectErrorListener')
-  //         ) {
-  //           this.client.on('error', connectErrorListener);
-  //         }
-  //         this.client.connect(config);
-  //       });
-  //     } catch (err) {
-  //       utils.removeListeners(this.client);
-  //       callback(utils.formatError(err, 'connect'), null);
-  //     }
-  //   };
-
-  //   return new Promise((resolve, reject) => {
-  //     if (config.debug) {
-  //       this.debug = config.debug;
-  //       this.debugMsg('Debugging turned on');
-  //     }
-
-  //     if (this.sftp) {
-  //       this.debugMsg('Already connected - reject');
-  //       reject(
-  //         utils.formatError(
-  //           'An existing SFTP connection is already defined',
-  //           'connect',
-  //           errorCode.connect
-  //         )
-  //       );
-  //     } else {
-  //       retryConnect(config, (err, sftp) => {
-  //         if (err) {
-  //           this.debugMsg('Connection failed - reject');
-  //           reject(err);
-  //         } else {
-  //           this.debugMsg('Connected - do stage 2 setup');
-  //           sftp.realpath('.', (err, absPath) => {
-  //             if (err) {
-  //               this.debugMsg('Failed to get remote path');
-  //               reject(
-  //                 utils.formatError(
-  //                   `Failed to determine remote server type: ${err.message}`,
-  //                   'connect',
-  //                   errorCode.generic
-  //                 )
-  //               );
-  //             } else {
-  //               this.debugMsg(`absPath = ${absPath}`);
-  //               if (absPath.match(/^\/[A-Z]:.*/)) {
-  //                 this.remotePlatform = 'win32';
-  //                 this.debugMsg('remote platform win32 like');
-  //               } else {
-  //                 this.remotePlatform = 'unix';
-  //                 this.debugMsg('Remote platform unix like');
-  //               }
-  //               this.debugMsg('Connection and setup completed successfully');
-  //               resolve(sftp);
-  //             }
-  //             this.client.removeListener('error', connectErrorListener);
-  //           });
-  //         }
-  //         this.client.removeListener('ready', onceReady);
-  //       });
-  //     }
-  //   });
-  // }
-
   sftpConnect(config) {
     return new Promise((resolve, reject) => {
       let connectReady = () => {
@@ -219,7 +99,7 @@ class SftpClient {
             this.debugMsg(`SFTP channel error: ${err.message} ${err.code}`);
             reject(utils.formatError(err, 'sftpConnect', err.code));
           } else {
-            this.sftp = sftp;
+            //this.sftp = sftp;
             resolve(sftp);
           }
           this.client.removeListener('ready', connectReady);
@@ -228,6 +108,23 @@ class SftpClient {
       utils.addTempListeners(this, 'sftpConnect', reject);
       this.client.on('ready', connectReady).connect(config);
     });
+  }
+
+  retryConnect(config) {
+    return promiseRetry(
+      (retry, attempt) => {
+        this.debugMsg(`Connect attempt ${attempt}`);
+        return this.sftpConnect(config).catch((err) => {
+          utils.removeTempListeners(this.client);
+          retry(err);
+        });
+      },
+      {
+        retries: config.retries || 1,
+        factor: config.retry_factor || 2,
+        minTimeout: config.retry_minTimeout || 1000
+      }
+    );
   }
 
   async connect(config) {
@@ -244,7 +141,8 @@ class SftpClient {
           errorCode.connect
         );
       }
-      await this.sftpConnect(config);
+      //this.sftp = await this.sftpConnect(config);
+      this.sftp = await this.retryConnect(config);
       this.debugMsg('SFTP Connection established');
       utils.removeTempListeners(this.client);
     } catch (err) {
