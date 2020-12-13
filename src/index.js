@@ -1005,7 +1005,7 @@ class SftpClient {
         if (e.isDirectory()) {
           let newSrc = join(srcDir, e.name);
           let newDst = dstDir + this.remotePathSep + e.name;
-          await this.uploadDir(newSrc, newDst);
+          await this.uploadDir(newSrc, newDst, filter);
         } else if (e.isFile()) {
           let src = join(srcDir, e.name);
           let dst = dstDir + this.remotePathSep + e.name;
@@ -1043,7 +1043,7 @@ class SftpClient {
         if (f.type === 'd') {
           let newSrc = srcDir + this.remotePathSep + f.name;
           let newDst = join(dstDir, f.name);
-          await this.downloadDir(newSrc, newDst);
+          await this.downloadDir(newSrc, newDst, filter);
         } else if (f.type === '-') {
           let src = srcDir + this.remotePathSep + f.name;
           let dst = join(dstDir, f.name);
