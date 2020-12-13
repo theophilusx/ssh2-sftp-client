@@ -981,7 +981,7 @@ class SftpClient {
    * @returns {String}
    * @throws {Error}
    */
-  async uploadDir(srcDir, dstDir) {
+  async uploadDir(srcDir, dstDir, filter = /.*/) {
     try {
       this.debugMsg(`uploadDir -> ${srcDir} ${dstDir}`);
       utils.haveConnection(this, 'uploadDir');
@@ -1000,6 +1000,7 @@ class SftpClient {
         encoding: 'utf8',
         withFileTypes: true
       });
+      dirEntries = dirEntries.filter((item) => filter.test(item.name));
       for (let e of dirEntries) {
         if (e.isDirectory()) {
           let newSrc = join(srcDir, e.name);
@@ -1022,11 +1023,11 @@ class SftpClient {
     }
   }
 
-  async downloadDir(srcDir, dstDir) {
+  async downloadDir(srcDir, dstDir, filter = /.*/) {
     try {
       this.debugMsg(`downloadDir -> ${srcDir} ${dstDir}`);
       utils.haveConnection(this, 'downloadDir');
-      let fileList = await this.list(srcDir);
+      let fileList = await this.list(srcDir, filter);
       let dstStatus = await utils.localExists(dstDir);
       if (dstStatus && dstStatus !== 'd') {
         throw utils.formatError(
