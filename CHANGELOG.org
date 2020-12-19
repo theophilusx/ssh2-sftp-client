@@ -1,6 +1,18 @@
 * Change Logging
 
-** Version 5.3.2 (Prod Version)
+** V6.0.0
+   - Update connection retry code to use the promise-retry module instead of
+     plain rety module
+   - Added optional filter argument for uploadDir/downlDir to select which files
+     and directories are included
+   - Added an optional boolean argument to delete to turn off raising an error
+     when delete target does not exists
+   - Reduced/simplified argument verification code to reduce package size and
+     increase performance
+   - Refactored handling of events and add default close and error listeners to
+     catch connections closed abruptly without an error being raised.
+
+** V5.3.2
    - Minor README typo fixes
    - Fix error in local file path checks (#294)
 
