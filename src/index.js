@@ -916,7 +916,7 @@ class SftpClient {
    * posix-rename@openssh.com using POSIX atomic rename. (Introduced in SSH 4.8)
    *
    * @param {string} fromPath - path to the file to be renamed.
-   * @param {string} toPath - path to the new name.
+   * @param {string} toPath - path  the new name.
    *
    * @return {Promise}
    *
@@ -978,6 +978,8 @@ class SftpClient {
    * server.
    * @param {String} srcDir - local source directory
    * @param {String} dstDir - remote destination directory
+   * @param {regex} filter - (Optional) a regular expression used to select
+   *                         files and directories to upload
    * @returns {String}
    * @throws {Error}
    */
@@ -1023,6 +1025,19 @@ class SftpClient {
     }
   }
 
+  /**
+   * @async
+   *
+   * Download the specified source directory to the specified destination
+   * directory. All regular files and sub-directories are downloaded to the local
+   * file system.
+   * @param {String} srcDir - remote source directory
+   * @param {String} dstDir - local destination directory
+   * @param {regex} filter - (Optional) a regular expression used to select
+   *                         files and directories to upload
+   * @returns {String}
+   * @throws {Error}
+   */
   async downloadDir(srcDir, dstDir, filter = /.*/) {
     try {
       this.debugMsg(`downloadDir -> ${srcDir} ${dstDir}`);
