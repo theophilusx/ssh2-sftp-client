@@ -46,6 +46,8 @@
     - [Not returning the promise in a `then()` block](#sec-9-1-1)
     - [Mixing Promise Chains and Async/Await](#sec-9-1-2)
     - [Try/catch and Error Handlers](#sec-9-1-3)
+    - [Server Differences](#sec-9-1-4)
+    - [Avoid Concurrent Operations](#sec-9-1-5)
   - [Debugging Support](#sec-9-2)
 - [Logging Issues](#sec-10)
 - [Pull Requests](#sec-11)
@@ -1153,7 +1155,7 @@ If you run into an issue which is not repeatable with just the `ssh2` and `ssh2-
 
 Note also that in the repository there are two useful directories. The first is the examples directory, which contain some examples of using `ssh2-sftp-client` to perform common tasks. A few minutes reviewing these examples can provide that additional bit of detail to help fix any problems you are encountering.
 
-The second directory is the tools directory. I have some very basic simple scripts in this directory which perform basic tasks using only the `ssh2` and `ssh2-streams` modules (no ssh2-sftp-client module). These can be useful when trying to determine if the issue is with the underlying `ssh2` and `ssh2-streams` modules.
+The second directory is the validation directory. I have some very simple scripts in this directory which perform basic tasks using only the `ssh2` modules (no `ssh2-sftp-client` module). These can be useful when trying to determine if the issue is with the underlying `ssh2` module or the `ssh2-sftp-client` wrapper module.
 
 ## Common Errors<a id="sec-9-1"></a>
 
@@ -1161,7 +1163,7 @@ There are some common errors people tend to make when using Promises or Asyc/Awa
 
 ### Not returning the promise in a `then()` block<a id="sec-9-1-1"></a>
 
-All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For exmaple, the following will not do what you expect
+All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
 
 ```javascript
 sftp.connect(config)
@@ -1257,6 +1259,16 @@ Another common error is to try and use a try/catch block to catch event signals,
 The basic problem is that the try/catch block will have completed execution before the asynchronous code has completed. If the asynchronous code has not compleed, then there is a potential for it to raise an error. However, as the try/catch block has already completed, there is no *catch* waiting to catch the error. It will bubble up and probably result in your script exiting with an uncaught exception error.
 
 Error events are essentially asynchronous code. You don't know when such events will fire. Therefore, you cannot use a try/catch block to catch such event errors. Even creating an error handler which then throws an exception won't help as the key problem is that your try/catch block has already executed. There are a number of alternative ways to deal with this situation. However, the key symptom is that you see occasional uncaught error exceptions that cause your script to exit abnormally despite having try/catch blocks in your script. What you need to do is look at your code and find where errors are raised asynchronously and use an event handler or some other mechanism to manage any errors raised.
+
+### Server Differences<a id="sec-9-1-4"></a>
+
+Not all SFTP servers are the same. Like most standards, the SFTP protocol has some level of interpretation and allows different levels of compliance. This means there can be differences in behaviour between different servers and code which works with one server will not work the same with another. For example, the value returned by *realpath* for non-existent objects can differ significantly. Some servers will throw an error for a particular operation while others will just return null, some servers support concurrent operations (such as used by fastGet/fastPut) while others will not and of course, the text of error messages can vary significantly. In particular, we have noticed significant differences across different platforms. It is therefore advisable to do comprehensive testing when the SFTP server is moved to a new platform. This includes moving from to a cloud based service even if the underlying platform remains the same. I have noticed that some cloud platforms can generate unexpected events, possibly related to additional functionality or features associated with the cloud implementation. For example, it appears SFTP servers running under Azure will generate an error event when the connection is closed even when the client has requested the connection be terminated. The same SFTP server running natively on Windows does not appear to exhibit such behaviour.
+
+### Avoid Concurrent Operations<a id="sec-9-1-5"></a>
+
+Technically, SFTP should be able to perform multiple operations concurrently. As node is single threaded, what we a really talking about is running multiple execution contexts as a pool where node will switch contexts when each context is blocked due to things like waiting on network data etc. However, I have found this to be extremely unreliable and of very little benefit from a performance perspective. My recommendation is to therefore avoid executing multiple requests over the same connection in parallel (for example, generating multiple `get()` promises and using something like `Promise.all()` to resolve them.
+
+If you are going to try and perform concurrent operations, you need to test extensively and ensure you are using data which is large enough that context switching does occur (i.e. the request is not completed in a single run). Some SFTP servers will handle concurrent operations better than others.
 
 ## Debugging Support<a id="sec-9-2"></a>
 

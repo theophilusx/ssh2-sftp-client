@@ -1435,11 +1435,11 @@ the examples directory, which contain some examples of using ~ssh2-sftp-client~
 to perform common tasks. A few minutes reviewing these examples can provide that
 additional bit of detail to help fix any problems you are encountering.
 
-The second directory is the tools directory. I have some very basic simple
-scripts in this directory which perform basic tasks using only the ~ssh2~ and
-~ssh2-streams~ modules (no ssh2-sftp-client module). These can be useful when
-trying to determine if the issue is with the underlying ~ssh2~ and
-~ssh2-streams~ modules.
+The second directory is the validation directory. I have some very simple
+scripts in this directory which perform basic tasks using only the ~ssh2~
+modules (no ~ssh2-sftp-client~ module). These can be useful when
+trying to determine if the issue is with the underlying ~ssh2~ module or
+the ~ssh2-sftp-client~ wrapper module.
 
 ** Common Errors
 
@@ -1455,7 +1455,7 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     of a promise chain, it is critical that you return the Promise that call
     generates. Failing to do this will result in the ~then()~ block completing
     and your code starting execution of the next ~then()~, ~catch()~ or
-    ~finally()~ block before your promise has been fulfilled. For exmaple, the
+    ~finally()~ block before your promise has been fulfilled. For example, the
     following will not do what you expect
 
     #+begin_src javascript
@@ -1599,6 +1599,45 @@ trying to determine if the issue is with the underlying ~ssh2~ and
     try/catch blocks in your script. What you need to do is look at your code
     and find where errors are raised asynchronously and use an event handler or
     some other mechanism to manage any errors raised.
+
+*** Server Differences
+
+    Not all SFTP servers are the same. Like most standards, the SFTP protocol
+    has some level of interpretation and allows different levels of compliance.
+    This means there can be differences in behaviour between different servers
+    and code which works with one server will not work the same with another.
+    For example, the value returned by /realpath/ for non-existent objects can
+    differ significantly. Some servers will throw an error for a particular
+    operation while others will just return null, some servers support
+    concurrent operations (such as used by fastGet/fastPut) while others will
+    not and of course, the text of error messages can vary significantly. In
+    particular, we have noticed significant differences across different
+    platforms. It is therefore advisable to do comprehensive testing when the
+    SFTP server is moved to a new platform. This includes moving from to a cloud
+    based service even if the underlying platform remains the same. I have
+    noticed that some cloud platforms can generate unexpected events, possibly
+    related to additional functionality or features associated with the cloud
+    implementation. For example, it appears SFTP servers running under Azure
+    will generate an error event when the connection is closed even when the
+    client has requested the connection be terminated. The same SFTP server
+    running natively on Windows does not appear to exhibit such behaviour.
+
+*** Avoid Concurrent Operations
+
+    Technically, SFTP should be able to perform multiple operations
+    concurrently. As node is single threaded, what we a really talking about is
+    running multiple execution contexts as a pool where node will switch
+    contexts when each context is blocked due to things like waiting on network
+    data etc. However, I have found this to be extremely unreliable and of very
+    little benefit from a performance perspective. My recommendation is to
+    therefore avoid executing multiple requests over the same connection in
+    parallel (for example, generating multiple ~get()~ promises and using
+    something like ~Promise.all()~ to resolve them.
+
+    If you are going to try and perform concurrent operations, you need to test
+    extensively and ensure you are using data which is large enough that context
+    switching does occur (i.e. the request is not completed in a single run).
+    Some SFTP servers will handle concurrent operations better than others.
 
 ** Debugging Support
 
