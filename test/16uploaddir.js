@@ -19,6 +19,8 @@ describe('uploadDir tests', function () {
   });
 
   after('UploadDir clenaup hook', async function () {
+    let remotePath = `${config.sftpUrl}/upload-test2`;
+    await sftp.rmdir(remotePath, true);
     return true;
   });
 
@@ -37,7 +39,27 @@ describe('uploadDir tests', function () {
       {name: 'file2.txt.gz', type: '-', size: 570314},
       {name: 'sub1', type: 'd'},
       {name: 'sub3', type: 'd'},
-      {name: 'file1.txt', type: '-'}
+      {name: 'file1.txt', type: '-'},
+      {name: '.hidden-file.txt', type: '-'},
+      {name: '.hidden-sub1', type: 'd'}
+    ]);
+  });
+
+  it('Upload filtered directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'upload-src');
+    let remoteDir = `${config.sftpUrl}/upload-test2`;
+    return expect(
+      sftp.uploadDir(localDir, remoteDir, /^[^.]/)
+    ).to.eventually.equal(`${localDir} uploaded to ${remoteDir}`);
+  });
+
+  it('Uploaded filtered top-level files', async function () {
+    let remoteDir = `${config.sftpUrl}/upload-test2`;
+    let fileList = await sftp.list(remoteDir);
+    return expect(fileList).to.not.containSubset([
+      {name: 'file2.txt.gz', type: '-', size: 570314},
+      {name: '.hidden-sub1', type: 'd'},
+      {name: '.hidden-file.txt', type: '-'}
     ]);
   });
 });
@@ -121,6 +143,8 @@ describe('Download directory', function () {
   });
 
   after('download directory clenaup hook', function () {
+    let localDir = makeLocalPath(config.localUrl, 'download-test2');
+    fs.rmdirSync(localDir, {recursive: true});
     return true;
   });
 
@@ -130,6 +154,14 @@ describe('Download directory', function () {
     return expect(sftp.downloadDir(remoteDir, localDir)).to.eventually.equal(
       `${remoteDir} downloaded to ${localDir}`
     );
+  });
+
+  it('Download filtered directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'download-test2');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, /^[^.]/)
+    ).to.eventually.equal(`${remoteDir} downloaded to ${localDir}`);
   });
 
   it('Bad src directory', function () {
