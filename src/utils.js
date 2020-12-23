@@ -125,15 +125,15 @@ function errorListener(client, name, reject) {
 
 function endListener(client, name, reject) {
   let fn = function () {
+    client.debugMsg(`Handled end event for ${name}`);
     if (!client.endCalled) {
+      client.sftp = undefined;
       if (reject) {
         reject(formatError('Unexpected end event raised', name));
       } else {
         throw formatError('Unexpected end event raised', name);
       }
     }
-    client.debugMsg(`Handled end event for ${name}`);
-    client.sftp = undefined;
   };
   tempListeners.push(['end', fn]);
   return fn;
@@ -141,15 +141,15 @@ function endListener(client, name, reject) {
 
 function closeListener(client, name, reject) {
   let fn = function () {
+    client.debugMsg(`handled close event for ${name}`);
     if (!client.endCalled) {
+      client.sftp = undefined;
       if (reject) {
         reject(formatError('Unexpected close event raised', name));
       } else {
         throw formatError('Unexpected close event raised', name);
       }
     }
-    client.debugMsg(`handled close event for ${name}`);
-    client.sftp = undefined;
   };
   tempListeners.push(['close', fn]);
   return fn;

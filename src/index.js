@@ -1083,42 +1083,23 @@ class SftpClient {
    *
    */
   end() {
+    let endCloseHandler;
     return new Promise((resolve, reject) => {
-      const endErrorListener = (err) => {
-        // we don't care about errors at this point
-        // so do nothiing
-        this.debugMsg(
-          `endErrorListener called with ${err.message} and code ${err.code}`
-        );
-        this.errorHandled = true;
-        if (err.code !== 'ECONNRESET') {
-          reject(utils.formatError(err, 'end'));
-        } else {
-          this.debugMsg('Error is ECONNRESET - ignoring error');
-        }
-      };
-
-      try {
-        if (!utils.hasListener(this.client, 'error', 'endErrorListener')) {
-          this.debugMsg('Adding enderrorListener');
-          this.client.prependListener('error', endErrorListener);
-        } else {
-          this.debugMsg('endErrorListener already set');
-        }
-        this.endCalled = true;
-        if (utils.haveConnection(this, 'end', reject)) {
-          this.debugMsg('Have connection - calling end()');
-          this.client.end();
-        } else {
-          this.debugMsg('No connection - skipping call to end()');
-        }
-        resolve(true);
-      } catch (err) {
-        utils.handleError(err, 'end', reject);
-      } finally {
+      this.endCalled = true;
+      utils.addTempListeners(this, 'end', reject);
+      endCloseHandler = () => {
         this.sftp = undefined;
-        this.endCalled = false;
+        resolve(true);
+      };
+      this.on('close', endCloseHandler);
+      if (utils.haveConnection(this, 'end', reject)) {
+        this.debugMsg('Have connection - calling end()');
+        this.client.end();
       }
+    }).finally(() => {
+      utils.removeTempListeners(this.client);
+      this.removeListener('close', endCloseHandler);
+      return true;
     });
   }
 }
