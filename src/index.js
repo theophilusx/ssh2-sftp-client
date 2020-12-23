@@ -92,62 +92,70 @@ class SftpClient {
    *
    */
   sftpConnect(config) {
+    let connectReady;
+
     return new Promise((resolve, reject) => {
-      let connectReady = () => {
+      connectReady = () => {
         this.client.sftp((err, sftp) => {
           if (err) {
             this.debugMsg(`SFTP channel error: ${err.message} ${err.code}`);
             reject(utils.formatError(err, 'sftpConnect', err.code));
           } else {
-            //this.sftp = sftp;
+            this.debugMsg('SFTP channel established');
             resolve(sftp);
           }
-          this.client.removeListener('ready', connectReady);
         });
       };
-      utils.addTempListeners(this, 'sftpConnect', reject);
+      // utils.addTempListeners(this, 'sftpConnect', reject);
       this.client.on('ready', connectReady).connect(config);
+    }).finally((rsp) => {
+      this.removeListener('ready', connectReady);
+      return rsp;
     });
   }
 
-  retryConnect(config) {
-    return promiseRetry(
-      (retry, attempt) => {
-        this.debugMsg(`Connect attempt ${attempt}`);
-        return this.sftpConnect(config).catch((err) => {
-          utils.removeTempListeners(this.client);
-          retry(err);
-        });
-      },
-      {
-        retries: config.retries || 1,
-        factor: config.retry_factor || 2,
-        minTimeout: config.retry_minTimeout || 1000
-      }
-    );
-  }
-
-  async connect(config) {
-    try {
+  connect(config) {
+    return new Promise((resolve, reject) => {
+      utils.addTempListeners(this, 'sftpConnect', reject);
       if (config.debug) {
         this.debug = config.debug;
         this.debugMsg('Debugging turned on');
       }
       if (this.sftp) {
         this.debugMsg('Already connected - reject');
-        throw utils.formatError(
-          'An existing SFTP connection is already defined',
-          'connect',
-          errorCode.connect
+        return reject(
+          utils.formatError(
+            'An existing SFTP connection is already defined',
+            'connect',
+            errorCode.connect
+          )
         );
       }
-      //this.sftp = await this.sftpConnect(config);
-      this.sftp = await this.retryConnect(config);
-      this.debugMsg('SFTP Connection established');
-      utils.removeTempListeners(this.client);
-    } catch (err) {
-      throw utils.formatError(err.message, 'connect', err.errorCode);
-    }
+      return promiseRetry(
+        (retry, attempt) => {
+          this.debugMsg(`Connect attempt ${attempt}`);
+          return this.sftpConnect(config).catch((err) => {
+            retry(err);
+          });
+        },
+        {
+          retries: config.retries || 1,
+          factor: config.retry_factor || 2,
+          minTimeout: config.retry_minTimeout || 1000
+        }
+      )
+        .then((sftp) => {
+          this.sftp = sftp;
+          return resolve(sftp);
+        })
+        .catch((err) => {
+          return reject(err);
+        })
+        .finally((sftp) => {
+          utils.removeTempListeners(this.client);
+          return sftp;
+        });
+    });
   }
 
   /**
@@ -184,9 +192,11 @@ class SftpClient {
           }
           this.debugMsg(`realPath <- ${absPath}`);
           resolve(absPath);
-          utils.removeTempListeners(this.client);
         });
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -243,8 +253,10 @@ class SftpClient {
               isSocket: stats.isSocket()
             });
           }
-          utils.removeTempListeners(this.client);
         });
+      }).finally((rsp) => {
+        utils.removeTempListeners(this.client);
+        return rsp;
       });
     };
 
@@ -365,9 +377,11 @@ class SftpClient {
             }
             resolve(newList.filter((item) => regex.test(item.name)));
           }
-          utils.removeTempListeners(this.client);
         });
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -392,11 +406,9 @@ class SftpClient {
         utils.addTempListeners(this, 'get', reject);
         let rdr = this.sftp.createReadStream(remotePath, options);
         rdr.once('error', (err) => {
-          utils.removeListeners(rdr);
           reject(
             utils.formatError(`${err.message} ${remotePath}`, 'get', err.code)
           );
-          utils.removeTempListeners(this.client);
         });
         if (dst === undefined) {
           // no dst specified, return buffer of data
@@ -404,7 +416,6 @@ class SftpClient {
           let concatStream = concat((buff) => {
             rdr.removeAllListeners('error');
             resolve(buff);
-            utils.removeTempListeners(this.client);
           });
           rdr.pipe(concatStream);
         } else {
@@ -418,7 +429,6 @@ class SftpClient {
             wtr = dst;
           }
           wtr.once('error', (err) => {
-            utils.removeListeners(rdr);
             reject(
               utils.formatError(
                 `${err.message} ${typeof dst === 'string' ? dst : ''}`,
@@ -429,10 +439,8 @@ class SftpClient {
             if (options.autoClose === false) {
               rdr.destroy();
             }
-            utils.removeTempListeners(this.client);
           });
           wtr.once('finish', () => {
-            utils.removeListeners(rdr);
             if (options.autoClose === false) {
               rdr.destroy();
             }
@@ -441,11 +449,13 @@ class SftpClient {
             } else {
               resolve(wtr);
             }
-            utils.removeTempListeners(this.client);
           });
           rdr.pipe(wtr);
         }
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -491,9 +501,11 @@ class SftpClient {
               resolve(
                 `${remotePath} was successfully download to ${localPath}!`
               );
-              utils.removeTempListeners(this.client);
             });
           }
+        }).finally((rsp) => {
+          utils.removeTempListeners(this.client);
+          return rsp;
         });
       });
   }
@@ -571,11 +583,10 @@ class SftpClient {
               );
             });
           }
+        }).finally((rsp) => {
+          utils.removeTempListeners(this.client);
+          return rsp;
         });
-      })
-      .then((msg) => {
-        utils.removeTempListeners(this.client);
-        return msg;
       });
   }
 
@@ -646,15 +657,12 @@ class SftpClient {
                   err.code
                 )
               );
-              utils.removeTempListeners(this.client);
             });
             stream.once('finish', () => {
-              utils.removeListeners(stream);
               if (options.autoClose === false) {
                 stream.destroy();
               }
               resolve(`Uploaded data stream to ${remotePath}`);
-              utils.removeTempListeners(this.client);
             });
             if (localSrc instanceof Buffer) {
               this.debugMsg('put source is a buffer');
@@ -669,7 +677,6 @@ class SftpClient {
                 rdr = localSrc;
               }
               rdr.once('error', (err) => {
-                utils.removeListeners(stream);
                 reject(
                   utils.formatError(
                     `${err.message} ${
@@ -682,11 +689,13 @@ class SftpClient {
                 if (options.autoClose === false) {
                   stream.destroy();
                 }
-                utils.removeTempListeners(this.client);
               });
               rdr.pipe(stream);
             }
           }
+        }).finally((rsp) => {
+          utils.removeTempListeners(this.client);
+          return rsp;
         });
       });
   }
@@ -712,7 +721,6 @@ class SftpClient {
           options.flags = 'a';
           let stream = this.sftp.createWriteStream(remotePath, options);
           stream.once('error', (err) => {
-            utils.removeListeners(stream);
             reject(
               utils.formatError(
                 `${err.message} ${remotePath}`,
@@ -720,12 +728,9 @@ class SftpClient {
                 err.code
               )
             );
-            utils.removeTempListeners(this.client);
           });
           stream.once('finish', () => {
-            utils.removeListeners(stream);
             resolve(`Appended data to ${remotePath}`);
-            utils.removeTempListeners(this.client);
           });
           if (input instanceof Buffer) {
             stream.end(input);
@@ -734,6 +739,9 @@ class SftpClient {
           }
         }
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -759,8 +767,10 @@ class SftpClient {
             );
           }
           resolve(`${p} directory created`);
-          utils.removeTempListeners(this.client);
         });
+      }).finally((rsp) => {
+        utils.removeTempListeners(this.client);
+        return rsp;
       });
     };
 
@@ -806,8 +816,10 @@ class SftpClient {
             );
           }
           resolve('Successfully removed directory');
-          utils.removeTempListeners(this.client);
         });
+      }).finally((rsp) => {
+        utils.removeTempListeners(this.client);
+        return rsp;
       });
     };
 
@@ -869,9 +881,11 @@ class SftpClient {
             }
           }
           resolve(`Successfully deleted ${remotePath}`);
-          utils.removeTempListeners(this.client);
         });
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -903,9 +917,11 @@ class SftpClient {
             );
           }
           resolve(`Successfully renamed ${fromPath} to ${toPath}`);
-          utils.removeTempListeners(this.client);
         });
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -938,9 +954,11 @@ class SftpClient {
             );
           }
           resolve(`Successful POSIX rename ${fromPath} to ${toPath}`);
-          utils.removeTempListeners(this.client);
         });
       }
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
@@ -965,8 +983,10 @@ class SftpClient {
           );
         }
         resolve('Successfully change file mode');
-        utils.removeTempListeners(this.client);
       });
+    }).finally((rsp) => {
+      utils.removeTempListeners(this.client);
+      return rsp;
     });
   }
 
