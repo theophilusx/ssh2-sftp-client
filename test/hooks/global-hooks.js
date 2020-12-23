@@ -68,7 +68,19 @@ const getConnection = async () => {
     return con;
   } catch (err) {
     console.error(`Connect failure ${err.message}`);
-    console.dir(config);
+    let eventNames = con.client.eventNames();
+    if (eventNames.length) {
+      console.log('Listener Data');
+      eventNames.map((n) => {
+        let listeners = con.client.listeners(n);
+        console.log(`${n}: ${con.client.listenerCount(n)}`);
+        console.dir(listeners);
+        listeners.map((l) => {
+          console.log(`listener name = ${l.name}`);
+        });
+      });
+    }
+
     throw err;
   }
 };
