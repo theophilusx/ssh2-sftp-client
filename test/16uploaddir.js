@@ -13,14 +13,15 @@ chai.use(chaiAsPromised);
 describe('uploadDir tests', function () {
   let sftp;
 
-  before('UploadDir setup hook', async function () {
+  before('UploadDir() setup hook', async function () {
     sftp = await getConnection();
     return true;
   });
 
-  after('UploadDir clenaup hook', async function () {
+  after('UploadDir() clenaup hook', async function () {
     let remotePath = `${config.sftpUrl}/upload-test2`;
     await sftp.rmdir(remotePath, true);
+    await sftp.end();
     return true;
   });
 
@@ -67,14 +68,15 @@ describe('uploadDir tests', function () {
 describe('Partial file upload', function () {
   let sftp;
 
-  before('UploadDir setup hook', async function () {
+  before('UploadDir() setup hook', async function () {
     sftp = await getConnection();
     let remotePath = `${config.sftpUrl}/upload-test/sub1`;
     await sftp.rmdir(remotePath, true);
     return true;
   });
 
-  after('UploadDir clenaup hook', async function () {
+  after('UploadDir() clenaup hook', async function () {
+    await sftp.end();
     return true;
   });
 
@@ -105,7 +107,8 @@ describe('Uploaddir bad path tests', function () {
     return true;
   });
 
-  after('UploadDir clenaup hook', function () {
+  after('UploadDir clenaup hook', async function () {
+    await sftp.end();
     return true;
   });
 
@@ -142,9 +145,10 @@ describe('Download directory', function () {
     return true;
   });
 
-  after('download directory clenaup hook', function () {
+  after('download directory clenaup hook', async function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test2');
     fs.rmdirSync(localDir, {recursive: true});
+    await sftp.end();
     return true;
   });
 
@@ -196,6 +200,7 @@ describe('Partial download dir', function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     await sftp.rmdir(remoteDir, true);
     fs.rmdirSync(localDir, {recursive: true});
+    await sftp.end();
     return true;
   });
 

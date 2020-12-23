@@ -17,7 +17,20 @@ chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe('Connect Tests', function () {
+  before(function () {
+    console.log('---- 01 before');
+  });
+
+  after(function () {
+    console.log('---- 01 after');
+  });
+
+  afterEach(function () {
+    console.log('-------- 01 afterEach');
+  });
+
   beforeEach(function () {
+    console.log('-------- 01 beforeEach');
     return new Promise((resolve, reject) => {
       try {
         setTimeout(function () {
@@ -112,6 +125,22 @@ describe('Connect Tests', function () {
 });
 
 describe('Connect and disconnect', function () {
+  before(function () {
+    console.log('---- 01b before');
+  });
+
+  after(function () {
+    console.log('---- 01b after');
+  });
+
+  beforeEach(function () {
+    console.log('-------- 01b beforeEach');
+  });
+
+  afterEach(function () {
+    console.log('-------- 01b afterEach');
+  });
+
   it('connect and disconnect returns true', async function () {
     let client = new Client();
     return expect(

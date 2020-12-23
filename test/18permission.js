@@ -12,20 +12,21 @@ chai.use(chaiAsPromised);
 
 if (process.platform !== 'win32') {
   describe('Bad permission tests', function () {
-    let sftp;
-
-    before('FastPut setup hook', async function () {
-      sftp = await getConnection();
-      await permissionSetup(sftp, config.sftpUrl, config.localUrl);
-      return true;
-    });
-
-    after('FastPut cleanup hook', async function () {
-      await permissionCleanup(sftp, config.sftpUrl);
-      return true;
-    });
-
     describe('No access to local file', function () {
+      let sftp;
+
+      before('FastPut() setup hook', async function () {
+        sftp = await getConnection();
+        await permissionSetup(sftp, config.sftpUrl, config.localUrl);
+        return true;
+      });
+
+      after('FastPut() cleanup hook', async function () {
+        await permissionCleanup(sftp, config.sftpUrl);
+        await sftp.end();
+        return true;
+      });
+
       it('fastPut throws exception', function () {
         return expect(
           sftp.fastPut(
@@ -46,6 +47,20 @@ if (process.platform !== 'win32') {
     });
 
     describe('No access to remote object', function () {
+      let sftp;
+
+      before('FastPut() setup hook', async function () {
+        sftp = await getConnection();
+        await permissionSetup(sftp, config.sftpUrl, config.localUrl);
+        return true;
+      });
+
+      after('FastPut() cleanup hook', async function () {
+        await permissionCleanup(sftp, config.sftpUrl);
+        await sftp.end();
+        return true;
+      });
+
       it('fastget throws exception', function () {
         if (sftp.remotePlatform !== 'win32') {
           return expect(

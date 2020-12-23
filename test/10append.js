@@ -15,14 +15,15 @@ chai.use(chaiAsPromised);
 describe('append() method tests', function () {
   let sftp;
 
-  before('append test setup hook', async function () {
+  before('append() test setup hook', async function () {
     sftp = await getConnection();
     await appendSetup(sftp, config.sftpUrl);
     return true;
   });
 
-  after('append test cleanup hook', async function () {
+  after('append() test cleanup hook', async function () {
     await appendCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 

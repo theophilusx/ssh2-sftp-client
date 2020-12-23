@@ -14,14 +14,15 @@ chai.use(chaiAsPromised);
 describe('chmod() method tests', function () {
   let sftp;
 
-  before('chmod setup hook', async function () {
+  before('chmod() setup hook', async function () {
     sftp = await getConnection();
     await chmodSetup(sftp, config.sftpUrl);
     return true;
   });
 
-  after('chmod cleanup hook', async function () {
+  after('chmod() cleanup hook', async function () {
     await chmodCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 

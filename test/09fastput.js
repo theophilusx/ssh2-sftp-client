@@ -19,14 +19,15 @@ chai.use(chaiAsPromised);
 describe('fastPut() method tests', function () {
   let sftp;
 
-  before('fastPut setup hook', async function () {
+  before('fastPut() setup hook', async function () {
     sftp = await getConnection();
     fastPutSetup(config.localUrl);
     return true;
   });
 
-  after('fastPut cleanup hook', async function () {
+  after('fastPut() cleanup hook', async function () {
     await fastPutCleanup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.end();
     return true;
   });
 

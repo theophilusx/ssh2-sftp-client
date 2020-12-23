@@ -15,14 +15,15 @@ chai.use(chaiAsPromised);
 describe('fastGet() method tests', function () {
   let sftp;
 
-  before('FastGet setup hook', async function () {
+  before('FastGet() setup hook', async function () {
     sftp = await getConnection();
     await gHooks.fastGetSetup(sftp, config.sftpUrl, config.localUrl);
     return true;
   });
 
-  after('FastGet cleanup hook', async function () {
+  after('FastGet() cleanup hook', async function () {
     await gHooks.fastGetCleanup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.end();
     return true;
   });
 

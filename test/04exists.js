@@ -17,6 +17,11 @@ describe('exists() method tests', async () => {
     return true;
   });
 
+  after('exists() test cleanup hook', async function () {
+    await sftp.end();
+    return true;
+  });
+
   it('exist return should be a promise', function () {
     return expect(sftp.exists(config.sftpUrl)).to.be.a('promise');
   });

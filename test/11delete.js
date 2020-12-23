@@ -14,13 +14,14 @@ chai.use(chaiAsPromised);
 describe('delete() method tests', function () {
   let sftp;
 
-  before('delete tests setup hook', async function () {
+  before('delete() tests setup hook', async function () {
     sftp = await getConnection();
     await deleteSetup(sftp, config.sftpUrl);
     return true;
   });
 
-  after('delete cleanup hook', async function () {
+  after('delete() cleanup hook', async function () {
+    await sftp.end();
     return true;
   });
 

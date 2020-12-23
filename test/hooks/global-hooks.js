@@ -62,6 +62,8 @@ const getConnection = async () => {
       await con.connect(config);
       let root = await con.realPath('.');
       config.remoteRoot = root;
+    } else {
+      await con.connect(config);
     }
     return con;
   } catch (err) {

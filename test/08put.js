@@ -16,13 +16,14 @@ chai.use(chaiAsPromised);
 describe('put() method tests', function () {
   let sftp;
 
-  before('put setup hook', async function () {
+  before('put() setup hook', async function () {
     sftp = await getConnection();
     return true;
   });
 
-  after('put cleanup hook', async function () {
+  after('put() cleanup hook', async function () {
     await putCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 

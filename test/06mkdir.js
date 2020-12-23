@@ -13,13 +13,14 @@ chai.use(chaiAsPromised);
 describe('mkdir() method tests', function () {
   let sftp;
 
-  before('mkdir setup hook', async function () {
+  before('mkdir() setup hook', async function () {
     sftp = await getConnection();
     return true;
   });
 
-  after('mkdir test cleanup', async function () {
+  after('mkdir() test cleanup', async function () {
     await mkdirCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 

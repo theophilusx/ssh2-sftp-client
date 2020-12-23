@@ -15,14 +15,15 @@ chai.use(chaiAsPromised);
 describe('posixRename() method tests', function () {
   let sftp;
 
-  before('rename setup hook', async function () {
+  before('posixrename() setup hook', async function () {
     sftp = await getConnection();
     await renameSetup(sftp, config.sftpUrl);
     return true;
   });
 
-  after('rename cleanup hook', async function () {
+  after('posixrename() cleanup hook', async function () {
     await renameCleanup(sftp, config.sftpUrl);
+    await sftp.end();
     return true;
   });
 

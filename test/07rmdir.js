@@ -21,6 +21,7 @@ describe('rmdir() method tests', function () {
   });
 
   after('rmdir() cleanup hook', async function () {
+    await sftp.end();
     return true;
   });
 

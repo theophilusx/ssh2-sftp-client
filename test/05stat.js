@@ -12,8 +12,13 @@ chai.use(chaiAsPromised);
 describe('stat() method tests', function () {
   let sftp;
 
-  before('stat setup hook', async function () {
+  before('stat() setup hook', async function () {
     sftp = await getConnection();
+    return true;
+  });
+
+  after('state() cleanup hook', async function () {
+    await sftp.end();
     return true;
   });
 

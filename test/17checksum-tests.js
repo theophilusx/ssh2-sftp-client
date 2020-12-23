@@ -14,13 +14,14 @@ chai.use(chaiAsPromised);
 describe('put() and get() checksum tests', function () {
   let sftp;
 
-  before('checksum setup hook', async function () {
+  before('checksum() setup hook', async function () {
     sftp = await getConnection();
     return true;
   });
 
-  after('Checksum test cleanup hook', async function () {
+  after('Checksum() test cleanup hook', async function () {
     await checksumCleanup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.end();
     return true;
   });
 
@@ -119,6 +120,7 @@ describe('fastPut() and fastGet() checksum tests', function () {
 
   after('Checksum test cleanup hook', async function () {
     await checksumCleanup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.end();
     return true;
   });
 

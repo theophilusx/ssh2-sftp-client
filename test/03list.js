@@ -9,11 +9,16 @@ const {config, getConnection} = require('./hooks/global-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('list() method tests', async () => {
+describe('list() method tests', async function () {
   let sftp;
 
-  before('List test setup hook', async function () {
+  before('list() test setup hook', async function () {
     sftp = await getConnection();
+    return true;
+  });
+
+  after('list() test cleanup hook', async function () {
+    await sftp.end();
     return true;
   });
 
