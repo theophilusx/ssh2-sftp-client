@@ -17,20 +17,7 @@ chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe('Connect Tests', function () {
-  before(function () {
-    console.log('---- 01 before');
-  });
-
-  after(function () {
-    console.log('---- 01 after');
-  });
-
-  afterEach(function () {
-    console.log('-------- 01 afterEach');
-  });
-
   beforeEach(function () {
-    console.log('-------- 01 beforeEach');
     return new Promise((resolve, reject) => {
       try {
         setTimeout(function () {
