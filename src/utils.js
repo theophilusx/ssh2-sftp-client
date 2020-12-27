@@ -1,6 +1,5 @@
 'use strict';
 
-const {prependListener} = require('cluster');
 const fs = require('fs');
 const {errorCode} = require('./constants');
 
@@ -13,7 +12,7 @@ const {errorCode} = require('./constants');
  *                              attempts to complete before giving up
  * @returns {Error} New error with custom error message
  */
-function formatError(err, name = 'sftp', eCode, retryCount) {
+function fmtError(err, name = 'sftp', eCode, retryCount) {
   let msg = '';
   let code = '';
   let retry = retryCount
@@ -75,13 +74,13 @@ function handleError(err, name, reject) {
     if (err.custom) {
       reject(err);
     } else {
-      reject(formatError(err, name));
+      reject(fmtError(err, name));
     }
   } else {
     if (err.custom) {
       throw err;
     } else {
-      throw formatError(err, name, err.code);
+      throw fmtError(err, name, err.code);
     }
   }
 }
@@ -112,9 +111,9 @@ function errorListener(client, name, reject) {
     if (!client.errorHandled) {
       client.errorHandled = true;
       if (reject) {
-        reject(formatError(err, name, err.code));
+        reject(fmtError(err, name, err.code));
       } else {
-        throw formatError(err, name, err.code);
+        throw fmtError(err, name, err.code);
       }
     }
     client.debugMsg(`Handled Error: ${err.message} ${err.code}`);
@@ -129,9 +128,9 @@ function endListener(client, name, reject) {
     if (!client.endCalled) {
       client.sftp = undefined;
       if (reject) {
-        reject(formatError('Unexpected end event raised', name));
+        reject(fmtError('Unexpected end event raised', name));
       } else {
-        throw formatError('Unexpected end event raised', name);
+        throw fmtError('Unexpected end event raised', name);
       }
     }
   };
@@ -145,9 +144,9 @@ function closeListener(client, name, reject) {
     if (!client.endCalled) {
       client.sftp = undefined;
       if (reject) {
-        reject(formatError('Unexpected close event raised', name));
+        reject(fmtError('Unexpected close event raised', name));
       } else {
-        throw formatError('Unexpected close event raised', name);
+        throw fmtError('Unexpected close event raised', name);
       }
     }
   };
@@ -213,7 +212,7 @@ async function normalizeRemotePath(client, aPath) {
     }
     return aPath;
   } catch (err) {
-    throw formatError(err, 'normalizeRemotePath');
+    throw fmtError(err, 'normalizeRemotePath');
   }
 }
 
@@ -229,7 +228,7 @@ async function normalizeRemotePath(client, aPath) {
  */
 function haveConnection(client, name, reject) {
   if (!client.sftp) {
-    let newError = formatError(
+    let newError = fmtError(
       'No SFTP connection available',
       name,
       errorCode.connect
@@ -266,7 +265,7 @@ function hasListener(emitter, eventName, listenerName) {
 }
 
 module.exports = {
-  formatError,
+  fmtError,
   handleError,
   removeListeners,
   errorListener,
