@@ -112,22 +112,6 @@ describe('Connect Tests', function () {
 });
 
 describe('Connect and disconnect', function () {
-  before(function () {
-    console.log('---- 01b before');
-  });
-
-  after(function () {
-    console.log('---- 01b after');
-  });
-
-  beforeEach(function () {
-    console.log('-------- 01b beforeEach');
-  });
-
-  afterEach(function () {
-    console.log('-------- 01b afterEach');
-  });
-
   it('connect and disconnect returns true', async function () {
     let client = new Client();
     return expect(

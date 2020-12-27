@@ -6,6 +6,14 @@ require('dotenv').config({path: dotenvPath});
 
 const Client = require('../../src/index.js');
 const {join} = require('path');
+const winston = require('winston');
+
+const logger = winston.createLogger({
+  level: 'debug',
+  transports: [
+    new winston.transports.File({filename: 'debug.log', level: 'debug'})
+  ]
+});
 
 // use your test ssh server config
 const config = {
@@ -16,17 +24,17 @@ const config = {
   localUrl: process.env.LOCAL_URL,
   sftpUrl: process.env.SFTP_URL,
   delay: process.env.TEST_DELAY || 500,
-  retries: 2
+  retries: 1
 };
 
 if (process.env.DEBUG === 'true') {
   config.debug = (msg) => {
-    console.error(msg);
+    logger.debug(msg);
   };
 } else if (process.env.DEBUG === 'client') {
   config.debug = (msg) => {
     if (msg.startsWith('CLIENT')) {
-      console.error(msg);
+      logger.debug(msg);
     }
   };
 }

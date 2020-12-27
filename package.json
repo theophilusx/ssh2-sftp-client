@@ -9,7 +9,8 @@
   },
   "keywords": ["sftp", "nodejs", "promises"],
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "coverage": "nyc npm run test"
   },
   "author": "Tim Cross",
   "email": "theophilusx@gmail.com",
@@ -33,6 +34,7 @@
     "dotenv": "^8.2.0",
     "mocha": "^8.2.1",
     "moment": "^2.29.1",
+    "nyc": "^15.1.0",
     "through2": "^4.0.2"
   }
 }
