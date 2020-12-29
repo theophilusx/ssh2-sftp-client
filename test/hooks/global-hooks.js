@@ -15,6 +15,27 @@ const logger = winston.createLogger({
   ]
 });
 
+function hasListener(emitter, eventName, listenerName) {
+  let listeners = emitter.listeners(eventName);
+  let matches = listeners.filter((l) => l.name == listenerName);
+  return matches.length === 0 ? false : true;
+}
+
+function dumpListeners(emitter) {
+  let eventNames = emitter.eventNames();
+  if (eventNames.length) {
+    console.log('Listener Data');
+    eventNames.map((n) => {
+      let listeners = emitter.listeners(n);
+      console.log(`${n}: ${emitter.listenerCount(n)}`);
+      console.dir(listeners);
+      listeners.map((l) => {
+        console.log(`listener name = ${l.name}`);
+      });
+    });
+  }
+}
+
 // use your test ssh server config
 const config = {
   host: process.env.SFTP_SERVER,
@@ -107,6 +128,8 @@ const closeConnection = async () => {
 };
 
 module.exports = {
+  hasListener,
+  dumpListeners,
   config,
   makeLocalPath,
   makeRemotePath,

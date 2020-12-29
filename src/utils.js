@@ -85,18 +85,6 @@ function handleError(err, name, reject) {
   }
 }
 
-/**
- * Remove all ready, error and end listeners.
- *
- * @param {Emitter} emitter - The emitter object to remove listeners from
- */
-function removeListeners(emitter) {
-  let listeners = emitter.eventNames();
-  listeners.forEach((name) => {
-    emitter.removeAllListeners(name);
-  });
-}
-
 let tempListeners = [];
 
 /**
@@ -107,7 +95,7 @@ let tempListeners = [];
  * @throws {Error} Throws new error
  */
 function errorListener(client, name, reject) {
-  let fn = function (err) {
+  let fn = (err) => {
     if (!client.errorHandled) {
       client.errorHandled = true;
       if (reject) {
@@ -243,31 +231,9 @@ function haveConnection(client, name, reject) {
   return true;
 }
 
-function dumpListeners(emitter) {
-  let eventNames = emitter.eventNames();
-  if (eventNames.length) {
-    console.log('Listener Data');
-    eventNames.map((n) => {
-      let listeners = emitter.listeners(n);
-      console.log(`${n}: ${emitter.listenerCount(n)}`);
-      console.dir(listeners);
-      listeners.map((l) => {
-        console.log(`listener name = ${l.name}`);
-      });
-    });
-  }
-}
-
-function hasListener(emitter, eventName, listenerName) {
-  let listeners = emitter.listeners(eventName);
-  let matches = listeners.filter((l) => l.name == listenerName);
-  return matches.length === 0 ? false : true;
-}
-
 module.exports = {
   fmtError,
   handleError,
-  removeListeners,
   errorListener,
   endListener,
   closeListener,
@@ -275,7 +241,5 @@ module.exports = {
   removeTempListeners,
   localExists,
   normalizeRemotePath,
-  haveConnection,
-  dumpListeners,
-  hasListener
+  haveConnection
 };
