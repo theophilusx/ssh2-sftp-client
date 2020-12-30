@@ -71,6 +71,37 @@ describe('fmtError() tests', function () {
       custom: true
     });
   });
+
+  it('fmtError error code ENOTFOUND', function () {
+    let e = new Error('Not Found');
+    e.code = 'ENOTFOUND';
+    e.level = 'Client';
+    e.hostname = 'bogus.com';
+    return expect(utils.fmtError(e, 'func')).to.containSubset({
+      message: 'func: Client error. Address lookup failed for host bogus.com',
+      code: 'ENOTFOUND'
+    });
+  });
+
+  it('fmtError error code ECONNREFUSED', function () {
+    let e = new Error('Connection refused');
+    e.code = 'ECONNREFUSED';
+    e.level = 'Server';
+    e.address = '1.1.1.1';
+    return expect(utils.fmtError(e, 'func')).to.containSubset({
+      message: 'func: Server error. Remote host at 1.1.1.1 refused connection',
+      code: 'ECONNREFUSED'
+    });
+  });
+
+  it('fmtError error code ECONNRESET', function () {
+    let e = new Error('Connection reset');
+    e.code = 'ECONNRESET';
+    return expect(utils.fmtError(e, 'func')).to.containSubset({
+      message: 'func: Remote host has reset the connection: Connection reset',
+      code: 'ECONNRESET'
+    });
+  });
 });
 
 describe('errorListener', function () {

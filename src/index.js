@@ -15,7 +15,6 @@ const {
   removeTempListeners,
   haveConnection,
   normalizeRemotePath,
-  handleError,
   localExists
 } = require('./utils');
 const {errorCode} = require('./constants');
@@ -254,7 +253,11 @@ class SftpClient {
       let absPath = await normalizeRemotePath(this, remotePath);
       return _stat(absPath);
     } catch (err) {
-      return handleError(err, 'stat');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(err, 'stat', err.code);
+      }
     }
   }
 
@@ -300,7 +303,11 @@ class SftpClient {
         return false;
       }
     } catch (err) {
-      return handleError(err, 'exists');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(err, 'exists', err.code);
+      }
     }
   }
 
@@ -744,7 +751,11 @@ class SftpClient {
       }
       return _mkdir(rPath);
     } catch (err) {
-      return handleError(`${err.message} ${remotePath}`, 'mkdir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(`${err.message} ${remotePath}`, 'mkdir', err.code);
+      }
     }
   }
 
@@ -797,7 +808,11 @@ class SftpClient {
       }
       return _rmdir(absPath);
     } catch (err) {
-      return handleError(err, 'rmdir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(err, 'rmdir', err.code);
+      }
     }
   }
 
@@ -984,7 +999,11 @@ class SftpClient {
       }
       return `${srcDir} uploaded to ${dstDir}`;
     } catch (err) {
-      return handleError(err, 'uploadDir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(err, 'uploadDir');
+      }
     }
   }
 
@@ -1031,7 +1050,11 @@ class SftpClient {
       }
       return `${srcDir} downloaded to ${dstDir}`;
     } catch (err) {
-      return handleError(err, 'downloadDir');
+      if (err.custom) {
+        throw err;
+      } else {
+        throw fmtError(err, 'downloadDir', err.code);
+      }
     }
   }
 

@@ -45,9 +45,6 @@ function fmtError(err, name = 'sftp', eCode, retryCount) {
           `${name}: Remote host has reset the connection: ` +
           `${err.message}${retry}`;
         break;
-      case 'ENOENT':
-        msg = `${name}: ${err.message}${retry}`;
-        break;
       default:
         msg = `${name}: ${err.message}${retry}`;
     }
@@ -57,32 +54,6 @@ function fmtError(err, name = 'sftp', eCode, retryCount) {
   newError.code = code;
   newError.custom = true;
   return newError;
-}
-
-/**
- * Tests an error to see if it is one which has already been customised
- * by this module or not. If not, applies appropriate customisation.
- *
- * @param {Error} err - an Error object
- * @param {String} name - name to be used in customised error message
- * @param {Function} reject - If defined, call this function instead of
- *                            throwing the error
- * @throws {Error}
- */
-function handleError(err, name, reject) {
-  if (reject) {
-    if (err.custom) {
-      reject(err);
-    } else {
-      reject(fmtError(err, name));
-    }
-  } else {
-    if (err.custom) {
-      throw err;
-    } else {
-      throw fmtError(err, name, err.code);
-    }
-  }
 }
 
 let tempListeners = [];
@@ -233,7 +204,6 @@ function haveConnection(client, name, reject) {
 
 module.exports = {
   fmtError,
-  handleError,
   errorListener,
   endListener,
   closeListener,
