@@ -22,3 +22,7 @@ tools
 *~
 mate-vbox
 validation
+debug.log
+coverage
+.nyc_output
+.nycrc.json
