@@ -68,6 +68,14 @@ npm install ssh2-sftp-client
 #+end_src
 
 * Version 6.x Changes
+** Version 6.0.1
+
+- Fix issue with connect retry not releasing 'ready' listener.
+- Add finally clauses to all promises to ensure release of temporary listeners.
+- Add nyc module to improve test coverage
+- Added additional utils tests to improve test coverage
+- Removed some unnecessary util functions to reduce code size
+
 ** Version 6.0.0 Changes
 
 - Added new optional argument /notFoundOK/ to ~delete()~ method. If true, no

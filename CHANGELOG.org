@@ -1,6 +1,14 @@
 * Change Logging
 
-** V6.0.0
+** Version 6.0.1
+   - Fix issue with connect retry not releasing 'ready' listeners
+   - Add finally clauses to all promises to ensure temporary listeners are deleted
+   - Add nyc module to report on code test coverage
+   - Add additional utils tests to increase test coverage
+   - Removed some dead code and unused utility functions to reduce download size
+   - Cleanup tests and reduce inter-test dependencies
+
+** V6.0.0.0
    - Update connection retry code to use the promise-retry module instead of
      plain rety module
    - Added optional filter argument for uploadDir/downlDir to select which files

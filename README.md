@@ -2,7 +2,8 @@
 - [Installation](#sec-2)
 - [Basic Usage](#sec-3)
 - [Version 6.x Changes](#sec-4)
-  - [Version 6.0.0 Changes](#sec-4-1)
+  - [Version 6.0.1](#sec-4-1)
+  - [Version 6.0.0 Changes](#sec-4-2)
 - [Documentation](#sec-5)
   - [Specifying Paths](#sec-5-1)
   - [Methods](#sec-5-2)
@@ -104,7 +105,15 @@ sftp.connect({
 
 # Version 6.x Changes<a id="sec-4"></a>
 
-## Version 6.0.0 Changes<a id="sec-4-1"></a>
+## Version 6.0.1<a id="sec-4-1"></a>
+
+-   Fix issue with connect retry not releasing 'ready' listener.
+-   Add finally clauses to all promises to ensure release of temporary listeners.
+-   Add nyc module to improve test coverage
+-   Added additional utils tests to improve test coverage
+-   Removed some unnecessary util functions to reduce code size
+
+## Version 6.0.0 Changes<a id="sec-4-2"></a>
 
 -   Added new optional argument *notFoundOK* to `delete()` method. If true, no error is thrown when trying to delete a file which does not exist. Default is false.
 -   Added new filter argument to `uploadDir()` and `downloadDir()` methods. The filter argument is a regular expression used to match the files and directories to be included in the upload or download. Defaults to match all files and directories.
