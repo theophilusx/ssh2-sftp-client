@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const {errorCode} = require('./constants');
+const { errorCode } = require('./constants');
 
 /**
  * Generate a new Error object with a reformatted error message which
@@ -114,14 +114,18 @@ function closeListener(client, name, reject) {
 }
 
 function addTempListeners(obj, name, reject) {
+  obj.debugMsg(`${name}: Adding end listener`);
   obj.client.prependListener('end', endListener(obj, name, reject));
+  obj.debugMsg(`${name}: Adding close listener`);
   obj.client.prependListener('close', closeListener(obj, name, reject));
+  obj.debugMsg(`${name}: Adding error listener`);
   obj.client.prependListener('error', errorListener(obj, name, reject));
 }
 
-function removeTempListeners(client) {
+function removeTempListeners(obj) {
   tempListeners.forEach(([e, fn]) => {
-    client.removeListener(e, fn);
+    obj.debugMsg(`${obj.clientName}: Removing ${e} listener`);
+    obj.client.removeListener(e, fn);
   });
   tempListeners = [];
 }
@@ -202,6 +206,18 @@ function haveConnection(client, name, reject) {
   return true;
 }
 
+function sleep(ms) {
+  return new Promise((resolve, reject) => {
+    try {
+      setTimeout(() => {
+        resolve(true);
+      }, ms);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = {
   fmtError,
   errorListener,
@@ -211,5 +227,6 @@ module.exports = {
   removeTempListeners,
   localExists,
   normalizeRemotePath,
-  haveConnection
+  haveConnection,
+  sleep,
 };
