@@ -14,7 +14,8 @@
   ],
   "scripts": {
     "test": "mocha",
-    "coverage": "nyc npm run test"
+    "coverage": "nyc npm run test",
+    "lint": "eslint \"src/**/*.js\" --quiet"
   },
   "author": "Tim Cross",
   "email": "theophilusx@gmail.com",
@@ -28,8 +29,7 @@
   "dependencies": {
     "concat-stream": "^2.0.0",
     "promise-retry": "^2.0.1",
-    "ssh2": "^0.8.9",
-    "winston": "^3.3.3"
+    "ssh2": "github:mscdex/ssh2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -40,6 +40,7 @@
     "mocha": "^8.2.1",
     "moment": "^2.29.1",
     "nyc": "^15.1.0",
-    "through2": "^4.0.2"
+    "through2": "^4.0.2",
+    "winston": "^3.3.3"
   }
 }
