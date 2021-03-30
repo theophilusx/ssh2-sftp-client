@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "no-console": 1,
+    "quotes": ["error", "single"]
+  },
+  "plugins": [],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "ecmaFeatures": {
+      "impliedStrict": true
+    }
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "mocha": true
+  }
+}
