@@ -32,21 +32,30 @@ class SftpClient {
 
     this.client.on('close', () => {
       if (!this.endCalled) {
-        this.debugMsg('Unexpected close event raised by server');
+        this.debugMsg(
+          `${this.clientName}: Unexpected close event raised by server`
+        );
         this.sftp = undefined;
       }
     });
+
     this.client.on('end', () => {
       if (!this.endCalled) {
-        this.debugMsg('Unexpected end event raised by server');
+        this.debugMsg(
+          `${this.clientName}: Unexpected end event raised by server`
+        );
         this.sftp = undefined;
       }
     });
+
     this.client.on('error', (err) => {
       if (!this.errorHandled) {
+        this.debugMsg(
+          `${this.clientName}: Global Error Handler: ${err.message}`
+        );
         throw fmtError(
           `Unexpected error: ${err.message}`,
-          'global-error-handler',
+          `${this.clientName}: global error handler`,
           err.code
         );
       } else {
@@ -97,28 +106,40 @@ class SftpClient {
    * @return {Promise} which will resolve to an sftp client object
    *
    */
-  sftpConnect(config) {
-    let connectReady;
-
+  getConnection(config) {
+    let doReady;
     return new Promise((resolve, reject) => {
       addTempListeners(this, 'sftpConnect', reject);
-      connectReady = () => {
-        this.client.sftp((err, sftp) => {
-          if (err) {
-            this.debugMsg(`SFTP channel error: ${err.message} ${err.code}`);
-            reject(fmtError(err, 'sftpConnect', err.code));
-          } else {
-            this.debugMsg('SFTP channel established');
-            resolve(sftp);
-          }
-        });
+      doReady = () => {
+        resolve(true);
       };
-      // addTempListeners(this, 'sftpConnect', reject);
-      this.client.on('ready', connectReady).connect(config);
-    }).finally((rsp) => {
-      this.removeListener('ready', connectReady);
-      removeTempListeners(this.client);
-      return rsp;
+      this.client.on('ready', doReady);
+      this.client.connect(config);
+    })
+      .catch((err) => {
+        let firstError = err;
+        return sleep(1000).then(() => {
+          return Promise.reject(firstError);
+        });
+      })
+      .finally((resp) => {
+        this.removeListener('ready', doReady);
+        removeTempListeners(this);
+        return resp;
+      });
+  }
+
+  getSftpChannel() {
+    return new Promise((resolve, reject) => {
+      this.client.sftp((err, sftp) => {
+        if (err) {
+          this.debugMsg(`SFTP Channel Error: ${err.message}`);
+          reject(fmtError(err, 'getSftpChannel', err.code));
+        } else {
+          this.sftp = sftp;
+          resolve(sftp);
+        }
+      });
     });
   }
 
@@ -140,7 +161,7 @@ class SftpClient {
     return promiseRetry(
       (retry, attempt) => {
         this.debugMsg(`Connect attempt ${attempt}`);
-        return this.sftpConnect(config).catch((err) => {
+        return this.getConnection(config).catch((err) => {
           retry(err);
         });
       },
@@ -149,8 +170,8 @@ class SftpClient {
         factor: config.retry_factor || 2,
         minTimeout: config.retry_minTimeout || 1000,
       }
-    ).then((sftp) => {
-      this.sftp = sftp;
+    ).then(() => {
+      return this.getSftpChannel();
     });
   }
 
@@ -187,7 +208,7 @@ class SftpClient {
         });
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -243,7 +264,7 @@ class SftpClient {
           }
         });
       }).finally((rsp) => {
-        removeTempListeners(this.client);
+        removeTempListeners(this);
         return rsp;
       });
     };
@@ -370,7 +391,7 @@ class SftpClient {
         });
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -487,7 +508,7 @@ class SftpClient {
             });
           }
         }).finally((rsp) => {
-          removeTempListeners(this.client);
+          removeTempListeners(this);
           return rsp;
         });
       });
@@ -558,7 +579,7 @@ class SftpClient {
             });
           }
         }).finally((rsp) => {
-          removeTempListeners(this.client);
+          removeTempListeners(this);
           return rsp;
         });
       });
@@ -661,7 +682,7 @@ class SftpClient {
             }
           }
         }).finally((rsp) => {
-          removeTempListeners(this.client);
+          removeTempListeners(this);
           return rsp;
         });
       });
@@ -701,7 +722,7 @@ class SftpClient {
         }
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -728,7 +749,7 @@ class SftpClient {
           resolve(`${p} directory created`);
         });
       }).finally((rsp) => {
-        removeTempListeners(this.client);
+        removeTempListeners(this);
         return rsp;
       });
     };
@@ -779,7 +800,7 @@ class SftpClient {
           resolve('Successfully removed directory');
         });
       }).finally((rsp) => {
-        removeTempListeners(this.client);
+        removeTempListeners(this);
         return rsp;
       });
     };
@@ -845,7 +866,7 @@ class SftpClient {
         });
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -881,7 +902,7 @@ class SftpClient {
         });
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -918,7 +939,7 @@ class SftpClient {
         });
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -944,7 +965,7 @@ class SftpClient {
         resolve('Successfully change file mode');
       });
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       return rsp;
     });
   }
@@ -1076,7 +1097,7 @@ class SftpClient {
         this.client.end();
       }
     }).finally(() => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       this.removeListener('close', endCloseHandler);
       return true;
     });
