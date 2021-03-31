@@ -120,10 +120,10 @@ All the methods will return a Promise, except for ~on()~ and
 ** Specifying Paths
 
    The convention with both FTP and SFTP is that paths are specified using a
-   'nix' style i.e. use '/' as the path separator. This means that even if your
-   SFTP server is running on a win32 platform, you should use '/' instead of '\'
-   as the path separator. For example, for a win32 path of 'C:\Users\fred' you
-   would actually use '/C:/Users/fred'. If your win32 server does not support
+   'nix' style i.e. use ~/~ as the path separator. This means that even if your
+   SFTP server is running on a win32 platform, you should use ~/~ instead of ~\~
+   as the path separator. For example, for a win32 path of ~C:\Users\fred~ you
+   would actually use ~/C:/Users/fred~. If your win32 server does not support
    the 'nix' path convention, you can try setting the ~remotePathSep~ property
    of the ~SftpClient~ object to the path separator of your remote server. This
    *might* work, but has not been tested. Please let me know if you need to do
@@ -1084,7 +1084,7 @@ the ~end()~ method automatically removes all listeners from the client object.
 ** Server Capabilities
 
    All SFTP servers and platforms are not equal. Some facilities provided by
-   ~ssh2-sfto-client~ either depend on capabilities of the remote server or the
+   ~ssh2-sftp-client~ either depend on capabilities of the remote server or the
    underlying capabilities of the remote server platform. As an example,
    consider ~chmod()~. This command depends on a remote filesystem which
    implements the 'nix' concept of users and groups. The /win32/ platform does

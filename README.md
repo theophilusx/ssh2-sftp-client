@@ -129,7 +129,7 @@ All the methods will return a Promise, except for `on()` and `removeListener()`,
 
 ## Specifying Paths<a id="sec-5-1"></a>
 
-The convention with both FTP and SFTP is that paths are specified using a 'nix' style i.e. use '*' as the path separator. This means that even if your SFTP server is running on a win32 platform, you should use '*' instead of '\\' as the path separator. For example, for a win32 path of 'C:\Users\fred' you would actually use '/C:/Users/fred'. If your win32 server does not support the 'nix' path convention, you can try setting the `remotePathSep` property of the `SftpClient` object to the path separator of your remote server. This **might** work, but has not been tested. Please let me know if you need to do this and provide details of the SFTP server so that I can try to create an appropriate environment and adjust things as necessary. At this point, I'm not aware of any win32 based SFTP servers which do not support the 'nix' path convention.
+The convention with both FTP and SFTP is that paths are specified using a 'nix' style i.e. use `/` as the path separator. This means that even if your SFTP server is running on a win32 platform, you should use `/` instead of `\` as the path separator. For example, for a win32 path of `C:\Users\fred` you would actually use `/C:/Users/fred`. If your win32 server does not support the 'nix' path convention, you can try setting the `remotePathSep` property of the `SftpClient` object to the path separator of your remote server. This **might** work, but has not been tested. Please let me know if you need to do this and provide details of the SFTP server so that I can try to create an appropriate environment and adjust things as necessary. At this point, I'm not aware of any win32 based SFTP servers which do not support the 'nix' path convention.
 
 All remote paths must either be absolute e.g. `/absolute/path/to/file` or they can be relative with a prefix of either `./` (relative to current remote directory) or `../` (relative to parent of current remote directory) e.g. `./relative/path/to/file` or `../relative/to/parent/file`. It is also possible to do things like `../../../file` to specify the parent of the parent of the parent of the current remote directory. The shell tilde (`~`) and common environment variables like `$HOME` are NOT supported.
 
@@ -171,17 +171,17 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
 
     ```javascript
     'use strict';
-
+    
     const Client = require('ssh2-sftp-client');
-
+    
     const config = {
       host: 'example.com',
       username: 'donald',
       password: 'my-secret'
     };
-
+    
     const sftp = new Client('example-client');
-
+    
     sftp.connect(config)
       .then(() => {
         return sftp.cwd();
@@ -202,12 +202,12 @@ Connect to an sftp server. Full documentation for connection options is availabl
 1.  Connection Options
 
     This module is based on the excellent [SSH2](https://github.com/mscdex/ssh2#client) module. That module is a general SSH2 client and server library and provides much more functionality than just SFTP connectivity. Many of the connect options provided by that module are less relevant for SFTP connections. It is recommended you keep the config options to the minimum needed and stick to the options listed in the `commonOpts` below.
-
+    
     The `retries`, `retry_factor` and `retry_minTimeout` options are not part of the SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what is used to enable retrying of sftp connection attempts. See the documentation for that package for an explanation of these values.
-
+    
     ```javascript
     // common options
-
+    
     let commonOpts {
       host: 'localhost', // string Hostname or IP of server.
       port: 22, // Port number of the server.
@@ -226,9 +226,9 @@ Connect to an sftp server. Full documentation for connection options is availabl
       retry_factor: 2 // integer. Time factor used to calculate time between retries
       retry_minTimeout: 2000 // integer. Minimum timeout between attempts
     };
-
+    
     // rarely used options
-
+    
     let advancedOpts {
       localAddress,
       localPort,
@@ -269,16 +269,16 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 
     ```javascript
     const Client = require('ssh2-sftp-client');
-
+    
     const config = {
       host: 'example.com',
       port: 22,
       username: 'red-don',
       password: 'my-secret'
     };
-
+    
     let sftp = new Client;
-
+    
     sftp.connect(config)
       .then(() => {
         return sftp.list('/path/to/remote/dir');
@@ -297,7 +297,7 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 2.  Return Objects
 
     The objects in the array returned by `list()` have the following properties;
-
+    
     ```javascript
     {
       type: // file type(-, d, l)
@@ -318,11 +318,11 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 3.  Pattern Filter
 
     The filter options can be a regular expression (most powerful option) or a simple *glob*-like string where \* will match any number of characters, e.g.
-
+    
         foo* => foo, foobar, foobaz
         *bar => bar, foobar, tabbar
         *oo* => foo, foobar, look, book
-
+    
     The *glob*-style matching is very simple. In most cases, you are best off using a real regular expression which will allow you to do more powerful matching and anchor matches to the beginning/end of the string etc.
 
 ### exists(path) ==> boolean<a id="sec-5-2-4"></a>
@@ -333,16 +333,16 @@ Tests to see if remote file or directory exists. Returns type of remote object i
 
     ```javascript
     const Client = require('ssh2-sftp-client');
-
+    
     const config = {
       host: 'example.com',
       port: 22,
       username: 'red-don',
       password: 'my-secret'
     };
-
+    
     let sftp = new Client;
-
+    
     sftp.connect(config)
       .then(() => {
         return sftp.exists('/path/to/remote/dir');
@@ -367,7 +367,7 @@ Returns the attributes associated with the object pointed to by `path`.
 1.  Attributes
 
     The `stat()` method returns an object with the following properties;
-
+    
     ```javascript
     let stats = {
       mode: 33279, // integer representing type and permissions
@@ -390,7 +390,7 @@ Returns the attributes associated with the object pointed to by `path`.
 
     ```javascript
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.stat('/path/to/remote/file');
@@ -419,7 +419,7 @@ In general, if your going to pass in a string as the destination, you are better
 1.  Options
 
     The options object can be used to pass options to the underlying readStream used to read the data from the remote server.
-
+    
     ```javascript
     {
       flags: 'r',
@@ -429,17 +429,17 @@ In general, if your going to pass in a string as the destination, you are better
       autoClose: true
     }
     ```
-
+    
     Most of the time, you won't want to use any options. Sometimes, it may be useful to set the encoding. For example, to 'utf-8'. However, it is important not to do this for binary files to avoid data corruption.
 
 2.  Example Use
 
     ```javascript
     let client = new Client();
-
+    
     let remotePath = '/remote/server/path/file.txt';
     let dst = fs.createWriteStream('/local/file/path/copy.txt');
-
+    
     client.connect(config)
       .then(() => {
         return client.get(remotePath, dst);
@@ -451,7 +451,7 @@ In general, if your going to pass in a string as the destination, you are better
         console.error(err.message);
       });
     ```
-
+    
     -   **Tip:** See examples file in the Git repository for more examples. You can pass any writeable stream in as the destination. For example, if you pass in `zlib.createGunzip()` writeable stream, you can both download and decompress a gzip file 'on the fly'.
 
 ### fastGet(remotePath, localPath, options) ===> string<a id="sec-5-2-7"></a>
@@ -472,7 +472,7 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
                                                       // chunk is transferred
     }
     ```
-
+    
     -   **Warning:** Some servers do not respond correctly to requests to alter chunk size. This can result in lost or corrupted data.
 
 2.  Sample Use
@@ -481,7 +481,7 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
     let client = new Client();
     let remotePath = '/server/path/file.txt';
     let localPath = '/local/path/file.txt';
-
+    
     client.connect(config)
       .then(() => {
         client.fastGet(remotePath, localPath);
@@ -505,7 +505,7 @@ Upload data from local system to remote server. If the `src` argument is a strin
 1.  Options
 
     The following options are supported;
-
+    
     ```javascript
     {
       flags: 'w',  // w - write and a - append
@@ -514,17 +514,17 @@ Upload data from local system to remote server. If the `src` argument is a strin
       autoClose: true // automatically close the write stream when finished
     }
     ```
-
+    
     The most common options to use are mode and encoding. The values shown above are the defaults. You do not have to set encoding to utf-8 for text files, null is fine for all file types. However, using utf-8 encoding for binary files will often result in data corruption.
 
 2.  Example Use
 
     ```javascript
     let client = new Client();
-
+    
     let data = fs.createReadStream('/path/to/local/file.txt');
     let remote = '/path/to/remote/file.txt';
-
+    
     client.connect(config)
       .then(() => {
         return client.put(data, remote);
@@ -536,7 +536,7 @@ Upload data from local system to remote server. If the `src` argument is a strin
         console.error(err.message);
       });
     ```
-
+    
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
 ### fastPut(localPath, remotePath, options) ==> string<a id="sec-5-2-9"></a>
@@ -558,7 +558,7 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
       // a part of a file was transferred
     }
     ```
-
+    
     -   **Warning:** There have been reports that some SFTP servers will not honour requests for non-default chunk sizes. This can result in data loss or corruption.
 
 2.  Example Use
@@ -567,7 +567,7 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
     let localFile = '/path/to/file.txt';
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         client.fastPut(localFile, remoteFile);
@@ -591,7 +591,7 @@ Append the `input` data to an existing remote file. There is no integrity checki
 1.  Options
 
     The following options are supported;
-
+    
     ```javascript
     {
       flags: 'a',  // w - write and a - append
@@ -600,7 +600,7 @@ Append the `input` data to an existing remote file. There is no integrity checki
       autoClose: true // automatically close the write stream when finished
     }
     ```
-
+    
     The most common options to use are mode and encoding. The values shown above are the defaults. You do not have to set encoding to utf-8 for text files, null is fine for all file types. Generally, I would not attempt to append binary files.
 
 2.  Example Use
@@ -608,7 +608,7 @@ Append the `input` data to an existing remote file. There is no integrity checki
     ```javascript
     let remotePath = '/path/to/remote/file.txt';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.append(Buffer.from('Hello world'), remotePath);
@@ -633,7 +633,7 @@ Create a new directory. If the recursive flag is set to true, the method will cr
     ```javascript
     let remoteDir = '/path/to/new/dir';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.mkdir(remoteDir, true);
@@ -660,7 +660,7 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
     ```javascript
     let remoteDir = '/path/to/remote/dir';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.rmdir(remoteDir, true);
@@ -686,7 +686,7 @@ Delete a file on the remote server.
     ```javascript
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.delete(remoteFile);
@@ -712,7 +712,7 @@ Rename a file or directory from `fromPath` to `toPath`. You must have the necess
     let from = '/remote/path/to/old.txt';
     let to = '/remote/path/to/new.txt';
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.rename(from, to);
@@ -762,7 +762,7 @@ Change the mode (read, write or execute permissions) of a remote file or directo
     let path = '/path/to/remote/file.txt';
     let newMode = 0o644;  // rw-r-r
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         return client.chmod(path, newMode);
@@ -803,28 +803,28 @@ The optionsl *filter* argument is a regular expression which can be used to sele
 
     ```javascript
         'use strict';
-
+    
         // Example of using the uploadDir() method to upload a directory
         // to a remote SFTP server
-
+    
         const path = require('path');
         const SftpClient = require('../src/index');
-
+    
         const dotenvPath = path.join(__dirname, '..', '.env');
         require('dotenv').config({path: dotenvPath});
-
+    
         const config = {
     host: process.env.SFTP_SERVER,
     username: process.env.SFTP_USER,
     password: process.env.SFTP_PASSWORD,
     port: process.env.SFTP_PORT || 22
         };
-
+    
         async function main() {
     const client = new SftpClient('upload-test');
     const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
     const dst = '/home/tim/upload-test';
-
+    
     try {
       await client.connect(config);
       client.on('upload', info => {
@@ -836,7 +836,7 @@ The optionsl *filter* argument is a regular expression which can be used to sele
       client.end();
     }
         }
-
+    
         main()
     .then(msg => {
       console.log(msg);
@@ -844,7 +844,7 @@ The optionsl *filter* argument is a regular expression which can be used to sele
     .catch(err => {
       console.log(`main error: ${err.message}`);
     });
-
+    
     ```
 
 ### downloadDir(srcDir, dstDir, filter) ==> string<a id="sec-5-2-20"></a>
@@ -863,28 +863,28 @@ The optional *filter* argument is a regular expression which can be used to sele
 
     ```javascript
     'use strict';
-
+    
     // Example of using the downloadDir() method to upload a directory
     // to a remote SFTP server
-
+    
     const path = require('path');
     const SftpClient = require('../src/index');
-
+    
     const dotenvPath = path.join(__dirname, '..', '.env');
     require('dotenv').config({path: dotenvPath});
-
+    
     const config = {
       host: process.env.SFTP_SERVER,
       username: process.env.SFTP_USER,
       password: process.env.SFTP_PASSWORD,
       port: process.env.SFTP_PORT || 22
     };
-
+    
     async function main() {
       const client = new SftpClient('upload-test');
       const dst = '/tmp';
       const src = '/home/tim/upload-test';
-
+    
       try {
         await client.connect(config);
         client.on('download', info => {
@@ -896,7 +896,7 @@ The optional *filter* argument is a regular expression which can be used to sele
         client.end();
       }
     }
-
+    
     main()
       .then(msg => {
         console.log(msg);
@@ -904,7 +904,7 @@ The optional *filter* argument is a regular expression which can be used to sele
       .catch(err => {
         console.log(`main error: ${err.message}`);
       });
-
+    
     ```
 
 ### end() ==> boolean<a id="sec-5-2-21"></a>
@@ -915,7 +915,7 @@ Ends the current client session, releasing the client socket and associated reso
 
     ```javascript
     let client = new Client();
-
+    
     client.connect(config)
       .then(() => {
         // do some sftp stuff
@@ -948,7 +948,7 @@ Although normally not required, you can add and remove custom listeners on the s
 
 ## Server Capabilities<a id="sec-6-1"></a>
 
-All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-sfto-client` either depend on capabilities of the remote server or the underlying capabilities of the remote server platform. As an example, consider `chmod()`. This command depends on a remote filesystem which implements the 'nix' concept of users and groups. The *win32* platform does not have the same concept of users and groups, so `chmod()` will not behave in the same way.
+All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-sftp-client` either depend on capabilities of the remote server or the underlying capabilities of the remote server platform. As an example, consider `chmod()`. This command depends on a remote filesystem which implements the 'nix' concept of users and groups. The *win32* platform does not have the same concept of users and groups, so `chmod()` will not behave in the same way.
 
 One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc. You want to use a CLI program which does as little as possible.
 
