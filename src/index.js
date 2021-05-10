@@ -4,20 +4,20 @@
 
 'use strict';
 
-const {Client} = require('ssh2');
+const { Client } = require('ssh2');
 const fs = require('fs');
 const concat = require('concat-stream');
 const promiseRetry = require('promise-retry');
-const {join, parse} = require('path');
+const { join, parse } = require('path');
 const {
   fmtError,
   addTempListeners,
   removeTempListeners,
   haveConnection,
   normalizeRemotePath,
-  localExists
+  localExists,
 } = require('./utils');
-const {errorCode} = require('./constants');
+const { errorCode } = require('./constants');
 
 class SftpClient {
   constructor(clientName) {
@@ -147,7 +147,7 @@ class SftpClient {
       {
         retries: config.retries || 1,
         factor: config.retry_factor || 2,
-        minTimeout: config.retry_minTimeout || 1000
+        minTimeout: config.retry_minTimeout || 1000,
       }
     ).then((sftp) => {
       this.sftp = sftp;
@@ -238,7 +238,7 @@ class SftpClient {
               isCharacterDevice: stats.isCharacterDevice(),
               isSymbolicLink: stats.isSymbolicLink(),
               isFIFO: stats.isFIFO(),
-              isSocket: stats.isSocket()
+              isSocket: stats.isSocket(),
             });
           }
         });
@@ -350,10 +350,10 @@ class SftpClient {
                   rights: {
                     user: item.longname.substr(1, 3).replace(reg, ''),
                     group: item.longname.substr(4, 3).replace(reg, ''),
-                    other: item.longname.substr(7, 3).replace(reg, '')
+                    other: item.longname.substr(7, 3).replace(reg, ''),
                   },
                   owner: item.attrs.uid,
-                  group: item.attrs.gid
+                  group: item.attrs.gid,
                 };
               });
             }
@@ -390,24 +390,24 @@ class SftpClient {
    * @return {Promise}
    */
   get(remotePath, dst, options = {}) {
+    let rdr, wtr;
+
     return new Promise((resolve, reject) => {
       if (haveConnection(this, 'get', reject)) {
         this.debugMsg(`get -> ${remotePath} `, options);
         addTempListeners(this, 'get', reject);
-        let rdr = this.sftp.createReadStream(remotePath, options);
+        rdr = this.sftp.createReadStream(remotePath, options);
         rdr.once('error', (err) => {
           reject(fmtError(`${err.message} ${remotePath}`, 'get', err.code));
         });
         if (dst === undefined) {
           // no dst specified, return buffer of data
           this.debugMsg('get returning buffer of data');
-          let concatStream = concat((buff) => {
-            rdr.removeAllListeners('error');
+          wtr = concat((buff) => {
+            //rdr.removeAllListeners('error');
             resolve(buff);
           });
-          rdr.pipe(concatStream);
         } else {
-          let wtr;
           if (typeof dst === 'string') {
             // dst local file path
             this.debugMsg('get returning local file');
@@ -424,25 +424,22 @@ class SftpClient {
                 err.code
               )
             );
-            if (options.autoClose === false) {
-              rdr.destroy();
-            }
           });
-          wtr.once('finish', () => {
-            if (options.autoClose === false) {
-              rdr.destroy();
-            }
+          rdr.once('end', () => {
             if (typeof dst === 'string') {
               resolve(dst);
             } else {
               resolve(wtr);
             }
           });
-          rdr.pipe(wtr);
         }
+        rdr.pipe(wtr);
       }
     }).finally((rsp) => {
       removeTempListeners(this.client);
+      if (options.autoClose === false) {
+        rdr.destroy();
+      }
       return rsp;
     });
   }
@@ -978,7 +975,7 @@ class SftpClient {
       }
       let dirEntries = fs.readdirSync(srcDir, {
         encoding: 'utf8',
-        withFileTypes: true
+        withFileTypes: true,
       });
       dirEntries = dirEntries.filter((item) => filter.test(item.name));
       for (let e of dirEntries) {
@@ -990,7 +987,7 @@ class SftpClient {
           let src = join(srcDir, e.name);
           let dst = dstDir + this.remotePathSep + e.name;
           await this.fastPut(src, dst);
-          this.client.emit('upload', {source: src, destination: dst});
+          this.client.emit('upload', { source: src, destination: dst });
         } else {
           this.debugMsg(
             `uploadDir: File ignored: ${e.name} not a regular file`
@@ -1030,7 +1027,7 @@ class SftpClient {
         throw fmtError(`Bad path ${dstDir}`, 'downloadDir', errorCode.badPath);
       }
       if (!dstStatus) {
-        fs.mkdirSync(dstDir, {recursive: true});
+        fs.mkdirSync(dstDir, { recursive: true });
       }
       for (let f of fileList) {
         if (f.type === 'd') {
@@ -1041,7 +1038,7 @@ class SftpClient {
           let src = srcDir + this.remotePathSep + f.name;
           let dst = join(dstDir, f.name);
           await this.fastGet(src, dst);
-          this.client.emit('download', {source: src, destination: dst});
+          this.client.emit('download', { source: src, destination: dst });
         } else {
           this.debugMsg(
             `downloadDir: File ignored: ${f.name} not regular file`
