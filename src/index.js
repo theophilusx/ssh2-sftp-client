@@ -668,6 +668,76 @@ class SftpClient {
   }
 
   /**
+   * Copy a file on the remote server to a new file on the remote server using streams.
+   *
+   * @param {String} srcFilepath
+   * @param {String} dstFilepath
+   * @param {stream} [transform] if provided, will be piped in between src and dst streams
+   * @return {Promise}
+   */
+  copyFile(srcFilepath, dstFilepath, transform) {
+    return new Promise((resolve, reject) => {
+      if (haveConnection(this, 'copyFile', reject)) {
+        this.debugMsg(`copyFile ${srcFilepath} -> ${dstFilepath}`);
+        addTempListeners(this, 'copyFile', reject);
+
+        this.exists(srcFilepath)
+          .then((ftype) => {
+            if (ftype !== '-') {
+              let msg =
+                ftype === false
+                  ? `No such file ${srcFilepath}`
+                  : `Not a regular file ${srcFilepath}`;
+              reject(fmtError(msg, 'copyFile', errorCode.badPath));
+            }
+          })
+          .then(() => {
+            const readStream = this.sftp.createReadStream(srcFilepath);
+            const writeStream = this.sftp.createWriteStream(dstFilepath);
+
+            const errorHandler = (err) => {
+              reject(
+                fmtError(
+                  `${err.message} ${srcFilepath} -> ${dstFilepath}`,
+                  'copyFile',
+                  err.code
+                )
+              );
+            };
+
+            readStream.once('error', errorHandler);
+            writeStream.once('error', errorHandler);
+            writeStream.once('finish', () => {
+              resolve(
+                `Successfully copied file ${srcFilepath} -> ${dstFilepath}`
+              );
+            });
+
+            if (transform) {
+              try {
+                transform.once('error', errorHandler);
+                readStream.pipe(transform).pipe(writeStream);
+              } catch (err) {
+                reject(
+                  fmtError(
+                    `${err.message}, transform: ${transform}`,
+                    'copyFile',
+                    err.code
+                  )
+                );
+              }
+            } else {
+              readStream.pipe(writeStream);
+            }
+          });
+      }
+    }).finally((rsp) => {
+      removeTempListeners(this.client);
+      return rsp;
+    });
+  }
+
+  /**
    * Append to an existing remote file
    *
    * @param  {Buffer|stream} input

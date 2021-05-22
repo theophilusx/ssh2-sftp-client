@@ -12,8 +12,6 @@ const dotenvPath = path.join(__dirname, '..', '.env');
 require('dotenv').config({ path: dotenvPath });
 
 const Client = require('../src/index');
-const { PassThrough } = require('stream');
-const { createWriteStream } = require('fs');
 
 const config = {
   host: process.env.SFTP_SERVER,
@@ -24,24 +22,22 @@ const config = {
 
 const sftp = new Client();
 
-// It is assumed this file already exists on the remote server
-let remotePath = process.argv[2];
+// It is assumed the src file already exists on the remote server
+const srcFilepath = process.argv[2];
+const dstFilepath = process.argv[3];
 
 async function main() {
   try {
     await sftp.connect(config);
-    console.log('connection established');
-    const pt = new PassThrough();
-    //const of = createWriteStream('./out.txt');
-    const os = pt.pipe(process.stdout);
-    await sftp.get(remotePath, os);
-    console.log('File retrieved');
+    console.log('Connection established');
+    const result = await sftp.copyFile(srcFilepath, dstFilepath);
+    console.log(result);
   } catch (err) {
     console.error(`Error: ${err.message}`);
     throw err;
   } finally {
     await sftp.end();
-    console.log('connection closed');
+    console.log('Connection closed');
   }
 }
 
