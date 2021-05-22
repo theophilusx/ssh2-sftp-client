@@ -650,6 +650,38 @@ Uploads the data in file at ~localPath~ to a new file on remote server at
     });
 #+end_src
 
+*** copyFile(srcFilepath, dstFilepath, transform) ==> string
+
+Copies the file at ~srcFilepath~ on the remote server to a new file at
+~dstFilepath~ on the remote server using streams.
+It accepts an optional ~transform~ parameter of type stream that can be
+used to transform the contents before writing to the destination file.
+
+- srcFilepath :: string. Path to remote source file
+- dstFilepath :: string. Path to remote destination file
+- transform :: stream. If provided, will be piped in between src and dst streams
+
+**** Example Use
+
+#+begin_src javascript
+  // const { createGzip } = require('zlib')
+  const srcFilepath = '/path/to/remote/file.txt';
+  const dstFilepath = '/path/to/remote/file-copy.txt';
+  const client = new Client();
+  
+  client.connect(config)
+    .then(() => {
+      client.copyFile(srcFilepath, dstFilepath);
+      // client.copyFile(srcFilepath, dstFilepath, createGzip());
+    })
+    .then(() => {
+      client.end();
+    })
+    .catch(err => {
+      console.error(err.message);
+    });
+#+end_src
+
 *** append(input, remotePath, options) ==> string
 
 Append the ~input~ data to an existing remote file. There is no integrity
