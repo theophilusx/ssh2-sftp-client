@@ -29,14 +29,14 @@
   "dependencies": {
     "concat-stream": "^2.0.0",
     "promise-retry": "^2.0.1",
-    "ssh2": "github:mscdex/ssh2"
+    "ssh2": "^1.0.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "checksum": "^0.1.1",
-    "dotenv": "^8.2.0",
+    "dotenv": "^10.0.0",
     "mocha": "^8.2.1",
     "moment": "^2.29.1",
     "nyc": "^15.1.0",
