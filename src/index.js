@@ -454,7 +454,7 @@ class SftpClient {
         rdr.pipe(wtr);
       }
     }).finally((rsp) => {
-      removeTempListeners(this.client);
+      removeTempListeners(this);
       if (options.autoClose === false) {
         rdr.destroy();
       }
