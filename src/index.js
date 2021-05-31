@@ -16,7 +16,6 @@ const {
   haveConnection,
   normalizeRemotePath,
   localExists,
-  sleep,
 } = require('./utils');
 const { errorCode } = require('./constants');
 
@@ -118,10 +117,7 @@ class SftpClient {
       this.client.connect(config);
     })
       .catch((err) => {
-        let firstError = err;
-        return sleep(1000).then(() => {
-          return Promise.reject(firstError);
-        });
+        return Promise.reject(err);
       })
       .finally((resp) => {
         this.removeListener('ready', doReady);
