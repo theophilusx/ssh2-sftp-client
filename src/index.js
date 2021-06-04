@@ -403,18 +403,26 @@ class SftpClient {
    *
    * @param {String} path, remote file path
    * @param {string|stream|undefined} dst, data destination
-   * @param {Object} userOptions, options passed to get
+   * @param {Object} options, options object with supported properties of readStreamOptions,
+   *                          writeStreamOptions and pipeOptions.
    *
    * @return {Promise}
    */
-  get(remotePath, dst, options = {}) {
+  get(
+    remotePath,
+    dst,
+    options = { readStreamOptions: {}, writeStreamOptions: {}, pipeOptions: {} }
+  ) {
     let rdr, wtr;
 
     return new Promise((resolve, reject) => {
       if (haveConnection(this, 'get', reject)) {
         this.debugMsg(`get -> ${remotePath} `, options);
         addTempListeners(this, 'get', reject);
-        rdr = this.sftp.createReadStream(remotePath, options);
+        rdr = this.sftp.createReadStream(
+          remotePath,
+          options.readStreamOptions ? options.readStreamOptions : {}
+        );
         rdr.once('error', (err) => {
           reject(fmtError(`${err.message} ${remotePath}`, 'get', err.code));
         });
@@ -429,7 +437,10 @@ class SftpClient {
           if (typeof dst === 'string') {
             // dst local file path
             this.debugMsg('get returning local file');
-            wtr = fs.createWriteStream(dst);
+            wtr = fs.createWriteStream(
+              dst,
+              options.writeStreamOptions ? options.writeStreamOptions : {}
+            );
           } else {
             this.debugMsg('get returning data into supplied stream');
             wtr = dst;
@@ -451,12 +462,24 @@ class SftpClient {
             }
           });
         }
-        rdr.pipe(wtr);
+        rdr.pipe(wtr, options.pipeOptions ? options.pipeOptions : {});
       }
     }).finally((rsp) => {
       removeTempListeners(this);
-      if (options.autoClose === false) {
+      if (
+        rdr &&
+        options.readStreamOptions &&
+        options.readStreamOptions.autoClose === false
+      ) {
         rdr.destroy();
+      }
+      if (
+        wtr &&
+        options.writeStreamOptions &&
+        options.writeStreamOptions.autoClose === false &&
+        typeof dst === 'string'
+      ) {
+        wtr.destroy();
       }
       return rsp;
     });
@@ -571,31 +594,40 @@ class SftpClient {
    *
    * @param  {String|Buffer|stream} src - source data to use
    * @param  {String} remotePath - path to remote file
-   * @param  {Object} options - options used for write stream configuration
-   *                            value supported by node streams.
+   * @param  {Object} options - options used for read, write stream and pipe configuration
+   *                            value supported by node. Allowed properties are readStreamOptions,
+   *                            writeStreamOptions and pipeOptions.
    * @return {Promise}
    */
-  doPut(localSrc, remotePath, options = {}) {
+  doPut(
+    localSrc,
+    remotePath,
+    options = { readStreamOptions: {}, writeStreamOptions: {}, pipeOptions: {} }
+  ) {
+    let wtr, rdr;
+
     return new Promise((resolve, reject) => {
       addTempListeners(this, 'put', reject);
-      let stream = this.sftp.createWriteStream(remotePath, options);
-      stream.once('error', (err) => {
+      wtr = this.sftp.createWriteStream(
+        remotePath,
+        options.writeStreamOptions ? options.writeStreamOptions : {}
+      );
+      wtr.once('error', (err) => {
         reject(fmtError(`${err.message} ${remotePath}`, 'put', err.code));
       });
-      stream.once('finish', () => {
-        if (options.autoClose === false) {
-          stream.destroy();
-        }
+      wtr.once('finish', () => {
         resolve(`Uploaded data stream to ${remotePath}`);
       });
       if (localSrc instanceof Buffer) {
         this.debugMsg('put source is a buffer');
-        stream.end(localSrc);
+        wtr.end(localSrc);
       } else {
-        let rdr;
         if (typeof localSrc === 'string') {
           this.debugMsg(`put source is a file path: ${localSrc}`);
-          rdr = fs.createReadStream(localSrc);
+          rdr = fs.createReadStream(
+            localSrc,
+            options.readStreamOptions ? options.readStreamOptons : {}
+          );
         } else {
           this.debugMsg('put source is a stream');
           rdr = localSrc;
@@ -608,19 +640,34 @@ class SftpClient {
               err.code
             )
           );
-          if (options.autoClose === false) {
-            stream.destroy();
-          }
         });
-        rdr.pipe(stream);
+        rdr.pipe(wtr, options.pipeOptions ? options.pipeOptions : {});
       }
+    }).finally((resp) => {
+      removeTempListeners(this);
+      if (
+        rdr &&
+        options.readStreamOptions &&
+        options.readStreamOptions.autoClose === false &&
+        typeof localSrc === 'string'
+      ) {
+        rdr.destroy();
+      }
+      if (
+        wtr &&
+        options.writeStreamOptions &&
+        options.writeStreamOptions.autoClose === false
+      ) {
+        wtr.destroy();
+      }
+      return resp;
     });
   }
 
   async put(
     localSrc,
     remoePath,
-    options = { readStreamOptions: {}, pipeOptions: {} }
+    options = { readStreamOptions: {}, writeStreamOptions: {}, pipeOptions: {} }
   ) {
     try {
       haveConnection(this, 'put');
