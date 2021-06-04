@@ -526,60 +526,42 @@ class SftpClient {
    */
   fastPut(localPath, remotePath, options) {
     this.debugMsg(`fastPut -> local ${localPath} remote ${remotePath}`);
-    return localExists(localPath)
-      .then((localStatus) => {
-        this.debugMsg(`fastPut <- localStatus ${localStatus}`);
-        if (localStatus !== '-') {
-          this.debugMsg('fastPut reject bad source path');
-          return Promise.reject(
-            fmtError(`Bad path ${localPath}`, 'fastPut', errorCode.badPath)
+    return localExists(localPath).then((localStatus) => {
+      this.debugMsg(`fastPut <- localStatus ${localStatus}`);
+      if (localStatus !== '-') {
+        this.debugMsg('fastPut reject bad source path');
+        return Promise.reject(
+          fmtError(`Bad path ${localPath}`, 'fastPut', errorCode.badPath)
+        );
+      }
+      return new Promise((resolve, reject) => {
+        if (haveConnection(this, 'fastPut', reject)) {
+          this.debugMsg(
+            `fastPut -> local: ${localPath} remote: ${remotePath} opts: ${JSON.stringify(
+              options
+            )}`
           );
-        }
-        return new Promise((resolve, reject) => {
-          fs.access(localPath, fs.constants.F_OK | fs.constants.R_OK, (err) => {
+          addTempListeners(this, 'fastPut', reject);
+          this.sftp.fastPut(localPath, remotePath, options, (err) => {
             if (err) {
-              this.debugMsg('fastPut reject no access source');
+              this.debugMsg(`fastPut error ${err.message} ${err.code}`);
               reject(
-                fmtError(`${err.message} ${localPath}`, 'fastPut', err.code)
+                fmtError(
+                  `${err.message} Local: ${localPath} Remote: ${remotePath}`,
+                  'fastPut',
+                  err.code
+                )
               );
-            } else {
-              this.debugMsg('fastPut source access ok');
-              resolve(true);
             }
+            this.debugMsg('fastPut file transferred');
+            resolve(`${localPath} was successfully uploaded to ${remotePath}!`);
           });
-        });
-      })
-      .then(() => {
-        return new Promise((resolve, reject) => {
-          if (haveConnection(this, 'fastPut', reject)) {
-            this.debugMsg(
-              `fastPut -> local: ${localPath} remote: ${remotePath} opts: ${JSON.stringify(
-                options
-              )}`
-            );
-            addTempListeners(this, 'fastPut', reject);
-            this.sftp.fastPut(localPath, remotePath, options, (err) => {
-              if (err) {
-                this.debugMsg(`fastPut error ${err.message} ${err.code}`);
-                reject(
-                  fmtError(
-                    `${err.message} Local: ${localPath} Remote: ${remotePath}`,
-                    'fastPut',
-                    err.code
-                  )
-                );
-              }
-              this.debugMsg('fastPut file transferred');
-              resolve(
-                `${localPath} was successfully uploaded to ${remotePath}!`
-              );
-            });
-          }
-        }).finally((rsp) => {
-          removeTempListeners(this);
-          return rsp;
-        });
+        }
+      }).finally((rsp) => {
+        removeTempListeners(this);
+        return rsp;
       });
+    });
   }
 
   /**
@@ -593,96 +575,67 @@ class SftpClient {
    *                            value supported by node streams.
    * @return {Promise}
    */
-  put(localSrc, remotePath, options = {}) {
-    this.debugMsg(
-      `put ${
-        typeof localSrc === 'string' ? localSrc : '<buffer | stream>'
-      } -> ${remotePath}`,
-      options
-    );
-    return localExists(typeof localSrc === 'string' ? localSrc : 'dummy')
-      .then((localStatus) => {
-        if (typeof localSrc === 'string' && localStatus !== '-') {
-          this.debugMsg(`put: file does not exist ${localSrc} - rejecting`);
-          return Promise.reject(
-            fmtError(`Bad path ${localSrc}`, 'put', errorCode.badPath)
-          );
-        }
-        return new Promise((resolve, reject) => {
-          if (typeof localSrc === 'string') {
-            fs.access(
-              localSrc,
-              fs.constants.F_OK | fs.constants.R_OK,
-              (err) => {
-                if (err) {
-                  this.debugMsg(`put: Cannot read ${localSrc} - rejecting`);
-                  reject(
-                    fmtError(
-                      `Permission denied ${localSrc}`,
-                      'put',
-                      errorCode.permission
-                    )
-                  );
-                } else {
-                  this.debugMsg('put: localSrc file OK');
-                  resolve(true);
-                }
-              }
-            );
-          } else {
-            this.debugMsg('put: localSrc buffer or string OK');
-            resolve(true);
-          }
-        });
-      })
-      .then(() => {
-        return new Promise((resolve, reject) => {
-          if (haveConnection(this, 'put', reject)) {
-            addTempListeners(this, 'put', reject);
-            let stream = this.sftp.createWriteStream(remotePath, options);
-            stream.once('error', (err) => {
-              reject(fmtError(`${err.message} ${remotePath}`, 'put', err.code));
-            });
-            stream.once('finish', () => {
-              if (options.autoClose === false) {
-                stream.destroy();
-              }
-              resolve(`Uploaded data stream to ${remotePath}`);
-            });
-            if (localSrc instanceof Buffer) {
-              this.debugMsg('put source is a buffer');
-              stream.end(localSrc);
-            } else {
-              let rdr;
-              if (typeof localSrc === 'string') {
-                this.debugMsg(`put source is a file path: ${localSrc}`);
-                rdr = fs.createReadStream(localSrc);
-              } else {
-                this.debugMsg('put source is a stream');
-                rdr = localSrc;
-              }
-              rdr.once('error', (err) => {
-                reject(
-                  fmtError(
-                    `${err.message} ${
-                      typeof localSrc === 'string' ? localSrc : ''
-                    }`,
-                    'put',
-                    err.code
-                  )
-                );
-                if (options.autoClose === false) {
-                  stream.destroy();
-                }
-              });
-              rdr.pipe(stream);
-            }
-          }
-        }).finally((rsp) => {
-          removeTempListeners(this);
-          return rsp;
-        });
+  doPut(localSrc, remotePath, options = {}) {
+    return new Promise((resolve, reject) => {
+      addTempListeners(this, 'put', reject);
+      let stream = this.sftp.createWriteStream(remotePath, options);
+      stream.once('error', (err) => {
+        reject(fmtError(`${err.message} ${remotePath}`, 'put', err.code));
       });
+      stream.once('finish', () => {
+        if (options.autoClose === false) {
+          stream.destroy();
+        }
+        resolve(`Uploaded data stream to ${remotePath}`);
+      });
+      if (localSrc instanceof Buffer) {
+        this.debugMsg('put source is a buffer');
+        stream.end(localSrc);
+      } else {
+        let rdr;
+        if (typeof localSrc === 'string') {
+          this.debugMsg(`put source is a file path: ${localSrc}`);
+          rdr = fs.createReadStream(localSrc);
+        } else {
+          this.debugMsg('put source is a stream');
+          rdr = localSrc;
+        }
+        rdr.once('error', (err) => {
+          reject(
+            fmtError(
+              `${err.message} ${typeof localSrc === 'string' ? localSrc : ''}`,
+              'put',
+              err.code
+            )
+          );
+          if (options.autoClose === false) {
+            stream.destroy();
+          }
+        });
+        rdr.pipe(stream);
+      }
+    });
+  }
+
+  async put(
+    localSrc,
+    remoePath,
+    options = { readStreamOptions: {}, pipeOptions: {} }
+  ) {
+    try {
+      haveConnection(this, 'put');
+      if (typeof localSrc === 'string') {
+        let type = await localExists(localSrc);
+        if (type !== '-' && type !== 'l') {
+          let err = new Error(`Bad path: ${localSrc}`);
+          err.code = errorCode.badPath;
+          throw err;
+        }
+      }
+      return await this.doPut(localSrc, remoePath, options);
+    } catch (err) {
+      throw fmtError(err, 'put');
+    }
   }
 
   /**
@@ -1040,7 +993,7 @@ class SftpClient {
       this.debugMsg(`downloadDir -> ${srcDir} ${dstDir}`);
       haveConnection(this, 'downloadDir');
       let fileList = await this.list(srcDir, filter);
-      let dstStatus = await localExists(dstDir);
+      let dstStatus = await localExists(dstDir, true);
       if (dstStatus && dstStatus !== 'd') {
         throw fmtError(`Bad path ${dstDir}`, 'downloadDir', errorCode.badPath);
       }

@@ -140,9 +140,12 @@ function removeTempListeners(obj) {
  * @param {String} localPath
  * @returns {Boolean | String}
  */
-function localExists(localPath) {
+function localExists(filePath, writeable = false) {
   return new Promise((resolve, reject) => {
-    fs.stat(localPath, (err, stats) => {
+    const fileModes = writeable
+      ? fs.constants.F_OK | fs.constants.W_OK
+      : fs.constants.F_OK | fs.constants.R_OK;
+    fs.access(filePath, fileModes, (err) => {
       if (err) {
         if (err.code === 'ENOENT') {
           resolve(false);
@@ -150,15 +153,21 @@ function localExists(localPath) {
           reject(err);
         }
       } else {
-        if (stats.isDirectory()) {
-          resolve('d');
-        } else if (stats.isSymbolicLink()) {
-          resolve('l');
-        } else if (stats.isFile()) {
-          resolve('-');
-        } else {
-          resolve('');
-        }
+        fs.stat(filePath, (err2, stats) => {
+          if (err2) {
+            reject(err);
+          } else {
+            if (stats.isDirectory()) {
+              resolve('d');
+            } else if (stats.isSymbolicLink()) {
+              resolve('l');
+            } else if (stats.isFile()) {
+              resolve('-');
+            } else {
+              resolve(false);
+            }
+          }
+        });
       }
     });
   });
