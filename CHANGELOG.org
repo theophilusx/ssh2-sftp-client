@@ -1,6 +1,13 @@
 * Change Logging
 
-** Version 6.0.1
+** V7.0.0
+   - New version based on new SSH2 version 1.1.0.
+   - Expand option handling for get() and put() methods *Breaking Change*
+   - Re-factored the retry code in the connect() method
+   - Improve error reporting for adding/removing listeners
+   - Extend localExists() method to also verify read or write access
+       
+** V6.0.1
    - Fix issue with connect retry not releasing 'ready' listeners
    - Add finally clauses to all promises to ensure temporary listeners are deleted
    - Add nyc module to report on code test coverage

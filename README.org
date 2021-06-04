@@ -7,39 +7,13 @@ an SFTP client for node.js, a wrapper around [[https://github.com/mscdex/ssh2][S
 convenience abstraction as well as a Promise based API.
 
 Documentation on the methods and available options in the underlying modules can
-be found on the [[https://github.com/mscdex/ssh2][SSH2]] and [[https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md][SSH2-STREAMS]]  project pages.
+be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v6.0.1*.
+Current stable release is *v7.0.0*.
 
-Code has been tested against Node versions 12.18.2 and 13.14.0
+Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
 
 Node versions < 10.x are not supported.
-
-_WARNING_ There is currently a regression error with versions of node later than
-version 14.0. It appears that when using streams with chunk sizes which exceed
-the high water mark for the stream, a drain event is no longer emitted. As a
-result, streams with sufficient data will hang indefinitely. This appears to
-affect fastput, fastget, put and possibly get operations. Until this issue is
-resolved and a new version of ssh2/ssh2-streams is released, using node v14 is
-not recommended.
-
-A bug report hass been logged against the ssh2-streams library as [[https://github.com/mscdex/ssh2-streams/issues/156][issue 156]].
-
-_UPDATE_: The author of the upstream ssh2 and ssh2-streams module has decided on
-a re-write of the ssh2 module to address the above issues as well as some other
-design limitations and to allow the module to better fit in with newer versions
-of node. As part of that process, the functionality of ssh2-streams is being
-incorporated into the main ssh2 module and the ssh2-streams module is being
-deprecated. This will require a significant update to this module and may result
-in some API changes, depending on what changes in the re-write of ssh2.
-
-To support these changes, a new branch called /version-6/ has been created. This
-branch will use the newest version of ssh2 and for now is very much experimental
-and subject to change.
-
-_UPDATE_: Apparently the change in core node which cause the issue with ssh2 has
-been rolled back in node version 15.3.0. Testing seems to indicate the above
-issue does not exist in that version of node.
 
 * Installation
 
@@ -67,47 +41,31 @@ npm install ssh2-sftp-client
   });
 #+end_src
 
-* Version 6.x Changes
-** Version 6.0.1
+* Version 7.x Changes
 
-- Fix issue with connect retry not releasing 'ready' listener.
-- Add finally clauses to all promises to ensure release of temporary listeners.
-- Add nyc module to improve test coverage
-- Added additional utils tests to improve test coverage
-- Removed some unnecessary util functions to reduce code size
+- This version is based on version 1.1.0 of ~ssh2~. This version of ~ssh2~ is a
+  complete re-write of the ~ssh2~ library. This re-write addresses issues
+  encountered when using node v14 as well as some design weaknesses in the
+  previous 0.8.x version.
 
-** Version 6.0.0 Changes
+- *Breaking Change* Expanded option handling for ~get()~ and ~put()~ methods. A number of use
+  cases were identified where setting specific options on the read and write
+  streams and the pipe operation are necessary. For example, disabling
+  ~autoClose~ on streams or the ~end~ event in pipes. The ~options~ argument for
+  ~get()~ and ~put()~ calls now supports properties for ~readStreamOptions~,
+  ~writeStreamOptions~ and ~pipeOptions~. Note that options are only applied to
+  streams created by the ~get()~ and ~put()~ methods. Streams passed into these
+  methods are under the control of the client code and therefore cannot have
+  options supplied in arguments to those streams (you would apply such options
+  when you create the streams). Options are typically only necessary in special
+  use cases. Most of the time, no options are required. However, if you are
+  currently using options to either ~put()~ or ~get()~, you will need to update
+  your code to map these options to the new structure. 
 
-- Added new optional argument /notFoundOK/ to ~delete()~ method. If true, no
-  error is thrown when trying to delete a file which does not exist. Default is
-  false.
-- Added new filter argument to ~uploadDir()~ and ~downloadDir()~ methods. The
-  filter argument is a regular expression used to match the files and
-  directories to be included in the upload or download. Defaults to match all
-  files and directories.
-- New event handling approach. Have standardised the adding and removing of
-  event handlers as well as added event handlers for /close/ and /end/ events.
-  Some sftp servers appear to abruptly terminate connections without issuing an
-  /error/ event. This could result in failing to resolve the promise associated
-  with the action being performed. Adding /close/ and /end/ listeners to reject
-  a promise should prevent the scripts from hanging when the remote server does
-  not return either a status or an error.
-- Replace the ~retry~ library module with the ~promise-retry~ library module.
-  This module also uses the ~retry~ library, but at a higher level abstracted
-  for use with Promises. As a result, the number of failed retries is no longer
-  returned as part of the error message when all attempted connection retries
-  fail.
-- Reduced argument verification code. Version 5.x added a lot of additional
-  argument verification code in an attempt to provide more meaningful error
-  messages. While this goal was achieved, it did have a significant performance
-  impact, especially with respect to small file transfers. This additional
-  argument verification has now been removed in favour of faster code. The
-  downside is that some error messages have changed and in some cases, will not
-  be as meaningful or will be more generic in nature. This seems as a reasonable
-  compromise. It may result in increased difficulty tracking down why a script
-  is failing, but once a script is working, it should be more efficient. If your
-  code relies on the text in error messages, you will need to verify whether the
-  text is still the same in any testing and adjust where necessary.
+- Improved event handling. A listener for a global error event is now defined to
+  catch errors which occur in-between method calls i.e. connection lost
+  in-between calls to the library methods. A new mechanism has also been added
+  for removal of listeners when no longer required. 
 
 * Documentation
 
@@ -466,22 +424,30 @@ better off using the ~fastGet()~ method.
 
 **** Options
 
-The options object can be used to pass options to the underlying readStream used
-to read the data from the remote server.
+The ~options~ argument can be used to pass options to the underlying streams and
+pipe call used by this method. The argument is an object with three possible
+properties, ~readStreamOptions~, ~writeStreamOptions~ and ~pipeOptions~. The
+values for each of these properties should be an object containing the required
+options. For example, possible read stream and pipe options could be defined as
 
 #+begin_src javascript
-  {
-    flags: 'r',
-    encoding: null,
-    handle: null,
-    mode: 0o666,
-    autoClose: true
-  }
+  let options = {
+    readStreamOptions: {
+      flags: 'r',
+      encoding: null,
+      handle: null,
+      mode: 0o666,
+      autoClose: true
+    },
+    pipeOptions: {
+      end: false
+    }};
+  
 #+end_src
 
 Most of the time, you won't want to use any options. Sometimes, it may be useful
 to set the encoding. For example, to 'utf-8'. However, it is important not to do
-this for binary files to avoid data corruption.
+this for binary files to avoid data corruption. 
 
 **** Example Use
 
@@ -563,20 +529,25 @@ stream are piped to the ~remotePath~ on the server.
 - src :: string | buffer | readable stream. Data source for data to copy to the
          remote server.
 - remotePath :: string. Path to the remote file to be created on the server.
-- options :: object. Options which can be passed to adjust the write stream used
-             in sending the data to the remote server (see below).
+- options :: object. Options which can be passed to adjust the read and write stream used
+             in sending the data to the remote server or the pipe call used to
+             make the data transfer (see below).
 
 **** Options
 
-The following options are supported;
+The options object supports three properties, ~readStreamOptions~,
+~writeStreamOptions~ and ~pipeOptions~. The value for each property should be an
+object with options as properties and their associated values representing the
+option value. For example, you might use the following to set ~writeStream~ options.
 
 #+begin_src javascript
   {
-    flags: 'w',  // w - write and a - append
-    encoding: null, // use null for binary files
-    mode: 0o666, // mode to use for created file (rwx)
-    autoClose: true // automatically close the write stream when finished
-  }
+    writeStreamOptions: {
+      flags: 'w',  // w - write and a - append
+      encoding: null, // use null for binary files
+      mode: 0o666, // mode to use for created file (rwx)
+      autoClose: true // automatically close the write stream when finished
+  }}
 #+end_src
 
 The most common options to use are mode and encoding. The values shown above are
