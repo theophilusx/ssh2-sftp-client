@@ -4,8 +4,15 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection, makeLocalPath} = require('./hooks/global-hooks');
-const {permissionSetup, permissionCleanup} = require('./hooks/permission-hook');
+const {
+  config,
+  getConnection,
+  makeLocalPath,
+} = require('./hooks/global-hooks');
+const {
+  permissionSetup,
+  permissionCleanup,
+} = require('./hooks/permission-hook');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -42,7 +49,7 @@ if (process.platform !== 'win32') {
             makeLocalPath(config.localUrl, 'no-access.txt'),
             `${config.sftpUrl}/no-access2.txt`
           )
-        ).be.rejectedWith('Permission denied');
+        ).be.rejectedWith('permission denied');
       });
     });
 
