@@ -26,3 +26,4 @@ debug.log
 coverage
 .nyc_output
 .nycrc.json
+.eslintrc.json
