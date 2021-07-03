@@ -936,8 +936,6 @@ All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-
 
 One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc. You want to use a CLI program which does as little as possible.
 
-One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc.
-
 ## Promises & Events<a id="sec-6-2"></a>
 
 The reality of the current Node environment is that Promises and Events don't play nicely together. Part of the problem is that events are asynchronous in nature and can occur at any time. It is very difficult to ensure an event is captured inside a Promise and handled appropriately. More information can be found in the Node documentation for Events.
