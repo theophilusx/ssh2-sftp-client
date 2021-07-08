@@ -10,7 +10,7 @@
 // 2 args src and dst. Script will upload src to dst on remote server.
 
 const path = require('path');
-const {Client} = require('ssh2');
+const Client = require('ssh2');
 
 const dotenvPath = path.join(__dirname, '..', '.env');
 require('dotenv').config({path: dotenvPath});
@@ -22,33 +22,41 @@ const config = {
   port: process.env.SFTP_PORT || 22
 };
 
+const srcFile = process.argv[2];
+const dstDir = process.argv[3];
+const repeatCount = parseInt(process.argv[4]);
+let run = 0;
+
+let client = new Client();
 
 function doFastGet(client, sftp) {
   let dstFile = path.join(dstDir, `test-file.${run}`);
   console.log(`transferring file ${run}`);
+  sftp.fastGet(srcFile, dstFile, err => {
+    if (err) {
+      console.error(`fastGet error: ${err.message}`);
+      return -1;
+    } else {
+      run++;
+      if (run < repeatCount) {
+        return doFastGet(client, sftp);
+      } else {
+        client.end();
+        return 0;
+      }
+    }
+  });
 }
 
-const client = new Client();
-
 client
-  .on('ready', () => {
-    client.sftp((err, sftp) => {
+  .on('ready', function() {
+    client.sftp(function(err, sftp) {
       if (err) {
         console.log(`Error initialising SFTP object: ${err.message}`);
         return -1;
       }
-      const srcFile = process.argv[2];
-      const dstFile = process.argv[3];
-      console.log(`Transferring ${srcFile} to ${dstFile}`);
-      sftp.fastGet(srcFile, dstFile, err => {
-        if (err) {
-          console.error(`fastGet error: ${err.message}`);
-          return -1;
-        } 
-        console.log('File transferred');
-        client.end();
-        return 0;
-      });
+      console.log(`Transferring ${srcFile} ${repeatCount} times`);
+      return doFastGet(client, sftp);
     });
   })
   .on('error', function(err) {
