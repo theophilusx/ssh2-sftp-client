@@ -101,7 +101,6 @@ class SftpClient {
    * Create a new SFTP connection to a remote SFTP server
    *
    * @param {Object} config - an SFTP configuration object
-   * @param {string} connectMethod - ???
    *
    * @return {Promise} which will resolve to an sftp client object
    *
@@ -140,6 +139,18 @@ class SftpClient {
     });
   }
 
+  /**
+   * @async
+   *
+   * Create a new SFTP connection to a remote SFTP server.
+   * The connection options are the same as those offered
+   * by the underlying SSH2 module.
+   *
+   * @param {Object} config - an SFTP configuration object
+   *
+   * @return {Promise} which will resolve to an sftp client object
+   *
+   */
   connect(config) {
     if (config.debug) {
       this.debug = config.debug;
@@ -178,11 +189,10 @@ class SftpClient {
    * Returns the real absolute path on the remote server. Is able to handle
    * both '.' and '..' in path names, but not '~'. If the path is relative
    * then the current working directory is prepended to create an absolute path.
-   * Returns undefined if the
-   * path does not exists.
+   * Returns undefined if the path does not exists.
    *
    * @param {String} remotePath - remote path, may be relative
-   * @returns {}
+   * @returns {Promise} - remote absolute path or undefined
    */
   realPath(remotePath) {
     return new Promise((resolve, reject) => {
@@ -217,8 +227,8 @@ class SftpClient {
   /**
    * Retrieves attributes for path
    *
-   * @param {String} path, a string containing the path to a file
-   * @return {Promise} stats, attributes info
+   * @param {String} remotePath - a string containing the path to a file
+   * @return {Promise} stats - attributes info
    */
   async stat(remotePath) {
     const _stat = (aPath) => {
@@ -285,9 +295,9 @@ class SftpClient {
    * Tests to see if an object exists. If it does, return the type of that object
    * (in the format returned by list). If it does not exist, return false.
    *
-   * @param {string} path - path to the object on the sftp server.
+   * @param {string} remotePath - path to the object on the sftp server.
    *
-   * @return {boolean} returns false if object does not exist. Returns type of
+   * @return {Promise} returns false if object does not exist. Returns type of
    *                   object if it does
    */
   async exists(remotePath) {
@@ -340,7 +350,7 @@ class SftpClient {
    *
    * @param {String} remotePath - path to remote directory
    * @param {RegExp} pattern - regular expression to match filenames
-   * @returns {Array} file description objects
+   * @returns {Promise} array of file description objects
    * @throws {Error}
    */
   list(remotePath, pattern = /.*/) {
@@ -401,9 +411,9 @@ class SftpClient {
    * piped into the stream or undefined, in which case the data is returned as
    * a Buffer object.
    *
-   * @param {String} path, remote file path
-   * @param {string|stream|undefined} dst, data destination
-   * @param {Object} options, options object with supported properties of readStreamOptions,
+   * @param {String} remotePath - remote file path
+   * @param {string|stream|undefined} dst - data destination
+   * @param {Object} options - options object with supported properties of readStreamOptions,
    *                          writeStreamOptions and pipeOptions.
    *
    * @return {Promise}
@@ -592,7 +602,7 @@ class SftpClient {
    * can be a buffer, string or read stream. If 'src' is a string, it
    * should be the path to a local file.
    *
-   * @param  {String|Buffer|stream} src - source data to use
+   * @param  {String|Buffer|stream} localSrc - source data to use
    * @param  {String} remotePath - path to remote file
    * @param  {Object} options - options used for read, write stream and pipe configuration
    *                            value supported by node. Allowed properties are readStreamOptions,
@@ -664,9 +674,25 @@ class SftpClient {
     });
   }
 
+  /**
+   * Upload data from local system to remote server.
+   * If the src argument is a string, it is interpreted
+   * as a local file path to be used for the data to
+   * transfer.  If the src argument is a buffer, the contents of
+   * the buffer are copied to the remote file and
+   * if it is a readable stream, the contents of
+   * that stream are piped to the remotePath on the server.
+   *
+   * @param  {String|Buffer|stream} localSrc - source data to use
+   * @param  {String} remotePath - path to remote file
+   * @param  {Object} options - options used for read, write stream and pipe configuration
+   *                            value supported by node. Allowed properties are readStreamOptions,
+   *                            writeStreamOptions and pipeOptions.
+   * @return {Promise}
+   */
   async put(
     localSrc,
-    remoePath,
+    remotePath,
     options = { readStreamOptions: {}, writeStreamOptions: {}, pipeOptions: {} }
   ) {
     try {
@@ -679,7 +705,7 @@ class SftpClient {
           throw err;
         }
       }
-      return await this.doPut(localSrc, remoePath, options);
+      return await this.doPut(localSrc, remotePath, options);
     } catch (err) {
       throw fmtError(err, 'put');
     }
@@ -689,7 +715,7 @@ class SftpClient {
    * Append to an existing remote file
    *
    * @param  {Buffer|stream} input
-   * @param  {String} remotePath,
+   * @param  {String} remotePath
    * @param  {Object} options
    * @return {Promise}
    */
@@ -729,9 +755,9 @@ class SftpClient {
    *
    * Make a directory on remote server
    *
-   * @param {string} path, remote directory path.
-   * @param {boolean} recursive, if true, recursively create directories
-   * @return {Promise}.
+   * @param {string} remotePath - remote directory path.
+   * @param {boolean} recursive - if true, recursively create directories
+   * @return {Promise}
    */
   async mkdir(remotePath, recursive = false) {
     const _mkdir = (p) => {
@@ -779,10 +805,10 @@ class SftpClient {
    *
    * Remove directory on remote server
    *
-   * @param {string} path, path to directory to be removed
-   * @param {boolean} recursive, if true, remove directories/files in target
+   * @param {string} remotePath - path to directory to be removed
+   * @param {boolean} recursive - if true, remove directories/files in target
    *                             directory
-   * @return {Promise}..
+   * @return {Promise}
    */
   async rmdir(remotePath, recursive = false) {
     const _rmdir = (p) => {
@@ -836,10 +862,10 @@ class SftpClient {
    *
    * Delete a file on the remote SFTP server
    *
-   * @param {string} path - path to the file to delete
+   * @param {string} remotePath - path to the file to delete
    * @param {boolean} notFoundOK - if true, ignore errors for missing target.
    *                               Default is false.
-   * @return {Promise} with string 'Successfully deleeted file' once resolved
+   * @return {Promise} with string 'Successfully deleted file' once resolved
    *
    */
   delete(remotePath, notFoundOK = false) {
@@ -947,9 +973,9 @@ class SftpClient {
    * Change the mode of a remote file on the SFTP repository
    *
    * @param {string} remotePath - path to the remote target object.
-   * @param {Octal} mode - the new mode to set
+   * @param {number | string} mode - the new octal mode to set
    *
-   * @return {Promise}.
+   * @return {Promise}
    */
   chmod(remotePath, mode) {
     return new Promise((resolve, reject) => {
@@ -975,7 +1001,7 @@ class SftpClient {
    * server.
    * @param {String} srcDir - local source directory
    * @param {String} dstDir - remote destination directory
-   * @param {regex} filter - (Optional) a regular expression used to select
+   * @param {RegExp} filter - (Optional) a regular expression used to select
    *                         files and directories to upload
    * @returns {String}
    * @throws {Error}
@@ -1030,9 +1056,9 @@ class SftpClient {
    * file system.
    * @param {String} srcDir - remote source directory
    * @param {String} dstDir - local destination directory
-   * @param {regex} filter - (Optional) a regular expression used to select
+   * @param {RegExp} filter - (Optional) a regular expression used to select
    *                         files and directories to upload
-   * @returns {String}
+   * @returns {Promise}
    * @throws {Error}
    */
   async downloadDir(srcDir, dstDir, filter = /.*/) {
