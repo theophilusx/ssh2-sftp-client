@@ -1,0 +1,58 @@
+* Validation
+
+At its core, ssh2-sftp-client is really just a wrapper around the excellent [[https://github.com/mscdex/ssh2][ssh2]]
+library. Like most wrappers, it attempts to provide some convenience at the cost
+of some flexibility. In this case, it attempts to provide a Promise based API
+around the /event/ based ssh2 library.
+
+Mixing both Promises and an event based model can be challenging. When things
+don't work, it isn't always clear where the problem might be. This directory
+contains some very simple scripts which perform some of the core basic /sftp/
+operations, but only using the ssh2 library (no Promises, no wrapper).
+
+The scripts in this directory can be used to try and identify where a problem
+might be e.g. either due to the wrapper provided by ~ssh2-sftp-client~ or a bug
+in ~ssh2~ or some local or site specific problem (it is always important to
+remember all SFTP servers are not equal and problems can arise because of either
+issues with the remote SFTP server implementation, network failures and
+firewalls etc).
+
+** Guidelines
+
+There are some basic guidelines which can help to track down problems when
+something just doesn't work and you cannot find the cause.
+
+1. Use a very simple sftp CLI program, such as openSSH's ~sftp~ to perform the
+   same operation. If it works, then you have ruled out local network, firewall
+   and remote server issues. Note that if your problem only occurs after
+   multiple operations or under load etc, you probably need to script your test
+   with the ~sftp~ CLI to replicate a similar use pattern
+2. Create a minimal example script. The most important part of solving a problem
+   is being able to reproduce it as simply as possible. Creating a script which
+   can reproduce the issue with as few lines of code as possible is the first
+   step. It also enables the code to be easily run by someone else in a
+   different environment, which can help to eliminate environmental issues.
+   Typically, if we can reproduce the issue, it is fixed within days (if not
+   hours).
+3. Create a script which uses just ~ssh2~ and try to reproduce the issue. If the
+   problem can be reproduced just using ~ssh2~, it is either an ~ssh2~ specific
+   issue and needs to be logged with the maintainer of ~ssh2~ or it is a local
+   issue. If it turns out to be an issue specific to ~ssh2~, the script will
+   provide valuable information to the ~ssh2~ maintainers and will usually
+   result in faster resolution of the issue.
+
+** Scripts
+
+This scripts in this directory are very simple scripts with minimal error
+handling and input validation. They are provided mainly as examples and not as
+polished or completed utilities for validation. Typically, you would use these
+scripts as a starting point and modify them to fit your purposes.
+
+Most of these scripts use the ~dotenv~ library to manage authentication and
+configuration data. I use a number of different ~.env~ files to configure
+different test environments. This has two major advantages. It ensures I don't
+have to change scripts when testing against different test environments and by
+adding the ~.env~ files to ~.gitignore~ and ~.npmignore~, I can have additional
+confidence I'm unlikely to accidentally commit sensitive data to my git
+repository. If ou don't want to use ~dotenv~, comment out the lines relating to
+that library and add the config data to the scripts as hard coded values.

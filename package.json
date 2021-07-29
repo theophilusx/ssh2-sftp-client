@@ -1,28 +1,33 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "2.3.0",
+  "version": "2.5.1",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jyu213/ssh2-sftp-client"
+    "url": "https://github.com/theryaz/ssh2-sftp-client"
   },
   "keywords": [
     "sftp",
     "nodejs"
   ],
   "scripts": {
-    "test": "mocha test/index.js"
+    "test": "mocha"
   },
   "author": "见见",
   "email": "jyu213@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "ssh2": "^0.5.5"
+    "concat-stream": "^2.0.0",
+    "ssh2": "^0.8.2",
+    "retry": "^0.10.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-subset": "^1.2.1",
-    "mocha": "2.4.5"
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset": "^1.6.0",
+    "checksum": "^0.1.1",
+    "dotenv": "^6.1.0",
+    "mocha": "^5.2.0"
   }
 }
