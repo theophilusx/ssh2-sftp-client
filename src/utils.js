@@ -1,6 +1,8 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
+
 const { errorCode } = require('./constants');
 
 /**
@@ -131,46 +133,125 @@ function removeTempListeners(obj) {
 }
 
 /**
- * @async
+ * Checks to verify local object exists. Returns a character string representing the type
+ * type of local object if it exists, false if it doesn't.
  *
- * Tests to see if a path identifies an existing item. Returns either
- * 'd' = directory, 'l' = sym link or '-' regular file if item exists. Returns
- * false if it does not
+ * Return codes: l = symbolic link
+ *               - = regular file
+ *               d = directory
+ *               s = socket
  *
- * @param {String} localPath
- * @returns {Boolean | String}
+ * @param {string} filePath - path to local object
+ * @returns {string | boolean} returns a string for object type if it exists, false otherwise
  */
-function localExists(filePath, writeable = false) {
-  return new Promise((resolve, reject) => {
-    const fileModes = writeable
-      ? fs.constants.F_OK | fs.constants.W_OK
-      : fs.constants.F_OK | fs.constants.R_OK;
-    fs.access(filePath, fileModes, (err) => {
-      if (err) {
-        if (err.code === 'ENOENT') {
-          resolve(false);
-        } else {
-          reject(err);
-        }
-      } else {
-        fs.stat(filePath, (err2, stats) => {
-          if (err2) {
-            reject(err);
-          } else {
-            if (stats.isDirectory()) {
-              resolve('d');
-            } else if (stats.isSymbolicLink()) {
-              resolve('l');
-            } else if (stats.isFile()) {
-              resolve('-');
-            } else {
-              resolve(false);
-            }
-          }
-        });
-      }
-    });
-  });
+function localExists(filePath) {
+  try {
+    const stats = fs.statSync(filePath);
+    if (stats.isSymbolicLink()) {
+      return 'l';
+    } else if (stats.isDirectory()) {
+      return 'd';
+    } else if (stats.isSocket()) {
+      return 's';
+    } else if (stats.isFile()) {
+      return '-';
+    } else {
+      throw fmtError(
+        `Bad path: ${filePath}: unsupported file type`,
+        'localExists',
+        errorCode.badPath
+      );
+    }
+  } catch (err) {
+    throw fmtError(
+      `Bad path: ${filePath}: not exist`,
+      'localExists',
+      errorCode.badPath
+    );
+  }
+}
+
+/**
+ * Verify access to local object. Returns an object with properties for status, type,
+ * details and code.
+ *
+ * return object {
+ *                 status: true if exists and can be accessed, false otherwise
+ *                 type: type of object '-' = file, 'd' = dir, 'l' = link, 's' = socket
+ *                 details: 'access ok' if object can be accessed, 'not found' if
+ *                          object does not exist, 'permission denied' if access denied
+ *                 code: error code if object does not exist or permission denied
+ *              }
+ *
+ * @param {string} filePath = path to local object
+ * @param {string} mode = access mode - either 'r' or 'w'. Defaults to 'r'
+ * @returns {Object} with properties status, type, details and code
+ */
+function haveLocalAccess(filePath, mode = 'r') {
+  const accessMode =
+    fs.constants.F_OK | (mode === 'w') ? fs.constants.W_OK : fs.constants.R_OK;
+
+  try {
+    fs.accessSync(filePath, accessMode);
+    const type = localExists(filePath);
+    return {
+      status: true,
+      type: type,
+      details: 'access OK',
+      code: 0,
+    };
+  } catch (err) {
+    if (err.errno === -2) {
+      return {
+        status: false,
+        type: null,
+        details: 'not exist',
+        code: -2,
+      };
+    } else if (err.errno === -13) {
+      const type = localExists(filePath);
+      return {
+        status: false,
+        type: type,
+        details: 'permission denied',
+        code: -13,
+      };
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
+ * Checks to verify the object specified by filePath can either be written to or created
+ * if it doens't already exist. If it does not exist, checks to see if the parent entry in the
+ * path is a directory and can be written to. Returns an object with the same format as the object
+ * returned by 'haveLocalAccess'.
+ *
+ * @param {string} filePath - path to object to be created or written t
+ * @returns {Object} Object with properties status, type, destils and code
+ */
+function haveLocalCreate(filePath) {
+  const { status, details, type } = haveLocalAccess(filePath, 'w');
+  if (!status && details === 'permission denied') {
+    throw new Error(`Bad path: ${filePath}: permission denied`);
+  } else if (!status) {
+    const dirPath = path.dirname(filePath);
+    const localCheck = haveLocalAccess(dirPath, 'w');
+    if (localCheck.status && localCheck.type !== 'd') {
+      throw new Error(`Bad path: ${dirPath}: not a directory`);
+    } else if (!localCheck.status) {
+      throw new Error(`Bad path: ${dirPath}: ${localCheck.details}`);
+    } else {
+      return {
+        status: true,
+        details: 'access OK',
+        type: null,
+        code: 0,
+      };
+    }
+  }
+  return { status, details, type };
 }
 
 async function normalizeRemotePath(client, aPath) {
@@ -234,8 +315,10 @@ module.exports = {
   closeListener,
   addTempListeners,
   removeTempListeners,
-  localExists,
+  haveLocalAccess,
+  haveLocalCreate,
   normalizeRemotePath,
+  localExists,
   haveConnection,
   sleep,
 };
