@@ -10,7 +10,7 @@
 // 2 args src and dst. Script will upload src to dst on remote server.
 
 const path = require('path');
-const Client = require('ssh2');
+const {Client} = require('ssh2');
 
 const dotenvPath = path.join(__dirname, '..', '.env');
 require('dotenv').config({path: dotenvPath});
