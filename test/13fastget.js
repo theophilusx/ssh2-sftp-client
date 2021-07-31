@@ -5,9 +5,9 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const fs = require('fs');
-const {config, getConnection} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
 const gHooks = require('./hooks/fastGet-hooks');
-const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
+const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -39,7 +39,7 @@ describe('fastGet() method tests', function () {
   it('fastGet small text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'fastget-small.txt');
     let remotePath = `${config.sftpUrl}/fastget-small.txt`;
-    await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
+    await sftp.fastGet(remotePath, localPath, { encoding: 'utf8' });
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(localStats.size).to.equal(stats.size);
@@ -48,7 +48,7 @@ describe('fastGet() method tests', function () {
   it('fastGet large text file', async function () {
     let localPath = makeLocalPath(config.localUrl, 'fastget-large.txt');
     let remotePath = `${config.sftpUrl}/fastget-large.txt`;
-    await sftp.fastGet(remotePath, localPath, {encoding: 'utf8'});
+    await sftp.fastGet(remotePath, localPath, { encoding: 'utf8' });
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(localStats.size).to.equal(stats.size);
@@ -120,6 +120,14 @@ describe('fastGet() method tests', function () {
     return expect(
       sftp.fastGet(`${config.sftpUrl}/fg-dir`, './test/testData/fg-dir')
     ).to.be.rejectedWith(/Not a regular file/);
+  });
+
+  it('fastGet thows excepiton for bad destination', function () {
+    let localPath = './test/testDate/fg-no-such-dir/fg-gzip.txt.gz';
+    let remotePath = `${config.sftpUrl}/fastget-gzip.txt.gz`;
+    return expect(sftp.fastGet(remotePath, localPath)).to.be.rejectedWith(
+      /Bad path/
+    );
   });
 });
 

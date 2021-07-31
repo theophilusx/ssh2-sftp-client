@@ -4,7 +4,11 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection, makeLocalPath} = require('./hooks/global-hooks');
+const {
+  config,
+  getConnection,
+  makeLocalPath,
+} = require('./hooks/global-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -37,12 +41,12 @@ describe('uploadDir tests', function () {
     let remoteDir = `${config.sftpUrl}/upload-test`;
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
-      {name: 'file2.txt.gz', type: '-', size: 570314},
-      {name: 'sub1', type: 'd'},
-      {name: 'sub3', type: 'd'},
-      {name: 'file1.txt', type: '-'},
-      {name: '.hidden-file.txt', type: '-'},
-      {name: '.hidden-sub1', type: 'd'}
+      { name: 'file2.txt.gz', type: '-', size: 570314 },
+      { name: 'sub1', type: 'd' },
+      { name: 'sub3', type: 'd' },
+      { name: 'file1.txt', type: '-' },
+      { name: '.hidden-file.txt', type: '-' },
+      { name: '.hidden-sub1', type: 'd' },
     ]);
   });
 
@@ -58,9 +62,9 @@ describe('uploadDir tests', function () {
     let remoteDir = `${config.sftpUrl}/upload-test2`;
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.not.containSubset([
-      {name: 'file2.txt.gz', type: '-', size: 570314},
-      {name: '.hidden-sub1', type: 'd'},
-      {name: '.hidden-file.txt', type: '-'}
+      { name: 'file2.txt.gz', type: '-', size: 570314 },
+      { name: '.hidden-sub1', type: 'd' },
+      { name: '.hidden-file.txt', type: '-' },
     ]);
   });
 });
@@ -92,9 +96,9 @@ describe('Partial file upload', function () {
     let remoteDir = `${config.sftpUrl}/upload-test/sub1`;
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
-      {name: 'sub2', type: 'd'},
-      {name: 'file4.txt.gz', type: '-', size: 570314},
-      {name: 'file3.txt', type: '-'}
+      { name: 'sub2', type: 'd' },
+      { name: 'file4.txt.gz', type: '-', size: 570314 },
+      { name: 'file3.txt', type: '-' },
     ]);
   });
 });
@@ -116,7 +120,7 @@ describe('Uploaddir bad path tests', function () {
     let localDir = makeLocalPath(config.localUrl, 'no-such-dir');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
-      /no such file or directory/
+      /Bad path/
     );
   });
 
@@ -147,7 +151,7 @@ describe('Download directory', function () {
 
   after('download directory clenaup hook', async function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test2');
-    fs.rmdirSync(localDir, {recursive: true});
+    fs.rmdirSync(localDir, { recursive: true });
     await sftp.end();
     return true;
   });
@@ -191,7 +195,7 @@ describe('Partial download dir', function () {
   before('Download directory setup hook', async function () {
     sftp = await getConnection();
     let localDir = makeLocalPath(config.localUrl, 'download-test', 'sub1');
-    fs.rmdirSync(localDir, {recursive: true});
+    fs.rmdirSync(localDir, { recursive: true });
     return true;
   });
 
@@ -199,7 +203,7 @@ describe('Partial download dir', function () {
     let remoteDir = `${config.sftpUrl}/upload-test`;
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     await sftp.rmdir(remoteDir, true);
-    fs.rmdirSync(localDir, {recursive: true});
+    fs.rmdirSync(localDir, { recursive: true });
     await sftp.end();
     return true;
   });
