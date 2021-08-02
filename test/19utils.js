@@ -21,7 +21,7 @@ describe('fmtError() tests', function () {
       utils.fmtError('test msg', 'name', 'error code')
     ).to.containSubset({
       message: 'name: test msg',
-      code: 'error code'
+      code: 'error code',
     });
   });
 
@@ -30,7 +30,7 @@ describe('fmtError() tests', function () {
       utils.fmtError('test msg', 'name', 'error code', 4)
     ).to.containSubset({
       message: 'name: test msg after 4 attempts',
-      code: 'error code'
+      code: 'error code',
     });
   });
 
@@ -49,7 +49,7 @@ describe('fmtError() tests', function () {
   it('fmtError handles null error', function () {
     return expect(utils.fmtError(undefined)).to.containSubset({
       message: 'sftp: Undefined error - probably a bug!',
-      code: 'ERR_GENERIC_CLIENT'
+      code: 'ERR_GENERIC_CLIENT',
     });
   });
 
@@ -59,7 +59,7 @@ describe('fmtError() tests', function () {
     ).to.containSubset({
       message: 'top->someMethod: Original Error',
       code: 'ERR_GENERIC_CLIENT',
-      custom: true
+      custom: true,
     });
   });
 
@@ -68,7 +68,7 @@ describe('fmtError() tests', function () {
     return expect(utils.fmtError(e1, 'top')).to.containSubset({
       message: 'top->somefunc: Original Error',
       code: 'ERR_GENERIC_CLIENT',
-      custom: true
+      custom: true,
     });
   });
 
@@ -79,7 +79,7 @@ describe('fmtError() tests', function () {
     e.hostname = 'bogus.com';
     return expect(utils.fmtError(e, 'func')).to.containSubset({
       message: 'func: Client error. Address lookup failed for host bogus.com',
-      code: 'ENOTFOUND'
+      code: 'ENOTFOUND',
     });
   });
 
@@ -90,7 +90,7 @@ describe('fmtError() tests', function () {
     e.address = '1.1.1.1';
     return expect(utils.fmtError(e, 'func')).to.containSubset({
       message: 'func: Server error. Remote host at 1.1.1.1 refused connection',
-      code: 'ECONNREFUSED'
+      code: 'ECONNREFUSED',
     });
   });
 
@@ -99,7 +99,7 @@ describe('fmtError() tests', function () {
     e.code = 'ECONNRESET';
     return expect(utils.fmtError(e, 'func')).to.containSubset({
       message: 'func: Remote host has reset the connection: Connection reset',
-      code: 'ECONNRESET'
+      code: 'ECONNRESET',
     });
   });
 });
@@ -111,7 +111,7 @@ describe('errorListener', function () {
       null;
     },
     errorHandled: false,
-    endCalled: false
+    endCalled: false,
   };
 
   beforeEach(function () {
@@ -137,63 +137,5 @@ describe('errorListener', function () {
       handler(e);
     };
     return expect(fn).to.throw(/Test2->sftp: A thrown error/);
-  });
-});
-
-describe('endListener', function () {
-  let client = {
-    debugMsg: (msg) => {
-      //console.log(msg);
-      null;
-    },
-    errorHandled: false,
-    endCalled: false
-  };
-
-  beforeEach(function () {
-    client.errorHandled = false;
-    client.endCalled = false;
-  });
-
-  it('end rejected', function () {
-    let p = new Promise((resolve, reject) => {
-      let handler = utils.endListener(client, 'Test3', reject);
-      handler();
-    });
-    return expect(p).to.be.rejectedWith(/Test3: Unexpected end event raised/);
-  });
-
-  it('end raises error', function () {
-    let handler = utils.endListener(client, 'Test4');
-    return expect(handler).to.throw(/Test4: Unexpected end event raised/);
-  });
-});
-
-describe('closeListener', function () {
-  let client = {
-    debugMsg: (msg) => {
-      //console.log(msg);
-      null;
-    },
-    errorHandled: false,
-    endCalled: false
-  };
-
-  beforeEach(function () {
-    client.errorHandled = false;
-    client.endCalled = false;
-  });
-
-  it('close rejected', function () {
-    let p = new Promise((resolve, reject) => {
-      let handler = utils.closeListener(client, 'Test5', reject);
-      handler();
-    });
-    return expect(p).to.be.rejectedWith(/Test5: Unexpected close event raised/);
-  });
-
-  it('close throws error', function () {
-    let handler = utils.closeListener(client, 'Test6');
-    return expect(handler).to.throw(/Test6: Unexpected close event raised/);
   });
 });

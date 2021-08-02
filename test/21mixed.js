@@ -3,7 +3,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
 const hooks = require('./hooks/mixed-hooks');
 
 chai.use(chaiAsPromised);
@@ -52,19 +52,20 @@ describe('Mixed tests', function () {
       );
     });
 
-    // realPath for windows does not seem to return empty string for non-existent paths
-    it("realPath returns '' for non-existing path", function () {
-      if (sftp.remotePlatform !== 'win32') {
-        return expect(
-          sftp.realPath(
-            config.sftpUrl +
-              '/path-test-dir/path-not-exist-dir/path-not-exist-file.txt'
-          )
-        ).to.eventually.equal('');
-      } else {
-        return expect(true).to.equal(true);
-      }
-    });
+    if (config.testServer !== 'windows') {
+      it("realPath returns '' for non-existing path", function () {
+        if (sftp.remotePlatform !== 'win32') {
+          return expect(
+            sftp.realPath(
+              config.sftpUrl +
+                '/path-test-dir/path-not-exist-dir/path-not-exist-file.txt'
+            )
+          ).to.eventually.equal('');
+        } else {
+          return expect(true).to.equal(true);
+        }
+      });
+    }
   });
 
   describe('list tests', function () {
@@ -87,13 +88,13 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(7);
       return expect(data).to.containSubset([
-        {type: 'd', name: 'dir1'},
-        {type: 'd', name: 'dir2'},
-        {type: 'd', name: 'empty'},
-        {type: '-', name: 'file1.html'},
-        {type: '-', name: 'file2.md'},
-        {type: '-', name: 'test-file1.txt'},
-        {type: '-', name: 'test-file2.txt.gz'}
+        { type: 'd', name: 'dir1' },
+        { type: 'd', name: 'dir2' },
+        { type: 'd', name: 'empty' },
+        { type: '-', name: 'file1.html' },
+        { type: '-', name: 'file2.md' },
+        { type: '-', name: 'test-file1.txt' },
+        { type: '-', name: 'test-file2.txt.gz' },
       ]);
     });
 
@@ -102,13 +103,13 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(7);
       return expect(data).to.containSubset([
-        {type: 'd', name: 'dir1'},
-        {type: 'd', name: 'dir2'},
-        {type: 'd', name: 'empty'},
-        {type: '-', name: 'file1.html'},
-        {type: '-', name: 'file2.md'},
-        {type: '-', name: 'test-file1.txt'},
-        {type: '-', name: 'test-file2.txt.gz'}
+        { type: 'd', name: 'dir1' },
+        { type: 'd', name: 'dir2' },
+        { type: 'd', name: 'empty' },
+        { type: '-', name: 'file1.html' },
+        { type: '-', name: 'file2.md' },
+        { type: '-', name: 'test-file1.txt' },
+        { type: '-', name: 'test-file2.txt.gz' },
       ]);
     });
 
@@ -117,8 +118,8 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(2);
       return expect(data).to.containSubset([
-        {type: 'd', name: 'dir1'},
-        {type: 'd', name: 'dir2'}
+        { type: 'd', name: 'dir1' },
+        { type: 'd', name: 'dir2' },
       ]);
     });
 
@@ -127,8 +128,8 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(2);
       return expect(data).to.containSubset([
-        {type: '-', name: 'test-file1.txt'},
-        {type: '-', name: 'test-file2.txt.gz'}
+        { type: '-', name: 'test-file1.txt' },
+        { type: '-', name: 'test-file2.txt.gz' },
       ]);
     });
 
@@ -137,13 +138,13 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(7);
       return expect(data).to.containSubset([
-        {type: 'd', name: 'dir1'},
-        {type: 'd', name: 'dir2'},
-        {type: 'd', name: 'empty'},
-        {type: '-', name: 'file1.html'},
-        {type: '-', name: 'file2.md'},
-        {type: '-', name: 'test-file1.txt'},
-        {type: '-', name: 'test-file2.txt.gz'}
+        { type: 'd', name: 'dir1' },
+        { type: 'd', name: 'dir2' },
+        { type: 'd', name: 'empty' },
+        { type: '-', name: 'file1.html' },
+        { type: '-', name: 'file2.md' },
+        { type: '-', name: 'test-file1.txt' },
+        { type: '-', name: 'test-file2.txt.gz' },
       ]);
     });
 
@@ -152,8 +153,8 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(2);
       return expect(data).to.containSubset([
-        {type: 'd', name: 'dir1'},
-        {type: 'd', name: 'dir2'}
+        { type: 'd', name: 'dir1' },
+        { type: 'd', name: 'dir2' },
       ]);
     });
 
@@ -162,14 +163,14 @@ describe('Mixed tests', function () {
 
       expect(data.length).to.equal(2);
       return expect(data).to.containSubset([
-        {type: '-', name: 'test-file1.txt'},
-        {type: '-', name: 'test-file2.txt.gz'}
+        { type: '-', name: 'test-file1.txt' },
+        { type: '-', name: 'test-file2.txt.gz' },
       ]);
     });
 
     it(`list with absolute path ${config.sftpUrl} and pattern`, async function () {
       let data = await sftp.list(config.sftpUrl, 'list*');
-      return expect(data).to.containSubset([{name: 'list-test'}]);
+      return expect(data).to.containSubset([{ name: 'list-test' }]);
     });
   });
 
@@ -213,7 +214,7 @@ describe('Mixed tests', function () {
 
       return expect(stats).to.containSubset({
         size: 16,
-        isFile: true
+        isFile: true,
       });
     });
   });

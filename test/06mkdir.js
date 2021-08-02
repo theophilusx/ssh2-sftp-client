@@ -4,8 +4,8 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {mkdirCleanup} = require('./hooks/mkdir-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
+const { mkdirCleanup } = require('./hooks/mkdir-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -43,7 +43,7 @@ describe('mkdir() method tests', function () {
         return sftp.list(`${config.sftpUrl}/mkdir-recursive/dir-force`);
       })
       .then((list) => {
-        return expect(list).to.containSubset([{name: 'subdir'}]);
+        return expect(list).to.containSubset([{ name: 'subdir' }]);
       });
   });
 
@@ -54,7 +54,7 @@ describe('mkdir() method tests', function () {
         return sftp.list(config.sftpUrl);
       })
       .then((list) => {
-        return expect(list).to.containSubset([{name: 'mkdir-non-recursive'}]);
+        return expect(list).to.containSubset([{ name: 'mkdir-non-recursive' }]);
       });
   });
 
@@ -89,9 +89,7 @@ describe('mkdir() method tests', function () {
   // permissions don't really work on win32
   it('non-recursive mkdir without permission is rejeted', function () {
     if (sftp.remotePlatform !== 'win32') {
-      return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
-        /Permission denied/
-      );
+      return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(/Bad path/);
     } else {
       return expect(true).to.equal(true);
     }
@@ -99,9 +97,7 @@ describe('mkdir() method tests', function () {
 
   it('recursive mkdir without permission is rejeted', function () {
     if (sftp.remotePlatform !== 'win32') {
-      return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
-        /Permission denied/
-      );
+      return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(/Bad path/);
     } else {
       return expect(true).to.equal(true);
     }

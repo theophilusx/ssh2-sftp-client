@@ -17,7 +17,7 @@ const {
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-if (process.platform !== 'win32') {
+if (config.testServer !== 'windows') {
   describe('Bad permission tests', function () {
     describe('No access to local file', function () {
       let sftp;

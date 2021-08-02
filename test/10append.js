@@ -5,9 +5,9 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {appendSetup, appendCleanup} = require('./hooks/append-hooks');
-const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
+const { appendSetup, appendCleanup } = require('./hooks/append-hooks');
+const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -33,7 +33,7 @@ describe('append() method tests', function () {
         Buffer.from('append test 1'),
         `${config.sftpUrl}/append-promise-test.md`,
         {
-          encoding: 'utf8'
+          encoding: 'utf8',
         }
       )
     ).to.be.a('promise');
@@ -51,13 +51,13 @@ describe('append() method tests', function () {
   it('append buffer to file', function () {
     return sftp
       .append(Buffer.from('hello'), `${config.sftpUrl}/append-test2.txt`, {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 23});
+        return expect(stats).to.containSubset({ size: 23 });
       });
   });
 
@@ -69,13 +69,13 @@ describe('append() method tests', function () {
 
     return sftp
       .append(str2, `${config.sftpUrl}/append-test3`, {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/append-test3`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 32});
+        return expect(stats).to.containSubset({ size: 32 });
       });
   });
 
@@ -105,19 +105,19 @@ describe('append() method tests', function () {
         Buffer.from('should not work'),
         `${config.sftpUrl}/append-dir-test`
       )
-    ).to.be.rejectedWith('Failure');
+    ).to.be.rejectedWith('Bad path');
   });
 
   it('append relative remote path 1', function () {
     return sftp
       .append(Buffer.from('hello'), './testServer/append-test2.txt', {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 28});
+        return expect(stats).to.containSubset({ size: 28 });
       });
   });
 
@@ -127,13 +127,13 @@ describe('append() method tests', function () {
     )}/testServer/append-test2.txt`;
     return sftp
       .append(Buffer.from('hello'), remotePath, {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/append-test2.txt`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 33});
+        return expect(stats).to.containSubset({ size: 33 });
       });
   });
 });

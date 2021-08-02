@@ -29,7 +29,7 @@ describe('Connect Tests', function () {
     });
   });
 
-  it('connect should return a promise', async function () {
+  it('contest-1: connect should return a promise', function () {
     let client = new Client('contest-1');
     return expect(
       client.connect(config).then(() => {
@@ -38,7 +38,7 @@ describe('Connect Tests', function () {
     ).to.be.a('promise');
   });
 
-  it('valid connection object', async function () {
+  it('contest-2: valid connection object', async function () {
     let client = new Client('contest-2');
     await client.connect(config);
     let type = typeof client.sftp;
@@ -46,7 +46,7 @@ describe('Connect Tests', function () {
     return expect(type).to.equal('object');
   });
 
-  it('bad host throws exception', async function () {
+  it('contest-3: bad host throws exception', function () {
     let client = new Client('contest-3');
     return expect(
       client.connect({
@@ -58,7 +58,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad port throws exception', async function () {
+  it('contest-4: bad port throws exception', function () {
     let client = new Client('contest-4');
     return expect(
       client.connect({
@@ -70,7 +70,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad username throws exception', async function () {
+  it('contest-5: bad username throws exception', function () {
     let client = new Client('contest-5');
     return expect(
       client.connect({
@@ -82,7 +82,7 @@ describe('Connect Tests', function () {
     );
   });
 
-  it('bad password throws exception', async function () {
+  it('contest-6: bad password throws exception', function () {
     let client = new Client('contest-6');
     return expect(
       client.connect({
@@ -95,9 +95,9 @@ describe('Connect Tests', function () {
   });
 });
 
-describe('Connect and disconnect', async function () {
-  it('connect and disconnect returns true', async function () {
-    let client = new Client();
+describe('contest-7: Connect and disconnect', function () {
+  it('connect and disconnect returns true', function () {
+    let client = new Client('contest-7');
     return expect(
       client.connect(config).then(() => {
         return client.end();
@@ -105,8 +105,8 @@ describe('Connect and disconnect', async function () {
     ).to.eventually.equal(true);
   });
 
-  it('Connect when connected rejected', async function () {
-    let client = new Client();
+  it('contest-8: Connect when connected rejected', function () {
+    let client = new Client('contest-8');
     return expect(
       client.connect(config).then(() => {
         return client.connect(config);

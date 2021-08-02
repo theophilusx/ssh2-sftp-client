@@ -45,7 +45,8 @@ const config = {
   localUrl: process.env.LOCAL_URL,
   sftpUrl: process.env.SFTP_URL,
   delay: process.env.TEST_DELAY || 500,
-  retries: 1
+  retries: 1,
+  testServer: process.env.TEST_SERVER
 };
 
 if (process.env.DEBUG === 'true') {
