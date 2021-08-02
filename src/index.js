@@ -61,7 +61,11 @@ class SftpClient {
         this.debugMsg('Global: Ignoring handled error');
       } else {
         this.debugMsg(`Global; Handling unexpected error; ${err.message}`);
-        throw fmtError(err, 'Global');
+        this.sftp = undefined;
+        console.log(
+          `ssh2-sftp-client: Unexpected error: ${err.message}. Error code: ${err.code}`
+        );
+        //throw fmtError(err, 'Global');
       }
     });
   }
