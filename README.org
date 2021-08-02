@@ -1036,15 +1036,16 @@ them have any meaning in the context of SFTP. These are
 
 - error :: An error occurred. Calls listener with an error argument.
 - end :: The socket has been disconnected. No argument.
-- close :: The socket was closed. Boolean argument which is true when the socket
-           was closed due to errors.
+- close :: The socket was closed. 
 
 **** on(eventType, listener)
 
 Adds the specified listener to the specified event type. It the event type is
-~error~, the listener should accept 1 argument, which will be an Error object. If
-the event type is ~close~, the listener should accept one argument of a boolean
-type, which will be true when the client connection was closed due to errors.
+~error~, the listener should accept 1 argument, which will be an Error object.
+The event handlers for =end= and =close= events have no arguments.
+
+The handlers will be added to the beginning of the listener's event handlers, so
+it will be called before any of the =ssh2-sftp-client= listeners.
 
 **** removeListener(eventType, listener)
 
@@ -1072,51 +1073,81 @@ the ~end()~ method automatically removes all listeners from the client object.
    additional steps to simulate missing functionality etc. You want to use a CLI
    program which does as little as possible.
 
-** Promises & Events
+** Promises, Events & Managing Exceptions
 
-   The reality of the current Node environment is that Promises and Events don't
-   play nicely together. Part of the problem is that events are asynchronous in
-   nature and can occur at any time. It is very difficult to ensure an event is
-   captured inside a Promise and handled appropriately. More information can be
-   found in the Node documentation for Events.
+   One of the challenges in providing a Promise based API over a module like
+   SSH2, which is event based is how to ensure events are handled appropriately.
+   The challenge is due to the synchronous nature of events. You cannot use
+   =try/catch= for events because you have no way of knowing when the event
+   might fire. For example, it could easily fire after your =try/catch= block as
+   completed execution.
 
-   Node v12 has introduced some experimental features to make working with
-   Events and Promises a little easier. At this stage, we are not using these
-   features because they are experimental and because it would mean you cannot
-   use this module with Node v10. Use of these features will likely be examined
-   more closely once they become stable and non-experimental.
+   Things become even more complicated once you mix in Promises. When you define
+   a promise, you have to methods which can be called to fulfil a promise,
+   =resolve= and =reject=. Only one can be called - once you call =resolve=, you
+   cannot call =reject= (well, you can call it, but it won't have any impact on
+   the fulfilment status of the promise). The problem arises when an event, for
+   exmaple an =error= event is fired either after you have resolved a promise or
+   possibly in-between promises. If you don't catch the =error= event, your
+   script will likely crash with an =uncaught exception= error.
 
-   So, what does this mean for this module? The ~ssh2-sftp-client~ module works
-   hard to ensure things work as expected. In most cases, events are handled
-   appropriately. However, there are some edge cases where events may not be
-   handled and you may see an uncaught error exception. The most common place to
-   see this is when you keep an SFTP connection open, but don't use it for some
-   time. When the connection is open, but no methods are active (running), there
-   are no error handlers defined. Should an error event be emitted (for exmaple,
-   because the network connection has been lost), there is no handler and you
-   will get an uncaught error exception.
+   To make matters worse, some servers, particularly servers running on a
+   Windows platform, will raise multiple errors for the same error /event/. For
+   example, when you attempt to connect with a bad username or password, you
+   will get a =All authentication methods have failed= exception. However, under
+   Windows, you will also get a =Connection reset by peer= exception. If we
+   reject the connect promise based on the authentication failure exception,
+   what do we do with the =reset by peer= exception? More critically, what will
+   handle that exception given the promise has already been fulfilled and
+   completed? To make matters worse, it seems that Windows based servers also
+   raise an error event for /non-errors/. For example, when you call the =end()=
+   method, the connection is closed. On windows, this also results in a
+   /connection reset by peer/ error. While it could be argued that the remote
+   server resetting the connection after receiving a disconnect request is not
+   an error, it doesn't change the fact that one is raised and we need to
+   somehow deal with it.
 
-   One way to handle this is to add your own error handler using the on()
-   method. Note however, you need to be careful how many times your error
-   handler is added. If you begin to see a warning about a possible memory leak,
-   it is an indication your error handler is being added multiple times (Node
-   will generate this warning if it finds more than 11 listeners attached to an
-   event emitter).
+   To handle this, =ssh2-sftp-client= implements a couple of strategies.
+   Firstly, when you call one of the module's methods, it adds =error=, =end=
+   and =close= event listeners which will call the =reject= moethod on the
+   enclosing promise. It also keeps track of whether an error has been handled
+   and if it has, it ignores any subsequent errors until the promise ends.
+   Typically, the first error caught has the most relevant information and any
+   subsequent error events are less critical or informative, so ignoring them
+   has no negative impact. Provided one of the events is raised before the
+   promise is fulfilled, these handlers will consume the event and deal with it
+   appropriately.
 
-   The other issue that can occur is that in some rare cases, the error message
-   you get will be potentially misleading. For example, SFTP servers running on
-   Windows appear to emit an /ECONNRESET/ error in addition to the main error
-   (for example, for failed authentication). This can result in an error which
-   looks like a connection was reset by the remote host when in fact the real
-   error was due to bad authentication (bad password or bad username). This
-   situation can be made even worse by some platforms which deliberately hide
-   the real error for security reasons e.g. does not report an error indicating
-   a bad username because that information can be used to try and identify
-   legitimate usernames. While this module attempts to provide meaningful error
-   messages which can assist developers track down problems, it is a good idea
-   to consider these errors with a grain of salt and verify the error when
-   possible.
+   In testing, it was found that in some situations, particularly during connect
+   operations, subsequent errors fired with a small delay. This prevents the
+   errors from being handled by the event handlers associated with the connect
+   promise. To deal with this, a small 500ms delay has been added to the
+   connect() method, which effectively delays the removal of the event handlers
+   until all events have been caught.
 
+   The other area where additional events are fired is during the end() call. To
+   deal with these events, the =end()= method setus up listeners which will
+   simply ignore additional =error=, =end= and =close= events. It is assumed
+   that once you have called =end()= you really only care about any main error
+   which occurs and no longer care about other errors that may be raised as the
+   connection is terminated.
+
+   In addition to the promise based event handlers, =ssh2-sftp-client= also
+   implements global event handlers which will catch any =error=, =end= or
+   =close= events. Essentially, these global handlers only reset the =sftp=
+   property of the client object, effectively ensuring any subsequent calls are
+   rejected and in the case of an error, send the error to the console.
+
+*** Adding Custom Handlers
+
+    While the above strategies appear to work for the majority of use cases,
+    there are always going to be edge cases which require more flexible or
+    powerful event handling. To support this, the =on()= and =removeListener()=
+    methods are provided. Any event listener added using the =on()= method will
+    be added at the beginning of the list of handlers for that event, ensuring
+    it will be called before any global or promise local events. See the
+    documentation for the =on()= method for details.
+    
 ** Windows Based Servers
 
    It appears that when the sftp server is running on Windows, a /ECONNRESET/

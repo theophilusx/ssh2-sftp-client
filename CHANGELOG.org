@@ -1,5 +1,18 @@
 * Change Logging
 
+** v7.0.1
+   - New version based on ssh2 version 1.2.0
+   - Added some additional path checks to deal with poor error messages and
+     unreliable behaviour when connecting to an sftp server on Windows based
+     platforms.
+   - Added additional tests for local resources (files/directories) to provide
+     better error handling and informative error messages.
+   - Updated README to provide more info on managing exceptions
+   - Changed behaviour of global error handler. This error handler now just logs
+     the error to the console and sets the client.sftp property to undefined to
+     ensure any subsequent calls to client methods fail immediately with an
+     error indicating there is no active connection.
+     
 ** V7.0.0
    - New version based on new SSH2 version 1.1.0.
    - Expand option handling for get() and put() methods *Breaking Change*
