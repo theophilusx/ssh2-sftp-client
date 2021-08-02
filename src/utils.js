@@ -69,15 +69,19 @@ let tempListeners = [];
  */
 function errorListener(client, name, reject) {
   let fn = (err) => {
-    if (!client.errorHandled) {
+    if (client.endCalled || client.errorHandled) {
+      client.debugMsg(`${name}: Ignoring handled error: ${err.message}`);
+    } else {
+      client.debugMsg(`${name}: Handling error: ${err.message}`);
       client.errorHandled = true;
       if (reject) {
+        client.debugMsg(`${name}: handled error with reject`);
         reject(fmtError(err, name, err.code));
       } else {
+        client.debugMsg(`${name}: handling error with throw`);
         throw fmtError(err, name, err.code);
       }
     }
-    client.debugMsg(`Handled Error: ${err.message} ${err.code}`);
   };
   tempListeners.push(['error', fn]);
   return fn;
@@ -85,12 +89,17 @@ function errorListener(client, name, reject) {
 
 function endListener(client, name, reject) {
   let fn = function () {
-    client.debugMsg(`Handled end event for ${name}`);
-    if (!client.endCalled) {
+    if (client.endCalled || client.endHandled) {
+      client.debugMsg(`${name}: Ignoring expected end event`);
+    } else {
+      client.debugMsg(`${name}: Handling end event`);
       client.sftp = undefined;
+      client.endHandled = true;
       if (reject) {
+        client.debugMsg(`${name}: handling end event with reject'`);
         reject(fmtError('Unexpected end event raised', name));
       } else {
+        client.debugMst(`${name}: handling end event with throw`);
         throw fmtError('Unexpected end event raised', name);
       }
     }
@@ -101,12 +110,17 @@ function endListener(client, name, reject) {
 
 function closeListener(client, name, reject) {
   let fn = function () {
-    client.debugMsg(`handled close event for ${name}`);
-    if (!client.endCalled) {
+    if (client.endCalled || client.closeHandled) {
+      client.debugMsg(`${name}: ignoring expected close event`);
+    } else {
+      client.debugMsg(`${name}: handling unexpected close event`);
       client.sftp = undefined;
+      client.closeHandled = true;
       if (reject) {
+        client.debugMsg(`${name}: handling close event with reject`);
         reject(fmtError('Unexpected close event raised', name));
       } else {
+        client.debugMsg(`${name}: handling close event with throw`);
         throw fmtError('Unexpected close event raised', name);
       }
     }
@@ -116,17 +130,15 @@ function closeListener(client, name, reject) {
 }
 
 function addTempListeners(obj, name, reject) {
-  obj.debugMsg(`${name}: Adding end listener`);
+  obj.debugMsg(`${name}: Adding temp event listeners`);
   obj.client.prependListener('end', endListener(obj, name, reject));
-  obj.debugMsg(`${name}: Adding close listener`);
   obj.client.prependListener('close', closeListener(obj, name, reject));
-  obj.debugMsg(`${name}: Adding error listener`);
   obj.client.prependListener('error', errorListener(obj, name, reject));
 }
 
-function removeTempListeners(obj) {
+function removeTempListeners(obj, name) {
+  obj.debugMsg(`${name}: Removing temp event listeners`);
   tempListeners.forEach(([e, fn]) => {
-    obj.debugMsg(`${obj.clientName}: Removing ${e} listener`);
     obj.client.removeListener(e, fn);
   });
   tempListeners = [];
