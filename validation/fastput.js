@@ -10,9 +10,9 @@
 const path = require('path');
 const dotenvPath = path.join(__dirname, '..', '.env');
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
-const {Client} = require('ssh2');
+const { Client } = require('ssh2');
 
 const config = {
   host: process.env.SFTP_SERVER,
@@ -21,7 +21,7 @@ const config = {
   port: process.env.SFTP_PORT || 22,
   debug: (msg) => {
     console.log(msg);
-  }
+  },
 };
 
 const options = {
@@ -41,7 +41,8 @@ const dst = process.argv[3];
 
 let client = new Client();
 
-client.on('ready', () => {
+client
+  .on('ready', () => {
     client.sftp((err, sftp) => {
       if (err) {
         console.error(`SFTP Error: ${err.message}`);
@@ -57,10 +58,14 @@ client.on('ready', () => {
         });
       }
     });
-  }).on('error', function(err) {
+  })
+  .on('error', function (err) {
     console.error(err.message);
-  }).on('end', () => {
+  })
+  .on('end', () => {
     console.log('End event fired');
-  }).on('close', () => {
+  })
+  .on('close', () => {
     console.log('Close event fired');
-  }).connect(config);
+  })
+  .connect(config);

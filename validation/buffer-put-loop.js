@@ -4,9 +4,9 @@ const path = require('path');
 
 const dotenvPath = path.join(__dirname, '..', '.env');
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
-const Client = require('ssh2');
+const { Client } = require('ssh2');
 
 const config = {
   host: process.env.SFTP_SERVER,
@@ -17,7 +17,7 @@ const config = {
     if (msg.startsWith('DEBUG[SFTP]')) {
       console.log(`DEBUG: ${msg}`);
     }
-  }
+  },
 };
 
 const client = new Client();
@@ -32,7 +32,7 @@ const putBuffer = (con, size) => {
   let bufSize = 1024 * size;
   let buf = Buffer.alloc(bufSize);
   let remoteFile = path.join(remotePath, `test-${size}k.dat`);
-  let stream = con.createWriteStream(remoteFile, {encoding: null});
+  let stream = con.createWriteStream(remoteFile, { encoding: null });
   stream.on('error', (err) => {
     console.log('error event fired');
     console.log(`Stream Error: ${err.message}`);

@@ -3,15 +3,15 @@
 const path = require('path');
 const dotenvPath = path.join(__dirname, '..', '.env');
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
-const Client = require('../src/index');
+const { Client } = require('../src/index');
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 async function downloadTest(client, remoteFilePath, localDir, repeat) {
@@ -49,6 +49,6 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.log(err.message);
 });

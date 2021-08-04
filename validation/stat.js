@@ -7,15 +7,15 @@ const path = require('path');
 
 const dotenvPath = path.join(__dirname, '..', '.env');
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
-const Client = require('ssh2');
+const { Client } = require('ssh2');
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 const targetPath = process.argv[2];

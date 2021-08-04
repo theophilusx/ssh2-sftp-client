@@ -4,15 +4,15 @@ const path = require('path');
 
 const dotenvPath = path.join(__dirname, '..', '.env');
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
-const Client = require('ssh2');
+const { Client } = require('ssh2');
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 const client = new Client();
@@ -26,7 +26,7 @@ client
       if (err) {
         console.log(`Error: ${err.message}`);
       } else {
-        let stream = sftp.createWriteStream(remotePath, {encoding: null});
+        let stream = sftp.createWriteStream(remotePath, { encoding: null });
         stream.on('error', (err) => {
           console.log(`Stream Error: ${err.message}`);
           client.end();
