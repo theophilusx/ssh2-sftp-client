@@ -13,6 +13,7 @@ env-turing
 env-vbox
 env-turing2
 env-win10
+env-mac
 .log
 .vscode
 mate-vbox

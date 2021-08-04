@@ -11,6 +11,7 @@ env-vbox
 env-vbox2
 env-win10
 env-win
+env-mac
 .eslintrc.js
 .mocharc.js
 .indium.json
