@@ -6,7 +6,7 @@
   - [Specifying Paths](#sec-5-1)
   - [Methods](#sec-5-2)
     - [new SftpClient(name) ===> SFTP client object](#sec-5-2-1)
-    - [connect(config) ===> SFTPstream](#sec-5-2-2)
+    - [connect(config) ===> SFTP object](#sec-5-2-2)
     - [list(path, pattern) ==> Array[object]](#sec-5-2-3)
     - [exists(path) ==> boolean](#sec-5-2-4)
     - [stat(path) ==> object](#sec-5-2-5)
@@ -174,7 +174,7 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
       });
     ```
 
-### connect(config) ===> SFTPstream<a id="sec-5-2-2"></a>
+### connect(config) ===> SFTP object<a id="sec-5-2-2"></a>
 
 Connect to an sftp server. Full documentation for connection options is available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
 
@@ -1319,6 +1319,8 @@ Perhaps the best assistance is a minimal reproducible example of the issue. Once
 # Pull Requests<a id="sec-11"></a>
 
 Pull requests are always welcomed. However, please ensure your changes pass all tests and if your adding a new feature, that tests for that feature are included. Likewise, for new features or enhancements, please include any relevant documentation updates.
+
+**Note**: The `README.md` file is generated from the `README.org` file. Therefore, any documentation updates or fixes need to be made to the `README.org` file. This file is *tangled* using `Emacs` org mode. If you don't use Emacs or org-mode, don't be too concerned. The org-mode syntax is straight-forward and similar to *markdown*. I will verify any updates to `README.org` and generate a new `README.md` when necessary. The main point to note is that any changes made directly to `README.md` will not persist and will be lost when a new version is generated, so don't modify that file.
 
 This module will adopt a standard semantic versioning policy. Please indicate in your pull request what level of change it represents i.e.
 
