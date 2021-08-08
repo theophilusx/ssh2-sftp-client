@@ -693,6 +693,7 @@ class SftpClient {
       if (typeof localSrc === 'string') {
         const localCheck = haveLocalAccess(localSrc);
         if (!localCheck.status) {
+          this.debugMsg(`put: local source check error ${localCheck.details}`);
           return reject(
             fmtError(
               `Bad path: ${localSrc}: ${localCheck.details}`,
@@ -709,9 +710,11 @@ class SftpClient {
           options.writeStreamOptions ? options.writeStreamOptions : {}
         );
         wtr.once('error', (err) => {
+          this.debugMsg(`put: write stream error ${err.message}`);
           reject(fmtError(`${err.message} ${remotePath}`, 'put', err.code));
         });
         wtr.once('finish', () => {
+          this.debugMsg('put: promise resolved');
           resolve(`Uploaded data stream to ${remotePath}`);
         });
         if (localSrc instanceof Buffer) {
@@ -729,6 +732,7 @@ class SftpClient {
             rdr = localSrc;
           }
           rdr.once('error', (err) => {
+            this.debugMsg(`put: read stream error ${err.message}`);
             reject(
               fmtError(
                 `${err.message} ${
