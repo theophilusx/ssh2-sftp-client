@@ -7,7 +7,11 @@
     "type": "git",
     "url": "https://github.com/theophilusx/ssh2-sftp-client"
   },
-  "keywords": ["sftp", "nodejs", "promises"],
+  "keywords": [
+    "sftp",
+    "nodejs",
+    "promises"
+  ],
   "scripts": {
     "test": "mocha",
     "coverage": "nyc npm run test",
@@ -31,7 +35,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "checksum": "^0.1.1",
+    "checksum": "^1.0.0",
     "dotenv": "^10.0.0",
     "mocha": "^9.0.2",
     "moment": "^2.29.1",
