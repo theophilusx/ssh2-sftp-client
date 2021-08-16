@@ -99,7 +99,7 @@ function endListener(client, name, reject) {
         client.debugMsg(`${name}: handling end event with reject'`);
         reject(fmtError('Unexpected end event raised', name));
       } else {
-        client.debugMst(`${name}: handling end event with throw`);
+        client.debugMsg(`${name}: handling end event with throw`);
         throw fmtError('Unexpected end event raised', name);
       }
     }
@@ -157,26 +157,16 @@ function removeTempListeners(obj, name) {
  * @returns {string | boolean} returns a string for object type if it exists, false otherwise
  */
 function localExists(filePath) {
-  try {
-    const stats = fs.statSync(filePath);
-    if (stats.isSymbolicLink()) {
-      return 'l';
-    } else if (stats.isDirectory()) {
-      return 'd';
-    } else if (stats.isSocket()) {
-      return 's';
-    } else if (stats.isFile()) {
-      return '-';
-    } else {
-      throw fmtError(
-        `Bad path: ${filePath}: unsupported file type`,
-        'localExists',
-        errorCode.badPath
-      );
-    }
-  } catch (err) {
+  const stats = fs.statSync(filePath, { throwIfNoEntry: false });
+  if (!stats) {
+    return false;
+  } else if (stats.isDirectory()) {
+    return 'd';
+  } else if (stats.isFile()) {
+    return '-';
+  } else {
     throw fmtError(
-      `Bad path: ${filePath}: not exist`,
+      `Bad path: ${filePath}: target must be a file or directory`,
       'localExists',
       errorCode.badPath
     );
@@ -227,6 +217,12 @@ function haveLocalAccess(filePath, mode = 'r') {
         type: type,
         details: 'permission denied',
         code: -13,
+      };
+    } else if (err.errno === -20) {
+      return {
+        status: false,
+        type: null,
+        details: 'parent not a directory',
       };
     } else {
       throw err;

@@ -1,10 +1,19 @@
 'use strict';
 
+const dotenvPath = __dirname + '/../.env';
+require('dotenv').config({ path: dotenvPath });
+
 const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const utils = require('../src/utils');
+const {
+  config,
+  getConnection,
+  closeConnection,
+} = require('./hooks/global-hooks');
+const fs = require('fs');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -137,5 +146,247 @@ describe('errorListener', function () {
       handler(e);
     };
     return expect(fn).to.throw(/Test2->sftp: A thrown error/);
+  });
+
+  it('No error thrown', function () {
+    let handler = utils.errorListener(client, 'Test3');
+    client.errorHandled = true;
+    let e = utils.fmtError('A thrown error');
+    e.code = 'GENERIC ERROR';
+    let fn = () => {
+      handler(e);
+    };
+    return expect(fn).to.not.throw();
+  });
+
+  it('not error throw 2', function () {
+    let handler = utils.errorListener(client, 'Test4');
+    client.endCalled = true;
+    let e = utils.fmtError('A thrown error');
+    e.code = 'GENERIC ERROR';
+    let fn = () => {
+      handler(e);
+    };
+    return expect(fn).to.not.throw();
+  });
+});
+
+describe('Test endListener', function () {
+  let client = {
+    debugMsg: (msg) => {
+      //console.log(msg);
+      null;
+    },
+  };
+
+  beforeEach(function () {
+    client.errorHandled = false;
+    client.endCalled = false;
+  });
+
+  it('endListener throws error', function () {
+    let handler = utils.endListener(client, 'Test5');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.throw(/Unexpected end event/);
+  });
+
+  it('endListener no error 1', function () {
+    client.errorHandled = true;
+    let handler = utils.endListener(client, 'Test6');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
+
+  it('endListener no error 2', function () {
+    client.endHandled = true;
+    let handler = utils.endListener(client, 'Test7');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
+});
+
+describe('closeHandler tests', function () {
+  let client = {
+    debugMsg: (msg) => {
+      //console.log(msg);
+      null;
+    },
+  };
+
+  beforeEach(function () {
+    client.closeHandled = false;
+    client.endCalled = false;
+  });
+
+  it('closeHandler throws error', function () {
+    let handler = utils.closeListener(client, 'Test8');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.throw('Unexpected close event raised');
+  });
+
+  it('closeHandler not throw 1', function () {
+    let handler = utils.closeListener(client, 'Test9');
+    client.closeHandled = true;
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
+
+  it('closeHandler not throw 2', function () {
+    let handler = utils.closeListener(client, 'Test10');
+    client.endCalled = true;
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
+});
+
+describe('localExists tests', function () {
+  before('setup', function () {
+    fs.symlinkSync(
+      `${config.localUrl}/test-file1.txt`,
+      `${config.localUrl}/test-file1-link.txt`
+    );
+  });
+
+  after('cleanup', function () {
+    fs.rmSync(`${config.localUrl}/test-file1-link.txt`);
+  });
+
+  it('file exists', function () {
+    let path = `${config.localUrl}/test-file1.txt`;
+    return expect(utils.localExists(path)).to.equal('-');
+  });
+
+  it('directory exists', function () {
+    return expect(utils.localExists(config.localUrl)).to.equal('d');
+  });
+
+  it('thow error for bad target', function () {
+    let fn = () => {
+      utils.localExists('/dev/tty');
+    };
+    return expect(fn).to.throw(/Bad path/);
+  });
+});
+
+describe('haveLocalAccess tests', function () {
+  it('have local read access', function () {
+    return expect(
+      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`).status
+    ).to.equal(true);
+  });
+
+  it('have local writ4e access', function () {
+    return expect(
+      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`, 'w').status
+    ).to.equal(true);
+  });
+
+  it('not have local read access', function () {
+    return expect(
+      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`).status
+    ).to.equal(false);
+  });
+
+  it('not have local write access', function () {
+    return expect(
+      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`, 'w').status
+    ).to.equal(false);
+  });
+
+  it('not exist local access', function () {
+    return expect(
+      utils.haveLocalAccess(`${config.localUrl}/not-exist.txt`).status
+    ).to.equal(false);
+  });
+});
+
+describe('haveLocalCreate tests', function () {
+  it('local create with file', function () {
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt`).status
+    ).to.equal(true);
+  });
+
+  it('local create with directory', function () {
+    return expect(utils.haveLocalCreate(config.localUrl).status).to.equal(true);
+  });
+
+  it('local create with non-existing file', function () {
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/no-exist.txt`).status
+    ).to.equal(true);
+  });
+
+  it('local create with no permission', function () {
+    let fn = () => {
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt`);
+    };
+    return expect(fn).to.throw(/Bad path/);
+  });
+
+  it('local create bad dir 1', function () {
+    let fn = () => {
+      utils.haveLocalCreate(`${config.localUrl}/bar/foo.txt`);
+    };
+    return expect(fn).to.throw(/Bad path/);
+  });
+
+  it('local create bad dir 2', function () {
+    let fn = () => {
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt/foo.txt`);
+    };
+    return expect(fn).to.throw(/Bad path/);
+  });
+
+  it('local create bad dir 3', function () {
+    let fn = () => {
+      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt/foo.txt`);
+    };
+    return expect(fn).to.throw(/Bad path/);
+  });
+});
+
+describe('hasConnection tests', function () {
+  let client;
+
+  before('setup', async function () {
+    client = await getConnection();
+  });
+
+  after('cleanup', async function () {
+    if (client.sftp) {
+      await closeConnection(client);
+    }
+  });
+
+  it('has a connection', function () {
+    return expect(utils.haveConnection(client, 'Test1')).to.equal(true);
+  });
+
+  it('no connection throws error', async function () {
+    await client.end();
+    let fn = () => {
+      expect(utils.haveConnection(client, 'Test2'));
+    };
+    return expect(fn).to.throw(/No SFTP connection/);
+  });
+
+  it('Promise rejected', function () {
+    let p = new Promise((resolve, reject) => {
+      utils.haveConnection(client, 'Test3', reject);
+    });
+    return expect(p).to.be.rejectedWith(/No SFTP connection/);
   });
 });
