@@ -330,31 +330,27 @@ describe('haveLocalCreate tests', function () {
   });
 
   it('local create with no permission', function () {
-    let fn = () => {
-      utils.haveLocalCreate(`${config.localUrl}/no-access.txt`);
-    };
-    return expect(fn).to.throw(/Bad path/);
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt`).details
+    ).to.equal('permission denied');
   });
 
   it('local create bad dir 1', function () {
-    let fn = () => {
-      utils.haveLocalCreate(`${config.localUrl}/bar/foo.txt`);
-    };
-    return expect(fn).to.throw(/Bad path/);
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/bar/foo.txt`).status
+    ).to.equal(false);
   });
 
   it('local create bad dir 2', function () {
-    let fn = () => {
-      utils.haveLocalCreate(`${config.localUrl}/no-access.txt/foo.txt`);
-    };
-    return expect(fn).to.throw(/Bad path/);
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt/foo.txt`).status
+    ).to.equal(false);
   });
 
   it('local create bad dir 3', function () {
-    let fn = () => {
-      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt/foo.txt`);
-    };
-    return expect(fn).to.throw(/Bad path/);
+    return expect(
+      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt/foo.txt`).status
+    ).to.equal(false);
   });
 });
 

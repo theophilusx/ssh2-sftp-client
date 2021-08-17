@@ -242,14 +242,29 @@ function haveLocalAccess(filePath, mode = 'r') {
 function haveLocalCreate(filePath) {
   const { status, details, type } = haveLocalAccess(filePath, 'w');
   if (!status && details === 'permission denied') {
-    throw new Error(`Bad path: ${filePath}: permission denied`);
+    //throw new Error(`Bad path: ${filePath}: permission denied`);
+    return {
+      status,
+      details,
+      type,
+    };
   } else if (!status) {
     const dirPath = path.dirname(filePath);
     const localCheck = haveLocalAccess(dirPath, 'w');
     if (localCheck.status && localCheck.type !== 'd') {
-      throw new Error(`Bad path: ${dirPath}: not a directory`);
+      //throw new Error(`Bad path: ${dirPath}: not a directory`);
+      return {
+        status: false,
+        details: `${dirPath}: not a directory`,
+        type: null,
+      };
     } else if (!localCheck.status) {
-      throw new Error(`Bad path: ${dirPath}: ${localCheck.details}`);
+      //throw new Error(`Bad path: ${dirPath}: ${localCheck.details}`);
+      return {
+        status: localCheck.status,
+        details: `${dirPath}: ${localCheck.details}`,
+        type: null,
+      };
     } else {
       return {
         status: true,
