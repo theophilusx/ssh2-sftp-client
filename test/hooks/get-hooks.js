@@ -1,7 +1,9 @@
 'use strict';
 
-const {makeLocalPath} = require('./global-hooks');
+const { makeLocalPath } = require('./global-hooks');
 const fs = require('fs');
+
+const rmdir = fs.rmSync ? fs.rmSync : fs.rmdirSync;
 
 async function getSetup(client, sftpUrl, localUrl) {
   try {
@@ -9,18 +11,21 @@ async function getSetup(client, sftpUrl, localUrl) {
       Buffer.from('Get promise test'),
       sftpUrl + '/get-promise.txt',
       {
-        encoding: 'utf8'
+        encoding: 'utf8',
       }
     );
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
       sftpUrl + '/get-large.txt',
-      {encoding: 'utf8'}
+      { encoding: 'utf8' }
     );
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file2.txt.gz'),
       sftpUrl + '/get-gzip.txt.gz'
     );
+    let noPermDir = makeLocalPath(localUrl, 'no-perm-dir');
+    fs.mkdirSync(noPermDir);
+    fs.chmodSync(noPermDir, 0o111);
     return true;
   } catch (err) {
     console.error(`getSetup: ${err.message}`);
@@ -40,6 +45,9 @@ async function getCleanup(client, sftpUrl, localUrl) {
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative2-gzip.txt.gz'));
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative3-gzip.txt.gz'));
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative4-gzip.txt.gz'));
+    let noPermDir = makeLocalPath(localUrl, 'no-perm-dir');
+    fs.chmodSync(noPermDir, 0o666);
+    fs.rmdirSync(noPermDir);
     return true;
   } catch (err) {
     console.error(`getCleanup: ${err.message}`);
@@ -49,5 +57,5 @@ async function getCleanup(client, sftpUrl, localUrl) {
 
 module.exports = {
   getSetup,
-  getCleanup
+  getCleanup,
 };

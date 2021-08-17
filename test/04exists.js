@@ -4,7 +4,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -48,5 +48,9 @@ describe('exists() method tests', async () => {
     return expect(sftp.exists('just/a/really/bad/path')).to.eventually.equal(
       false
     );
+  });
+
+  it('exists returns false for non-file/non-dir', function () {
+    return expect(sftp.exists('/dev/tty')).to.eventually.equal(false);
   });
 });

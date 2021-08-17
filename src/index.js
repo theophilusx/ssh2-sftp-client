@@ -314,11 +314,7 @@ class SftpClient {
       return _stat(absPath);
     } catch (err) {
       this._resetEventFlags();
-      if (err.custom) {
-        throw err;
-      } else {
-        throw fmtError(err, 'stat', err.code);
-      }
+      throw err.custom ? err : fmtError(err, 'stat', err.code);
     }
   }
 
@@ -369,17 +365,12 @@ class SftpClient {
           this.debugMsg(`exists: throw error ${err.message} ${err.code}`);
           throw err;
         }
-      } else {
-        this.debugMsg(`exists: ${remotePath} = false`);
-        return false;
       }
+      this.debugMsg(`exists: default ${remotePath} = false`);
+      return false;
     } catch (err) {
       this._resetEventFlags();
-      if (err.custom) {
-        throw err;
-      } else {
-        throw fmtError(err, 'exists', err.code);
-      }
+      throw err.custom ? err : fmtError(err, 'exists', err.code);
     }
   }
 
@@ -842,6 +833,12 @@ class SftpClient {
               let error = new Error(`Bad path: ${p} permission denied`);
               error.code = errorCode.badPath;
               reject(error);
+            } else if (err.code === 2) {
+              let error = new Error(
+                `Bad path: ${p} parent not a directory or not exist`
+              );
+              error.code = errorCode.badPath;
+              reject(error);
             } else {
               reject(err);
             }
@@ -930,11 +927,7 @@ class SftpClient {
       return _rmdir(absPath);
     } catch (err) {
       this._resetEventFlags();
-      if (err.custom) {
-        throw err;
-      } else {
-        throw fmtError(err, 'rmdir', err.code);
-      }
+      throw err.custom ? err : fmtError(err, 'rmdir', err.code);
     }
   }
 
@@ -1134,11 +1127,7 @@ class SftpClient {
       return `${srcDir} uploaded to ${dstDir}`;
     } catch (err) {
       this._resetEventFlags();
-      if (err.custom) {
-        throw err;
-      } else {
-        throw fmtError(err, 'uploadDir');
-      }
+      throw err.custom ? err : fmtError(err, 'uploadDir');
     }
   }
 
@@ -1195,11 +1184,7 @@ class SftpClient {
       return `${srcDir} downloaded to ${dstDir}`;
     } catch (err) {
       this._resetEventFlags();
-      if (err.custom) {
-        throw err;
-      } else {
-        throw fmtError(err, 'downloadDir', err.code);
-      }
+      throw err.custom ? err : fmtError(err, 'downloadDir', err.code);
     }
   }
 

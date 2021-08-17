@@ -14,6 +14,8 @@ const fs = require('fs');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
+const rmdir = fs.rmSync ? fs.rmSync : fs.rmdirSync;
+
 describe('uploadDir tests', function () {
   let sftp;
 
@@ -146,12 +148,18 @@ describe('Download directory', function () {
 
   before('Download directory setup hook', async function () {
     sftp = await getConnection();
+    let localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    fs.mkdirSync(localDir, { recursive: true });
+    fs.chmodSync(localDir, 0o111);
     return true;
   });
 
   after('download directory clenaup hook', async function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test2');
-    fs.rmdirSync(localDir, { recursive: true });
+    rmdir(localDir, { recursive: true });
+    localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    fs.chmodSync(localDir, 0o666);
+    rmdir(localDir, { recursive: true });
     await sftp.end();
     return true;
   });
@@ -187,6 +195,14 @@ describe('Download directory', function () {
       'Bad path'
     );
   });
+
+  it('Bad dst permissions', function () {
+    let localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
+      /Bad path/
+    );
+  });
 });
 
 describe('Partial download dir', function () {
@@ -195,7 +211,7 @@ describe('Partial download dir', function () {
   before('Download directory setup hook', async function () {
     sftp = await getConnection();
     let localDir = makeLocalPath(config.localUrl, 'download-test', 'sub1');
-    fs.rmdirSync(localDir, { recursive: true });
+    rmdir(localDir, { recursive: true });
     return true;
   });
 
@@ -203,7 +219,7 @@ describe('Partial download dir', function () {
     let remoteDir = `${config.sftpUrl}/upload-test`;
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     await sftp.rmdir(remoteDir, true);
-    fs.rmdirSync(localDir, { recursive: true });
+    rmdir(localDir, { recursive: true });
     await sftp.end();
     return true;
   });

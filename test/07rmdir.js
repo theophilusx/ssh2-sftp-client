@@ -4,9 +4,9 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {rmdirSetup} = require('./hooks/rmdir-hooks');
-const {lastRemoteDir} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
+const { rmdirSetup } = require('./hooks/rmdir-hooks');
+const { lastRemoteDir } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -31,7 +31,13 @@ describe('rmdir() method tests', function () {
     );
   });
 
-  it('rmdir on non-existent directory should be rejected', function () {
+  it('rmdir on non-existent directory w/o recursion should be rejected', function () {
+    return expect(
+      sftp.rmdir(`${config.sftpUrl}/rmdir-not-exist`)
+    ).to.be.rejectedWith('No such file');
+  });
+
+  it('rmdir on non-existent directory w/ recursion should be rejected', function () {
     return expect(
       sftp.rmdir(`${config.sftpUrl}/rmdir-not-exist`, true)
     ).to.be.rejectedWith('No such file');

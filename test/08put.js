@@ -5,9 +5,9 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const stream = require('stream');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {putCleanup} = require('./hooks/put-hooks');
-const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
+const { putCleanup } = require('./hooks/put-hooks');
+const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -45,16 +45,32 @@ describe('put() method tests', function () {
     return expect(stats.size).to.equal(localStats.size);
   });
 
+  it('put with stream options', async function () {
+    let options = {
+      readStreamOptions: {
+        autoClose: false,
+      },
+      writeStreamOptions: {
+        autoClose: false,
+      },
+    };
+    let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remotePath = `${config.sftpUrl}/put-large.txt`;
+    await sftp.put(localPath, remotePath, options);
+    let localStats = fs.statSync(localPath);
+    let stats = await sftp.stat(remotePath);
+    return expect(stats.size).to.equal(localStats.size);
+  });
   it('put data from buffer into remote file', function () {
     return sftp
       .put(Buffer.from('hello'), `${config.sftpUrl}/put-buffer.txt`, {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/put-buffer.txt`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 5});
+        return expect(stats).to.containSubset({ size: 5 });
       });
   });
 
@@ -66,13 +82,13 @@ describe('put() method tests', function () {
 
     return sftp
       .put(str2, config.sftpUrl + '/put-stream.txt', {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       .then(() => {
         return sftp.stat(`${config.sftpUrl}/put-stream.txt`);
       })
       .then((stats) => {
-        return expect(stats).to.containSubset({size: 14});
+        return expect(stats).to.containSubset({ size: 14 });
       });
   });
 

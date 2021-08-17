@@ -6,9 +6,10 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const fs = require('fs');
 const zlib = require('zlib');
-const {config, getConnection} = require('./hooks/global-hooks');
-const {getSetup, getCleanup} = require('./hooks/get-hooks');
-const {makeLocalPath, lastRemoteDir} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
+const { getSetup, getCleanup } = require('./hooks/get-hooks');
+const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
+const { SSL_OP_NETSCAPE_CHALLENGE_BUG } = require('constants');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -46,7 +47,7 @@ describe('get() method tests', function () {
     let remotePath = config.sftpUrl + '/get-large.txt';
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
-      encoding: null
+      encoding: null,
     });
     await sftp.get(remotePath, out);
     let stats = await sftp.stat(remotePath);
@@ -59,7 +60,7 @@ describe('get() method tests', function () {
     let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
-      encoding: null
+      encoding: null,
     });
     await sftp.get(remotePath, out);
     let stats = await sftp.stat(remotePath);
@@ -73,7 +74,7 @@ describe('get() method tests', function () {
     let gunzip = zlib.createGunzip();
     let out = fs.createWriteStream(localPath, {
       flags: 'w',
-      encoding: null
+      encoding: null,
     });
     gunzip.pipe(out);
     await sftp.get(remotePath, gunzip);
@@ -124,5 +125,13 @@ describe('get() method tests', function () {
     let stats = await sftp.stat(remotePath);
     let localStats = fs.statSync(localPath);
     return expect(localStats.size).to.equal(stats.size);
+  });
+
+  it('get with no permission on destination dir', function () {
+    let localPath = makeLocalPath(config.localUrl, 'no-perm-dir', 'foo.txt');
+    let remotePath = `${config.sftpUrl}/get-gzip.txt.gz`;
+    return expect(sftp.get(remotePath, localPath)).to.be.rejectedWith(
+      /Bad path/
+    );
   });
 });

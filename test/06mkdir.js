@@ -15,6 +15,12 @@ describe('mkdir() method tests', function () {
 
   before('mkdir() setup hook', async function () {
     sftp = await getConnection();
+    await sftp.put(
+      Buffer.from('Bad dir file'),
+      `${config.sftpUrl}/bad-dir-file`
+    );
+    await sftp.mkdir(`${config.sftpUrl}/bad-perm-dir`);
+    await sftp.chmod(`${config.sftpUrl}/bad-perm-dir`, 0o111);
     return true;
   });
 
@@ -32,8 +38,26 @@ describe('mkdir() method tests', function () {
 
   it('mkdir without recursive option and bad path should be rejected', function () {
     return expect(sftp.mkdir(`${config.sftpUrl}/mocha3/mm`)).to.be.rejectedWith(
-      /No such file/
+      /Bad path/
     );
+  });
+
+  it('mkdir without recursive option and file in path shold be rejected', function () {
+    return expect(
+      sftp.mkdir(`${config.sftpUrl}/bad-dir-file/foo`)
+    ).to.be.rejectedWith(/Bad path/);
+  });
+
+  it('mkdir with recursion and file in path should be rejected', function () {
+    return expect(
+      sftp.mkdir(`${config.sftpUrl}/bad-dir-file/foo`, true)
+    ).to.be.rejectedWith(/Bad path/);
+  });
+
+  it('mkdir without permission on parent throws error', function () {
+    return expect(
+      sftp.mkdir(`${config.sftpUrl}/bad-perm-dir/foo`)
+    ).to.be.rejectedWith(/Permission denied/);
   });
 
   it('mkdir with recursive option should create all directories', function () {
