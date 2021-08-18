@@ -1,17 +1,13 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/theophilusx/ssh2-sftp-client"
   },
-  "keywords": [
-    "sftp",
-    "nodejs",
-    "promises"
-  ],
+  "keywords": ["sftp", "nodejs", "promises"],
   "scripts": {
     "test": "mocha",
     "coverage": "nyc npm run test",

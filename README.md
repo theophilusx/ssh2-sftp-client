@@ -40,6 +40,7 @@
   - [How can I connect through a Socks Proxy](#sec-7-4)
   - [Timeout while waiting for handshake or handshake errors](#sec-7-5)
   - [How can I limit upload/download speed](#sec-7-6)
+  - [Connection hangs or fails for larger files](#sec-7-7)
 - [Examples](#sec-8)
 - [Troubleshooting](#sec-9)
   - [Common Errors](#sec-9-1)
@@ -60,7 +61,7 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
 
-Current stable release is **v7.0.0**.
+Current stable release is **v7.0.2**.
 
 Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
 
@@ -94,7 +95,7 @@ sftp.connect({
 
 # Version 7.x Changes<a id="sec-4"></a>
 
--   This version is based on version 1.1.0 of `ssh2`. This version of `ssh2` is a complete re-write of the `ssh2` library. This re-write addresses issues encountered when using node v14 as well as some design weaknesses in the previous 0.8.x version.
+-   This version is based on version 1.x.x of `ssh2`. This version of `ssh2` is a complete re-write of the `ssh2` library. This re-write addresses issues encountered when using node v14 as well as some design weaknesses in the previous 0.8.x version.
 
 -   **Breaking Change** Expanded option handling for `get()` and `put()` methods. A number of use cases were identified where setting specific options on the read and write streams and the pipe operation are necessary. For example, disabling `autoClose` on streams or the `end` event in pipes. The `options` argument for `get()` and `put()` calls now supports properties for `readStreamOptions`, `writeStreamOptions` and `pipeOptions`. Note that options are only applied to streams created by the `get()` and `put()` methods. Streams passed into these methods are under the control of the client code and therefore cannot have options supplied in arguments to those streams (you would apply such options when you create the streams). Options are typically only necessary in special use cases. Most of the time, no options are required. However, if you are currently using options to either `put()` or `get()`, you will need to update your code to map these options to the new structure.
 
@@ -1106,6 +1107,8 @@ client.connect({
 
 Some users have encountered the error 'Timeout while waiting for handshake' or 'Handshake failed, no matching client->server ciphers. This is often due to the client not having the correct configuration for the transport layer algorithms used by ssh2. One of the connect options provided by the ssh2 module is `algorithm`, which is an object that allows you to explicitly set the key exchange, ciphers, hmac and compression algorithms as well as server host key used to establish the initial secure connection. See the SSH2 documentation for details. Getting these parameters correct usually resolves the issue.
 
+When encountering this type of problem, one worthwhile approach is to use openSSH's CLI sftp program with the `-v` switch to raise loggin levels. This will show you what algorithms the CLI is using. You can then use this information to match the names with the accepted algorithm names documented in the `ssh2` README to set the properties in the `algorithms` object.
+
 ## How can I limit upload/download speed<a id="sec-7-6"></a>
 
 If you want to limit the amount of bandwidth used during upload/download of data, you can use a stream to limit throughput. The following example was provided by *kennylbj*. Note that there is a caveat that we must set the `autoClose` flag to false to avoid calling an extra `_read()` on a closed stream that may cause \_get Permission Denied error in ssh2-streams.
@@ -1142,6 +1145,14 @@ try {
   await client.end();
 }
 ```
+
+## Connection hangs or fails for larger files<a id="sec-7-7"></a>
+
+This was contributed by Ladislav Jacho. Thanks.
+
+A symptom of this issue is that you are able to upload small files, but uploading larger ones fail. You probably have an MTU/fragmentation problem. For each network interface on both client and server set the MTU to 576, e.g. `ifconfig eth0 mtu 576`. If that works, you need to find the largest MTU which will work for your network. An MTU which is too small will adversely affect throughput speed. A common value to use is an MTU of 1400.
+
+For more explanation, see [issue #342](https://github.com/theophilusx/ssh2-sftp-client#342).
 
 # Examples<a id="sec-8"></a>
 
@@ -1343,3 +1354,4 @@ Thanks to the following for their contributions -
 -   **teenangst:** Contributed fix for error code 4 in stat() method
 -   **kennylbj:** Contributed example of using a throttle stream to limit upload/download bandwidth.
 -   **anton-erofeev:** Documentation fix
+-   **Ladislav Jacho:** Contributed solution explanation for connections hanging when transferring larger files.

@@ -9,7 +9,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v7.0.0*.
+Current stable release is *v7.0.2*.
 
 Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
 
@@ -43,7 +43,7 @@ npm install ssh2-sftp-client
 
 * Version 7.x Changes
 
-- This version is based on version 1.1.0 of ~ssh2~. This version of ~ssh2~ is a
+- This version is based on version 1.x.x of ~ssh2~. This version of ~ssh2~ is a
   complete re-write of the ~ssh2~ library. This re-write addresses issues
   encountered when using node v14 as well as some design weaknesses in the
   previous 0.8.x version.
@@ -1355,6 +1355,12 @@ host key used to establish the initial secure connection. See the SSH2
 documentation for details. Getting these parameters correct usually resolves the
 issue.
 
+When encountering this type of problem, one worthwhile approach is to use
+openSSH's CLI sftp program with the =-v= switch to raise loggin levels. This
+will show you what algorithms the CLI is using. You can then use this
+information to match the names with the accepted algorithm names documented in
+the =ssh2= README to set the properties in the =algorithms= object.
+
 ** How can I limit upload/download speed
 
    If you want to limit the amount of bandwidth used during upload/download of
@@ -1396,6 +1402,19 @@ issue.
        await client.end();
      }
    #+end_src
+** Connection hangs or fails for larger files
+
+ This was contributed by Ladislav Jacho. Thanks. 
+
+ A symptom of this issue is that you are able to upload small files, but
+ uploading larger ones fail. You probably have an MTU/fragmentation problem. For
+ each network interface on both client and server set the MTU to 576, e.g.
+ =ifconfig eth0 mtu 576=. If that works, you need to find the largest MTU which
+ will work for your network. An MTU which is too small will adversely affect
+ throughput speed. A common value to use is an MTU of 1400.
+ 
+ For more explanation, see [[https://github.com/theophilusx/ssh2-sftp-client#342][issue #342]].
+ 
 * Examples
 
 I have started collecting example scripts in the example directory of the
@@ -1743,3 +1762,5 @@ Thanks to the following for their contributions -
 - kennylbj :: Contributed example of using a throttle stream to limit
   upload/download bandwidth.
 - anton-erofeev :: Documentation fix
+- Ladislav Jacho :: Contributed solution explanation for connections hanging
+  when transferring larger files.

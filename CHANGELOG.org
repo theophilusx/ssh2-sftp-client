@@ -1,5 +1,10 @@
 * Change Logging
 
+** v7.0.2
+   - Bump ssh2 dependency to ssh2 v1.3.0
+   - Minor cleanup to error messages
+   - Update README
+     
 ** v7.0.1
    - New version based on ssh2 version 1.2.0
    - Added some additional path checks to deal with poor error messages and
