@@ -1413,7 +1413,7 @@ the =ssh2= README to set the properties in the =algorithms= object.
  will work for your network. An MTU which is too small will adversely affect
  throughput speed. A common value to use is an MTU of 1400.
  
- For more explanation, see [[https://github.com/theophilusx/ssh2-sftp-client#342][issue #342]].
+ For more explanation, see [[https://github.com/theophilusx/ssh2-sftp-client/issues/342][issue #342]].
  
 * Examples
 

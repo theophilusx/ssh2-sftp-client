@@ -1152,7 +1152,7 @@ This was contributed by Ladislav Jacho. Thanks.
 
 A symptom of this issue is that you are able to upload small files, but uploading larger ones fail. You probably have an MTU/fragmentation problem. For each network interface on both client and server set the MTU to 576, e.g. `ifconfig eth0 mtu 576`. If that works, you need to find the largest MTU which will work for your network. An MTU which is too small will adversely affect throughput speed. A common value to use is an MTU of 1400.
 
-For more explanation, see [issue #342](https://github.com/theophilusx/ssh2-sftp-client#342).
+For more explanation, see [issue #342](https://github.com/theophilusx/ssh2-sftp-client/issues/342).
 
 # Examples<a id="sec-8"></a>
 
