@@ -716,7 +716,7 @@ class SftpClient {
             this.debugMsg(`put source is a file path: ${localSrc}`);
             rdr = fs.createReadStream(
               localSrc,
-              options.readStreamOptions ? options.readStreamOptons : {}
+              options.readStreamOptions ? options.readStreamOptions : {}
             );
           } else {
             this.debugMsg('put source is a stream');
