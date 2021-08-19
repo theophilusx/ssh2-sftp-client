@@ -1355,3 +1355,4 @@ Thanks to the following for their contributions -
 -   **kennylbj:** Contributed example of using a throttle stream to limit upload/download bandwidth.
 -   **anton-erofeev:** Documentation fix
 -   **Ladislav Jacho:** Contributed solution explanation for connections hanging when transferring larger files.
+-   **Emma Milner:** Contributed fix for put() bug
