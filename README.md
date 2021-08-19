@@ -61,7 +61,7 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
 
-Current stable release is **v7.0.2**.
+Current stable release is **v7.0.3**.
 
 Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
 

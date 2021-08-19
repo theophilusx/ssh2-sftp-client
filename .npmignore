@@ -28,3 +28,4 @@ coverage
 .nyc_output
 .nycrc.json
 .eslintrc.json
+CHANGELOG.org
