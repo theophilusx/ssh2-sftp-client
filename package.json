@@ -7,11 +7,15 @@
     "type": "git",
     "url": "https://github.com/theophilusx/ssh2-sftp-client"
   },
-  "keywords": ["sftp", "nodejs", "promises"],
+  "keywords": [
+    "sftp",
+    "nodejs",
+    "promises"
+  ],
   "scripts": {
     "test": "mocha",
     "coverage": "nyc npm run test",
-    "lint": "eslint \"src/**/*.js\" --quiet"
+    "lint": "eslint \"src/**/*.js\""
   },
   "author": "Tim Cross",
   "email": "theophilusx@gmail.com",
@@ -33,9 +37,15 @@
     "chai-subset": "^1.6.0",
     "checksum": "^1.0.0",
     "dotenv": "^10.0.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-unicorn": "^35.0.0",
     "mocha": "^9.0.2",
     "moment": "^2.29.1",
     "nyc": "^15.1.0",
+    "prettier": "^2.3.2",
     "through2": "^4.0.2",
     "winston": "^3.3.3"
   }
