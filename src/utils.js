@@ -203,29 +203,29 @@ function haveLocalAccess(filePath, mode = 'r') {
       code: 0,
     };
   } catch (err) {
-    if (err.errno === -2) {
-      return {
-        status: false,
-        type: null,
-        details: 'not exist',
-        code: -2,
-      };
-    } else if (err.errno === -13) {
-      const type = localExists(filePath);
-      return {
-        status: false,
-        type: type,
-        details: 'permission denied',
-        code: -13,
-      };
-    } else if (err.errno === -20) {
-      return {
-        status: false,
-        type: null,
-        details: 'parent not a directory',
-      };
-    } else {
-      throw err;
+    switch (err.errno) {
+      case -2:
+        return {
+          status: false,
+          type: null,
+          details: 'not exist',
+          code: -2,
+        };
+      case -13:
+        return {
+          status: false,
+          type: localExists(filePath),
+          details: 'permission denied',
+          code: -13,
+        };
+      case -20:
+        return {
+          status: false,
+          type: null,
+          details: 'parent not a directory',
+        };
+      default:
+        throw err;
     }
   }
 }
@@ -281,10 +281,10 @@ async function normalizeRemotePath(client, aPath) {
   try {
     if (aPath.startsWith('..')) {
       let root = await client.realPath('..');
-      return root + client.remotePathSep + aPath.substring(3);
+      return root + client.remotePathSep + aPath.slice(3);
     } else if (aPath.startsWith('.')) {
       let root = await client.realPath('.');
-      return root + client.remotePathSep + aPath.substring(2);
+      return root + client.remotePathSep + aPath.slice(2);
     }
     return aPath;
   } catch (err) {
