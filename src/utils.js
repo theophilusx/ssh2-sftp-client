@@ -225,7 +225,11 @@ function haveLocalAccess(filePath, mode = 'r') {
           details: 'parent not a directory',
         };
       default:
-        throw err;
+        return {
+          status: false,
+          type: null,
+          details: err.message,
+        };
     }
   }
 }
