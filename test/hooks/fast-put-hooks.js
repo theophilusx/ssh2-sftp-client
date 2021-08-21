@@ -1,15 +1,11 @@
 'use strict';
 
 const fs = require('fs');
-const {join} = require('path');
+const { join } = require('path');
 
 function fastPutSetup(localUrl) {
-  try {
-    fs.mkdirSync(join(localUrl, 'fp-dir'));
-    return true;
-  } catch (err) {
-    return true;
-  }
+  fs.mkdirSync(join(localUrl, 'fp-dir'));
+  return true;
 }
 
 async function fastPutCleanup(client, sftpUrl, localUrl) {
@@ -31,5 +27,5 @@ async function fastPutCleanup(client, sftpUrl, localUrl) {
 
 module.exports = {
   fastPutSetup,
-  fastPutCleanup
+  fastPutCleanup,
 };

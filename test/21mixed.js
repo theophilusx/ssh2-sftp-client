@@ -52,20 +52,16 @@ describe('Mixed tests', function () {
       );
     });
 
-    if (config.testServer !== 'windows') {
-      it("realPath returns '' for non-existing path", function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
+    it('realPath returns empty for non-existing path', function () {
+      return config.testServer !== 'windows'
+        ? expect(
             sftp.realPath(
               config.sftpUrl +
                 '/path-test-dir/path-not-exist-dir/path-not-exist-file.txt'
             )
-          ).to.eventually.equal('');
-        } else {
-          return expect(true).to.equal(true);
-        }
-      });
-    }
+          ).to.eventually.equal('')
+        : expect(true).to.equal(true);
+    });
   });
 
   describe('list tests', function () {
@@ -198,7 +194,7 @@ describe('Mixed tests', function () {
     });
   });
 
-  describe('Mixed stat tests', async () => {
+  describe('Mixed stat tests', function () {
     before('stat setup hook', async function () {
       await hooks.statSetup(sftp, config.sftpUrl);
       return true;

@@ -56,7 +56,7 @@ describe('fmtError() tests', function () {
   });
 
   it('fmtError handles null error', function () {
-    return expect(utils.fmtError(undefined)).to.containSubset({
+    return expect(utils.fmtError()).to.containSubset({
       message: 'sftp: Undefined error - probably a bug!',
       code: 'ERR_GENERIC_CLIENT',
     });
@@ -115,7 +115,7 @@ describe('fmtError() tests', function () {
 
 describe('errorListener', function () {
   let client = {
-    debugMsg: (msg) => {
+    debugMsg: () => {
       //console.log(msg);
       null;
     },
@@ -173,7 +173,7 @@ describe('errorListener', function () {
 
 describe('Test endListener', function () {
   let client = {
-    debugMsg: (msg) => {
+    debugMsg: () => {
       //console.log(msg);
       null;
     },
@@ -213,7 +213,7 @@ describe('Test endListener', function () {
 
 describe('closeHandler tests', function () {
   let client = {
-    debugMsg: (msg) => {
+    debugMsg: () => {
       //console.log(msg);
       null;
     },
@@ -273,6 +273,7 @@ describe('localExists tests', function () {
   });
 
   it('thow error for bad target', function () {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     let fn = () => {
       utils.localExists('/dev/tty');
     };

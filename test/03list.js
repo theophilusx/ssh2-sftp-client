@@ -4,12 +4,12 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('list() method tests', async function () {
+describe('list() method tests', function () {
   let sftp;
 
   before('list() test setup hook', async function () {
@@ -41,7 +41,7 @@ describe('list() method tests', async function () {
   it('list existing dir returns details of each entry', async function () {
     let data = await sftp.list('.');
 
-    return expect(data).to.containSubset([{type: 'd', name: 'testServer'}]);
+    return expect(data).to.containSubset([{ type: 'd', name: 'testServer' }]);
   });
 
   it('list with relative path', async function () {
@@ -51,6 +51,6 @@ describe('list() method tests', async function () {
 
   it('list with "." path', async function () {
     let data = await sftp.list('.');
-    return expect(data).to.containSubset([{type: 'd', name: 'testServer'}]);
+    return expect(data).to.containSubset([{ type: 'd', name: 'testServer' }]);
   });
 });

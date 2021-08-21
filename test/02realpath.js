@@ -3,11 +3,11 @@
 const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
-const {config, getConnection} = require('./hooks/global-hooks');
+const { config, getConnection } = require('./hooks/global-hooks');
 
 chai.use(chaiAsPromised);
 
-describe('Path tests', async function () {
+describe('Path tests', function () {
   let sftp;
 
   before('realpath() setup hook', async function () {
@@ -45,8 +45,7 @@ describe('Path tests', async function () {
   it('Resolve "../testServer" relative path', async function () {
     let p = await sftp.realPath('.');
     let pComponents = p.split('/');
-    let rslt =
-      pComponents.slice(0, pComponents.length - 1).join('/') + '/testServer';
+    let rslt = pComponents.slice(0, -1).join('/') + '/testServer';
     return expect(sftp.realPath('../testServer')).to.eventually.equal(rslt);
   });
 

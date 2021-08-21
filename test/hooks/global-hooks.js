@@ -2,17 +2,17 @@
 
 const dotenvPath = __dirname + '/../../.env';
 
-require('dotenv').config({path: dotenvPath});
+require('dotenv').config({ path: dotenvPath });
 
 const Client = require('../../src/index.js');
-const {join} = require('path');
+const { join } = require('path');
 const winston = require('winston');
 
 const logger = winston.createLogger({
   level: 'debug',
   transports: [
-    new winston.transports.File({filename: 'debug.log', level: 'debug'})
-  ]
+    new winston.transports.File({ filename: 'debug.log', level: 'debug' }),
+  ],
 });
 
 function hasListener(emitter, eventName, listenerName) {
@@ -46,7 +46,7 @@ const config = {
   sftpUrl: process.env.SFTP_URL,
   delay: process.env.TEST_DELAY || 500,
   retries: 1,
-  testServer: process.env.TEST_SERVER
+  testServer: process.env.TEST_SERVER,
 };
 
 if (process.env.DEBUG === 'true') {
@@ -83,7 +83,7 @@ const lastRemoteDir = (p) => {
   return dirs[dirs.length - 1];
 };
 
-var con = undefined;
+var con;
 
 const getConnection = async () => {
   try {
@@ -137,5 +137,5 @@ module.exports = {
   splitRemotePath,
   lastRemoteDir,
   getConnection,
-  closeConnection
+  closeConnection,
 };

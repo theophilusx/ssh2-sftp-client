@@ -9,7 +9,6 @@ const zlib = require('zlib');
 const { config, getConnection } = require('./hooks/global-hooks');
 const { getSetup, getCleanup } = require('./hooks/get-hooks');
 const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
-const { SSL_OP_NETSCAPE_CHALLENGE_BUG } = require('constants');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

@@ -8,9 +8,9 @@ const {
   config,
   getConnection,
   makeLocalPath,
-  lastRemoteDir
+  lastRemoteDir,
 } = require('./hooks/global-hooks');
-const {fastPutSetup, fastPutCleanup} = require('./hooks/fastPut-hooks');
+const { fastPutSetup, fastPutCleanup } = require('./hooks/fast-put-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);

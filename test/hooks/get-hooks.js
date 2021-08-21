@@ -3,8 +3,6 @@
 const { makeLocalPath } = require('./global-hooks');
 const fs = require('fs');
 
-const rmdir = fs.rmSync ? fs.rmSync : fs.rmdirSync;
-
 async function getSetup(client, sftpUrl, localUrl) {
   try {
     await client.put(

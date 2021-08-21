@@ -69,59 +69,49 @@ if (config.testServer !== 'windows') {
       });
 
       it('fastget throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.fastGet(
-              config.sftpUrl + '/no-access-get.txt',
-              makeLocalPath(config.localUrl, 'no-access-fastget.txt')
-            )
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.fastGet(
+                config.sftpUrl + '/no-access-get.txt',
+                makeLocalPath(config.localUrl, 'no-access-fastget.txt')
+              )
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('get throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.get(
-              `${config.sftpUrl}/no-access-get.txt`,
-              makeLocalPath(config.localUrl, 'no-access-get.txt')
-            )
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.get(
+                `${config.sftpUrl}/no-access-get.txt`,
+                makeLocalPath(config.localUrl, 'no-access-get.txt')
+              )
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('list throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.list(`${config.sftpUrl}/no-access-dir/sub-dir`)
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.list(`${config.sftpUrl}/no-access-dir/sub-dir`)
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('exists throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.exists(`${config.sftpUrl}/no-access-dir/sub-dir`)
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.exists(`${config.sftpUrl}/no-access-dir/sub-dir`)
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('stat throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.stat(`${config.sftpUrl}/no-access-dir/sub-dir`)
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.stat(`${config.sftpUrl}/no-access-dir/sub-dir`)
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('append throws exception', function () {
@@ -134,61 +124,51 @@ if (config.testServer !== 'windows') {
       });
 
       it('mkdir throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.stat(`${config.sftpUrl}/no-access-dir/not-work`, true)
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.stat(`${config.sftpUrl}/no-access-dir/not-work`, true)
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('rmdir throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.rmdir(`${config.sftpUrl}/no-access-dir/sub-dir`, true)
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.rmdir(`${config.sftpUrl}/no-access-dir/sub-dir`, true)
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('delete throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.delete(
-              `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`
-            )
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.delete(
+                `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`
+              )
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('rename throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.rename(
-              `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`,
-              `${config.sftpUrl}/no-acceass-dir/sub-dir/permission-rename.gzip.txt.gz`
-            )
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.rename(
+                `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`,
+                `${config.sftpUrl}/no-acceass-dir/sub-dir/permission-rename.gzip.txt.gz`
+              )
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
 
       it('chmod throws exception', function () {
-        if (sftp.remotePlatform !== 'win32') {
-          return expect(
-            sftp.chmod(
-              `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`,
-              0o777
-            )
-          ).be.rejectedWith('Permission denied');
-        } else {
-          return expect(true).to.equal(true);
-        }
+        return config.testServer !== 'windows'
+          ? expect(
+              sftp.chmod(
+                `${config.sftpUrl}/no-access-dir/sub-dir/permission-gzip.txt.gz`,
+                0o777
+              )
+            ).be.rejectedWith('Permission denied')
+          : expect(true).to.equal(true);
       });
     });
   });

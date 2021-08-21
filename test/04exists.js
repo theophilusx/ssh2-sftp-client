@@ -9,7 +9,7 @@ const { config, getConnection } = require('./hooks/global-hooks');
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-describe('exists() method tests', async () => {
+describe('exists() method tests', function () {
   let sftp;
 
   before('exists() test setup hook', async function () {

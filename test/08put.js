@@ -78,6 +78,7 @@ describe('put() method tests', function () {
     let str2 = new stream.Readable();
     str2._read = function noop() {};
     str2.push('your text here');
+    // eslint-disable-next-line unicorn/no-array-push-push
     str2.push(null);
 
     return sftp

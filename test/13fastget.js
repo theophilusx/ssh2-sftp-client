@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const fs = require('fs');
 const { config, getConnection } = require('./hooks/global-hooks');
-const gHooks = require('./hooks/fastGet-hooks');
+const gHooks = require('./hooks/fast-get-hooks');
 const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
 
 chai.use(chaiSubset);

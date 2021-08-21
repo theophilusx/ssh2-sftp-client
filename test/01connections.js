@@ -8,7 +8,6 @@ require('dotenv').config({ path: dotenvPath });
 
 const chai = require('chai');
 const expect = chai.expect;
-//const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const Client = require('../src/index.js');
 const { config } = require('./hooks/global-hooks');
@@ -33,7 +32,7 @@ describe('Connect Tests', function () {
     let client = new Client('contest-1');
     return expect(
       client.connect(config).then(() => {
-        client.end();
+        return client.end();
       })
     ).to.be.a('promise');
   });

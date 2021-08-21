@@ -112,22 +112,18 @@ describe('mkdir() method tests', function () {
 
   // permissions don't really work on win32
   it('non-recursive mkdir without permission is rejeted', function () {
-    if (sftp.remotePlatform !== 'win32') {
-      return expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
-        /(Bad path)|(Permission denied)/
-      );
-    } else {
-      return expect(true).to.equal(true);
-    }
+    return sftp.remotePlatform !== 'windows'
+      ? expect(sftp.mkdir('/foo', false)).to.be.rejectedWith(
+          /(Bad path)|(Permission denied)/
+        )
+      : expect(true).to.equal(true);
   });
 
   it('recursive mkdir without permission is rejeted', function () {
-    if (sftp.remotePlatform !== 'win32') {
-      return expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
-        /(Bad path)|(Permission denied)/
-      );
-    } else {
-      return expect(true).to.equal(true);
-    }
+    return sftp.remotePlatform !== 'win32'
+      ? expect(sftp.mkdir('/foo', true)).to.be.rejectedWith(
+          /(Bad path)|(Permission denied)/
+        )
+      : expect(true).to.equal(true);
   });
 });
