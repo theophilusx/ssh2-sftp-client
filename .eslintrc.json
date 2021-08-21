@@ -4,6 +4,7 @@
       "plugin:promise/recommended", 
       "plugin:node/recommended",
       "plugin:unicorn/recommended",
+      "plugin:mocha/recommended",
       "prettier"],
   "rules": {
     "no-console": 0,
@@ -16,9 +17,12 @@
     "unicorn/no-array-for-each": 0,
     "unicorn/no-object-as-default-parameter": 0,
     "unicorn/no-null": 0,
-    "unicorn/explicit-length-check": 0
+    "unicorn/explicit-length-check": 0,
+    "unicorn/numeric-separators-style": 0,
+    "mocha/max-top-level-suites": 0,
+    "mocha/no-hooks-for-single-case": 0
   },
-  "plugins": ["promise", "node", "unicorn"],
+  "plugins": ["promise", "node", "unicorn", "mocha"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "ecmaFeatures": {
