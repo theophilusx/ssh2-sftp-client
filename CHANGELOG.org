@@ -1,5 +1,9 @@
 * Change Logging
 
+** v7.0.4
+   - Bump ssh2 dependency to 1.4.0
+   - Change check for local resources to be consistent across platforms
+     
 ** v7.0.3
    - Minor typo bug fix in put()
      
