@@ -1064,7 +1064,7 @@ class SftpClient {
    * @param {String} dstDir - remote destination directory
    * @param {RegExp} filter - (Optional) a regular expression used to select
    *                         files and directories to upload
-   * @returns {String}
+   * @returns {Promise}
    * @throws {Error}
    */
   async uploadDir(srcDir, dstDir, filter = /.*/) {
