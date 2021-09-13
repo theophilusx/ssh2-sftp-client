@@ -114,7 +114,7 @@ class SftpClient {
    *
    * @param {Object} config - an SFTP configuration object
    *
-   * @return {Promise} which will resolve to an sftp client object
+   * @return {Promise<Object>} which will resolve to an sftp client object
    *
    */
   getConnection(config) {
@@ -173,7 +173,7 @@ class SftpClient {
    *
    * @param {Object} config - an SFTP configuration object
    *
-   * @return {Promise} which will resolve to an sftp client object
+   * @return {Promise<Object>} which will resolve to an sftp client object
    *
    */
   async connect(config) {
@@ -221,7 +221,7 @@ class SftpClient {
    * Returns undefined if the path does not exists.
    *
    * @param {String} remotePath - remote path, may be relative
-   * @returns {Promise} - remote absolute path or undefined
+   * @returns {Promise<String>} - remote absolute path or ''
    */
   realPath(remotePath) {
     return new Promise((resolve, reject) => {
@@ -249,6 +249,13 @@ class SftpClient {
     });
   }
 
+  /**
+   * @async
+   *
+   * Return the current workding directory path
+   *
+   * @returns {Promise<String>} - current remote working directory
+   */
   cwd() {
     return this.realPath('.');
   }
@@ -257,7 +264,7 @@ class SftpClient {
    * Retrieves attributes for path
    *
    * @param {String} remotePath - a string containing the path to a file
-   * @return {Promise} stats - attributes info
+   * @return {Promise<Object>} stats - attributes info
    */
   async stat(remotePath) {
     const _stat = (aPath) => {
@@ -323,7 +330,7 @@ class SftpClient {
    *
    * @param {string} remotePath - path to the object on the sftp server.
    *
-   * @return {Promise} returns false if object does not exist. Returns type of
+   * @return {Promise<Boolean|String>} returns false if object does not exist. Returns type of
    *                   object if it does
    */
   async exists(remotePath) {
@@ -382,8 +389,7 @@ class SftpClient {
    *
    * @param {String} remotePath - path to remote directory
    * @param {RegExp} pattern - regular expression to match filenames
-   * @returns {Promise} array of file description objects
-   * @throws {Error}
+   * @returns {Promise<Array>} array of file description objects
    */
   list(remotePath, pattern = /.*/) {
     return new Promise((resolve, reject) => {
@@ -449,7 +455,7 @@ class SftpClient {
    * @param {Object} options - options object with supported properties of readStreamOptions,
    *                          writeStreamOptions and pipeOptions.
    *
-   * @return {Promise}
+   * @return {Promise<String|Stream|Buffer>}
    */
   get(
     remotePath,
@@ -549,7 +555,7 @@ class SftpClient {
    * @param {String} remotePath
    * @param {String} localPath
    * @param {Object} options
-   * @return {Promise} the result of downloading the file
+   * @return {Promise<String>} the result of downloading the file
    */
   async fastGet(remotePath, localPath, options) {
     try {
@@ -569,7 +575,7 @@ class SftpClient {
         err.code = errorCode.badPath;
         throw err;
       }
-      await new Promise((resolve, reject) => {
+      let rslt = await new Promise((resolve, reject) => {
         if (haveConnection(this, 'fastGet', reject)) {
           this.debugMsg(
             `fastGet -> remote: ${remotePath} local: ${localPath} `,
@@ -587,6 +593,7 @@ class SftpClient {
       }).finally(() => {
         removeTempListeners(this, 'fastGet');
       });
+      return rslt;
     } catch (err) {
       this._resetEventFlags();
       throw fmtError(err, 'fastGet');
@@ -604,7 +611,7 @@ class SftpClient {
    * @param {String} localPath
    * @param {String} remotePath
    * @param {Object} options
-   * @return {Promise} the result of downloading the file
+   * @return {Promise<String>} the result of downloading the file
    */
   fastPut(localPath, remotePath, options) {
     this.debugMsg(`fastPut -> local ${localPath} remote ${remotePath}`);
@@ -664,7 +671,7 @@ class SftpClient {
    * @param  {Object} options - options used for read, write stream and pipe configuration
    *                            value supported by node. Allowed properties are readStreamOptions,
    *                            writeStreamOptions and pipeOptions.
-   * @return {Promise}
+   * @return {Promise<String>}
    */
   put(
     localSrc,
@@ -757,9 +764,8 @@ class SftpClient {
    * @param  {Buffer|stream} input
    * @param  {String} remotePath
    * @param  {Object} options
-   * @return {Promise}
+   * @return {Promise<String>}
    */
-
   async append(input, remotePath, options = {}) {
     const fileType = await this.exists(remotePath);
     if (fileType && fileType === 'd') {
@@ -807,7 +813,7 @@ class SftpClient {
    *
    * @param {string} remotePath - remote directory path.
    * @param {boolean} recursive - if true, recursively create directories
-   * @return {Promise}
+   * @return {Promise<String>}
    */
   async mkdir(remotePath, recursive = false) {
     const _mkdir = (p) => {
@@ -873,7 +879,7 @@ class SftpClient {
    * @param {string} remotePath - path to directory to be removed
    * @param {boolean} recursive - if true, remove directories/files in target
    *                             directory
-   * @return {Promise}
+   * @return {Promise<String>}
    */
   async rmdir(remotePath, recursive = false) {
     const _rmdir = (p) => {
@@ -926,7 +932,7 @@ class SftpClient {
    * @param {string} remotePath - path to the file to delete
    * @param {boolean} notFoundOK - if true, ignore errors for missing target.
    *                               Default is false.
-   * @return {Promise} with string 'Successfully deleted file' once resolved
+   * @return {Promise<String>} with string 'Successfully deleted file' once resolved
    *
    */
   delete(remotePath, notFoundOK = false) {
@@ -963,7 +969,7 @@ class SftpClient {
    * @param {string} fromPath - path to the file to be renamed.
    * @param {string} toPath - path to the new name.
    *
-   * @return {Promise}
+   * @return {Promise<String>}
    *
    */
   rename(fromPath, toPath) {
@@ -1000,7 +1006,7 @@ class SftpClient {
    * @param {string} fromPath - path to the file to be renamed.
    * @param {string} toPath - path  the new name.
    *
-   * @return {Promise}
+   * @return {Promise<String>}
    *
    */
   posixRename(fromPath, toPath) {
@@ -1036,7 +1042,7 @@ class SftpClient {
    * @param {string} remotePath - path to the remote target object.
    * @param {number | string} mode - the new octal mode to set
    *
-   * @return {Promise}
+   * @return {Promise<String>}
    */
   chmod(remotePath, mode) {
     return new Promise((resolve, reject) => {
@@ -1064,8 +1070,7 @@ class SftpClient {
    * @param {String} dstDir - remote destination directory
    * @param {RegExp} filter - (Optional) a regular expression used to select
    *                         files and directories to upload
-   * @returns {String}
-   * @throws {Error}
+   * @returns {Promise<String>}
    */
   async uploadDir(srcDir, dstDir, filter = /.*/) {
     try {
@@ -1124,8 +1129,7 @@ class SftpClient {
    * @param {String} dstDir - local destination directory
    * @param {RegExp} filter - (Optional) a regular expression used to select
    *                         files and directories to upload
-   * @returns {Promise}
-   * @throws {Error}
+   * @returns {Promise<String>}
    */
   async downloadDir(srcDir, dstDir, filter = /.*/) {
     try {
@@ -1176,6 +1180,7 @@ class SftpClient {
    *
    * End the SFTP connection
    *
+   * @returns {Promise<Boolean>}
    */
   end() {
     let endCloseHandler;
