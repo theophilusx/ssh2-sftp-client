@@ -204,7 +204,7 @@ class SftpClient {
           minTimeout: config.retry_minTimeout || 1000,
         }
       );
-      await this.getSftpChannel();
+      return this.getSftpChannel();
     } catch (err) {
       this.debugMsg(`connect: Error ${err.message}`);
       this._resetEventFlags();

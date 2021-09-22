@@ -39,7 +39,8 @@ describe('Connect Tests', function () {
 
   it('contest-2: valid connection object', async function () {
     let client = new Client('contest-2');
-    await client.connect(config);
+    const sftpChannel = await client.connect(config);
+    expect(sftpChannel).to.equal(client.sftp);
     let type = typeof client.sftp;
     await client.end();
     return expect(type).to.equal('object');
