@@ -704,7 +704,7 @@ class SftpClient {
           this.debugMsg(`put: write stream error ${err.message}`);
           reject(fmtError(`${err.message} ${remotePath}`, 'put', err.code));
         });
-        wtr.once('finish', () => {
+        wtr.once('close', () => {
           this.debugMsg('put: promise resolved');
           resolve(`Uploaded data stream to ${remotePath}`);
         });
