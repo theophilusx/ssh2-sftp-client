@@ -9,9 +9,9 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v7.0.4*.
+Current stable release is *v7.1.0*.
 
-Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
+Code has been tested against Node versions 12.22.6, 14.17.6 and 16.10.0
 
 Node versions < 10.x are not supported.
 
@@ -62,6 +62,14 @@ npm install ssh2-sftp-client
   currently using options to either ~put()~ or ~get()~, you will need to update
   your code to map these options to the new structure. 
 
+- *Breaking Change 7.1.0* A race condition was identified when using a put()
+  call with a writeStream option of ~autoClose: false~. In some situations, the
+  promise would be resolved before the final close of the write stream. This
+  could result in errors if you immediately attempt to access the uploaded
+  file. To avoid this situatioin, the promise is now resolved once a ~close~
+  event is emitted. This means that setting ~autoClose: false~ can no longer be
+  supported. The write stream for ~put()~ will autoClose once data writing has completed.
+   
 - Improved event handling. A listener for a global error event is now defined to
   catch errors which occur in-between method calls i.e. connection lost
   in-between calls to the library methods. A new mechanism has also been added
@@ -546,7 +554,6 @@ option value. For example, you might use the following to set ~writeStream~ opti
       flags: 'w',  // w - write and a - append
       encoding: null, // use null for binary files
       mode: 0o666, // mode to use for created file (rwx)
-      autoClose: true // automatically close the write stream when finished
   }}
 #+end_src
 
@@ -554,6 +561,14 @@ The most common options to use are mode and encoding. The values shown above are
 the defaults. You do not have to set encoding to utf-8 for text files, null is
 fine for all file types. However, using utf-8 encoding for binary files will
 often result in data corruption.
+
+Note that you cannot set ~autoClose: false~ for ~writeStreamOptions~. If you
+attempt to set this property to false, it will be ignored. This is necessary to
+avoid a race condition which may exist when setting ~autoClose~ to false on the
+writeStream. As there is no easy way to access the writeStream once the promise
+has been resolved, setting this to autoClose false is not terribly useful as
+there is no easy way to manually close the stream after the promise has been
+resolved.
 
 **** Example Use
 
@@ -1765,3 +1780,7 @@ Thanks to the following for their contributions -
 - Ladislav Jacho :: Contributed solution explanation for connections hanging
   when transferring larger files.
 - Emma Milner :: Contributed fix for put() bug
+- Witni Davis :: Contributed PR to fix put() RCE when using 'finish' rather than
+  'close' to resolve promise
+- Maik Marschner :: Contributed fix for connect() not returning sftp object.
+  Also included test to check for this regression in future.

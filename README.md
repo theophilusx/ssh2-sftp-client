@@ -61,9 +61,9 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
 
-Current stable release is **v7.0.4**.
+Current stable release is **v7.1.0**.
 
-Code has been tested against Node versions 12.22.1, 14.17.0 and 16.2.0
+Code has been tested against Node versions 12.22.6, 14.17.6 and 16.10.0
 
 Node versions < 10.x are not supported.
 
@@ -98,6 +98,8 @@ sftp.connect({
 -   This version is based on version 1.x.x of `ssh2`. This version of `ssh2` is a complete re-write of the `ssh2` library. This re-write addresses issues encountered when using node v14 as well as some design weaknesses in the previous 0.8.x version.
 
 -   **Breaking Change** Expanded option handling for `get()` and `put()` methods. A number of use cases were identified where setting specific options on the read and write streams and the pipe operation are necessary. For example, disabling `autoClose` on streams or the `end` event in pipes. The `options` argument for `get()` and `put()` calls now supports properties for `readStreamOptions`, `writeStreamOptions` and `pipeOptions`. Note that options are only applied to streams created by the `get()` and `put()` methods. Streams passed into these methods are under the control of the client code and therefore cannot have options supplied in arguments to those streams (you would apply such options when you create the streams). Options are typically only necessary in special use cases. Most of the time, no options are required. However, if you are currently using options to either `put()` or `get()`, you will need to update your code to map these options to the new structure.
+
+-   **Breaking Change 7.1.0** A race condition was identified when using a put() call with a writeStream option of `autoClose: false`. In some situations, the promise would be resolved before the final close of the write stream. This could result in errors if you immediately attempt to access the uploaded file. To avoid this situatioin, the promise is now resolved once a `close` event is emitted. This means that setting `autoClose: false` can no longer be supported. The write stream for `put()` will autoClose once data writing has completed.
 
 -   Improved event handling. A listener for a global error event is now defined to catch errors which occur in-between method calls i.e. connection lost in-between calls to the library methods. A new mechanism has also been added for removal of listeners when no longer required.
 
@@ -497,11 +499,12 @@ Upload data from local system to remote server. If the `src` argument is a strin
         flags: 'w',  // w - write and a - append
         encoding: null, // use null for binary files
         mode: 0o666, // mode to use for created file (rwx)
-        autoClose: true // automatically close the write stream when finished
     }}
     ```
     
     The most common options to use are mode and encoding. The values shown above are the defaults. You do not have to set encoding to utf-8 for text files, null is fine for all file types. However, using utf-8 encoding for binary files will often result in data corruption.
+    
+    Note that you cannot set `autoClose: false` for `writeStreamOptions`. If you attempt to set this property to false, it will be ignored. This is necessary to avoid a race condition which may exist when setting `autoClose` to false on the writeStream. As there is no easy way to access the writeStream once the promise has been resolved, setting this to autoClose false is not terribly useful as there is no easy way to manually close the stream after the promise has been resolved.
 
 2.  Example Use
 
@@ -1356,3 +1359,5 @@ Thanks to the following for their contributions -
 -   **anton-erofeev:** Documentation fix
 -   **Ladislav Jacho:** Contributed solution explanation for connections hanging when transferring larger files.
 -   **Emma Milner:** Contributed fix for put() bug
+-   **Witni Davis:** Contributed PR to fix put() RCE when using 'finish' rather than 'close' to resolve promise
+-   **Maik Marschner:** Contributed fix for connect() not returning sftp object. Also included test to check for this regression in future.

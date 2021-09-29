@@ -1,5 +1,16 @@
 * Change Logging
 
+** v7.1.0
+   - Fix possible RCE with put() method and use of 'finish' to resolve promise
+     by now resolving the promise on 'close' events instead. This required
+     removing support for writeStream.autoclose: false, which was not
+     particularly useful anyway.
+   - Updated function documentation to specify function return value as
+     Promise<type> rather than just Promise. This is not 100% compliant with
+     JSDoc specs, but just stating the function returns a promise is less than
+     useful given that all the functions in this library return promises.
+     Indicating what the resolved data returned will be is more useful.
+   - Fix bug where connect() failed to return the sftp object as documented. 
 ** v7.0.4
    - Bump ssh2 dependency to 1.4.0
    - Change check for local resources to be consistent across platforms
