@@ -676,7 +676,11 @@ class SftpClient {
   put(
     localSrc,
     remotePath,
-    options = { readStreamOptions: {}, writeStreamOptions: {}, pipeOptions: {} }
+    options = {
+      readStreamOptions: {},
+      writeStreamOptions: { autoClose: true },
+      pipeOptions: {},
+    }
   ) {
     let wtr, rdr;
 
@@ -698,7 +702,9 @@ class SftpClient {
         addTempListeners(this, 'put', reject);
         wtr = this.sftp.createWriteStream(
           remotePath,
-          options.writeStreamOptions ? options.writeStreamOptions : {}
+          options.writeStreamOptions
+            ? { ...options.writeStreamOptions, autoClose: true }
+            : {}
         );
         wtr.once('error', (err) => {
           this.debugMsg(`put: write stream error ${err.message}`);
@@ -747,13 +753,6 @@ class SftpClient {
         typeof localSrc === 'string'
       ) {
         rdr.destroy();
-      }
-      if (
-        wtr &&
-        options.writeStreamOptions &&
-        options.writeStreamOptions.autoClose === false
-      ) {
-        wtr.destroy();
       }
     });
   }
