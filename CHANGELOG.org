@@ -1,6 +1,7 @@
 * Change Logging
 
 ** v7.1.0
+   - Bump ssh2 to version 1.5.0
    - Fix possible RCE with put() method and use of 'finish' to resolve promise
      by now resolving the promise on 'close' events instead. This required
      removing support for writeStream.autoclose: false, which was not
