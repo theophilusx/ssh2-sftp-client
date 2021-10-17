@@ -260,7 +260,7 @@ describe('localExists tests', function () {
   });
 
   after('cleanup', function () {
-    fs.rmSync(`${config.localUrl}/test-file1-link.txt`);
+    fs.unlinkSync(`${config.localUrl}/test-file1-link.txt`);
   });
 
   it('file exists', function () {
