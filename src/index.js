@@ -150,6 +150,7 @@ class SftpClient {
       this.client.sftp((err, sftp) => {
         if (err) {
           this.debugMsg(`getSftpChannel: SFTP Channel Error: ${err.message}`);
+          this.client.end();
           reject(fmtError(err, 'getSftpChannel', err.code));
         } else {
           this.debugMsg('getSftpChannel: SFTP channel established');
@@ -548,9 +549,6 @@ class SftpClient {
    * Use SSH2 fastGet for downloading the file.
    * Downloads a file at remotePath to localPath using parallel reads
    * for faster throughput.
-   *
-   * See 'fastGet' at
-   * https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
    *
    * @param {String} remotePath
    * @param {String} localPath
