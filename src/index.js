@@ -848,6 +848,14 @@ class SftpClient {
     try {
       haveConnection(this, 'mkdir');
       let rPath = await normalizeRemotePath(this, remotePath);
+      let targetExists = await this.exists(rPath);
+      if (targetExists && targetExists !== 'd') {
+        let error = new Error(`Bad path: ${rPath} already exists as a file`);
+        error.code = errorCode.badPath;
+        throw error;
+      } else if (targetExists) {
+        return `${rPath} already exists`;
+      }
       if (!recursive) {
         return await _mkdir(rPath);
       }
