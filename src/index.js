@@ -34,6 +34,7 @@ class SftpClient {
     this.remotePathSep = '/';
     this.remotePlatform = 'unix';
     this.debug = undefined;
+    this.tempListeners = [];
 
     this.client.on('close', () => {
       if (this.endCalled || this.closeHandled) {

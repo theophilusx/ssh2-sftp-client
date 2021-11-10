@@ -58,8 +58,6 @@ function fmtError(err, name = 'sftp', eCode, retryCount) {
   return newError;
 }
 
-let tempListeners = [];
-
 /**
  * Simple default error listener. Will reformat the error message and
  * throw a new error.
@@ -83,7 +81,7 @@ function errorListener(client, name, reject) {
       }
     }
   };
-  tempListeners.push(['error', fn]);
+  client.tempListeners.push(['error', fn]);
   return fn;
 }
 
@@ -104,7 +102,7 @@ function endListener(client, name, reject) {
       }
     }
   };
-  tempListeners.push(['end', fn]);
+  client.tempListeners.push(['end', fn]);
   return fn;
 }
 
@@ -125,7 +123,7 @@ function closeListener(client, name, reject) {
       }
     }
   };
-  tempListeners.push(['close', fn]);
+  client.tempListeners.push(['close', fn]);
   return fn;
 }
 
@@ -138,10 +136,10 @@ function addTempListeners(obj, name, reject) {
 
 function removeTempListeners(obj, name) {
   obj.debugMsg(`${name}: Removing temp event listeners`);
-  tempListeners.forEach(([e, fn]) => {
+  obj.tempListeners.forEach(([e, fn]) => {
     obj.client.removeListener(e, fn);
   });
-  tempListeners = [];
+  obj.tempListeners = [];
 }
 
 /**
