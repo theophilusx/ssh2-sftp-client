@@ -121,11 +121,13 @@ describe('errorListener', function () {
     },
     errorHandled: false,
     endCalled: false,
+    tempListeners: [],
   };
 
   beforeEach(function () {
     client.errorHandled = false;
     client.endCalled = false;
+    client.temptListeners = [];
   });
 
   it('error is rejected', function () {
@@ -182,6 +184,7 @@ describe('Test endListener', function () {
   beforeEach(function () {
     client.errorHandled = false;
     client.endCalled = false;
+    client.tempListeners = [];
   });
 
   it('endListener throws error', function () {
@@ -222,6 +225,7 @@ describe('closeHandler tests', function () {
   beforeEach(function () {
     client.closeHandled = false;
     client.endCalled = false;
+    client.tempListeners = [];
   });
 
   it('closeHandler throws error', function () {
