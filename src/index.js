@@ -34,7 +34,7 @@ class SftpClient {
     this.remotePathSep = '/';
     this.remotePlatform = 'unix';
     this.debug = undefined;
-    this.tempListeners = [];
+    this.tempListeners = {};
 
     this.client.on('close', () => {
       if (this.endCalled || this.closeHandled) {
@@ -310,7 +310,7 @@ class SftpClient {
           }
         });
       }).finally(() => {
-        removeTempListeners(this, 'stat');
+        removeTempListeners(this, '_stat');
       });
     };
 
@@ -1209,6 +1209,8 @@ class SftpClient {
       this.removeListener('close', endCloseHandler);
       this.endCalled = false;
       this._resetEventFlags();
+      console.log('temp listeners listing - should be empty');
+      console.log(this.tempListeners);
     });
   }
 }

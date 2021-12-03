@@ -58,6 +58,14 @@ function fmtError(err, name = 'sftp', eCode, retryCount) {
   return newError;
 }
 
+function addToTempListenerList(obj, name, evt, fn) {
+  if (name in obj.tempListeners) {
+    obj.tempListeners[name].push([evt, fn]);
+  } else {
+    obj.tempListeners[name] = [[evt, fn]];
+  }
+}
+
 /**
  * Simple default error listener. Will reformat the error message and
  * throw a new error.
@@ -81,7 +89,7 @@ function errorListener(client, name, reject) {
       }
     }
   };
-  client.tempListeners.push(['error', fn]);
+  addToTempListenerList(client, name, 'error', fn);
   return fn;
 }
 
@@ -102,7 +110,7 @@ function endListener(client, name, reject) {
       }
     }
   };
-  client.tempListeners.push(['end', fn]);
+  addToTempListenerList(client, name, 'end', fn);
   return fn;
 }
 
@@ -123,7 +131,7 @@ function closeListener(client, name, reject) {
       }
     }
   };
-  client.tempListeners.push(['close', fn]);
+  addToTempListenerList(client, name, 'close', fn);
   return fn;
 }
 
@@ -136,10 +144,12 @@ function addTempListeners(obj, name, reject) {
 
 function removeTempListeners(obj, name) {
   obj.debugMsg(`${name}: Removing temp event listeners`);
-  obj.tempListeners.forEach(([e, fn]) => {
-    obj.client.removeListener(e, fn);
-  });
-  obj.tempListeners = [];
+  if (name in obj.tempListeners) {
+    obj.tempListeners[name].forEach(([e, fn]) => {
+      obj.client.removeListener(e, fn);
+    });
+    obj.tempListeners = [];
+  }
 }
 
 /**
@@ -335,6 +345,7 @@ function sleep(ms) {
 
 module.exports = {
   fmtError,
+  addToTempListenerList,
   errorListener,
   endListener,
   closeListener,
