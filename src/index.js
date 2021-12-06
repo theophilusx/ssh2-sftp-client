@@ -1209,8 +1209,6 @@ class SftpClient {
       this.removeListener('close', endCloseHandler);
       this.endCalled = false;
       this._resetEventFlags();
-      console.log('temp listeners listing - should be empty');
-      console.log(this.tempListeners);
     });
   }
 }
