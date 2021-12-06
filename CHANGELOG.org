@@ -1,5 +1,18 @@
 * Change Logging
 
+** v7.2.0
+   - Bump ssh2 dependency to 1.5.0
+   - Fix bug where ssh connection was not correctly terminated when sfrtp
+     channel fails to be established
+   - Improve efficiency of mkdir() by checking for existence of target directory
+     at beginning of function.
+   - Move temp listeners tracking to the scope of the client rather than being a
+     global scope. This addresses issues which can arise when using
+     ssh2-sftp-client for multiple concurrent sftp connections.
+   - Add some additional tests and refactor some existing tests to make them
+     more reliable.
+   - Bump development dependencies to current version.
+     
 ** v7.1.0
    - Bump ssh2 to version 1.5.0
    - Fix possible RCE with put() method and use of 'finish' to resolve promise
