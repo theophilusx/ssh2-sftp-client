@@ -546,14 +546,16 @@ class SftpClient {
       this._resetEventFlags();
       if (
         rdr &&
-        options.readStreamOptions &&
+        Object.hasOwnProperty.call(options, 'readStreamOptions') &&
+        Object.hasOwnProperty.call(options.readStreamOptions, 'autoClose') &&
         options.readStreamOptions.autoClose === false
       ) {
         rdr.destroy();
       }
       if (
         wtr &&
-        options.writeStreamOptions &&
+        Object.hasOwnProperty.call(options, 'writeStreamOptions') &&
+        Object.hasOwnProperty.call(options.writeStreamOptions, 'autoClose') &&
         options.writeStreamOptions.autoClose === false &&
         typeof dst === 'string'
       ) {
@@ -763,7 +765,8 @@ class SftpClient {
       this._resetEventFlags();
       if (
         rdr &&
-        options.readStreamOptions &&
+        Object.hasOwnProperty.call(options, 'readStreamOptions') &&
+        Object.hasOwnProperty.call(options.readStreamOptions, 'autoClose') &&
         options.readStreamOptions.autoClose === false &&
         typeof localSrc === 'string'
       ) {
