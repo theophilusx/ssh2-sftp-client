@@ -515,13 +515,23 @@ class SftpClient {
               )
             );
           });
-          rdr.once('end', () => {
-            if (typeof dst === 'string') {
-              resolve(dst);
-            } else {
-              resolve(wtr);
-            }
-          });
+          if (options.pipeOptions && !options.pipeOptions.end) {
+            rdr.once('end', () => {
+              if (typeof dst === 'string') {
+                resolve(dst);
+              } else {
+                resolve(wtr);
+              }
+            });
+          } else {
+            wtr.once('close', () => {
+              if (typeof dst === 'string') {
+                resolve(dst);
+              } else {
+                resolve(wtr);
+              }
+            });
+          }
         }
         rdr.pipe(wtr, options.pipeOptions ? options.pipeOptions : {});
       }
