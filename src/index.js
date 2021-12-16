@@ -529,8 +529,8 @@ class SftpClient {
               }
             });
           } else {
-            wtr.once('close', () => {
-              this.debugMsg('get resolved on writer close event');
+            wtr.once('finish', () => {
+              this.debugMsg('get resolved on writer finish event');
               if (typeof dst === 'string') {
                 resolve(dst);
               } else {
