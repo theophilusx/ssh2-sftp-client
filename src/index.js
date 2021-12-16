@@ -515,8 +515,13 @@ class SftpClient {
               )
             );
           });
-          if (options.pipeOptions && !options.pipeOptions.end) {
+          if (
+            Object.hasOwnProperty.call(options, 'pipeOptions') &&
+            Object.hasOwnProperty.call(options.pipeOptions, 'end') &&
+            !options.pipeOptions.end
+          ) {
             rdr.once('end', () => {
+              this.debugMsg('get resolved on reader end event');
               if (typeof dst === 'string') {
                 resolve(dst);
               } else {
@@ -525,6 +530,7 @@ class SftpClient {
             });
           } else {
             wtr.once('close', () => {
+              this.debugMsg('get resolved on writer close event');
               if (typeof dst === 'string') {
                 resolve(dst);
               } else {
