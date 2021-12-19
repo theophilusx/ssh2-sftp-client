@@ -1,5 +1,16 @@
 * Change Logging
 
+** v7.2.1
+    - Bugfix. Changed event used to resolve get() requests from being based on
+      the 'finish' event emitted by the write stream instead of by the read
+      stream UNLESS autoClose is set to false, in which case, the promise uses
+      the finish event of the read stream. This change was necessary to deal
+      with an edge case which can arise when using slow storage (e.g. a cloud
+      bucket) to avoid errors when client code attempts to access the retrieved
+      file immediately after the get() finishes. Relying on finish event in
+      reader does not allow sufficient time for buffers to be flushed and write
+      stream cleanup, resulting in errors.
+    - Bumped dev dependency versions to latest
 ** v7.2.0
    - Bump ssh2 dependency to 1.5.0
    - Fix bug where ssh connection was not correctly terminated when sfrtp

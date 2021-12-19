@@ -1,6 +1,6 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "description": "ssh2 sftp client for node",
   "main": "src/index.js",
   "repository": {
@@ -40,11 +40,11 @@
     "chai-subset": "^1.6.0",
     "checksum": "^1.0.0",
     "dotenv": "^10.0.0",
-    "eslint": "^8.3.0",
+    "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-mocha": "^10.0.3",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.2.0",
+    "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-unicorn": "^39.0.0",
     "mocha": "^9.1.2",
     "moment": "^2.29.1",
