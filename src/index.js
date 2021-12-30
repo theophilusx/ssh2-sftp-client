@@ -528,6 +528,17 @@ class SftpClient {
                 resolve(wtr);
               }
             });
+          } else if (
+            Object.hasOwnProperty.call(options, 'pipeOptions') &&
+            Object.hasOwnProperty.call(options.pipeOptions, 'immediately') &&
+            !options.pipeOptions.immediately
+          ) {
+            this.debugMsg('get resolved immediately');
+            if (typeof dst === 'string') {
+              resolve(dst);
+            } else {
+              resolve(wtr);
+            }
           } else {
             wtr.once('finish', () => {
               this.debugMsg('get resolved on writer finish event');
