@@ -148,7 +148,7 @@ function removeTempListeners(obj, name) {
     obj.tempListeners[name].forEach(([e, fn]) => {
       obj.client.removeListener(e, fn);
     });
-    obj.tempListeners = [];
+    obj.tempListeners[name] = [];
   }
 }
 
