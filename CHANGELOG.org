@@ -1,5 +1,10 @@
 * Change Logging
 
+** v7.2.2
+    - Bump to ssh2 1.6.0
+    - bump development dependencies to latest versions
+    - Fix bug in removeTempListeners() where it tried to reset the hash used
+      to track listeners rather than just reset listeners for a specific method
 ** v7.2.1
     - Bugfix. Changed event used to resolve get() requests from being based on
       the 'finish' event emitted by the write stream instead of by the read

@@ -61,9 +61,9 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
 
-Current stable release is **v7.2.1**.
+Current stable release is **v7.2.2**.
 
-Code has been tested against Node versions 14.18.2, 16.13.1 and 17.2.0
+Code has been tested against Node versions 14.18.3, 16.13.2 and 17.4.0
 
 Node versions < 10.x are not supported.
 
@@ -1361,3 +1361,4 @@ Thanks to the following for their contributions -
 -   **Emma Milner:** Contributed fix for put() bug
 -   **Witni Davis:** Contributed PR to fix put() RCE when using 'finish' rather than 'close' to resolve promise
 -   **Maik Marschner:** Contributed fix for connect() not returning sftp object. Also included test to check for this regression in future.
+-   **cakemasher:** Contributed fix for removeTempListeners().
