@@ -59,7 +59,7 @@ class SftpClient {
     this.client.on('error', (err) => {
       if (this.endCalled || this.errorHandled) {
         // error event expected or handled elsewhere
-        this.debugMsg('Global: Ignoring handled error');
+        this.debugMsg(`Global: Ignoring handled error: ${err.message}`);
       } else {
         this.debugMsg(`Global; Handling unexpected error; ${err.message}`);
         this.sftp = undefined;
@@ -120,28 +120,24 @@ class SftpClient {
    */
   getConnection(config) {
     let doReady;
-    return (
-      new Promise((resolve, reject) => {
-        addTempListeners(this, 'getConnection', reject);
-        this.debugMsg('getConnection: created promise');
-        doReady = () => {
-          this.debugMsg('getConnection: got connection - promise resolved');
-          resolve(true);
-        };
-        this.on('ready', doReady);
-        this.client.connect(config);
-      })
-        // .catch((err) => {
-        //   return Promise.reject(err);
-        // })
-        .finally(async () => {
-          this.debugMsg('getConnection: finally clause fired');
-          await sleep(500);
-          this.removeListener('ready', doReady);
-          removeTempListeners(this, 'getConnection');
-          this._resetEventFlags();
-        })
-    );
+    return new Promise((resolve, reject) => {
+      addTempListeners(this, 'getConnection', reject);
+      this.debugMsg('getConnection: created promise');
+      doReady = () => {
+        this.debugMsg(
+          'getConnection ready listener: got connection - promise resolved'
+        );
+        resolve(true);
+      };
+      this.on('ready', doReady);
+      this.client.connect(config);
+    }).finally(async () => {
+      this.debugMsg('getConnection: finally clause fired');
+      await sleep(500);
+      this.removeListener('ready', doReady);
+      removeTempListeners(this, 'getConnection');
+      this._resetEventFlags();
+    });
   }
 
   getSftpChannel() {
@@ -196,8 +192,17 @@ class SftpClient {
         (retry, attempt) => {
           this.debugMsg(`connect: Connect attempt ${attempt}`);
           return this.getConnection(config).catch((err) => {
-            this.debugMsg('getConnection retry catch');
-            retry(err);
+            this.debugMsg(
+              `getConnection retry catch: ${err.message} Code: ${err.code}`
+            );
+            switch (err.code) {
+              case 'ENOTFOUND':
+              case 'ECONNREFUSED':
+              case 'ERR_SOCKET_BAD_PORT':
+                throw err;
+              default:
+                retry(err);
+            }
           });
         },
         {

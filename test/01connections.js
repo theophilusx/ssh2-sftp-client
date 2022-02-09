@@ -16,17 +16,17 @@ const { config } = require('./hooks/global-hooks');
 chai.use(chaiAsPromised);
 
 describe('Connect Tests', function () {
-  beforeEach(async function () {
-    return new Promise((resolve, reject) => {
-      try {
-        setTimeout(function () {
-          resolve(true);
-        }, 1000);
-      } catch (err) {
-        reject(err);
-      }
-    });
-  });
+  // beforeEach(async function () {
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       setTimeout(function () {
+  //         resolve(true);
+  //       }, 1000);
+  //     } catch (err) {
+  //       reject(err);
+  //     }
+  //   });
+  // });
 
   it('contest-1: connect should return a promise', function () {
     let client = new Client('contest-1');
@@ -53,9 +53,7 @@ describe('Connect Tests', function () {
         ...config,
         host: 'bogus-host.com',
       })
-    ).to.be.rejectedWith(
-      /Address lookup failed|Timed out while waiting for handshake|read ECONNRESET/
-    );
+    ).to.be.rejectedWith(/Address lookup failed/);
   });
 
   it('contest-4: bad port throws exception', function () {
@@ -65,9 +63,17 @@ describe('Connect Tests', function () {
         ...config,
         port: 21,
       })
-    ).to.be.rejectedWith(
-      /refused connection|Timed out while waiting for handshake/
-    );
+    ).to.be.rejectedWith(/refused connection/);
+  });
+
+  it('connect-4b: bad port range throws exception', function () {
+    let client = new Client('connect-4b');
+    return expect(
+      client.connect({
+        ...config,
+        port: 288642,
+      })
+    ).to.be.rejectedWith(/Port should be >= 0 and < 65536/);
   });
 
   it('contest-5: bad username throws exception', function () {
@@ -77,9 +83,7 @@ describe('Connect Tests', function () {
         ...config,
         username: 'fred',
       })
-    ).to.be.rejectedWith(
-      /All configured authentication methods failed|Timed out while waiting for handshake|connect: connect EHOSTUNREACH|connect: Remote host has reset the connection/
-    );
+    ).to.be.rejectedWith(/All configured authentication methods failed/);
   });
 
   it('contest-6: bad password throws exception', function () {
@@ -89,9 +93,7 @@ describe('Connect Tests', function () {
         ...config,
         password: 'foobar',
       })
-    ).to.be.rejectedWith(
-      /All configured authentication methods failed|Timed out while waiting for handshake|connect: Remote host has reset the connection/
-    );
+    ).to.be.rejectedWith(/All configured authentication methods failed/);
   });
 });
 

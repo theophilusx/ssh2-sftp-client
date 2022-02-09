@@ -76,15 +76,15 @@ function addToTempListenerList(obj, name, evt, fn) {
 function errorListener(client, name, reject) {
   let fn = (err) => {
     if (client.endCalled || client.errorHandled) {
-      client.debugMsg(`${name}: Ignoring handled error: ${err.message}`);
+      client.debugMsg(`${name} Error: Ignoring handled error: ${err.message}`);
     } else {
-      client.debugMsg(`${name}: Handling error: ${err.message}`);
+      client.debugMsg(`${name} Error: Handling error: ${err.message}`);
       client.errorHandled = true;
       if (reject) {
-        client.debugMsg(`${name}: handled error with reject`);
+        client.debugMsg(`${name} Error: handled error with reject`);
         reject(fmtError(err, name, err.code));
       } else {
-        client.debugMsg(`${name}: handling error with throw`);
+        client.debugMsg(`${name} Error: handling error with throw`);
         throw fmtError(err, name, err.code);
       }
     }
@@ -96,16 +96,16 @@ function errorListener(client, name, reject) {
 function endListener(client, name, reject) {
   let fn = function () {
     if (client.endCalled || client.endHandled) {
-      client.debugMsg(`${name}: Ignoring expected end event`);
+      client.debugMsg(`${name} End: Ignoring expected end event`);
     } else {
-      client.debugMsg(`${name}: Handling end event`);
+      client.debugMsg(`${name} End: Handling end event`);
       client.sftp = undefined;
       client.endHandled = true;
       if (reject) {
-        client.debugMsg(`${name}: handling end event with reject'`);
+        client.debugMsg(`${name} End: handling end event with reject'`);
         reject(fmtError('Unexpected end event raised', name));
       } else {
-        client.debugMsg(`${name}: handling end event with throw`);
+        client.debugMsg(`${name} End: handling end event with throw`);
         throw fmtError('Unexpected end event raised', name);
       }
     }
@@ -117,16 +117,16 @@ function endListener(client, name, reject) {
 function closeListener(client, name, reject) {
   let fn = function () {
     if (client.endCalled || client.closeHandled) {
-      client.debugMsg(`${name}: ignoring expected close event`);
+      client.debugMsg(`${name} Close: ignoring expected close event`);
     } else {
-      client.debugMsg(`${name}: handling unexpected close event`);
+      client.debugMsg(`${name} Close: handling unexpected close event`);
       client.sftp = undefined;
       client.closeHandled = true;
       if (reject) {
-        client.debugMsg(`${name}: handling close event with reject`);
+        client.debugMsg(`${name} Close: handling close event with reject`);
         reject(fmtError('Unexpected close event raised', name));
       } else {
-        client.debugMsg(`${name}: handling close event with throw`);
+        client.debugMsg(`${name} Close: handling close event with throw`);
         throw fmtError('Unexpected close event raised', name);
       }
     }
