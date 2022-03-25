@@ -392,7 +392,7 @@ Returns the attributes associated with the object pointed to by `path`.
 
 Retrieve a file from a remote SFTP server. The `dst` argument defines the destination and can be either a string, a stream object or undefined. If it is a string, it is interpreted as the path to a location on the local file system (path should include the file name). If it is a stream object, the remote data is passed to it via a call to pipe(). If `dst` is undefined, the method will put the data into a buffer and return that buffer when the Promise is resolved. If `dst` is defined, it is returned when the Promise is resolved.
 
-In general, if your going to pass in a string as the destination, you are better off using the `fastGet()` method.
+In general, if you're going to pass in a string as the destination, you are better off using the `fastGet()` method.
 
 -   **path:** String. Path to the remote file to download
 -   **dst:** String|Stream. Destination for the data. If a string, it should be a local file path.
