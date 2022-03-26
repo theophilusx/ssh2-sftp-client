@@ -53,4 +53,14 @@ describe('list() method tests', function () {
     let data = await sftp.list('.');
     return expect(data).to.containSubset([{ type: 'd', name: 'testServer' }]);
   });
+
+  it('list with ".." path', async function () {
+    let data = await sftp.list('..');
+    return expect(data).to.containSubset([{ type: 'd', name: 'tim' }]);
+  });
+
+  it('list with "../testServer" path', async function () {
+    let data = await sftp.list('../tim');
+    return expect(data).to.containSubset([{ type: 'd', name: 'testServer' }]);
+  });
 });
