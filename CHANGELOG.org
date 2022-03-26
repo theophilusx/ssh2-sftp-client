@@ -1,5 +1,11 @@
 * Change Logging
 
+** v7.2.3
+    - Change uploadDir/downloadDir methods to use put() and get() instead of
+      fastPut() and fastGet() because the latter are not support by all sftp servers. 
+    - Bump ssh2 dependency to 1.8.0
+    - Refactor the connect method to ensure error messages returned are the main
+      error which caused the connection to fail rather than the last error reported.
 ** v7.2.2
     - Bump to ssh2 1.6.0
     - bump development dependencies to latest versions
