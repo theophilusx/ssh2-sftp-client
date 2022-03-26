@@ -61,11 +61,11 @@ an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ss
 
 Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
 
-Current stable release is **v7.2.2**.
+Current stable release is **v7.2.3**.
 
-Code has been tested against Node versions 14.18.3, 16.13.2 and 17.4.0
+Code has been tested against Node versions 14.19.1, 16.14.2 and 17.8.0
 
-Node versions < 10.x are not supported.
+Node versions < 12.x are not supported. However, node v10.x should still work, although some tests will fail due to changes in file system functions used in test setup and tear down.
 
 # Installation<a id="sec-2"></a>
 
@@ -102,6 +102,8 @@ sftp.connect({
 -   **Breaking Change 7.1.0** A race condition was identified when using a put() call with a writeStream option of `autoClose: false`. In some situations, the promise would be resolved before the final close of the write stream. This could result in errors if you immediately attempt to access the uploaded file. To avoid this situatioin, the promise is now resolved once a `close` event is emitted. This means that setting `autoClose: false` can no longer be supported. The write stream for `put()` will autoClose once data writing has completed.
 
 -   Improved event handling. A listener for a global error event is now defined to catch errors which occur in-between method calls i.e. connection lost in-between calls to the library methods. A new mechanism has also been added for removal of listeners when no longer required.
+
+-   uploadDir/downloadDir change in 7.2.3. THe uploadDir() and downloadDir() methods previously used fastPut() and fastGet() to transfer data. Unfortunately, not all SFTP servers support the concurrent processing used by these methods. This meant these methods would fail on some platforms. For now, the fastPut() and fastGet() calls have been replaced with plain put() and get() calls. This will mean uploadDir()/downloadDir() will be slower. However, there is other larger changes in the works which should see a significant speed imp[rovement for these (and other methods). We may also add an option which will allow for selection of fastPut()/fastGet().
 
 # Documentation<a id="sec-5"></a>
 
@@ -392,7 +394,7 @@ Returns the attributes associated with the object pointed to by `path`.
 
 Retrieve a file from a remote SFTP server. The `dst` argument defines the destination and can be either a string, a stream object or undefined. If it is a string, it is interpreted as the path to a location on the local file system (path should include the file name). If it is a stream object, the remote data is passed to it via a call to pipe(). If `dst` is undefined, the method will put the data into a buffer and return that buffer when the Promise is resolved. If `dst` is defined, it is returned when the Promise is resolved.
 
-In general, if your going to pass in a string as the destination, you are better off using the `fastGet()` method.
+In general, if you're going to pass in a string as the destination, you are better off using the `fastGet()` method.
 
 -   **path:** String. Path to the remote file to download
 -   **dst:** String|Stream. Destination for the data. If a string, it should be a local file path.
@@ -1332,7 +1334,7 @@ Perhaps the best assistance is a minimal reproducible example of the issue. Once
 
 # Pull Requests<a id="sec-11"></a>
 
-Pull requests are always welcomed. However, please ensure your changes pass all tests and if your adding a new feature, that tests for that feature are included. Likewise, for new features or enhancements, please include any relevant documentation updates.
+Pull requests are always welcomed. However, please ensure your changes pass all tests and if you're adding a new feature, that tests for that feature are included. Likewise, for new features or enhancements, please include any relevant documentation updates.
 
 **Note**: The `README.md` file is generated from the `README.org` file. Therefore, any documentation updates or fixes need to be made to the `README.org` file. This file is *tangled* using `Emacs` org mode. If you don't use Emacs or org-mode, don't be too concerned. The org-mode syntax is straight-forward and similar to *markdown*. I will verify any updates to `README.org` and generate a new `README.md` when necessary. The main point to note is that any changes made directly to `README.md` will not persist and will be lost when a new version is generated, so don't modify that file.
 

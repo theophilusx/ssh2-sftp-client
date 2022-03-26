@@ -9,11 +9,13 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v7.2.2*.
+Current stable release is *v7.2.3*.
 
-Code has been tested against Node versions 14.18.3, 16.13.2 and 17.4.0
+Code has been tested against Node versions 14.19.1, 16.14.2 and 17.8.0
 
-Node versions < 10.x are not supported.
+Node versions < 12.x are not supported. However, node v10.x should still work,
+although some tests will fail due to changes in file system functions used in
+test setup and tear down.
 
 * Installation
 
@@ -74,6 +76,16 @@ npm install ssh2-sftp-client
   catch errors which occur in-between method calls i.e. connection lost
   in-between calls to the library methods. A new mechanism has also been added
   for removal of listeners when no longer required. 
+
+- uploadDir/downloadDir change in 7.2.3. THe uploadDir() and downloadDir()
+  methods previously used fastPut() and fastGet() to transfer data.
+  Unfortunately, not all SFTP servers support the concurrent processing used by
+  these methods. This meant these methods would fail on some platforms. For now,
+  the fastPut() and fastGet() calls have been replaced with plain put() and
+  get() calls. This will mean uploadDir()/downloadDir() will be slower. However,
+  there is other larger changes in the works which should see a significant
+  speed imp[rovement for these (and other methods). We may also add an option
+  which will allow for selection of fastPut()/fastGet().
 
 * Documentation
 
@@ -422,7 +434,7 @@ is passed to it via a call to pipe(). If ~dst~ is undefined, the method will put
 the data into a buffer and return that buffer when the Promise is resolved. If
 ~dst~ is defined, it is returned when the Promise is resolved.
 
-In general, if your going to pass in a string as the destination, you are
+In general, if you're going to pass in a string as the destination, you are
 better off using the ~fastGet()~ method.
 
 - path :: String. Path to the remote file to download
@@ -1732,10 +1744,10 @@ the issue. Things which will help
 Perhaps the best assistance is a minimal reproducible example of the issue. Once
 the issue can be readily reproduced, it can usually be fixed very quickly.
 
-* Pull Requests
+* Pull Requests 
 
 Pull requests are always welcomed. However, please ensure your changes pass all
-tests and if your adding a new feature, that tests for that feature are
+tests and if you're adding a new feature, that tests for that feature are
 included. Likewise, for new features or enhancements, please include any
 relevant documentation updates.
 
