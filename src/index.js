@@ -1134,7 +1134,7 @@ class SftpClient {
         } else if (e.isFile()) {
           let src = join(srcDir, e.name);
           let dst = dstDir + this.remotePathSep + e.name;
-          await this.fastPut(src, dst);
+          await this.put(src, dst);
           this.client.emit('upload', { source: src, destination: dst });
         } else {
           this.debugMsg(
@@ -1190,7 +1190,7 @@ class SftpClient {
         } else if (f.type === '-') {
           let src = srcDir + this.remotePathSep + f.name;
           let dst = join(dstDir, f.name);
-          await this.fastGet(src, dst);
+          await this.get(src, dst);
           this.client.emit('download', { source: src, destination: dst });
         } else {
           this.debugMsg(
