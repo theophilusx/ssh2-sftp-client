@@ -113,38 +113,6 @@ describe('fmtError() tests', function () {
   });
 });
 
-describe('addToListenerList', function () {
-  let client = {
-    debugMsg: () => {
-      null;
-    },
-    errorHandled: false,
-    endCalled: false,
-    tempListeners: {},
-  };
-
-  beforeEach(function () {
-    client.errorHandled = false;
-    client.endCalled = false;
-    client.tempListeners = {};
-  });
-
-  it('listener is added to empty list', function () {
-    const fn = () => {
-      console.log('a test');
-      return true;
-    };
-    utils.addToTempListenerList(client, 'test1', 'event', fn);
-    expect('test1' in client.tempListeners).to.equal(true);
-    expect(client.tempListeners['test1']).to.be.an('array');
-    let listeners = client.tempListeners['test1'];
-    expect(listeners.length).to.equal(1);
-    expect(listeners[0].length).to.equal(2);
-    expect(listeners[0][0]).to.be.a('string');
-    return expect(listeners[0][1]).to.be.a('function');
-  });
-});
-
 describe('errorListener', function () {
   let client = {
     debugMsg: () => {

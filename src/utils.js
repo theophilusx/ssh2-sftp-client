@@ -58,14 +58,6 @@ function fmtError(err, name = 'sftp', eCode, retryCount) {
   return newError;
 }
 
-function addToTempListenerList(obj, name, evt, fn) {
-  if (name in obj.tempListeners) {
-    obj.tempListeners[name].push([evt, fn]);
-  } else {
-    obj.tempListeners[name] = [[evt, fn]];
-  }
-}
-
 /**
  * Simple default error listener. Will reformat the error message and
  * throw a new error.
@@ -89,7 +81,6 @@ function errorListener(client, name, reject) {
       }
     }
   };
-  addToTempListenerList(client, name, 'error', fn);
   return fn;
 }
 
@@ -110,7 +101,6 @@ function endListener(client, name, reject) {
       }
     }
   };
-  addToTempListenerList(client, name, 'end', fn);
   return fn;
 }
 
@@ -131,25 +121,27 @@ function closeListener(client, name, reject) {
       }
     }
   };
-  addToTempListenerList(client, name, 'close', fn);
   return fn;
 }
 
-function addTempListeners(obj, name, reject) {
-  obj.debugMsg(`${name}: Adding temp event listeners`);
-  obj.client.prependListener('end', endListener(obj, name, reject));
-  obj.client.prependListener('close', closeListener(obj, name, reject));
-  obj.client.prependListener('error', errorListener(obj, name, reject));
+function addTempListeners(client, name, reject) {
+  let listeners = {
+    end: endListener(client, name, reject),
+    close: closeListener(client, name, reject),
+    error: errorListener(client, name, reject),
+  };
+  client.debugMsg(`${name}: Adding temp event listeners`);
+  client.on('end', listeners.end);
+  client.on('close', listeners.close);
+  client.on('error', listeners.error);
+  return listeners;
 }
 
-function removeTempListeners(obj, name) {
-  obj.debugMsg(`${name}: Removing temp event listeners`);
-  if (name in obj.tempListeners) {
-    obj.tempListeners[name].forEach(([e, fn]) => {
-      obj.client.removeListener(e, fn);
-    });
-    obj.tempListeners[name] = [];
-  }
+function removeTempListeners(client, listeners, name) {
+  client.debugMsg(`${name}: Removing temp event listeners`);
+  client.removeListener('end', listeners.end);
+  client.removeListener('close', listeners.close);
+  client.removeListener('error', listeners.error);
 }
 
 /**
@@ -345,7 +337,6 @@ function sleep(ms) {
 
 module.exports = {
   fmtError,
-  addToTempListenerList,
   errorListener,
   endListener,
   closeListener,
