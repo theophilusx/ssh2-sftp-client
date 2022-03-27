@@ -19,12 +19,12 @@ const rmdir = fs.rmSync ? fs.rmSync : fs.rmdirSync;
 describe('uploadDir tests', function () {
   let sftp;
 
-  before('UploadDir() setup hook', async function () {
+  before('uploadDir tests setup hook', async function () {
     sftp = await getConnection();
     return true;
   });
 
-  after('UploadDir() clenaup hook', async function () {
+  after('UploadDir tests clenaup hook', async function () {
     let remotePath = `${config.sftpUrl}/upload-test2`;
     await sftp.rmdir(remotePath, true);
     await sftp.end();
@@ -74,14 +74,14 @@ describe('uploadDir tests', function () {
 describe('Partial file upload', function () {
   let sftp;
 
-  before('UploadDir() setup hook', async function () {
+  before('Partial file upload test setup hook', async function () {
     sftp = await getConnection();
     let remotePath = `${config.sftpUrl}/upload-test/sub1`;
     await sftp.rmdir(remotePath, true);
     return true;
   });
 
-  after('UploadDir() clenaup hook', async function () {
+  after('Partial file upload test clenaup hook', async function () {
     await sftp.end();
     return true;
   });
@@ -113,7 +113,7 @@ describe('Uploaddir bad path tests', function () {
     return true;
   });
 
-  after('UploadDir clenaup hook', async function () {
+  after('UploadDir bad path clenaup hook', async function () {
     await sftp.end();
     return true;
   });
@@ -208,14 +208,14 @@ describe('Download directory', function () {
 describe('Partial download dir', function () {
   let sftp;
 
-  before('Download directory setup hook', async function () {
+  before('Partial download directory setup hook', async function () {
     sftp = await getConnection();
     let localDir = makeLocalPath(config.localUrl, 'download-test', 'sub1');
     rmdir(localDir, { recursive: true });
     return true;
   });
 
-  after('download directory clenaup hook', async function () {
+  after('Partial download directory clenaup hook', async function () {
     let remoteDir = `${config.sftpUrl}/upload-test`;
     let localDir = makeLocalPath(config.localUrl, 'download-test');
     await sftp.rmdir(remoteDir, true);
