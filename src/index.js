@@ -916,21 +916,6 @@ class SftpClient {
    * @return {Promise<String>}
    */
   async rmdir(remotePath, recursive = false) {
-    const _rmdir = (p) => {
-      return new Promise((resolve, reject) => {
-        this.debugMsg(`rmdir -> ${p}`);
-        this.sftp.rmdir(p, (err) => {
-          if (err) {
-            this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
-            reject(fmtError(`${err.message} ${p}`, '_rmdir', err.code));
-          }
-          resolve('Successfully removed directory');
-        });
-      }).finally(() => {
-        removeTempListeners(this, listeners, '_rmdir');
-      });
-    };
-
     const _delete = (remotePath) => {
       return new Promise((resolve, reject) => {
         this.sftp.unlink(remotePath, (err) => {
@@ -948,30 +933,54 @@ class SftpClient {
       });
     };
 
+    const _rmdir = (p) => {
+      return new Promise((resolve, reject) => {
+        this.debugMsg(`rmdir -> ${p}`);
+        this.sftp.rmdir(p, (err) => {
+          if (err) {
+            this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
+            reject(fmtError(`${err.message} ${p}`, '_rmdir', err.code));
+          }
+          resolve('Successfully removed directory');
+        });
+      }).finally(() => {
+        removeTempListeners(this, listeners, '_rmdir');
+      });
+    };
+
+    const _dormdir = async (p, recur) => {
+      try {
+        if (recur) {
+          let list = await this.list(p);
+          if (list.length) {
+            let files = list.filter((item) => item.type !== 'd');
+            let dirs = list.filter((item) => item.type === 'd');
+            this.debugMsg('rmdir contents (files): ', files);
+            this.debugMsg('rmdir contents (dirs): ', dirs);
+            let promiseList = [];
+            for (let f of files) {
+              promiseList.push(_delete(`${p}${this.remotePathSep}${f.name}`));
+            }
+            for (let d of dirs) {
+              promiseList.push(
+                _dormdir(`${p}${this.remotePathSep}${d.name}`, true)
+              );
+            }
+            await Promise.all(promiseList);
+          }
+        }
+        return await _rmdir(p);
+      } catch (err) {
+        throw err.custom ? err : fmtError(err, '_dormdir', err.code);
+      }
+    };
+
     let listeners;
     try {
       listeners = addTempListeners(this, 'rmdir');
       haveConnection(this, 'rmdir');
       let absPath = await normalizeRemotePath(this, remotePath);
-      if (!recursive) {
-        return _rmdir(absPath);
-      }
-      let list = await this.list(absPath);
-      if (list.length) {
-        let files = list.filter((item) => item.type !== 'd');
-        let dirs = list.filter((item) => item.type === 'd');
-        this.debugMsg('rmdir contents (files): ', files);
-        this.debugMsg('rmdir contents (dirs): ', dirs);
-        let promiseList = [];
-        for (let f of files) {
-          promiseList.push(_delete(`${absPath}${this.remotePathSep}${f.name}`));
-        }
-        await Promise.all(promiseList);
-        for (let d of dirs) {
-          await this.rmdir(`${absPath}${this.remotePathSep}${d.name}`, true);
-        }
-      }
-      return _rmdir(absPath);
+      return await _dormdir(absPath, recursive);
     } catch (err) {
       this._resetEventFlags();
       throw err.custom ? err : fmtError(err, 'rmdir', err.code);
