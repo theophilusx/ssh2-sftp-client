@@ -902,18 +902,26 @@ The upload process also emits 'upload' events. These events are fired for each
 successfully uploaded file. The ~upload~ event calls listeners with 1 argument,
 an object which has properties source and destination. The source property is
 the path of the file uploaded and the destination property is the path to where
-the file was uploaded to. The purpose of this event is to provide some way for
+the file was uploaded. The purpose of this event is to provide some way for
 client code to get feedback on the upload progress. You can add your own lisener
 using the ~on()~ method.
 
-The optionsl /filter/ argument is a regular expression which can be used to
-select which files and directories to include in the upload.
+The optionsl /filter/ argument is a function which will be called for each item
+to be uploaded. The function will be called with two arguments. The first
+argument is the full path of the item to be uploaded and the second argument is
+a boolean, which will be true if the target path is for a directory. The filter
+function will be called for each item in the source path. If the function
+returns true, the item will be uploaded. If it returns false, it will be
+filtered and not uplaoded.
 
 - srcDir :: A local file path specified as a string
 - dstDir :: A remote file path specified as a string
-- filter :: A regular expression used to filter which files and directories to
-  include in the upload
-
+- filter :: A filter predicate function which is called for each item in the
+  source path. The argument will receive two arguments. The first is the full
+  path to the item and the second is a boolean which will be true if the item is
+  a directory. If the function returns true, the item will be uploaded,
+  otherwise it will be filtered out and ignored.
+  
 **** Example
 
      #+begin_src javascript
@@ -929,36 +937,38 @@ select which files and directories to include in the upload.
        require('dotenv').config({path: dotenvPath});
 
        const config = {
-   host: process.env.SFTP_SERVER,
-   username: process.env.SFTP_USER,
-   password: process.env.SFTP_PASSWORD,
-   port: process.env.SFTP_PORT || 22
+         host: process.env.SFTP_SERVER,
+         username: process.env.SFTP_USER,
+         password: process.env.SFTP_PASSWORD,
+         port: process.env.SFTP_PORT || 22
        };
 
        async function main() {
-   const client = new SftpClient('upload-test');
-   const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
-   const dst = '/home/tim/upload-test';
+         const client = new SftpClient('upload-test');
+         const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
+         const dst = '/home/tim/upload-test';
 
-   try {
-     await client.connect(config);
-     client.on('upload', info => {
-       console.log(`Listener: Uploaded ${info.source}`);
-     });
-     let rslt = await client.uploadDir(src, dst);
-     return rslt;
-   } finally {
-     client.end();
-   }
+         try {
+           await client.connect(config);
+           client.on('upload', info => {
+             console.log(`Listener: Uploaded ${info.source}`);
+           });
+           let rslt = await client.uploadDir(src, dst);
+           return rslt;
+         } catch (err) {
+           console.error(err);
+         } finally {
+           client.end();
+         }
        }
 
        main()
-   .then(msg => {
-     console.log(msg);
-   })
-   .catch(err => {
-     console.log(`main error: ${err.message}`);
-   });
+         .then(msg => {
+           console.log(msg);
+         })
+         .catch(err => {
+           console.log(`main error: ${err.message}`);
+         });
 
      #+end_src
 
@@ -977,14 +987,18 @@ the remote file that has been downloaded and the destination is the local path
 to where the file was downloaded to. You can add a listener for this event using
 the ~on()~ method.
 
-The optional /filter/ argument is a regular expression which can be used to
-select which files and directories will be downloaded from the remote server.
+The optional /filter/ argument is a predicate function which will be called with
+two arguments for each potential item to be downloaded. The first argument is
+the full path of the item and the second argument is a boolean, which will be
+true if the item is a directory. If the function returns true, the item will be
+included in the download. If it returns false, it will be filtered and ignored.
 
 - srcDir :: A remote file path specified as a string
 - dstDir :: A local file path specified as a string
-- filter :: A regular expression used to match the files and directories to be
-  downloaded
-
+- filter :: A predicate function called with two arguments, the full path to an
+  item and a boolean value which will be true if the item is a directory. The
+  function is called for each item in the download path.
+  
 **** Example
 
 #+begin_src javascript
