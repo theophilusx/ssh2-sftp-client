@@ -920,13 +920,7 @@ class SftpClient {
       return new Promise((resolve, reject) => {
         this.sftp.unlink(remotePath, (err) => {
           if (err && err.code !== 2) {
-            reject(
-              fmtError(
-                `${err.message} ${remotePath}`,
-                'rmdir _delete',
-                err.code
-              )
-            );
+            reject(fmtError(`${err.message} ${remotePath}`, 'rmdir', err.code));
           }
           resolve(true);
         });
@@ -939,7 +933,7 @@ class SftpClient {
         this.sftp.rmdir(p, (err) => {
           if (err) {
             this.debugMsg(`rmdir error ${err.message} code: ${err.code}`);
-            reject(fmtError(`${err.message} ${p}`, '_rmdir', err.code));
+            reject(fmtError(`${err.message} ${p}`, 'rmdir', err.code));
           }
           resolve('Successfully removed directory');
         });
@@ -980,7 +974,18 @@ class SftpClient {
       listeners = addTempListeners(this, 'rmdir');
       haveConnection(this, 'rmdir');
       let absPath = await normalizeRemotePath(this, remotePath);
-      return await _dormdir(absPath, recursive);
+      let dirStatus = await this.exists(absPath);
+      if (dirStatus && dirStatus !== 'd') {
+        throw fmtError(
+          `Bad path: ${absPath} not a directory`,
+          'rmdir',
+          errorCode.badPath
+        );
+      } else if (!dirStatus) {
+        this.debugMsg(`rmdir: ${absPath} does not exist - ignoring`);
+      } else {
+        return await _dormdir(absPath, recursive);
+      }
     } catch (err) {
       this._resetEventFlags();
       throw err.custom ? err : fmtError(err, 'rmdir', err.code);
@@ -1141,10 +1146,22 @@ class SftpClient {
    *                         files and directories to upload
    * @returns {Promise<String>}
    */
-  async uploadDir(srcDir, dstDir, filter = /.*/) {
+  async uploadDir(srcDir, dstDir, filter) {
     try {
-      this.debugMsg(`uploadDir -> ${srcDir} ${dstDir}`);
+      this.debugMsg(`uploadDir -> SRC = ${srcDir} DST = ${dstDir}`);
+      haveConnection(this, 'uploadDir');
+      //let absSrcDir = fs.realpathSync(srcDir);
+      let absDstDir = await normalizeRemotePath(this, dstDir);
+
+      this.debugMsg(`uploadDir <- SRC = ${srcDir} DST = ${absDstDir}`);
       const srcType = localExists(srcDir);
+      if (!srcType) {
+        throw fmtError(
+          `Bad path: ${srcDir} not exist`,
+          'uploadDir',
+          errorCode.badPath
+        );
+      }
       if (srcType !== 'd') {
         throw fmtError(
           `Bad path: ${srcDir}: not a directory`,
@@ -1152,36 +1169,43 @@ class SftpClient {
           errorCode.badPath
         );
       }
-      haveConnection(this, 'uploadDir');
-      let dstStatus = await this.exists(dstDir);
+      let dstStatus = await this.exists(absDstDir);
       if (dstStatus && dstStatus !== 'd') {
-        throw fmtError(`Bad path ${dstDir}`, 'uploadDir', errorCode.badPath);
+        this.debugMsg(`UploadDir: DST ${absDstDir} exists but not a directory`);
+        throw fmtError(
+          `Bad path ${absDstDir} Not a directory`,
+          'uploadDir',
+          errorCode.badPath
+        );
       }
       if (!dstStatus) {
-        await this.mkdir(dstDir, true);
+        this.debugMsg(`UploadDir: Creating directory ${absDstDir}`);
+        await this.mkdir(absDstDir, true);
       }
       let dirEntries = fs.readdirSync(srcDir, {
         encoding: 'utf8',
         withFileTypes: true,
       });
-      dirEntries = dirEntries.filter((item) => filter.test(item.name));
+      if (filter) {
+        dirEntries = dirEntries.filter((item) =>
+          filter(join(srcDir, item.name), item.isDirectory())
+        );
+      }
       for (let e of dirEntries) {
+        let newSrc = join(srcDir, e.name);
+        let newDst = `${absDstDir}${this.remotePathSep}${e.name}`;
         if (e.isDirectory()) {
-          let newSrc = join(srcDir, e.name);
-          let newDst = dstDir + this.remotePathSep + e.name;
           await this.uploadDir(newSrc, newDst, filter);
         } else if (e.isFile()) {
-          let src = join(srcDir, e.name);
-          let dst = dstDir + this.remotePathSep + e.name;
-          await this.put(src, dst);
-          this.client.emit('upload', { source: src, destination: dst });
+          await this.put(newSrc, newDst);
+          this.client.emit('upload', { source: newSrc, destination: newDst });
         } else {
           this.debugMsg(
             `uploadDir: File ignored: ${e.name} not a regular file`
           );
         }
       }
-      return `${srcDir} uploaded to ${dstDir}`;
+      return `${srcDir} uploaded to ${absDstDir}`;
     } catch (err) {
       this._resetEventFlags();
       throw err.custom ? err : fmtError(err, 'uploadDir');
@@ -1200,11 +1224,19 @@ class SftpClient {
    *                         files and directories to upload
    * @returns {Promise<String>}
    */
-  async downloadDir(srcDir, dstDir, filter = /.*/) {
+  async downloadDir(srcDir, dstDir, filter) {
     try {
       this.debugMsg(`downloadDir -> ${srcDir} ${dstDir}`);
       haveConnection(this, 'downloadDir');
-      let fileList = await this.list(srcDir, filter);
+      let fileList = await this.list(srcDir);
+      if (filter) {
+        fileList = fileList.filter((item) =>
+          filter(
+            `${srcDir}${this.remotePathSep}${item.name}`,
+            item.type === 'd' ? true : false
+          )
+        );
+      }
       const localCheck = haveLocalCreate(dstDir);
       if (!localCheck.status && localCheck.details === 'permission denied') {
         throw fmtError(
@@ -1222,15 +1254,13 @@ class SftpClient {
         );
       }
       for (let f of fileList) {
+        let newSrc = `${srcDir}${this.remotePathSep}${f.name}`;
+        let newDst = join(dstDir, f.name);
         if (f.type === 'd') {
-          let newSrc = srcDir + this.remotePathSep + f.name;
-          let newDst = join(dstDir, f.name);
           await this.downloadDir(newSrc, newDst, filter);
         } else if (f.type === '-') {
-          let src = srcDir + this.remotePathSep + f.name;
-          let dst = join(dstDir, f.name);
-          await this.get(src, dst);
-          this.client.emit('download', { source: src, destination: dst });
+          await this.get(newSrc, newDst);
+          this.client.emit('download', { source: newSrc, destination: newDst });
         } else {
           this.debugMsg(
             `downloadDir: File ignored: ${f.name} not regular file`

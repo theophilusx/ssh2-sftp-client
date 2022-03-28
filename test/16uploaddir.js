@@ -10,11 +10,16 @@ const {
   makeLocalPath,
 } = require('./hooks/global-hooks');
 const fs = require('fs');
+const { basename } = require('path');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 const rmdir = fs.rmSync ? fs.rmSync : fs.rmdirSync;
+
+const myFilter = (f) => {
+  return basename(f).startsWith('.') ? false : true;
+};
 
 describe('uploadDir tests', function () {
   let sftp;
@@ -31,16 +36,11 @@ describe('uploadDir tests', function () {
     return true;
   });
 
-  it('Upload directory', function () {
+  it('Upload directory', async function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = `${config.sftpUrl}/upload-test`;
-    return expect(sftp.uploadDir(localDir, remoteDir)).to.eventually.equal(
-      `${localDir} uploaded to ${remoteDir}`
-    );
-  });
-
-  it('Uploaded top-level files', async function () {
-    let remoteDir = `${config.sftpUrl}/upload-test`;
+    let result = await sftp.uploadDir(localDir, remoteDir);
+    expect(result).to.equal(`${localDir} uploaded to ${remoteDir}`);
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.containSubset([
       { name: 'file2.txt.gz', type: '-', size: 570314 },
@@ -52,16 +52,11 @@ describe('uploadDir tests', function () {
     ]);
   });
 
-  it('Upload filtered directory', function () {
+  it('Upload filtered directory', async function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = `${config.sftpUrl}/upload-test2`;
-    return expect(
-      sftp.uploadDir(localDir, remoteDir, /^[^.]/)
-    ).to.eventually.equal(`${localDir} uploaded to ${remoteDir}`);
-  });
-
-  it('Uploaded filtered top-level files', async function () {
-    let remoteDir = `${config.sftpUrl}/upload-test2`;
+    let result = await sftp.uploadDir(localDir, remoteDir, myFilter);
+    expect(result).to.equal(`${localDir} uploaded to ${remoteDir}`);
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.not.containSubset([
       { name: 'file2.txt.gz', type: '-', size: 570314 },
@@ -176,7 +171,7 @@ describe('Download directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test2');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(
-      sftp.downloadDir(remoteDir, localDir, /^[^.]/)
+      sftp.downloadDir(remoteDir, localDir, myFilter)
     ).to.eventually.equal(`${remoteDir} downloaded to ${localDir}`);
   });
 
