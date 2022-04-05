@@ -982,7 +982,11 @@ class SftpClient {
           errorCode.badPath
         );
       } else if (!dirStatus) {
-        this.debugMsg(`rmdir: ${absPath} does not exist - ignoring`);
+        throw fmtError(
+          `Bad path: ${absPath} No such file`,
+          'rmdir',
+          errorCode.badPath
+        );
       } else {
         return await _dormdir(absPath, recursive);
       }
