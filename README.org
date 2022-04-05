@@ -9,7 +9,7 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v7.2.3*.
+Current stable release is *v8.0.0*.
 
 Code has been tested against Node versions 14.19.1, 16.14.2 and 17.8.0
 
@@ -17,6 +17,34 @@ Node versions < 12.x are not supported. However, node v10.x should still work,
 although some tests will fail due to changes in file system functions used in
 test setup and tear down.
 
+** Version 8.x.x Changes
+
+  - *Breaking Change*: The API for ~uploadDir()~ and ~downloadDir()~ has been
+    changed. These methods now expect a function as the optional 3rd argument.
+    Previously, the 3rd argument was a regular expression used to filter out
+    which files and directories should be included in the upload or download
+    action. The method now expects a predicate function which will return true
+    if the target is to be included in the upload or download and false if it is
+    to be excluded. The predicate function will be called with two arguments, a
+    full path to the target object and a boolean value which is true when the
+    target is a directory, false otherwise. If no filter predicate is supplied,
+    all files and directories under the initial target directory will be
+    transferred. At this time, asynchronous filter functions are not supported.
+
+  - Internal Change: The ~rmdir()~ method has been refactored to enable
+    asynchronous deletion of files and sub-directories. This has significantly
+    increased performance when deleting larger directory trees, especially trees
+    which are /broad/ with lots of files and directories at the same level. For
+    deep narrow trees, there is less performance benefit because sub-directories
+    must be removed before parents, which imposes synchronous processing. It is
+    likely that for extremely large directory trees, the additional resources
+    required to run large numbers of asynchronous tasks will become problematic.
+    In such situations, it may be necessary to manually break up the deletion
+    process into multiple ~rmdir()~ calls. However, this is considered a fairly
+    extreme use case which is rare (a use case which wold also have been
+    problematic with the old implementation as performance would have been very
+    poor).
+    
 * Installation
 
 #+begin_src shell
@@ -42,50 +70,6 @@ npm install ssh2-sftp-client
     console.log(err, 'catch error');
   });
 #+end_src
-
-* Version 7.x Changes
-
-- This version is based on version 1.x.x of ~ssh2~. This version of ~ssh2~ is a
-  complete re-write of the ~ssh2~ library. This re-write addresses issues
-  encountered when using node v14 as well as some design weaknesses in the
-  previous 0.8.x version.
-
-- *Breaking Change* Expanded option handling for ~get()~ and ~put()~ methods. A number of use
-  cases were identified where setting specific options on the read and write
-  streams and the pipe operation are necessary. For example, disabling
-  ~autoClose~ on streams or the ~end~ event in pipes. The ~options~ argument for
-  ~get()~ and ~put()~ calls now supports properties for ~readStreamOptions~,
-  ~writeStreamOptions~ and ~pipeOptions~. Note that options are only applied to
-  streams created by the ~get()~ and ~put()~ methods. Streams passed into these
-  methods are under the control of the client code and therefore cannot have
-  options supplied in arguments to those streams (you would apply such options
-  when you create the streams). Options are typically only necessary in special
-  use cases. Most of the time, no options are required. However, if you are
-  currently using options to either ~put()~ or ~get()~, you will need to update
-  your code to map these options to the new structure. 
-
-- *Breaking Change 7.1.0* A race condition was identified when using a put()
-  call with a writeStream option of ~autoClose: false~. In some situations, the
-  promise would be resolved before the final close of the write stream. This
-  could result in errors if you immediately attempt to access the uploaded
-  file. To avoid this situatioin, the promise is now resolved once a ~close~
-  event is emitted. This means that setting ~autoClose: false~ can no longer be
-  supported. The write stream for ~put()~ will autoClose once data writing has completed.
-   
-- Improved event handling. A listener for a global error event is now defined to
-  catch errors which occur in-between method calls i.e. connection lost
-  in-between calls to the library methods. A new mechanism has also been added
-  for removal of listeners when no longer required. 
-
-- uploadDir/downloadDir change in 7.2.3. THe uploadDir() and downloadDir()
-  methods previously used fastPut() and fastGet() to transfer data.
-  Unfortunately, not all SFTP servers support the concurrent processing used by
-  these methods. This meant these methods would fail on some platforms. For now,
-  the fastPut() and fastGet() calls have been replaced with plain put() and
-  get() calls. This will mean uploadDir()/downloadDir() will be slower. However,
-  there is other larger changes in the works which should see a significant
-  speed imp[rovement for these (and other methods). We may also add an option
-  which will allow for selection of fastPut()/fastGet().
 
 * Documentation
 
@@ -903,7 +887,7 @@ successfully uploaded file. The ~upload~ event calls listeners with 1 argument,
 an object which has properties source and destination. The source property is
 the path of the file uploaded and the destination property is the path to where
 the file was uploaded. The purpose of this event is to provide some way for
-client code to get feedback on the upload progress. You can add your own lisener
+client code to get feedback on the upload progress. You can add your own listener
 using the ~on()~ method.
 
 The optionsl /filter/ argument is a function which will be called for each item
@@ -912,7 +896,10 @@ argument is the full path of the item to be uploaded and the second argument is
 a boolean, which will be true if the target path is for a directory. The filter
 function will be called for each item in the source path. If the function
 returns true, the item will be uploaded. If it returns false, it will be
-filtered and not uplaoded.
+filtered and not uploaded. The filter function is called via the ~Array.filter~
+method. These array comprehension methods are known to be unsafe for
+asynchronous functions. Therefore, only synchronous filter functions are
+supported at this time.
 
 - srcDir :: A local file path specified as a string
 - dstDir :: A remote file path specified as a string
@@ -992,6 +979,9 @@ two arguments for each potential item to be downloaded. The first argument is
 the full path of the item and the second argument is a boolean, which will be
 true if the item is a directory. If the function returns true, the item will be
 included in the download. If it returns false, it will be filtered and ignored.
+The filter function is called via the ~Array.filter~ method. These array
+comprehension methods are known to be unsafe for asynchronous functions.
+Therefore, only synchronous filter functions are supported at this time.
 
 - srcDir :: A remote file path specified as a string
 - dstDir :: A local file path specified as a string

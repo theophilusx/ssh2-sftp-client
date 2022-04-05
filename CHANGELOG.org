@@ -1,11 +1,25 @@
 * Change Logging
 
+** v8.0.0
+    - *Breaking Change*: The ~uploadDir()~ and ~donwloadDir()~ methods now
+      accept a predicate filter function instead of a regular expression for the
+      3rd argument. The function is called with 2 arguments - path to each
+      target object (file or directory) and a boolean value which will be true
+      if the target is a directory.
+    - Performance Enhancement: The ~rmdir()~ method has been refactored to
+      enable asynchronous processing of file and directory deletion. This has
+      significantly improved performance when deleting large directory trees,
+      especially broad shallow trees which have lots of files and directories at
+      the same level.
+    - Bumped ssh2 to latest 1.9.0 version. 
+
 ** v7.2.3
     - Change uploadDir/downloadDir methods to use put() and get() instead of
       fastPut() and fastGet() because the latter are not support by all sftp servers. 
     - Bump ssh2 dependency to 1.8.0
     - Refactor the connect method to ensure error messages returned are the main
       error which caused the connection to fail rather than the last error reported.
+      
 ** v7.2.2
     - Bump to ssh2 1.6.0
     - bump development dependencies to latest versions
