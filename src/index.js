@@ -951,14 +951,12 @@ class SftpClient {
             let dirs = list.filter((item) => item.type === 'd');
             this.debugMsg('rmdir contents (files): ', files);
             this.debugMsg('rmdir contents (dirs): ', dirs);
+            for (let d of dirs) {
+              await _dormdir(`${p}${this.remotePathSep}${d.name}`, true);
+            }
             let promiseList = [];
             for (let f of files) {
               promiseList.push(_delete(`${p}${this.remotePathSep}${f.name}`));
-            }
-            for (let d of dirs) {
-              promiseList.push(
-                _dormdir(`${p}${this.remotePathSep}${d.name}`, true)
-              );
             }
             await Promise.all(promiseList);
           }
