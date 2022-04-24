@@ -1080,8 +1080,7 @@ class SftpClient {
    * server.
    * @param {String} srcDir - local source directory
    * @param {String} dstDir - remote destination directory
-   * @param {RegExp} filter - (Optional) a regular expression used to select
-   *                         files and directories to upload
+   * @param {function(String,Boolean):Boolean} filter - (Optional) The first argument is the full path of the item to be uploaded and the second argument is a boolean, which will be true if the target path is for a directory.  If the function returns true, the item will be uploaded 
    * @returns {Promise<String>}
    */
   async uploadDir(srcDir, dstDir, filter) {
@@ -1148,8 +1147,7 @@ class SftpClient {
    * file system.
    * @param {String} srcDir - remote source directory
    * @param {String} dstDir - local destination directory
-   * @param {RegExp} filter - (Optional) a regular expression used to select
-   *                         files and directories to upload
+   * @param {function(String,Boolean):Boolean} filter - (Optional) The first argument is the full path of the item to be downloaded and the second argument is a boolean, which will be true if the target path is for a directory.  If the function returns true, the item will be downloaded 
    * @returns {Promise<String>}
    */
   async downloadDir(srcDir, dstDir, filter) {
