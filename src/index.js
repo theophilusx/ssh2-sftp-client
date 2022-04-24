@@ -72,9 +72,7 @@ class SftpClient {
   debugMsg(msg, obj) {
     if (this.debug) {
       if (obj) {
-        this.debug(
-          `CLIENT[${this.clientName}]: ${msg} ${JSON.stringify(obj, null, ' ')}`
-        );
+        this.debug(`CLIENT[${this.clientName}]: ${msg} ${JSON.stringify(obj, null, ' ')}`);
       } else {
         this.debug(`CLIENT[${this.clientName}]: ${msg}`);
       }
@@ -122,9 +120,7 @@ class SftpClient {
       listeners = addTempListeners(this, 'getConnection', reject);
       this.debugMsg('getConnection: created promise');
       doReady = () => {
-        this.debugMsg(
-          'getConnection ready listener: got connection - promise resolved'
-        );
+        this.debugMsg('getConnection ready listener: got connection - promise resolved');
         resolve(true);
       };
       this.on('ready', doReady);
@@ -191,9 +187,7 @@ class SftpClient {
         (retry, attempt) => {
           this.debugMsg(`connect: Connect attempt ${attempt}`);
           return this.getConnection(config).catch((err) => {
-            this.debugMsg(
-              `getConnection retry catch: ${err.message} Code: ${err.code}`
-            );
+            this.debugMsg(`getConnection retry catch: ${err.message} Code: ${err.code}`);
             switch (err.code) {
               case 'ENOTFOUND':
               case 'ECONNREFUSED':
@@ -241,9 +235,7 @@ class SftpClient {
             if (err.code === 2) {
               resolve('');
             } else {
-              reject(
-                fmtError(`${err.message} ${remotePath}`, 'realPath', err.code)
-              );
+              reject(fmtError(`${err.message} ${remotePath}`, 'realPath', err.code));
             }
           }
           this.debugMsg(`realPath <- ${absPath}`);
@@ -283,17 +275,9 @@ class SftpClient {
           if (err) {
             this.debugMsg(`_stat: Error ${err.message} code: ${err.code}`);
             if (err.code === 2 || err.code === 4) {
-              reject(
-                fmtError(
-                  `No such file: ${remotePath}`,
-                  '_stat',
-                  errorCode.notexist
-                )
-              );
+              reject(fmtError(`No such file: ${remotePath}`, '_stat', errorCode.notexist));
             } else {
-              reject(
-                fmtError(`${err.message} ${remotePath}`, '_stat', err.code)
-              );
+              reject(fmtError(`${err.message} ${remotePath}`, '_stat', err.code));
             }
           } else {
             let result = {
@@ -369,9 +353,7 @@ class SftpClient {
           return false;
         } catch (err) {
           if (err.code === errorCode.notexist) {
-            this.debugMsg(
-              `exists: ${remotePath} = false errorCode = ${err.code}`
-            );
+            this.debugMsg(`exists: ${remotePath} = false errorCode = ${err.code}`);
             return false;
           }
           this.debugMsg(`exists: throw error ${err.message} ${err.code}`);
@@ -428,6 +410,7 @@ class SftpClient {
                   },
                   owner: item.attrs.uid,
                   group: item.attrs.gid,
+                  longname: item.longname
                 };
               });
             }
@@ -497,11 +480,7 @@ class SftpClient {
             const localCheck = haveLocalCreate(dst);
             if (!localCheck.status) {
               return reject(
-                fmtError(
-                  `Bad path: ${dst}: ${localCheck.details}`,
-                  'get',
-                  localCheck.code
-                )
+                fmtError(`Bad path: ${dst}: ${localCheck.details}`, 'get', localCheck.code)
               );
             }
             wtr = fs.createWriteStream(
@@ -514,11 +493,7 @@ class SftpClient {
           }
           wtr.once('error', (err) => {
             reject(
-              fmtError(
-                `${err.message} ${typeof dst === 'string' ? dst : ''}`,
-                'get',
-                err.code
-              )
+              fmtError(`${err.message} ${typeof dst === 'string' ? dst : ''}`, 'get', err.code)
             );
           });
           if (
@@ -585,9 +560,7 @@ class SftpClient {
       const ftype = await this.exists(remotePath);
       if (ftype !== '-') {
         const msg =
-          ftype === false
-            ? `No such file ${remotePath}`
-            : `Not a regular file ${remotePath}`;
+          ftype === false ? `No such file ${remotePath}` : `Not a regular file ${remotePath}`;
         let err = new Error(msg);
         err.code = errorCode.badPath;
         throw err;
@@ -602,10 +575,7 @@ class SftpClient {
       let rslt = await new Promise((resolve, reject) => {
         listeners = addTempListeners(this, 'fastGet', reject);
         if (haveConnection(this, 'fastGet', reject)) {
-          this.debugMsg(
-            `fastGet -> remote: ${remotePath} local: ${localPath} `,
-            options
-          );
+          this.debugMsg(`fastGet -> remote: ${remotePath} local: ${localPath} `, options);
           this.sftp.fastGet(remotePath, localPath, options, (err) => {
             if (err) {
               this.debugMsg(`fastGet error ${err.message} code: ${err.code}`);
@@ -645,19 +615,11 @@ class SftpClient {
       const localCheck = haveLocalAccess(localPath);
       if (!localCheck.status) {
         reject(
-          fmtError(
-            `Bad path: ${localPath}: ${localCheck.details}`,
-            'fastPut',
-            localCheck.code
-          )
+          fmtError(`Bad path: ${localPath}: ${localCheck.details}`, 'fastPut', localCheck.code)
         );
       } else if (localCheck.status && localExists(localPath) === 'd') {
         reject(
-          fmtError(
-            `Bad path: ${localPath} not a regular file`,
-            'fastPut',
-            errorCode.badPath
-          )
+          fmtError(`Bad path: ${localPath} not a regular file`, 'fastPut', errorCode.badPath)
         );
       } else if (haveConnection(this, 'fastPut', reject)) {
         this.debugMsg(
@@ -715,20 +677,14 @@ class SftpClient {
         if (!localCheck.status) {
           this.debugMsg(`put: local source check error ${localCheck.details}`);
           return reject(
-            fmtError(
-              `Bad path: ${localSrc}: ${localCheck.details}`,
-              'put',
-              localCheck.code
-            )
+            fmtError(`Bad path: ${localSrc}: ${localCheck.details}`, 'put', localCheck.code)
           );
         }
       }
       if (haveConnection(this, 'put')) {
         wtr = this.sftp.createWriteStream(
           remotePath,
-          options.writeStreamOptions
-            ? { ...options.writeStreamOptions, autoClose: true }
-            : {}
+          options.writeStreamOptions ? { ...options.writeStreamOptions, autoClose: true } : {}
         );
         wtr.once('error', (err) => {
           this.debugMsg(`put: write stream error ${err.message}`);
@@ -756,9 +712,7 @@ class SftpClient {
             this.debugMsg(`put: read stream error ${err.message}`);
             reject(
               fmtError(
-                `${err.message} ${
-                  typeof localSrc === 'string' ? localSrc : ''
-                }`,
+                `${err.message} ${typeof localSrc === 'string' ? localSrc : ''}`,
                 'put',
                 err.code
               )
@@ -810,9 +764,7 @@ class SftpClient {
           options.flags = 'a';
           let stream = this.sftp.createWriteStream(remotePath, options);
           stream.on('error', (err_1) => {
-            reject(
-              fmtError(`${err_1.message} ${remotePath}`, 'append', err_1.code)
-            );
+            reject(fmtError(`${err_1.message} ${remotePath}`, 'append', err_1.code));
           });
           stream.on('finish', () => {
             resolve(`Appended data to ${remotePath}`);
@@ -855,9 +807,7 @@ class SftpClient {
               error.code = errorCode.badPath;
               reject(error);
             } else if (err.code === 2) {
-              let error = new Error(
-                `Bad path: ${p} parent not a directory or not exist`
-              );
+              let error = new Error(`Bad path: ${p} parent not a directory or not exist`);
               error.code = errorCode.badPath;
               reject(error);
             } else {
@@ -974,17 +924,9 @@ class SftpClient {
       let absPath = await normalizeRemotePath(this, remotePath);
       let dirStatus = await this.exists(absPath);
       if (dirStatus && dirStatus !== 'd') {
-        throw fmtError(
-          `Bad path: ${absPath} not a directory`,
-          'rmdir',
-          errorCode.badPath
-        );
+        throw fmtError(`Bad path: ${absPath} not a directory`, 'rmdir', errorCode.badPath);
       } else if (!dirStatus) {
-        throw fmtError(
-          `Bad path: ${absPath} No such file`,
-          'rmdir',
-          errorCode.badPath
-        );
+        throw fmtError(`Bad path: ${absPath} No such file`, 'rmdir', errorCode.badPath);
       } else {
         return await _dormdir(absPath, recursive);
       }
@@ -1020,9 +962,7 @@ class SftpClient {
               this.debugMsg('delete ignore missing target error');
               resolve(`Successfully deleted ${remotePath}`);
             } else {
-              reject(
-                fmtError(`${err.message} ${remotePath}`, 'delete', err.code)
-              );
+              reject(fmtError(`${err.message} ${remotePath}`, 'delete', err.code));
             }
           }
           resolve(`Successfully deleted ${remotePath}`);
@@ -1055,11 +995,7 @@ class SftpClient {
           if (err) {
             this.debugMsg(`rename error ${err.message} code: ${err.code}`);
             reject(
-              fmtError(
-                `${err.message} From: ${fromPath} To: ${toPath}`,
-                'rename',
-                err.code
-              )
+              fmtError(`${err.message} From: ${fromPath} To: ${toPath}`, 'rename', err.code)
             );
           }
           resolve(`Successfully renamed ${fromPath} to ${toPath}`);
@@ -1158,18 +1094,10 @@ class SftpClient {
       this.debugMsg(`uploadDir <- SRC = ${srcDir} DST = ${absDstDir}`);
       const srcType = localExists(srcDir);
       if (!srcType) {
-        throw fmtError(
-          `Bad path: ${srcDir} not exist`,
-          'uploadDir',
-          errorCode.badPath
-        );
+        throw fmtError(`Bad path: ${srcDir} not exist`, 'uploadDir', errorCode.badPath);
       }
       if (srcType !== 'd') {
-        throw fmtError(
-          `Bad path: ${srcDir}: not a directory`,
-          'uploadDir',
-          errorCode.badPath
-        );
+        throw fmtError(`Bad path: ${srcDir}: not a directory`, 'uploadDir', errorCode.badPath);
       }
       let dstStatus = await this.exists(absDstDir);
       if (dstStatus && dstStatus !== 'd') {
@@ -1202,9 +1130,7 @@ class SftpClient {
           await this.put(newSrc, newDst);
           this.client.emit('upload', { source: newSrc, destination: newDst });
         } else {
-          this.debugMsg(
-            `uploadDir: File ignored: ${e.name} not a regular file`
-          );
+          this.debugMsg(`uploadDir: File ignored: ${e.name} not a regular file`);
         }
       }
       return `${srcDir} uploaded to ${absDstDir}`;
@@ -1264,9 +1190,7 @@ class SftpClient {
           await this.get(newSrc, newDst);
           this.client.emit('download', { source: newSrc, destination: newDst });
         } else {
-          this.debugMsg(
-            `downloadDir: File ignored: ${f.name} not regular file`
-          );
+          this.debugMsg(`downloadDir: File ignored: ${f.name} not regular file`);
         }
       }
       return `${srcDir} downloaded to ${dstDir}`;

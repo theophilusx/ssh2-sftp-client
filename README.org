@@ -308,6 +308,7 @@ The objects in the array returned by ~list()~ have the following properties;
     },
     owner: // user ID
     group: // group ID
+    longname: // like ls -l line
   }
 #+end_src
 

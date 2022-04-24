@@ -290,6 +290,7 @@ Retrieves a directory listing. This method returns a Promise, which once realise
       },
       owner: // user ID
       group: // group ID
+      longname: // like ls -l line
     }
     ```
 
