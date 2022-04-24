@@ -1084,7 +1084,7 @@ const host = 'my-sftp-server.net';
 const port = 22; // default SSH/SFTP port on remote server
 
 // connect to SOCKS 5 proxy
-const { socket } = await SocksClient.createConnection({
+const { socks } = await SocksClient.createConnection({
   proxy: {
     host: 'my.proxy', // proxy hostname
     port: 1080, // proxy port
@@ -1097,7 +1097,7 @@ const { socket } = await SocksClient.createConnection({
 const client = new SFTPClient();
 client.connect({
   host,
-  sock: socket, // pass the socket to proxy here (see ssh2 doc)
+  sock: socks.socket, // pass the socket to proxy here (see ssh2 doc)
   username: '.....',
   privateKey: '.....'
 })
