@@ -39,13 +39,12 @@ describe('append() method tests', function () {
     ).to.be.a('promise');
   });
 
-  it('append two files is rejected', function () {
-    return expect(
-      sftp.append(
-        makeLocalPath(config.localUrl, 'test-file1.txt'),
-        `${config.sftpUrl}/append-test1.md`
-      )
-    ).to.be.rejectedWith('Cannot append one file to another');
+  it('append two files is rejected', async function () {
+    let localFile = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteFile = `${config.sftpUrl}/append-test1.md`;
+    return expect(sftp.append(localFile, remoteFile)).to.be.rejectedWith(
+      'Cannot append one file to another'
+    );
   });
 
   it('append buffer to file', function () {
@@ -95,9 +94,7 @@ describe('append() method tests', function () {
         Buffer.from('this should create a file'),
         config.sftpUrl + '/append-new-file.txt'
       )
-    ).to.eventually.equal(
-      `Appended data to ${config.sftpUrl}/append-new-file.txt`
-    );
+    ).to.be.fulfilled;
   });
 
   it('append to directory is rejected', function () {
