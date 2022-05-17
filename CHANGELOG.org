@@ -1,5 +1,12 @@
 * Change Logging
 
+** v8.1.0
+
+  - Added ~longname~ property to object describing files in a ~list()~ call.
+  - Updated to ssh2 v1.10.0
+  - Modified ~rmdir()~ to only do asynchronous calls for file deletion and not for
+    sub-directories.
+
 ** v8.0.0
     - *Breaking Change*: The ~uploadDir()~ and ~donwloadDir()~ methods now
       accept a predicate filter function instead of a regular expression for the

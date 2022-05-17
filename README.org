@@ -9,9 +9,9 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v8.0.0*.
+Current stable release is *v8.1.0*.
 
-Code has been tested against Node versions 14.19.1, 16.14.2 and 17.8.0
+Code has been tested against Node versions 14.19.1, 16.15.0 and 18.1.0
 
 Node versions < 12.x are not supported. However, node v10.x should still work,
 although some tests will fail due to changes in file system functions used in
@@ -44,6 +44,15 @@ test setup and tear down.
     extreme use case which is rare (a use case which wold also have been
     problematic with the old implementation as performance would have been very
     poor).
+
+ - v8.1.0: The ~list()~ method now includes a ~longname~ property in the descriptor
+   object for each file in the listing. The ~longname~ value is a string which
+   resembles the ~ls -l~ listing.
+   
+ - v8.1.0: The ~rmdir()~ method has been further modified to not recurse into
+   directories using async. It was found that on large directories, this could
+   result in too many separate async processes. Only deletion of files is now
+   handled with asynchronous calls. 
     
 * Installation
 
