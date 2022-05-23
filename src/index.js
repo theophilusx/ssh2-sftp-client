@@ -463,6 +463,10 @@ class SftpClient {
    * @param {Object} options - options object with supported properties of readStreamOptions,
    *                          writeStreamOptions and pipeOptions.
    *
+   * *Important Note*: The ability to set ''autoClose' on read/write streams and 'end' on pipe() calls
+   * is no longer supported. New methods 'createReadStream()' and 'createWriteStream()' have been
+   * added to support low-level access to stream objects.
+   *
    * @return {Promise<String|Stream|Buffer>}
    */
   _get(rPath, dst, opts) {
@@ -662,6 +666,11 @@ class SftpClient {
    * @param  {Object} options - options used for read, write stream and pipe configuration
    *                            value supported by node. Allowed properties are readStreamOptions,
    *                            writeStreamOptions and pipeOptions.
+   *
+   * *Important Note*: The ability to set ''autoClose' on read/write streams and 'end' on pipe() calls
+   * is no longer supported. New methods 'createReadStream()' and 'createWriteStream()' have been
+   * added to support low-level access to stream objects.
+   *
    * @return {Promise<String>}
    */
   _put(lPath, rPath, opts) {
@@ -1300,7 +1309,66 @@ class SftpClient {
     } catch (err) {
       throw err.custom ? err : fmtError(err, 'downloadDir', err.code);
     } finally {
-      removeTempListeners(this, listeners, 'chmod');
+      removeTempListeners(this, listeners, 'downloadDir');
+      this._resetEventFlags();
+    }
+  }
+
+  /**
+   *
+   * Returns a read stream object. This is a low level method which will return a read stream
+   * connected to the remote file object specified as an argument. Client code to fully responsible
+   * for managing this stream object i.e. adding any necessary listeners and disposing of the object etc.
+   *
+   * @param {String} remotePath - path to remote file to attach stream to
+   * @param {Object} options - options to pass to the create stream process
+   *
+   * @returns {Object} a read stream object
+   *
+   */
+  createReadStream(remotePath, options) {
+    let listeners;
+    try {
+      listners = addTemplisteners(this, 'createReadStream');
+      haveconnection(this, 'createReadStream');
+      const stream = this.sftp.createReadStream(remotePath, options);
+      return stream;
+    } catch (err) {
+      throw err.custom
+        ? err
+        : fmtError(err.message, 'createReadStream', err.code);
+    } finally {
+      removeTempListeners(this, listeners, 'creatWriteStreame');
+      this._resetEventFlags();
+    }
+  }
+
+  /**
+   *
+   * Create a write stream object connected to a file on the remote sftp server.
+   * This is a low level method which will return a write stream for the remote file specified
+   * in the 'remotePath' argument. Client code to responsible for managing this object once created.
+   * This includes disposing of file handles, setting up any necessary event listeners etc.
+   *
+   * @param {String} remotePath - path to the remote file on the sftp server
+   * @param (Object} options - options to pass to the create write stream process)
+   *
+   * @returns {Object} a stream object
+   *
+   */
+  createWriteStream(remotePath, options) {
+    let listeners;
+    try {
+      listners = addTemplisteners(this, 'createWriteStream');
+      haveconnection(this, 'createWriteStream');
+      const stream = this.sftp.createWriteStream(remotePath, options);
+      return stream;
+    } catch (err) {
+      throw err.custom
+        ? err
+        : fmtError(err.message, 'createWriteStream', err.code);
+    } finally {
+      removeTempListeners(this, listeners, 'createWriteStream');
       this._resetEventFlags();
     }
   }
