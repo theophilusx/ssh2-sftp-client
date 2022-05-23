@@ -17,43 +17,37 @@ Node versions < 12.x are not supported. However, node v10.x should still work,
 although some tests will fail due to changes in file system functions used in
 test setup and tear down.
 
-** Version 8.x.x Changes
+** Version 9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes
 
-  - *Breaking Change*: The API for ~uploadDir()~ and ~downloadDir()~ has been
-    changed. These methods now expect a function as the optional 3rd argument.
-    Previously, the 3rd argument was a regular expression used to filter out
-    which files and directories should be included in the upload or download
-    action. The method now expects a predicate function which will return true
-    if the target is to be included in the upload or download and false if it is
-    to be excluded. The predicate function will be called with two arguments, a
-    full path to the target object and a boolean value which is true when the
-    target is a directory, false otherwise. If no filter predicate is supplied,
-    all files and directories under the initial target directory will be
-    transferred. At this time, asynchronous filter functions are not supported.
+  - *Breaking Change*: This ~list()~ method no longer accepts a regular expression
+    for filtering the entries to be returned. You can now specify a filter
+    function instead. The function is called for each item in the list of items
+    to be returned, passing in the item object as its only argument.
+    Essentially, this is just a call to ~Array.filter()~, so the filter function
+    should behave in the same way i.e. return true for items to be retained and
+    false for those to be dropped.
+  - *Breaking Change*: The ability to set ~autoClose~ on read and write streams and
+    the ability to set ~end~ on ~pipe~ operations has been removed. These options
+    caused confusion for users and were too easy to get wrong, plus it made the
+    methods overly complicated. For those use-cases where you want to control
+    streams at a low level, two new methods have been added, ~createReadStream()~ and
+    ~createWriteStream()~. However, it should be noted that client code is 100%
+    responsible for managing streams obtained using these methods. Use at your
+    own risk!
+  - New Methods: Two new methods, ~createWriteStream()~ and ~createReadStream()~
+    have been added. These methods will return a stream object connected to a
+    remote file on the ~sftp~ server. Client code is responsible for managing
+    these stream objects. This includes adding any necessary event listeners and
+    disposing of the objects once finished with them.
+  - Refactoring of Listeners: The library manages temporary listeners in order
+    to provide a way to catch events and processes them inside a ~Promise~
+    context. Previously, every method added its own set of temporary listeners.
+    However, this could result in multiple sets of listeners being added,
+    especially for methods which call other methods as part of their processing
+    e.g. ~rmdir(),~ ~uploadDir()~ and ~dowqnloadDir()~. To avoid this, /internal only/
+    versions of each method have been created. These internal methods use an
+    /underscore/ ~_~ prefix. Client code should not use these methods directly. 
 
-  - Internal Change: The ~rmdir()~ method has been refactored to enable
-    asynchronous deletion of files and sub-directories. This has significantly
-    increased performance when deleting larger directory trees, especially trees
-    which are /broad/ with lots of files and directories at the same level. For
-    deep narrow trees, there is less performance benefit because sub-directories
-    must be removed before parents, which imposes synchronous processing. It is
-    likely that for extremely large directory trees, the additional resources
-    required to run large numbers of asynchronous tasks will become problematic.
-    In such situations, it may be necessary to manually break up the deletion
-    process into multiple ~rmdir()~ calls. However, this is considered a fairly
-    extreme use case which is rare (a use case which wold also have been
-    problematic with the old implementation as performance would have been very
-    poor).
-
- - v8.1.0: The ~list()~ method now includes a ~longname~ property in the descriptor
-   object for each file in the listing. The ~longname~ value is a string which
-   resembles the ~ls -l~ listing.
-   
- - v8.1.0: The ~rmdir()~ method has been further modified to not recurse into
-   directories using async. It was found that on large directories, this could
-   result in too many separate async processes. Only deletion of files is now
-   handled with asynchronous calls. 
-    
 * Installation
 
 #+begin_src shell
@@ -259,16 +253,17 @@ for that package for an explanation of these values.
   });
 #+end_src
 
-*** list(path, pattern) ==> Array[object]
+*** list(path, filter) ==> Array[object]
 
 Retrieves a directory listing. This method returns a Promise, which once
 realised, returns an array of objects representing items in the remote
 directory.
 
 - path :: {String} Remote directory path
-- pattern :: (optional) {string|RegExp} A pattern used to filter the items included in the returned
-             array. Pattern can be a simple /glob/-style string or a regular
-             expression. Defaults to ~/.*/~.
+- filter :: (optional) {function} A function used to filter the items included
+  in the returned array. The function is called for each item with the item
+  object being passed in as the argument. The function is passed to
+  Array.filter() to perform the filtering.
 
 **** Example Use
 
