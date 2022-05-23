@@ -17,7 +17,7 @@ const { errorCode } = require('./constants');
 function fmtError(err, name = 'sftp', eCode, retryCount) {
   let msg = '';
   let code = '';
-  let retry = retryCount
+  const retry = retryCount
     ? ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`
     : '';
 
@@ -284,10 +284,10 @@ function haveLocalCreate(filePath) {
 async function normalizeRemotePath(client, aPath) {
   try {
     if (aPath.startsWith('..')) {
-      let root = await client.realPath('..');
+      const root = await client.realPath('..');
       return root + client.remotePathSep + aPath.slice(3);
     } else if (aPath.startsWith('.')) {
-      let root = await client.realPath('.');
+      const root = await client.realPath('.');
       return root + client.remotePathSep + aPath.slice(2);
     }
     return aPath;
