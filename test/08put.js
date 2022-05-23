@@ -37,16 +37,16 @@ describe('put() method tests', function () {
   });
 
   it('put large text file', async function () {
-    let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
-    let remotePath = `${config.sftpUrl}/put-large.txt`;
+    const localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
+    const remotePath = `${config.sftpUrl}/put-large.txt`;
     await sftp.put(localPath, remotePath);
-    let localStats = fs.statSync(localPath);
-    let stats = await sftp.stat(remotePath);
+    const localStats = fs.statSync(localPath);
+    const stats = await sftp.stat(remotePath);
     return expect(stats.size).to.equal(localStats.size);
   });
 
   it('put with stream options', async function () {
-    let options = {
+    const options = {
       readStreamOptions: {
         autoClose: false,
       },
@@ -54,13 +54,14 @@ describe('put() method tests', function () {
         autoClose: false,
       },
     };
-    let localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
-    let remotePath = `${config.sftpUrl}/put-large.txt`;
+    const localPath = makeLocalPath(config.localUrl, 'test-file1.txt');
+    const remotePath = `${config.sftpUrl}/put-large.txt`;
     await sftp.put(localPath, remotePath, options);
-    let localStats = fs.statSync(localPath);
-    let stats = await sftp.stat(remotePath);
+    const localStats = fs.statSync(localPath);
+    const stats = await sftp.stat(remotePath);
     return expect(stats.size).to.equal(localStats.size);
   });
+
   it('put data from buffer into remote file', function () {
     return sftp
       .put(Buffer.from('hello'), `${config.sftpUrl}/put-buffer.txt`, {

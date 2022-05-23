@@ -29,7 +29,7 @@ describe('Connect Tests', function () {
   // });
 
   it('contest-1: connect should return a promise', function () {
-    let client = new Client('contest-1');
+    const client = new Client('contest-1');
     return expect(
       client.connect(config).then(() => {
         return client.end();
@@ -38,26 +38,26 @@ describe('Connect Tests', function () {
   });
 
   it('contest-2: valid connection object', async function () {
-    let client = new Client('contest-2');
+    const client = new Client('contest-2');
     const sftpChannel = await client.connect(config);
     expect(sftpChannel).to.equal(client.sftp);
-    let type = typeof client.sftp;
+    const type = typeof client.sftp;
     await client.end();
     return expect(type).to.equal('object');
   });
 
   it('contest-3: bad host throws exception', function () {
-    let client = new Client('contest-3');
+    const client = new Client('contest-3');
     return expect(
       client.connect({
         ...config,
         host: 'bogus-host.com',
       })
-    ).to.be.rejectedWith(/Address lookup failed/);
+    ).to.be.rejected;
   });
 
   it('contest-4: bad port throws exception', function () {
-    let client = new Client('contest-4');
+    const client = new Client('contest-4');
     return expect(
       client.connect({
         ...config,
@@ -67,7 +67,7 @@ describe('Connect Tests', function () {
   });
 
   it('connect-4b: bad port range throws exception', function () {
-    let client = new Client('connect-4b');
+    const client = new Client('connect-4b');
     return expect(
       client.connect({
         ...config,
@@ -77,7 +77,7 @@ describe('Connect Tests', function () {
   });
 
   it('contest-5: bad username throws exception', function () {
-    let client = new Client('contest-5');
+    const client = new Client('contest-5');
     return expect(
       client.connect({
         ...config,
@@ -87,7 +87,7 @@ describe('Connect Tests', function () {
   });
 
   it('contest-6: bad password throws exception', function () {
-    let client = new Client('contest-6');
+    const client = new Client('contest-6');
     return expect(
       client.connect({
         ...config,
@@ -99,7 +99,7 @@ describe('Connect Tests', function () {
 
 describe('contest-7: Connect and disconnect', function () {
   it('connect and disconnect returns true', function () {
-    let client = new Client('contest-7');
+    const client = new Client('contest-7');
     return expect(
       client.connect(config).then(() => {
         return client.end();
@@ -108,7 +108,7 @@ describe('contest-7: Connect and disconnect', function () {
   });
 
   it('contest-8: Connect when connected rejected', function () {
-    let client = new Client('contest-8');
+    const client = new Client('contest-8');
     return expect(
       client.connect(config).then(() => {
         return client.connect(config);

@@ -34,23 +34,21 @@ describe('get() method tests', function () {
     );
   });
 
-  it('get the file content', function () {
-    return sftp.get(config.sftpUrl + '/get-promise.txt').then((data) => {
-      let body = data.toString();
-      return expect(body).to.equal('Get promise test');
-    });
+  it('get the file content', async function () {
+    const data = await sftp.get(`${config.sftpUrl}/get-promise.txt`);
+    return expect(data.body.toString()).to.equal('Get promise test');
   });
 
   it('get large text file using a stream', async function () {
-    let localPath = makeLocalPath(config.localUrl, 'get-large.txt');
-    let remotePath = config.sftpUrl + '/get-large.txt';
-    let out = fs.createWriteStream(localPath, {
+    const localPath = makeLocalPath(config.localUrl, 'get-large.txt');
+    const remotePath = config.sftpUrl + '/get-large.txt';
+    const out = fs.createWriteStream(localPath, {
       flags: 'w',
       encoding: null,
     });
     await sftp.get(remotePath, out);
-    let stats = await sftp.stat(remotePath);
-    let localStats = fs.statSync(localPath);
+    const stats = await sftp.stat(remotePath);
+    const localStats = fs.statSync(localPath);
     return expect(localStats.size).to.equal(stats.size);
   });
 

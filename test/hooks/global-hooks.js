@@ -83,14 +83,14 @@ const lastRemoteDir = (p) => {
   return dirs[dirs.length - 1];
 };
 
-var con;
+let con;
 
-const getConnection = async () => {
+async function getConnection() {
   try {
     if (!con) {
       con = new Client();
       await con.connect(config);
-      let root = await con.realPath('.');
+      const root = await con.realPath('.');
       config.remoteRoot = root;
     } else {
       await con.connect(config);
@@ -98,22 +98,21 @@ const getConnection = async () => {
     return con;
   } catch (err) {
     console.error(`Connect failure ${err.message}`);
-    let eventNames = con.client.eventNames();
-    if (eventNames.length) {
-      console.log('Listener Data');
-      eventNames.map((n) => {
-        let listeners = con.client.listeners(n);
-        console.log(`${n}: ${con.client.listenerCount(n)}`);
-        console.dir(listeners);
-        listeners.map((l) => {
-          console.log(`listener name = ${l.name}`);
-        });
-      });
-    }
-
+    // const eventNames = con.client.eventNames();
+    // if (eventNames.length) {
+    //   console.log('Listener Data');
+    //   eventNames.map((n) => {
+    //     const listeners = con.client.listeners(n);
+    //     console.log(`${n}: ${con.client.listenerCount(n)}`);
+    //     console.dir(listeners);
+    //     listeners.map((l) => {
+    //       console.log(`listener name = ${l.name}`);
+    //     });
+    //   });
+    // }
     throw err;
   }
-};
+}
 
 const closeConnection = async () => {
   try {
