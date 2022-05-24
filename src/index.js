@@ -1329,8 +1329,8 @@ class SftpClient {
   createReadStream(remotePath, options) {
     let listeners;
     try {
-      listners = addTemplisteners(this, 'createReadStream');
-      haveconnection(this, 'createReadStream');
+      listeners = addTempListeners(this, 'createReadStream');
+      haveConnection(this, 'createReadStream');
       const stream = this.sftp.createReadStream(remotePath, options);
       return stream;
     } catch (err) {
@@ -1338,7 +1338,7 @@ class SftpClient {
         ? err
         : fmtError(err.message, 'createReadStream', err.code);
     } finally {
-      removeTempListeners(this, listeners, 'creatWriteStreame');
+      removeTempListeners(this, listeners, 'createReadStreame');
       this._resetEventFlags();
     }
   }
@@ -1359,8 +1359,8 @@ class SftpClient {
   createWriteStream(remotePath, options) {
     let listeners;
     try {
-      listners = addTemplisteners(this, 'createWriteStream');
-      haveconnection(this, 'createWriteStream');
+      listeners = addTempListeners(this, 'createWriteStream');
+      haveConnection(this, 'createWriteStream');
       const stream = this.sftp.createWriteStream(remotePath, options);
       return stream;
     } catch (err) {
