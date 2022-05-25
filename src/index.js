@@ -233,9 +233,7 @@ class SftpClient {
           if (err.code === 2) {
             resolve('');
           } else {
-            reject(
-              fmtError(`${err.message} ${remotePath}`, 'realPath', err.code)
-            );
+            reject(fmtError(`${err.message} ${rPath}`, 'realPath', err.code));
           }
         }
         this.debugMsg(`_realPath <- ${absPath}`);
@@ -425,7 +423,7 @@ class SftpClient {
             };
           });
           if (filter) {
-            resolve(newList.filter(filter));
+            resolve(newList.filter((item) => filter(item)));
           } else {
             resolve(newList);
           }
@@ -693,11 +691,10 @@ class SftpClient {
         this.debugMsg('put source is a buffer');
         wtr.end(lPath);
       } else {
-        if (typeof lPath === 'string') {
-          rdr = fs.createReadStream(lPath, opts.readStreamOptions);
-        } else {
-          rdr = lPath;
-        }
+        rdr =
+          typeof lPath === 'string'
+            ? fs.createReadStream(lPath, opts.readStreamOptions)
+            : lPath;
         rdr.once('error', (err) => {
           reject(
             fmtError(
@@ -849,7 +846,7 @@ class SftpClient {
       const rPath = await normalizeRemotePath(this, remotePath);
       const targetExists = await this.exists(rPath);
       if (targetExists && targetExists !== 'd') {
-        throw fmrtError(
+        throw fmtError(
           `Bad path: ${rPath} already exists as a file`,
           '_mkdir',
           errorCode.badPath
