@@ -4,7 +4,6 @@
       "plugin:promise/recommended", 
       "plugin:node/recommended",
       "plugin:unicorn/recommended",
-      "plugin:mocha/recommended",
       "prettier"],
   "rules": {
     "no-console": 0,
@@ -22,7 +21,7 @@
     "mocha/max-top-level-suites": 0,
     "mocha/no-hooks-for-single-case": 0
   },
-  "plugins": ["promise", "node", "unicorn", "mocha"],
+  "plugins": ["promise", "node", "unicorn"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "ecmaFeatures": {
