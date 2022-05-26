@@ -17,7 +17,7 @@ Node versions < 12.x are not supported. However, node v10.x should still work,
 although some tests will fail due to changes in file system functions used in
 test setup and tear down.
 
-** Version 9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes9.x Changes
+** Version 9.x Changes
 
   - *Breaking Change*: This ~list()~ method no longer accepts a regular expression
     for filtering the entries to be returned. You can now specify a filter
@@ -34,7 +34,7 @@ test setup and tear down.
     ~createWriteStream()~. However, it should be noted that client code is 100%
     responsible for managing streams obtained using these methods. Use at your
     own risk!
-  - *Breaking Change*: The 3rd argument to uploadDir() and downloadDir() methods
+  - *Breaking Change*: The 3rd argument to ~uploadDir()~ and ~downloadDir()~ methods
     has been change. Previously, the argument was a filter function used to
     select which directories and files to be transferred. The 3rd argument is
     now an options object with two supported properties, ~filter~ and ~useFastput~
