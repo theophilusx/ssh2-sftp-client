@@ -34,6 +34,19 @@ test setup and tear down.
     ~createWriteStream()~. However, it should be noted that client code is 100%
     responsible for managing streams obtained using these methods. Use at your
     own risk!
+  - *Breaking Change*: The 3rd argument to uploadDir() and downloadDir() methods
+    has been change. Previously, the argument was a filter function used to
+    select which directories and files to be transferred. The 3rd argument is
+    now an options object with two supported properties, ~filter~ and ~useFastput~
+    (for ~uploadDir()~) or ~useFastget~ (for ~downloadDir()~). If ~useFastput~ is true,
+    the ~fastPut()~ method will be pused to upload files. If ~false~ or missing, the
+    slower, but better supported, ~put()~ method will be used. Likewise, the
+    ~useFastget~ options can be set to ~true~ to use the ~fastGet()~ method for
+    donwloading files, otherwise the slower, but more reliable, ~get()~ method
+    will be used.
+  - The ~uploadDir()~ and ~downloadDir()~ methods now use asynchrounous processes to
+    upload/download files. This should result in improved performance for these
+    two methods.
   - New Methods: Two new methods, ~createWriteStream()~ and ~createReadStream()~
     have been added. These methods will return a stream object connected to a
     remote file on the ~sftp~ server. Client code is responsible for managing
@@ -880,7 +893,7 @@ exists. instead, use the ~exist()~ method.
 
 Returns what the server believes is the current remote working directory.
 
-*** uploadDir(srcDir, dstDir, filter) ==> string
+*** uploadDir(srcDir, dstDir, options) ==> string
 
 Upload the directory specified by ~srcDir~ to the remote directory specified by
 ~dstDir~. The ~dstDir~ will be created if necessary. Any sub directories within
@@ -895,7 +908,9 @@ the file was uploaded. The purpose of this event is to provide some way for
 client code to get feedback on the upload progress. You can add your own listener
 using the ~on()~ method.
 
-The optionsl /filter/ argument is a function which will be called for each item
+The 3rd argument is an options object with two supported properties, ~filter~ and ~useFastput~. 
+
+The ~filter~ option is a function which will be called for each item
 to be uploaded. The function will be called with two arguments. The first
 argument is the full path of the item to be uploaded and the second argument is
 a boolean, which will be true if the target path is for a directory. The filter
@@ -906,13 +921,22 @@ method. These array comprehension methods are known to be unsafe for
 asynchronous functions. Therefore, only synchronous filter functions are
 supported at this time.
 
+The ~useFastput~ option is a boolean option. If ~true~, the method will use the
+faster ~fastPut()~ method to upload files. Although this method is faster, it is
+not supported by all SFTP servers. Enabling this option when unsupported by the
+remote SFTP server will result in failures.
+
 - srcDir :: A local file path specified as a string
 - dstDir :: A remote file path specified as a string
-- filter :: A filter predicate function which is called for each item in the
+- options :: An options object which supports two properties, ~filter~ and
+  ~useFastput~. A filter predicate function which is called for each item in the
   source path. The argument will receive two arguments. The first is the full
   path to the item and the second is a boolean which will be true if the item is
   a directory. If the function returns true, the item will be uploaded,
-  otherwise it will be filtered out and ignored.
+  otherwise it will be filtered out and ignored. The ~useFastput~ option is a
+  boolean option. If ~true~, the method will use the faster, but less supported,
+  ~fastPut()~ method to transfer files. The default is to use the slightly slower,
+  but better supported, ~put()~ method.
   
 **** Example
 
@@ -964,7 +988,7 @@ supported at this time.
 
      #+end_src
 
-*** downloadDir(srcDir, dstDir, filter) ==> string
+*** downloadDir(srcDir, dstDir, options) ==> string
 
 Download the remote directory specified by ~srcDir~ to the local file system
 directory specified by ~dstDir~. The ~dstDir~ directory will be created if
@@ -979,20 +1003,30 @@ the remote file that has been downloaded and the destination is the local path
 to where the file was downloaded to. You can add a listener for this event using
 the ~on()~ method.
 
-The optional /filter/ argument is a predicate function which will be called with
-two arguments for each potential item to be downloaded. The first argument is
-the full path of the item and the second argument is a boolean, which will be
+The ~options~ argument is an options object with two supported properties, ~filter~
+and ~useFastget~. The ~filter~ argument is a predicate function which will be called
+with two arguments for each potential item to be downloaded. The first argument
+is the full path of the item and the second argument is a boolean, which will be
 true if the item is a directory. If the function returns true, the item will be
 included in the download. If it returns false, it will be filtered and ignored.
 The filter function is called via the ~Array.filter~ method. These array
 comprehension methods are known to be unsafe for asynchronous functions.
 Therefore, only synchronous filter functions are supported at this time.
 
+If the ~useFastget~ property is set to ~true~, the method will use ~fastGet()~ to
+transfer files. The ~fastGet~ method is faster, but not supported by all SFTP
+services.
+
 - srcDir :: A remote file path specified as a string
 - dstDir :: A local file path specified as a string
-- filter :: A predicate function called with two arguments, the full path to an
+- options :: An object with two supported properties, ~filter~ and ~useFastget~. The
+  filter property is a function accepting two arguments, the full path to an
   item and a boolean value which will be true if the item is a directory. The
-  function is called for each item in the download path.
+  function is called for each item in the download path and should return true
+  to include the item and false to exclude it in the download. The ~useFastget~
+  property is a boolean. If true, the ~fastGet()~ method will be used to transfer
+  files. If ~false~ (the default), the slower but better supported ~get()~ mehtod is
+  used. .
   
 **** Example
 

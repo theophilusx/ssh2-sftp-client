@@ -1154,9 +1154,14 @@ class SftpClient {
    * server.
    * @param {String} srcDir - local source directory
    * @param {String} dstDir - remote destination directory
-   * @param {function(String,Boolean):Boolean} filter - (Optional) The first argument is the full path of the
-   * item to be uploaded and the second argument is a boolean, which will be true if the target path is for a
-   * directory.  If the function returns true, the item will be uploaded
+   * @param {Object} options - (Optional) An object with 2 supported properties,
+   * 'filter' and 'useFastput'. The first argument is the full path of the item
+   * to be uploaded and the second argument is a boolean, which will be true if
+   * the target path is for a directory. If the function returns true, the item
+   * will be uploaded and excluded when it returns false. The 'useFastput' property is a
+   * boolean value. When true, the 'fastPut()' method will be used to upload files. Default
+   * is to use the slower, but more supported 'put()' method.
+   *
    * @returns {Promise<String>}
    */
   async _uploadDir(srcDir, dstDir, options) {
@@ -1249,9 +1254,13 @@ class SftpClient {
    * file system.
    * @param {String} srcDir - remote source directory
    * @param {String} dstDir - local destination directory
-   * @param {function(String,Boolean):Boolean} filter - (Optional) The first argument is the full path of
-   * the item to be downloaded and the second argument is a boolean, which will be true if the target path
-   * is for a directory.  If the function returns true, the item will be downloaded
+   * @param {Object} options - (Optional) Object with 2 supported properties,
+   * 'filter' and 'useFastget'. The filter property is a function of two
+   * arguments. The first argument is the full path of the item to be downloaded
+   * and the second argument is a boolean, which will be true if the target path
+   * is for a directory. If the function returns true, the item will be
+   * downloaded and excluded if teh function returns false.
+   *
    * @returns {Promise<String>}
    */
   async _downloadDir(srcDir, dstDir, options) {
