@@ -1159,7 +1159,7 @@ class SftpClient {
    * directory.  If the function returns true, the item will be uploaded
    * @returns {Promise<String>}
    */
-  async _uploadDir(srcDir, dstDir, filter) {
+  async _uploadDir(srcDir, dstDir, options) {
     try {
       const absDstDir = await normalizeRemotePath(this, dstDir);
       this.debugMsg(`uploadDir <- SRC = ${srcDir} DST = ${absDstDir}`);
@@ -1193,24 +1193,30 @@ class SftpClient {
         encoding: 'utf8',
         withFileTypes: true,
       });
-      if (filter) {
+      if (options?.filter) {
         dirEntries = dirEntries.filter((item) =>
-          filter(join(srcDir, item.name), item.isDirectory())
+          options.filter(join(srcDir, item.name), item.isDirectory())
         );
       }
+      let fileUploads = [];
       for (const e of dirEntries) {
         const newSrc = join(srcDir, e.name);
         const newDst = `${absDstDir}${this.remotePathSep}${e.name}`;
         if (e.isDirectory()) {
-          await this.uploadDir(newSrc, newDst, filter);
+          await this.uploadDir(newSrc, newDst, options);
         } else if (e.isFile()) {
-          await this._put(newSrc, newDst);
+          if (options?.useFastput) {
+            fileUploads.push(this._fastPut(newSrc, newDst));
+          } else {
+            fileUploads.push(this._put(newSrc, newDst));
+          }
           this.client.emit('upload', { source: newSrc, destination: newDst });
         } else {
           this.debugMsg(
             `uploadDir: File ignored: ${e.name} not a regular file`
           );
         }
+        await Promise.all(fileUploads);
       }
       return `${srcDir} uploaded to ${absDstDir}`;
     } catch (err) {
@@ -1220,13 +1226,13 @@ class SftpClient {
     }
   }
 
-  async uploadDir(srcDir, dstDir, filter) {
+  async uploadDir(srcDir, dstDir, options) {
     let listeners;
     try {
       listeners = addTempListeners(this, 'uploadDir');
       this.debugMsg(`uploadDir -> SRC = ${srcDir} DST = ${dstDir}`);
       haveConnection(this, 'uploadDir');
-      return await this._uploadDir(srcDir, dstDir, filter);
+      return await this._uploadDir(srcDir, dstDir, options);
     } catch (err) {
       throw err.custom ? err : fmtError(err, 'uploadDir');
     } finally {
@@ -1248,12 +1254,12 @@ class SftpClient {
    * is for a directory.  If the function returns true, the item will be downloaded
    * @returns {Promise<String>}
    */
-  async _downloadDir(srcDir, dstDir, filter) {
+  async _downloadDir(srcDir, dstDir, options) {
     try {
       let fileList = await this._list(srcDir);
-      if (filter) {
+      if (options?.filter) {
         fileList = fileList.filter((item) =>
-          filter(
+          options.filter(
             `${srcDir}${this.remotePathSep}${item.name}`,
             item.type === 'd' ? true : false
           )
@@ -1275,13 +1281,18 @@ class SftpClient {
           errorCode.badPath
         );
       }
+      let downloadFiles = [];
       for (const f of fileList) {
         const newSrc = `${srcDir}${this.remotePathSep}${f.name}`;
         const newDst = join(dstDir, f.name);
         if (f.type === 'd') {
-          await this._downloadDir(newSrc, newDst, filter);
+          await this._downloadDir(newSrc, newDst, options);
         } else if (f.type === '-') {
-          await this._get(newSrc, newDst);
+          if (options?.useFasget) {
+            downloadFiles.push(this._fastGet(newSrc, newDst));
+          } else {
+            downloadFiles.push(this._get(newSrc, newDst));
+          }
           this.client.emit('download', { source: newSrc, destination: newDst });
         } else {
           this.debugMsg(
@@ -1289,6 +1300,7 @@ class SftpClient {
           );
         }
       }
+      await Promise.all(downloadFiles);
       return `${srcDir} downloaded to ${dstDir}`;
     } catch (err) {
       throw err.custom
@@ -1297,12 +1309,12 @@ class SftpClient {
     }
   }
 
-  async downloadDir(srcDir, dstDir, filter) {
+  async downloadDir(srcDir, dstDir, options) {
     let listeners;
     try {
       listeners = addTempListeners(this, 'downloadDir');
       haveConnection(this, 'downloadDir');
-      return await this._downloadDir(srcDir, dstDir, filter);
+      return await this._downloadDir(srcDir, dstDir, options);
     } catch (err) {
       throw err.custom ? err : fmtError(err, 'downloadDir', err.code);
     } finally {

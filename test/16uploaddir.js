@@ -55,7 +55,59 @@ describe('uploadDir tests', function () {
   it('Upload filtered directory', async function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = `${config.sftpUrl}/upload-test2`;
-    let result = await sftp.uploadDir(localDir, remoteDir, myFilter);
+    let result = await sftp.uploadDir(localDir, remoteDir, {
+      filter: myFilter,
+    });
+    expect(result).to.equal(`${localDir} uploaded to ${remoteDir}`);
+    let fileList = await sftp.list(remoteDir);
+    return expect(fileList).to.not.containSubset([
+      { name: 'file2.txt.gz', type: '-', size: 570314 },
+      { name: '.hidden-sub1', type: 'd' },
+      { name: '.hidden-file.txt', type: '-' },
+    ]);
+  });
+});
+
+describe('uploadDir tests with fastPut', function () {
+  let sftp;
+
+  before('uploadDir tests setup hook', async function () {
+    sftp = await getConnection();
+    return true;
+  });
+
+  after('UploadDir tests clenaup hook', async function () {
+    let remotePath = `${config.sftpUrl}/upload-test2`;
+    await sftp.rmdir(remotePath, true);
+    await sftp.end();
+    return true;
+  });
+
+  it('Upload directory', async function () {
+    let localDir = makeLocalPath(config.localUrl, 'upload-src');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    let result = await sftp.uploadDir(localDir, remoteDir, {
+      useFastput: true,
+    });
+    expect(result).to.equal(`${localDir} uploaded to ${remoteDir}`);
+    let fileList = await sftp.list(remoteDir);
+    return expect(fileList).to.containSubset([
+      { name: 'file2.txt.gz', type: '-', size: 570314 },
+      { name: 'sub1', type: 'd' },
+      { name: 'sub3', type: 'd' },
+      { name: 'file1.txt', type: '-' },
+      { name: '.hidden-file.txt', type: '-' },
+      { name: '.hidden-sub1', type: 'd' },
+    ]);
+  });
+
+  it('Upload filtered directory', async function () {
+    let localDir = makeLocalPath(config.localUrl, 'upload-src');
+    let remoteDir = `${config.sftpUrl}/upload-test2`;
+    let result = await sftp.uploadDir(localDir, remoteDir, {
+      filter: myFilter,
+      useFastput: true,
+    });
     expect(result).to.equal(`${localDir} uploaded to ${remoteDir}`);
     let fileList = await sftp.list(remoteDir);
     return expect(fileList).to.not.containSubset([
@@ -171,7 +223,7 @@ describe('Download directory', function () {
     let localDir = makeLocalPath(config.localUrl, 'download-test2');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(
-      sftp.downloadDir(remoteDir, localDir, myFilter)
+      sftp.downloadDir(remoteDir, localDir, { filter: myFilter })
     ).to.eventually.equal(`${remoteDir} downloaded to ${localDir}`);
   });
 
@@ -197,6 +249,71 @@ describe('Download directory', function () {
     return expect(sftp.downloadDir(remoteDir, localDir)).to.be.rejectedWith(
       /Bad path/
     );
+  });
+});
+
+describe('Download directory using fastGet', function () {
+  let sftp;
+
+  before('Download directory setup hook', async function () {
+    sftp = await getConnection();
+    let localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    fs.mkdirSync(localDir, { recursive: true });
+    fs.chmodSync(localDir, 0o111);
+    return true;
+  });
+
+  after('download directory clenaup hook', async function () {
+    let localDir = makeLocalPath(config.localUrl, 'download-test2');
+    rmdir(localDir, { recursive: true });
+    localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    fs.chmodSync(localDir, 0o666);
+    rmdir(localDir, { recursive: true });
+    await sftp.end();
+    return true;
+  });
+
+  it('Download directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'download-test');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, { useFastget: true })
+    ).to.eventually.equal(`${remoteDir} downloaded to ${localDir}`);
+  });
+
+  it('Download filtered directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'download-test2');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, {
+        filter: myFilter,
+        useFastget: true,
+      })
+    ).to.eventually.equal(`${remoteDir} downloaded to ${localDir}`);
+  });
+
+  it('Bad src directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'not-needed');
+    let remoteDir = `${config.sftpUrl}/no-such-dir`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, { useFastget: true })
+    ).to.be.rejectedWith('No such file');
+  });
+
+  it('Bad dst directory', function () {
+    let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, { useFastget: true })
+    ).to.be.rejectedWith('Bad path');
+  });
+
+  it('Bad dst permissions', function () {
+    let localDir = makeLocalPath(config.localUrl, 'no-perm-dir');
+    let remoteDir = `${config.sftpUrl}/upload-test`;
+    return expect(
+      sftp.downloadDir(remoteDir, localDir, { useFastget: true })
+    ).to.be.rejectedWith(/Bad path/);
   });
 });
 
