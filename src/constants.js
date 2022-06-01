@@ -5,6 +5,7 @@ const errorCode = {
   permission: 'EACCES',
   notexist: 'ENOENT',
   notdir: 'ENOTDIR',
+  badAuth: 'ERR_BAD_AUTH',
 };
 
 const targetType = {
