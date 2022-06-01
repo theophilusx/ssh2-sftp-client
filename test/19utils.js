@@ -3,6 +3,7 @@
 const dotenvPath = __dirname + '/../.env';
 require('dotenv').config({ path: dotenvPath });
 
+const sftp = require('../src/index');
 const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
@@ -19,15 +20,17 @@ chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 describe('fmtError() tests', function () {
+  let client = new sftp('19utils');
+
   it('fmtError returns Error object', function () {
-    return expect(utils.fmtError('test msg', 'test', 'error code')).to.be.an(
+    return expect(client.fmtError('test msg', 'test', 'error code')).to.be.an(
       'error'
     );
   });
 
   it('fmtError has expected values', function () {
     return expect(
-      utils.fmtError('test msg', 'name', 'error code')
+      client.fmtError('test msg', 'name', 'error code')
     ).to.containSubset({
       message: 'name: test msg',
       code: 'error code',
@@ -36,7 +39,7 @@ describe('fmtError() tests', function () {
 
   it('fmtError has retry count', function () {
     return expect(
-      utils.fmtError('test msg', 'name', 'error code', 4)
+      client.fmtError('test msg', 'name', 'error code', 4)
     ).to.containSubset({
       message: 'name: test msg after 4 attempts',
       code: 'error code',
@@ -44,19 +47,19 @@ describe('fmtError() tests', function () {
   });
 
   it('fmtError has default error code', function () {
-    return expect(utils.fmtError('test msg', 'nme').code).to.equal(
+    return expect(client.fmtError('test msg', 'nme').code).to.equal(
       'ERR_GENERIC_CLIENT'
     );
   });
 
   it('fmtError has default name', function () {
-    return expect(utils.fmtError('test msg').message).to.equal(
+    return expect(client.fmtError('test msg').message).to.equal(
       'sftp: test msg'
     );
   });
 
   it('fmtError handles null error', function () {
-    return expect(utils.fmtError()).to.containSubset({
+    return expect(client.fmtError()).to.containSubset({
       message: 'sftp: Undefined error - probably a bug!',
       code: 'ERR_GENERIC_CLIENT',
     });
@@ -64,7 +67,7 @@ describe('fmtError() tests', function () {
 
   it('fmtError handles custom error 1', function () {
     return expect(
-      utils.fmtError(utils.fmtError('Original Error', 'someMethod'), 'top')
+      client.fmtError(client.fmtError('Original Error', 'someMethod'), 'top')
     ).to.containSubset({
       message: 'top->someMethod: Original Error',
       code: 'ERR_GENERIC_CLIENT',
@@ -73,8 +76,8 @@ describe('fmtError() tests', function () {
   });
 
   it('fmtError custom errors', function () {
-    let e1 = utils.fmtError('Original Error', 'somefunc');
-    return expect(utils.fmtError(e1, 'top')).to.containSubset({
+    let e1 = client.fmtError('Original Error', 'somefunc');
+    return expect(client.fmtError(e1, 'top')).to.containSubset({
       message: 'top->somefunc: Original Error',
       code: 'ERR_GENERIC_CLIENT',
       custom: true,
@@ -86,7 +89,7 @@ describe('fmtError() tests', function () {
     e.code = 'ENOTFOUND';
     e.level = 'Client';
     e.hostname = 'bogus.com';
-    return expect(utils.fmtError(e, 'func')).to.containSubset({
+    return expect(client.fmtError(e, 'func')).to.containSubset({
       message: 'func: Client error. Address lookup failed for host bogus.com',
       code: 'ENOTFOUND',
     });
@@ -97,7 +100,7 @@ describe('fmtError() tests', function () {
     e.code = 'ECONNREFUSED';
     e.level = 'Server';
     e.address = '1.1.1.1';
-    return expect(utils.fmtError(e, 'func')).to.containSubset({
+    return expect(client.fmtError(e, 'func')).to.containSubset({
       message: 'func: Server error. Remote host at 1.1.1.1 refused connection',
       code: 'ECONNREFUSED',
     });
@@ -106,7 +109,7 @@ describe('fmtError() tests', function () {
   it('fmtError error code ECONNRESET', function () {
     let e = new Error('Connection reset');
     e.code = 'ECONNRESET';
-    return expect(utils.fmtError(e, 'func')).to.containSubset({
+    return expect(client.fmtError(e, 'func')).to.containSubset({
       message: 'func: Remote host has reset the connection: Connection reset',
       code: 'ECONNRESET',
     });
@@ -114,15 +117,16 @@ describe('fmtError() tests', function () {
 });
 
 describe('errorListener', function () {
-  let client = {
-    debugMsg: () => {
-      //console.log(msg);
-      null;
-    },
-    errorHandled: false,
-    endCalled: false,
-    tempListeners: [],
-  };
+  // let client = {
+  //   debugMsg: () => {
+  //     //console.log(msg);
+  //     null;
+  //   },
+  //   errorHandled: false,
+  //   endCalled: false,
+  //   tempListeners: [],
+  // };
+  const client = new sftp('handler-tests');
 
   beforeEach(function () {
     client.errorHandled = false;
@@ -142,18 +146,18 @@ describe('errorListener', function () {
 
   it('error is thrown', function () {
     let handler = utils.errorListener(client, 'Test2');
-    let e = utils.fmtError('A thrown error');
+    let e = client.fmtError('A thrown error');
     e.code = 'GENERIC ERROR';
     let fn = () => {
       handler(e);
     };
-    return expect(fn).to.throw(/Test2->sftp: A thrown error/);
+    return expect(fn).to.throw(/A thrown error/);
   });
 
   it('No error thrown', function () {
     let handler = utils.errorListener(client, 'Test3');
     client.errorHandled = true;
-    let e = utils.fmtError('A thrown error');
+    let e = client.fmtError('A thrown error');
     e.code = 'GENERIC ERROR';
     let fn = () => {
       handler(e);
@@ -164,7 +168,7 @@ describe('errorListener', function () {
   it('not error throw 2', function () {
     let handler = utils.errorListener(client, 'Test4');
     client.endCalled = true;
-    let e = utils.fmtError('A thrown error');
+    let e = client.fmtError('A thrown error');
     e.code = 'GENERIC ERROR';
     let fn = () => {
       handler(e);
@@ -174,12 +178,14 @@ describe('errorListener', function () {
 });
 
 describe('Test endListener', function () {
-  let client = {
-    debugMsg: () => {
-      //console.log(msg);
-      null;
-    },
-  };
+  // let client = {
+  //   debugMsg: () => {
+  //     //console.log(msg);
+  //     null;
+  //   },
+  // };
+
+  const client = new sftp('end listener tests');
 
   beforeEach(function () {
     client.errorHandled = false;
@@ -215,12 +221,13 @@ describe('Test endListener', function () {
 });
 
 describe('closeHandler tests', function () {
-  let client = {
-    debugMsg: () => {
-      //console.log(msg);
-      null;
-    },
-  };
+  // let client = {
+  //   debugMsg: () => {
+  //     //console.log(msg);
+  //     null;
+  //   },
+  // };
+  const client = new sftp('close-listener-tests');
 
   beforeEach(function () {
     client.closeHandled = false;

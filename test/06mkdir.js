@@ -14,14 +14,19 @@ describe('mkdir() method tests', function () {
   let sftp;
 
   before('mkdir() setup hook', async function () {
-    sftp = await getConnection();
-    await sftp.put(
-      Buffer.from('Bad dir file'),
-      `${config.sftpUrl}/bad-dir-file`
-    );
-    await sftp.mkdir(`${config.sftpUrl}/bad-perm-dir`);
-    await sftp.chmod(`${config.sftpUrl}/bad-perm-dir`, 0o111);
-    return true;
+    try {
+      sftp = await getConnection();
+      await sftp.put(
+        Buffer.from('Bad dir file'),
+        `${config.sftpUrl}/bad-dir-file`
+      );
+      await sftp.mkdir(`${config.sftpUrl}/bad-perm-dir`);
+      await sftp.chmod(`${config.sftpUrl}/bad-perm-dir`, 0o111);
+      return true;
+    } catch (err) {
+      console.error(`mkdir setup error: ${err.message}`);
+      throw err;
+    }
   });
 
   after('mkdir() test cleanup', async function () {

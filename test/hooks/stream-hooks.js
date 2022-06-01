@@ -18,6 +18,7 @@ async function streamSetup(client, sftpUrl, localUrl) {
 async function streamCleanup(client, sftpUrl, localUrl) {
   try {
     await client.delete(`${sftpUrl}/stream-read.txt`);
+    await client.delete(`${sftpUrl}/stream-t3.txt`);
     fs.unlinkSync(`${localUrl}/stream-t1.txt`);
     fs.unlinkSync(`${localUrl}/stream-t2.txt`);
   } catch (err) {
@@ -27,5 +28,5 @@ async function streamCleanup(client, sftpUrl, localUrl) {
 
 module.exports = {
   streamSetup,
-  streamCleanup
-}
+  streamCleanup,
+};

@@ -1,7 +1,10 @@
 const chai = require('chai');
 const expect = chai.expect;
-const { config, getConnection } = require('./hooks/global-hooks');
-const { streamSetup, streamCleanup } = require('./hooks/stream-hooks');
+const {
+  config,
+  getConnection,
+  makeLocalPath,
+} = require('./hooks/global-hooks');
 const fs = require('fs');
 const chaiAsPromised = require('chai-as-promised');
 
@@ -12,12 +15,17 @@ describe('create read stream tests', function () {
 
   before('stream test setup', async function () {
     sftp = await getConnection();
-    await streamSetup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.fastPut(
+      makeLocalPath(config.localUrl, 'test-file1.txt'),
+      `${config.sftpUrl}/stream-read.txt`,
+      { encoding: 'utf8' }
+    );
     return true;
   });
 
   after('stream test cleanup', async function () {
-    await streamCleanup(sftp, config.sftpUrl, config.localUrl);
+    await sftp.delete(`${config.sftpUrl}/stream-read.txt`);
+    fs.unlinkSync(`${config.localUrl}/stream-t1.txt`);
     await sftp.end();
     return true;
   });
@@ -41,20 +49,16 @@ describe('create read stream tests', function () {
   it('read a partial file to local fs', function () {
     return expect(
       new Promise((resolve, reject) => {
-        const rs = sftp.createReadStream(`${config.sftpUrl}/stream-read.txt`, {start: 100, end: 200});
+        const rs = sftp.createReadStream(`${config.sftpUrl}/stream-read.txt`, {
+          start: 100,
+          end: 200,
+        });
         const ws = fs.createWriteStream(`${config.localUrl}/stream-t2.txt`);
         ws.on('error', (err) => {
           reject(err);
         });
         ws.on('finish', () => {
-          console.log('ws finish event fired');
           resolve('Data stream complete');
-        });
-        ws.on('end', () => {
-          console.log('ws end event fired');
-        });
-        ws.on('close', () => {
-          console.log('ws close event fired');
         });
         rs.pipe(ws);
       })
@@ -62,15 +66,21 @@ describe('create read stream tests', function () {
   });
 });
 
-describe('create write stream tests', function() {
+describe('create write stream tests', function () {
   let sftp;
 
-  before('write stream test setup', async function() {
+  before('write stream test setup', async function () {
     sftp = await getConnection();
     return true;
-  })
+  });
 
-  it('write data to remote server', function() {
+  after('write stream test clenaup', async function () {
+    sftp.delete(`${config.sftpUrl}/stream-t3.txt`);
+    await sftp.end();
+    return true;
+  });
+
+  it('write data to remote server', function () {
     return expect(
       new Promise((resolve, reject) => {
         const ws = sftp.createWriteStream(`${config.sftpUrl}/stream-t3.txt`);
@@ -79,14 +89,9 @@ describe('create write stream tests', function() {
           reject(err);
         });
         ws.on('finish', () => {
-          console.log('ws finish event fired');
           resolve('Data streamed to remote file');
         });
-        ws.on('end', () => {
-          console.log('ws end event fired');
-        });
         ws.on('close', () => {
-          console.log('ws close event fired');
           resolve('Data streamed to remote file');
         });
         rs.pipe(ws);
