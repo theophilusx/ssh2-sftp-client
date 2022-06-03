@@ -1078,7 +1078,7 @@ services.
 #+end_src
 
 
-*** createReadStream(remotePath, options))
+*** createReadStream(remotePath, options)) ==> stream object
 
   Returns a read stream object which is attached to the remote file specified by
   the ~remotePath~ argument. This is a low level method which just returns a read
@@ -1097,7 +1097,7 @@ services.
     - start :: Default 0. Position to start reading bytes from (inclusive)
     - end :: Postion to stop reading bytes (inclusive). 
 
-*** createWriteStream(remotePath, options)
+*** createWriteStream(remotePath, options) ==> stream object
 
    Returns a write stream object which is attached to the remote file specified
    in the ~remotePath~ argument. This is a low legvel function which just returns
@@ -1113,7 +1113,7 @@ services.
      - start :: Byte position to start writing from (inclusive). May require
        changing flag to 'r+'.
 
-*** rcopy(srcPath, dstPath)
+*** rcopy(srcPath, dstPath) ==> string
 
    Perfrom a remote file copy. The file identified by the ~srcPath~ argument will
    be copied to the file specified as the ~dstPath~ argument. The directory where
