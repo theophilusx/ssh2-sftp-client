@@ -1443,6 +1443,74 @@ class SftpClient {
   /**
    * @async
    *
+   * Make a remote copy of a remote file. Create a copy of a remote file on the remote
+   * server. It is assumed the directory where the copy will be placed already exists.
+   * The destination file must not already exist.
+   *
+   * @param {String} srcPath - path to the remote file to be copied
+   * @param {String} dstPath - destination path for the copy.
+   *
+   * @returns {String}.
+   *
+   */
+  _rcopy(srcPath, dstPath) {
+    return new Promise((resolve, reject) => {
+      const ws = this.sftp.createWriteStream(dstPath);
+      const rs = this.sftp.createReadStream(srcPath);
+      ws.on('error', (err) => {
+        reject(this.fmtError(`${err.message} ${dstPath}`, '_rcopy'));
+      });
+      rs.on('error', (err) => {
+        reject(this.fmtError(`${err.message} ${srcPath}`, '_rcopy'));
+      });
+      ws.on('close', () => {
+        resolve(`${srcPath} copied to ${dstPath}`);
+      });
+      rs.pipe(ws);
+    });
+  }
+
+  async rcopy(src, dst) {
+    let listeners;
+    try {
+      listeners = addTempListeners(this, 'rcopy');
+      haveConnection(this, 'rcopy');
+      const srcPath = await normalizeRemotePath(this, src);
+      const srcExists = await this.exists(srcPath);
+      if (!srcExists) {
+        throw this.fmtError(
+          `Source does not exist ${srcPath}`,
+          'rcopy',
+          errorCode.badPath
+        );
+      }
+      if (srcExists !== '-') {
+        throw this.fmtError(
+          `Source not a file ${srcPath}`,
+          'rcopy',
+          errorCode.badPath
+        );
+      }
+      const dstPath = await normalizeRemotePath(this, dst);
+      const dstExists = await this.exists(dstPath);
+      if (dstExists) {
+        throw this.fmtError(
+          `Destination already exists ${dstPath}`,
+          'rcopy',
+          errorCode.badPath
+        );
+      }
+      return await this._rcopy(srcPath, dstPath);
+    } catch (err) {
+      throw err.custom ? err : this.fmtError(err, 'rcopy');
+    } finally {
+      removeTempListeners(this, listeners, 'rcopy');
+      this._resetEventFlags();
+    }
+  }
+  /**
+   * @async
+   *
    * End the SFTP connection
    *
    * @returns {Promise<Boolean>}
@@ -1459,11 +1527,9 @@ class SftpClient {
       };
       this.on('close', endCloseHandler);
       if (haveConnection(this, 'end', reject)) {
-        this.debugMsg('end: Have connection - calling end()');
         this.client.end();
       }
     }).finally(() => {
-      this.debugMsg('end: finally clause fired');
       removeTempListeners(this, listeners, 'end');
       this.removeListener('close', endCloseHandler);
       this.endCalled = false;
