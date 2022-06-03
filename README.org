@@ -60,6 +60,7 @@ test setup and tear down.
     e.g. ~rmdir(),~ ~uploadDir()~ and ~dowqnloadDir()~. To avoid this, /internal only/
     versions of each method have been created. These internal methods use an
     /underscore/ ~_~ prefix. Client code should not use these methods directly. 
+  - New method: Added ~rcopy()~ method to perform a remote copy of a file on the remote SFTP server. 
 
 * Installation
 
@@ -1075,6 +1076,52 @@ services.
     });
 
 #+end_src
+
+
+*** createReadStream(remotePath, options))
+
+  Returns a read stream object which is attached to the remote file specified by
+  the ~remotePath~ argument. This is a low level method which just returns a read
+  stream object. Client code is fully responsible for managing and releasing the
+  resources associated with the stream once finished i.e. closing files,
+  removing listeners etc. 
+
+  - remotePath :: A remote file path specified as a string
+  - options :: An options object. Supported properties are 
+    - flags :: defaults to 'r'
+    - encoding :: defaults to null
+    - handle :: defaults to null
+    - mode :: 0o666
+    - autoClose :: defaults to true. If set to false, client code is responsible
+      for closing file descriptors when finished
+    - start :: Default 0. Position to start reading bytes from (inclusive)
+    - end :: Postion to stop reading bytes (inclusive). 
+
+*** createWriteStream(remotePath, options)
+
+   Returns a write stream object which is attached to the remote file specified
+   in the ~remotePath~ argument. This is a low legvel function which just returns
+   the stream object. Client code is fully responsible for managing that object,
+   including closing any file descriptiors and removing listeners etc.
+
+   - remotePath :: Path to the remote file specified as a string
+   - options :: An object containing stream options. Supported properties include 
+     - flags :: default 'w'
+     - encoding :: defulat null
+     - mode :: 0o666
+     - autoClose :: true 
+     - start :: Byte position to start writing from (inclusive). May require
+       changing flag to 'r+'.
+
+*** rcopy(srcPath, dstPath)
+
+   Perfrom a remote file copy. The file identified by the ~srcPath~ argument will
+   be copied to the file specified as the ~dstPath~ argument. The directory where
+   ~dstPath~ will be placed must exist, but the actual file must not i.e. no
+   overwrites allowed. 
+
+   - srcPath :: Path to remote file to be copied specified as a string
+   - dstPath :: Path to where the copy will be creaeted specified as a string
 
 *** end() ==> boolean
 

@@ -1384,8 +1384,9 @@ class SftpClient {
   /**
    *
    * Returns a read stream object. This is a low level method which will return a read stream
-   * connected to the remote file object specified as an argument. Client code to fully responsible
+   * connected to the remote file object specified as an argument. Client code is fully responsible
    * for managing this stream object i.e. adding any necessary listeners and disposing of the object etc.
+   * See the SSH2 sftp documentation for details on possible options which can be used.
    *
    * @param {String} remotePath - path to remote file to attach stream to
    * @param {Object} options - options to pass to the create stream process
