@@ -1,4 +1,39 @@
 * Change Logging
+** v9.0.0
+  - New method: rcopy() to perfrom remote file copy
+  - API Change: The list() method now accepts a filter function instead of a
+    regular expression.
+  - API Change: The ability to set autoClose to false on read/write streams in
+    calls to get() and put() has been removed. This ability caused confusion for
+    developers and caused significant complication which was hard to justify. If
+    you need low level control over read and write streams, you can now use the
+    createReadStream() and createWriteStream() methods.
+  - API Change: The ability to set the 'end' property for pipe() has been
+    removed in get() and put() methods. This option caused problems in many use
+    cases and was often confusing for developers. If you want low level control
+    over pip() operations, use the createReadStream() and createWriteStream()
+    methods and manage the pip() operation within client code.
+  - API Change: The 3rd argument to uploadDir() and downloadDir() has been
+    changed from being a filter function to being an object which contains two
+    properties, a filter function and a boolean switch to select fastGet() or
+    fastPut() as the transfer method.
+  - New option: For uploadDir()/downloadDir() methods, you can now select
+    fastGe()/fastPut() as the file transfer method. While typically faster, not
+    all sftp servers will support fastPut/fastGet.
+  - New method: createReadStream() method which returns a read stream object
+    connected to a remote file. This is a low level method and client code is
+    responsible for managing the resources involved e.g. ensuring file handles
+    are closed and released, removing listeners etc.
+  - New method: createWriteStream() method which returns a write stream to a
+    remote file on the sftp server. This is a low level method and client code
+    is responsible for managing all resources used by this method e.g. closing
+    and releasing file descriptors, managing event listeners etc.
+  - Bump ssh2 version to version 1.11.0
+  - Internal re-factoring to make temporary listener management more efficient
+  - Internal re-factoring to exploit asynchronous processing more effectively
+    and speed up some operations
+  - Re-factored retry code used when establishing connections to improve
+    reliability and ensure it respected retry options correctly.
 
 ** v8.1.0
 
