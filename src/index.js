@@ -540,7 +540,7 @@ class SftpClient {
       });
       if (dst === undefined) {
         // no dst specified, return buffer of data
-        this.debugMsg('get returning buffer of data');
+        this.debugMsg('get resolving buffer of data');
         wtr = concat((buff) => {
           resolve(buff);
         });
@@ -575,8 +575,10 @@ class SftpClient {
       });
       rdr.once('end', () => {
         if (typeof dst === 'string') {
+          this.debugMsg('get: resolving with dst filename');
           resolve(dst);
-        } else {
+        } else if (dst !== undefined) {
+          this.debugMsg('get: resolving with writer stream object');
           resolve(wtr);
         }
       });

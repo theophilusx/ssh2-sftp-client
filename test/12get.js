@@ -36,7 +36,8 @@ describe('get() method tests', function () {
 
   it('get the file content', async function () {
     const data = await sftp.get(`${config.sftpUrl}/get-promise.txt`);
-    return expect(data.body.toString()).to.equal('Get promise test');
+    expect(Buffer.isBuffer(data)).to.equal(true);
+    return expect(data.toString()).to.equal('Get promise test');
   });
 
   it('get large text file using a stream', async function () {
