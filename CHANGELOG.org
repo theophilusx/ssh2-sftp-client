@@ -40,7 +40,9 @@
     and speed up some operations
   - Re-factored retry code used when establishing connections to improve
     reliability and ensure it respected retry options correctly.
-
+  - Supported version change: Node versions prior to v14 are no longer supported
+    due to use of Javascript ~?.~ syntax which is not supported in node versions
+    prior to v14.
 ** v8.1.0
 
   - Added ~longname~ property to object describing files in a ~list()~ call.
