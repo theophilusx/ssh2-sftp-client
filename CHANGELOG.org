@@ -1,4 +1,10 @@
 * Change Logging
+** v9.0.1
+  - Minor bug fix. The ~get()~ method was not always returning a buffer object
+    when it was supposed to due to a race condition between concat-stream and
+    the reader finish event. Instead of returning the buffer, ~get()~ was
+    returning the concat-stream object.
+
 ** v9.0.0
   - New method: rcopy() to perfrom remote file copy
   - API Change: The list() method now accepts a filter function instead of a

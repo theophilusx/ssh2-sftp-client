@@ -9,16 +9,15 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v9.0.0*.
+Current stable release is *v9.0.1*.
 
 Code has been tested against Node versions 14.19.1, 16.15.0 and 18.1.0
 
-Node versions < 12.x are not supported. However, node v10.x should still work,
-although some tests will fail due to changes in file system functions used in
-test setup and tear down.
+Node versions < 14.x are not supported. 
 
 ** Version 9.x Changes
-
+  - *Breaking Change*: This version uses syntax not supported in node versions
+    prior to v14. Therefore, node versions less than v14 will not work.
   - *Breaking Change*: This ~list()~ method no longer accepts a regular expression
     for filtering the entries to be returned. You can now specify a filter
     function instead. The function is called for each item in the list of items
