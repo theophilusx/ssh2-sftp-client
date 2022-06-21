@@ -30,3 +30,5 @@ coverage
 .nycrc.json
 .eslintrc.json
 CHANGELOG.org
+.dir-local.el
+
