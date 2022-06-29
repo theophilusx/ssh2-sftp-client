@@ -10,6 +10,7 @@ async function putCleanup(client, sftpUrl) {
     await client.delete(`${sftpUrl}/put-relative2-gzip.txt.gz`);
     await client.delete(`${sftpUrl}/put-relative3-gzip.txt.gz`);
     await client.delete(`${sftpUrl}/put-relative4-gzip.txt.gz`);
+    await client.delete(`${sftpUrl}/put-gzip-test.gz`);
     return true;
   } catch (err) {
     console.error(`putCleanup: ${err.message}`);
@@ -18,5 +19,5 @@ async function putCleanup(client, sftpUrl) {
 }
 
 module.exports = {
-  putCleanup
+  putCleanup,
 };
