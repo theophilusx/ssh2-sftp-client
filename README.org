@@ -1077,7 +1077,6 @@ services.
 
 #+end_src
 
-
 *** createReadStream(remotePath, options)) ==> stream object
 
   Returns a read stream object which is attached to the remote file specified by
@@ -1190,6 +1189,25 @@ the ~end()~ method automatically removes all listeners from the client object.
    additional steps to simulate missing functionality etc. You want to use a CLI
    program which does as little as possible.
 
+** Issues with ~fastPut()~ and ~fastGet()~ Methods
+
+   The ~fastPut()~ and ~fastGet()~ methods are known to be somewhat dependent on
+   SFTP server capabilities. Some SFTP servers just do not work correctly with
+   concurrent connections and some are known to have issues with negotiating
+   packet sizes. These issues can sometimes be resolved by tweaking the options
+   supplied to the methods, such as setting number of concurrent connections or
+   a psecific packet size.
+
+   To see an example of the type of issues you can observe with ~fastPut()~ or
+   ~fastGet()~, have a look at [[https://github.com/theophilusx/ssh2-sftp-client/issues/407][issue 407]], which describes the experiences of one
+   user. Bottom line, when it works, it tends to work well and be significantly
+   faster than using just ~get()~ or ~put()~. However, when developing code to
+   run against different SFTP servers, especially where you are unable to test
+   against each server, you are likely better off just using ~get()~ and ~put()~
+   or structuring your code so that users can select which method to use (this
+   is what =ssh2-sftp-client= does - for example, see the ~!downloadDir()~ and
+   ~uploadDir()~ methods.
+   
 ** Promises, Events & Managing Exceptions
 
    One of the challenges in providing a Promise based API over a module like
