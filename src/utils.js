@@ -10,13 +10,14 @@ const { errorCode } = require('./constants');
  * @throws {Error} Throws new error
  */
 function errorListener(client, name, reject) {
-  let fn = (err) => {
+  const fn = (err) => {
     if (client.endCalled || client.errorHandled) {
       // error already handled or expected - ignore
+      client.debugMsg(`${name} errorListener - ignoring handled error`);
       return;
     }
     client.errorHandled = true;
-    let newError = new Error(`${name}: ${err.message}`);
+    const newError = new Error(`${name}: ${err.message}`);
     newError.code = err.code;
     if (reject) {
       reject(newError);
@@ -28,14 +29,15 @@ function errorListener(client, name, reject) {
 }
 
 function endListener(client, name, reject) {
-  let fn = function () {
-    if (client.endCalled || client.endHandled) {
+  const fn = function () {
+    client.sftp = undefined;
+    if (client.endCalled || client.endHandled || client.errorHandled) {
       // end event already handled - ignore
+      client.debugMsg(`${name} endListener - ignoring handled error`);
       return;
     }
-    client.sftp = undefined;
     client.endHandled = true;
-    let err = new Error(`${name} Unexpected end event raised`);
+    const err = new Error(`${name} Unexpected end event raised`);
     if (reject) {
       reject(err);
     } else {
@@ -46,14 +48,20 @@ function endListener(client, name, reject) {
 }
 
 function closeListener(client, name, reject) {
-  let fn = function () {
-    if (client.endCalled || client.closeHandled) {
+  const fn = function () {
+    client.sftp = undefined;
+    if (
+      client.endCalled ||
+        client.closeHandled ||
+        client.errorHandled ||
+        client.endHandled
+    ) {
       // handled or expected close event - ignore
+      client.debugMsg(`${name} closeListener - ignoring handled error`);
       return;
     }
-    client.sftp = undefined;
     client.closeHandled = true;
-    let err = new Error(`${name}: Unexpected close event raised`);
+    const err = new Error(`${name}: Unexpected close event raised`);
     if (reject) {
       reject(err);
     } else {
@@ -64,7 +72,7 @@ function closeListener(client, name, reject) {
 }
 
 function addTempListeners(client, name, reject) {
-  let listeners = {
+  const listeners = {
     end: endListener(client, name, reject),
     close: closeListener(client, name, reject),
     error: errorListener(client, name, reject),
@@ -72,6 +80,7 @@ function addTempListeners(client, name, reject) {
   client.on('end', listeners.end);
   client.on('close', listeners.close);
   client.on('error', listeners.error);
+  client._resetEventFlags();
   return listeners;
 }
 
@@ -106,9 +115,7 @@ function localExists(filePath) {
   } else if (stats.isFile()) {
     return '-';
   } else {
-    let err = new Error(
-      `Bad path: ${filePath}: target must be a file or directory`
-    );
+    const err = new Error(`Bad path: ${filePath}: target must be a file or directory`);
     err.code = errorCode.badPath;
     throw err;
   }
@@ -249,7 +256,7 @@ async function normalizeRemotePath(client, aPath) {
  */
 function haveConnection(client, name, reject) {
   if (!client.sftp) {
-    let newError = new Error(`${name}: No SFTP connection available`);
+    const newError = new Error(`${name}: No SFTP connection available`);
     newError.code = errorCode.connect;
     if (reject) {
       reject(newError);
