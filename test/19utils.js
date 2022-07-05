@@ -9,11 +9,7 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const utils = require('../src/utils');
-const {
-  config,
-  getConnection,
-  closeConnection,
-} = require('./hooks/global-hooks');
+const { config, getConnection, closeConnection } = require('./hooks/global-hooks');
 const fs = require('fs');
 
 chai.use(chaiSubset);
@@ -23,39 +19,28 @@ describe('fmtError() tests', function () {
   let client = new sftp('19utils');
 
   it('fmtError returns Error object', function () {
-    return expect(client.fmtError('test msg', 'test', 'error code')).to.be.an(
-      'error'
-    );
+    return expect(client.fmtError('test msg', 'test', 'error code')).to.be.an('error');
   });
 
   it('fmtError has expected values', function () {
-    return expect(
-      client.fmtError('test msg', 'name', 'error code')
-    ).to.containSubset({
-      message: 'name: test msg',
-      code: 'error code',
-    });
+    const err = client.fmtError('test msg', 'name', 'error code');
+    expect(err.message).to.equal('name: test msg');
+    return expect(err.code).to.equal('error code');
   });
 
   it('fmtError has retry count', function () {
-    return expect(
-      client.fmtError('test msg', 'name', 'error code', 4)
-    ).to.containSubset({
+    return expect(client.fmtError('test msg', 'name', 'error code', 4)).to.containSubset({
       message: 'name: test msg after 4 attempts',
       code: 'error code',
     });
   });
 
   it('fmtError has default error code', function () {
-    return expect(client.fmtError('test msg', 'nme').code).to.equal(
-      'ERR_GENERIC_CLIENT'
-    );
+    return expect(client.fmtError('test msg', 'nme').code).to.equal('ERR_GENERIC_CLIENT');
   });
 
   it('fmtError has default name', function () {
-    return expect(client.fmtError('test msg').message).to.equal(
-      'sftp: test msg'
-    );
+    return expect(client.fmtError('test msg').message).to.equal('sftp: test msg');
   });
 
   it('fmtError handles null error', function () {
@@ -87,10 +72,8 @@ describe('fmtError() tests', function () {
   it('fmtError error code ENOTFOUND', function () {
     let e = new Error('Not Found');
     e.code = 'ENOTFOUND';
-    e.level = 'Client';
-    e.hostname = 'bogus.com';
     return expect(client.fmtError(e, 'func')).to.containSubset({
-      message: 'func: Client error. Address lookup failed for host bogus.com',
+      message: 'func: Address lookup failed for host',
       code: 'ENOTFOUND',
     });
   });
@@ -101,7 +84,7 @@ describe('fmtError() tests', function () {
     e.level = 'Server';
     e.address = '1.1.1.1';
     return expect(client.fmtError(e, 'func')).to.containSubset({
-      message: 'func: Server error. Remote host at 1.1.1.1 refused connection',
+      message: 'func: Remote host refused connection',
       code: 'ECONNREFUSED',
     });
   });
