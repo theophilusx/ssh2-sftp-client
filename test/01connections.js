@@ -63,7 +63,7 @@ describe('Connect Tests', function () {
         ...config,
         port: 21,
       })
-    ).to.be.rejectedWith(/refused connection/);
+    ).to.be.rejectedWith(/EHOSTUNREACH/);
   });
 
   it('connect-4b: bad port range throws exception', function () {
