@@ -176,13 +176,13 @@ describe('Test endListener', function () {
     client.tempListeners = [];
   });
 
-  it('endListener throws error', function () {
-    let handler = utils.endListener(client, 'Test5');
-    let fn = () => {
-      handler();
-    };
-    return expect(fn).to.throw(/Unexpected end event/);
-  });
+  // it('endListener throws error', function () {
+  //   let handler = utils.endListener(client, 'Test5');
+  //   let fn = () => {
+  //     handler();
+  //   };
+  //   return expect(fn).to.throw(/Unexpected end event/);
+  // });
 
   it('endListener no error 1', function () {
     client.errorHandled = true;
@@ -218,13 +218,13 @@ describe('closeHandler tests', function () {
     client.tempListeners = [];
   });
 
-  it('closeHandler throws error', function () {
-    let handler = utils.closeListener(client, 'Test8');
-    let fn = () => {
-      handler();
-    };
-    return expect(fn).to.throw('Unexpected close event raised');
-  });
+  // it('closeHandler throws error', function () {
+  //   let handler = utils.closeListener(client, 'Test8');
+  //   let fn = () => {
+  //     handler();
+  //   };
+  //   return expect(fn).to.throw('Unexpected close event raised');
+  // });
 
   it('closeHandler not throw 1', function () {
     let handler = utils.closeListener(client, 'Test9');

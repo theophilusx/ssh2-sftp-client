@@ -37,12 +37,15 @@ function endListener(client, name, reject) {
       return;
     }
     client.endHandled = true;
-    const err = new Error(`${name} Unexpected end event raised`);
-    if (reject) {
-      reject(err);
-    } else {
-      throw err;
-    }
+    client.debugMsg(`${name} Unexpected end event - ignoring`);
+    // Don't reject/throw error, just log it and move on
+    // after invalidating the connection
+    // const err = new Error(`${name} Unexpected end event raised`);
+    // if (reject) {
+    //   reject(err);
+    // } else {
+    //   throw err;
+    // }
   };
   return fn;
 }
@@ -52,21 +55,24 @@ function closeListener(client, name, reject) {
     client.sftp = undefined;
     if (
       client.endCalled ||
-        client.closeHandled ||
-        client.errorHandled ||
-        client.endHandled
+      client.closeHandled ||
+      client.errorHandled ||
+      client.endHandled
     ) {
       // handled or expected close event - ignore
       client.debugMsg(`${name} closeListener - ignoring handled error`);
       return;
     }
     client.closeHandled = true;
-    const err = new Error(`${name}: Unexpected close event raised`);
-    if (reject) {
-      reject(err);
-    } else {
-      throw err;
-    }
+    client.debugMsg(`${name} Unexpected close event raised - ignoring`);
+    // Don't throw/reject on close events. Just invalidate the connection
+    // and move on.
+    // const err = new Error(`${name}: Unexpected close event raised`);
+    // if (reject) {
+    //   reject(err);
+    // } else {
+    //   throw err;
+    // }
   };
   return fn;
 }
