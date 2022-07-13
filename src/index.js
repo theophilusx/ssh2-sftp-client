@@ -220,6 +220,7 @@ class SftpClient {
           switch (err.code) {
             case 'ENOTFOUND':
             case 'ECONNREFUSED':
+			case 'EHOSTUNREACH':
             case 'ERR_SOCKET_BAD_PORT':
               throw err;
             case undefined: {
