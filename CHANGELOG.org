@@ -1,4 +1,18 @@
 * Change Logging
+** v9.0.2
+
+   - Change default close and end listeners so that they no longer throw/reject when
+     an unexpected end or close event is seen. Defining expected and unexpected was not
+     reliable and was not adding sufficient value to keep the concept.
+
+   - Update to use nullish coalescing instead of or'ing. Allows setting values to 0
+     without them being overridden by default value.
+
+   - Change when event handled flags are reset. Now reset them after adding new set of
+     listeners.
+
+   - Don't raise error/reject when calling end() method if there is no active connection.
+     
 ** v9.0.1
   - Minor bug fix. The ~get()~ method was not always returning a buffer object
     when it was supposed to due to a race condition between concat-stream and
