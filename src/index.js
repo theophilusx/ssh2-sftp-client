@@ -220,18 +220,17 @@ class SftpClient {
           switch (err.code) {
             case 'ENOTFOUND':
             case 'ECONNREFUSED':
-			case 'EHOSTUNREACH':
             case 'ERR_SOCKET_BAD_PORT':
-              throw err;
-            case undefined: {
-              if (err.message.endsWith('All configured authentication methods failed')) {
-                throw this.fmtError(err.message, 'getConnection', errorCode.badAuth);
-              }
-              retry(err);
-              break;
+            throw err;
+          case undefined: {
+            if (err.message.endsWith('All configured authentication methods failed')) {
+              throw this.fmtError(err.message, 'getConnection', errorCode.badAuth);
             }
-            default:
-              retry(err);
+            retry(err);
+            break;
+          }
+          default:
+            retry(err);
           }
         }
       });
