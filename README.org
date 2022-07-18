@@ -342,21 +342,6 @@ The objects in the array returned by ~list()~ have the following properties;
   }
 #+end_src
 
-**** Pattern Filter
-
-The filter options can be a regular expression (most powerful option) or a
-simple /glob/-like string where * will match any number of characters, e.g.
-
-#+begin_example
-  foo* => foo, foobar, foobaz
-  ,*bar => bar, foobar, tabbar
-  ,*oo* => foo, foobar, look, book
-#+end_example
-
-The /glob/-style matching is very simple. In most cases, you are best off using
-a real regular expression which will allow you to do more powerful matching and
-anchor matches to the beginning/end of the string etc.
-
 *** exists(path) ==> boolean
 
 Tests to see if remote file or directory exists. Returns type of remote object
