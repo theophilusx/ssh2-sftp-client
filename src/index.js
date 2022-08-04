@@ -221,16 +221,16 @@ class SftpClient {
             case 'ENOTFOUND':
             case 'ECONNREFUSED':
             case 'ERR_SOCKET_BAD_PORT':
-            throw err;
-          case undefined: {
-            if (err.message.endsWith('All configured authentication methods failed')) {
-              throw this.fmtError(err.message, 'getConnection', errorCode.badAuth);
+              throw err;
+            case undefined: {
+              if (err.message.endsWith('All configured authentication methods failed')) {
+                throw this.fmtError(err.message, 'getConnection', errorCode.badAuth);
+              }
+              retry(err);
+              break;
             }
-            retry(err);
-            break;
-          }
-          default:
-            retry(err);
+            default:
+              retry(err);
           }
         }
       });
@@ -1443,7 +1443,7 @@ class SftpClient {
         resolve(true);
       };
       this.on('close', endCloseHandler);
-      if (this.client) {
+      if (this.client.sftp) {
         this.client.end();
       } else {
         // no actual connection exists - just resolve
