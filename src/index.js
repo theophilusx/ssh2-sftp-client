@@ -498,6 +498,9 @@ class SftpClient {
       };
       rdr = this.sftp.createReadStream(rPath, opts.readStreamOptions);
       rdr.once('error', (err) => {
+        if (dst && typeof dst !== 'string' && !dst.destroyed) {
+          dst.destroy();
+        }
         reject(this.fmtError(`${err.message} ${rPath}`, '_get', err.code));
       });
       if (dst === undefined) {

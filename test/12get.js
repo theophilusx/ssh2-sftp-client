@@ -29,9 +29,7 @@ describe('get() method tests', function () {
   });
 
   it('get returns a promise', function () {
-    return expect(sftp.get(config.sftpUrl + '/get-promise.txt')).to.be.a(
-      'promise'
-    );
+    return expect(sftp.get(config.sftpUrl + '/get-promise.txt')).to.be.a('promise');
   });
 
   it('get the file content', async function () {
@@ -82,9 +80,26 @@ describe('get() method tests', function () {
   });
 
   it('get non-existent file is rejected', function () {
-    return expect(
-      sftp.get(config.sftpUrl + '/file-not-exist.md')
-    ).to.be.rejectedWith('No such file');
+    return expect(sftp.get(config.sftpUrl + '/file-not-exist.md')).to.be.rejectedWith(
+      'No such file'
+    );
+  });
+
+  it('get non-existent file closes stream', async function () {
+    const localPath = makeLocalPath(config.localUrl, 'get-a-file.txt');
+    const out = fs.createWriteStream(localPath, {
+      flags: 'w',
+      encoding: null,
+    });
+    try {
+      await sftp.get(`${config.sftpUrl}/file-not-exist.md`, out);
+    } catch (err) {
+      return expect(out.destroyed).to.be.true;
+    }
+    expect(sftp.get(`${config.sftpUrl}/file-not-exist.md`, out)).to.be.rejectedWith(
+      'No such file'
+    );
+    return expect(out.destroyed).to.be.true;
   });
 
   it('get with relative remote path 1', async function () {
@@ -116,8 +131,7 @@ describe('get() method tests', function () {
   });
 
   it('get with relative local path 4', async function () {
-    let localPath =
-      '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz';
+    let localPath = '../ssh2-sftp-client/test/testData/get-relative4-gzip.txt.gz';
     let remotePath = config.sftpUrl + '/get-gzip.txt.gz';
     await sftp.get(remotePath, localPath);
     let stats = await sftp.stat(remotePath);
@@ -128,8 +142,6 @@ describe('get() method tests', function () {
   it('get with no permission on destination dir', function () {
     let localPath = makeLocalPath(config.localUrl, 'no-perm-dir', 'foo.txt');
     let remotePath = `${config.sftpUrl}/get-gzip.txt.gz`;
-    return expect(sftp.get(remotePath, localPath)).to.be.rejectedWith(
-      /Bad path/
-    );
+    return expect(sftp.get(remotePath, localPath)).to.be.rejectedWith(/Bad path/);
   });
 });
