@@ -1,4 +1,14 @@
 * Change Logging
+** v9.0.3
+
+  - Fix issue with end() method test for active sftp connection. Previous test was
+    incorrect and could result in trying to call end() when there was no sftp subsystem
+    initialised.
+
+  - Fix bug associated with closing destination stream in get() calls. When using the
+    get() method and supplying a destination stream, if the remote file did not exist, the
+    stream was not closed. This could cause a FD resource leak.
+    
 ** v9.0.2
 
    - Change default close and end listeners so that they no longer throw/reject when

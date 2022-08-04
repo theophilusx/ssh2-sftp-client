@@ -16,6 +16,13 @@ Code has been tested against Node versions 14.19.1, 16.15.0 and 18.1.0
 Node versions < 14.x are not supported. 
 
 ** Version 9.x Changes
+  - Fix bug in ~end()~ method where it was possible for the module to attempt calling
+    the underlying ssh2 ~end()~ method when ssh2 has not been initialised. This could
+    lead to undefined reference errors.
+  - Fix bug in ~get()~ method where supplied destination streams were not close, creating
+    a possible resource leak. If the remote file did not exist, the method would return
+    an error, but failed to close any passed in stream supplied as the destination for
+    the data in the ~get()~ call.    
   - Change the default end and close handlers not to throw error or reject
     promises. Previously, an end or close event would cause an error to be raised or a
     promise to be rejected if the event was deemed to be /unexpected/. However,
