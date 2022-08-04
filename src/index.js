@@ -414,7 +414,7 @@ class SftpClient {
    * List contents of a remote directory. If a pattern is provided,
    * filter the results to only include files with names that match
    * the supplied pattern. Return value is an array of file entry
-   * objects that include properties for type, name, size, modifiyTime,
+   * objects that include properties for type, name, size, modifyTime,
    * accessTime, rights {user, group other}, owner and group.
    *
    * @param {String} remotePath - path to remote directory
