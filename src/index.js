@@ -157,7 +157,12 @@ class SftpClient {
         resolve(true);
       };
       this.on('ready', doReady);
-      this.client.connect(config);
+      try {
+        this.client.connect(config);
+      } catch (err) {
+        this.debugMsg(`getConnection: ${err.message}`);
+        reject(err);
+      }
     }).finally(() => {
       this.removeListener('ready', doReady);
       removeTempListeners(this, listeners, 'getConnection');
@@ -223,8 +228,11 @@ class SftpClient {
             case 'ERR_SOCKET_BAD_PORT':
               throw err;
             case undefined: {
-              if (err.message.endsWith('All configured authentication methods failed')) {
-                throw this.fmtError(err.message, 'getConnection', errorCode.badAuth);
+              if (
+                err.message.endsWith('All configured authentication methods failed') ||
+                err.message.startsWith('Cannot parse privateKey')
+              ) {
+                throw err;
               }
               retry(err);
               break;
@@ -237,7 +245,7 @@ class SftpClient {
       const sftp = await this.getSftpChannel();
       return sftp;
     } catch (err) {
-      await this.end();
+      this.end();
       throw err.custom ? err : this.fmtError(err, 'connect');
     } finally {
       removeTempListeners(this, listeners, 'connect');
