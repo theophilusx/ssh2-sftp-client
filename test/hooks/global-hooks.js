@@ -6,27 +6,26 @@ require('dotenv').config({ path: dotenvPath });
 
 const Client = require('../../src/index.js');
 const { join } = require('path');
+const { readFileSync } = require('fs');
 const winston = require('winston');
 
 const logger = winston.createLogger({
   level: 'debug',
-  transports: [
-    new winston.transports.File({ filename: 'debug.log', level: 'debug' }),
-  ],
+  transports: [new winston.transports.File({ filename: 'debug.log', level: 'debug' })],
 });
 
 function hasListener(emitter, eventName, listenerName) {
-  let listeners = emitter.listeners(eventName);
-  let matches = listeners.filter((l) => l.name == listenerName);
+  const listeners = emitter.listeners(eventName);
+  const matches = listeners.filter((l) => l.name == listenerName);
   return matches.length === 0 ? false : true;
 }
 
 function dumpListeners(emitter) {
-  let eventNames = emitter.eventNames();
+  const eventNames = emitter.eventNames();
   if (eventNames.length) {
     console.log('Listener Data');
     eventNames.map((n) => {
-      let listeners = emitter.listeners(n);
+      const listeners = emitter.listeners(n);
       console.log(`${n}: ${emitter.listenerCount(n)}`);
       console.dir(listeners);
       listeners.map((l) => {
@@ -41,6 +40,8 @@ const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
+  privateKey: readFileSync(process.env.SFTP_KEY_FILE),
+  passphrase: process.env.SFTP_KEY_PASSPHRASE,
   port: process.env.SFTP_PORT || 22,
   localUrl: process.env.LOCAL_URL,
   sftpUrl: process.env.SFTP_URL,
@@ -87,29 +88,39 @@ let con;
 
 async function getConnection() {
   try {
+    let baseConfig = { ...config };
+    delete baseConfig.privateKey;
+    delete baseConfig.passphrase;
     if (!con) {
       con = new Client();
-      await con.connect(config);
+      await con.connect(baseConfig);
       const root = await con.realPath('.');
       config.remoteRoot = root;
     } else {
-      await con.connect(config);
+      await con.connect(baseConfig);
     }
     return con;
   } catch (err) {
     console.error(`Connect failure ${err.message}`);
-    // const eventNames = con.client.eventNames();
-    // if (eventNames.length) {
-    //   console.log('Listener Data');
-    //   eventNames.map((n) => {
-    //     const listeners = con.client.listeners(n);
-    //     console.log(`${n}: ${con.client.listenerCount(n)}`);
-    //     console.dir(listeners);
-    //     listeners.map((l) => {
-    //       console.log(`listener name = ${l.name}`);
-    //     });
-    //   });
-    // }
+    throw err;
+  }
+}
+
+async function getKeyConnection() {
+  try {
+    let baseConfig = { ...config };
+    delete baseConfig.password;
+    if (!con) {
+      con = new Client();
+      await con.connect(baseConfig);
+      const root = await con.realPath('.');
+      config.remoteRoot = root;
+    } else {
+      await con.connect(baseConfig);
+    }
+    return con;
+  } catch (err) {
+    console.error(`Caonnect failure: ${err.message}`);
     throw err;
   }
 }
