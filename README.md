@@ -88,8 +88,8 @@ Node versions < 14.x are not supported.
 -   **Breaking Change**: This version uses syntax not supported in node versions prior to v14. Therefore, node versions less than v14 will not work.
 -   **Breaking Change**: This `list()` method no longer accepts a regular expression for filtering the entries to be returned. You can now specify a filter function instead. The function is called for each item in the list of items to be returned, passing in the item object as its only argument. Essentially, this is just a call to `Array.filter()`, so the filter function should behave in the same way i.e. return true for items to be retained and false for those to be dropped.
 -   **Breaking Change**: The ability to set `autoClose` on read and write streams and the ability to set `end` on `pipe` operations has been removed. These options caused confusion for users and were too easy to get wrong, plus it made the methods overly complicated. For those use-cases where you want to control streams at a low level, two new methods have been added, `createReadStream()` and `createWriteStream()`. However, it should be noted that client code is 100% responsible for managing streams obtained using these methods. Use at your own risk!
--   **Breaking Change**: The 3rd argument to `uploadDir()` and `downloadDir()` methods has been change. Previously, the argument was a filter function used to select which directories and files to be transferred. The 3rd argument is now an options object with two supported properties, `filter` and `useFastput` (for `uploadDir()`) or `useFastget` (for `downloadDir()`). If `useFastput` is true, the `fastPut()` method will be pused to upload files. If `false` or missing, the slower, but better supported, `put()` method will be used. Likewise, the `useFastget` options can be set to `true` to use the `fastGet()` method for donwloading files, otherwise the slower, but more reliable, `get()` method will be used.
--   The `uploadDir()` and `downloadDir()` methods now use asynchrounous processes to upload/download files. This should result in improved performance for these two methods.
+-   **Breaking Change**: The 3rd argument to `uploadDir()` and `downloadDir()` methods has been change. Previously, the argument was a filter function used to select which directories and files to be transferred. The 3rd argument is now an options object with two supported properties, `filter` and `useFastput` (for `uploadDir()`) or `useFastget` (for `downloadDir()`). If `useFastput` is true, the `fastPut()` method will be used to upload files. If `false` or missing, the slower, but better supported, `put()` method will be used. Likewise, the `useFastget` options can be set to `true` to use the `fastGet()` method for downloading files, otherwise the slower, but more reliable, `get()` method will be used.
+-   The `uploadDir()` and `downloadDir()` methods now use asynchronous processes to upload/download files. This should result in improved performance for these two methods.
 -   New Methods: Two new methods, `createWriteStream()` and `createReadStream()` have been added. These methods will return a stream object connected to a remote file on the `sftp` server. Client code is responsible for managing these stream objects. This includes adding any necessary event listeners and disposing of the objects once finished with them.
 -   Refactoring of Listeners: The library manages temporary listeners in order to provide a way to catch events and processes them inside a `Promise` context. Previously, every method added its own set of temporary listeners. However, this could result in multiple sets of listeners being added, especially for methods which call other methods as part of their processing e.g. `rmdir(),` `uploadDir()` and `dowqnloadDir()`. To avoid this, *internal only* versions of each method have been created. These internal methods use an *underscore* `_` prefix. Client code should not use these methods directly.
 -   New method: Added `rcopy()` method to perform a remote copy of a file on the remote SFTP server.
@@ -930,7 +930,7 @@ The `useFastput` option is a boolean option. If `true`, the method will use the 
 
 Download the remote directory specified by `srcDir` to the local file system directory specified by `dstDir`. The `dstDir` directory will be created if required. All sub directories within `srcDir` will also be copied. Any existing files in the local path will be overwritten. No files in the local path will be deleted.
 
-The method also emites `download` events to provide a way to monitor download progress. The download event listener is called with one argument, an object with two properties, source and destination. The source property is the path to the remote file that has been downloaded and the destination is the local path to where the file was downloaded to. You can add a listener for this event using the `on()` method.
+The method also emits `download` events to provide a way to monitor download progress. The download event listener is called with one argument, an object with two properties, source and destination. The source property is the path to the remote file that has been downloaded and the destination is the local path to where the file was downloaded to. You can add a listener for this event using the `on()` method.
 
 The `options` argument is an options object with two supported properties, `filter` and `useFastget`. The `filter` argument is a predicate function which will be called with two arguments for each potential item to be downloaded. The first argument is the full path of the item and the second argument is a boolean, which will be true if the item is a directory. If the function returns true, the item will be included in the download. If it returns false, it will be filtered and ignored. The filter function is called via the `Array.filter` method. These array comprehension methods are known to be unsafe for asynchronous functions. Therefore, only synchronous filter functions are supported at this time.
 
@@ -938,7 +938,7 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
 
 -   **srcDir:** A remote file path specified as a string
 -   **dstDir:** A local file path specified as a string
--   **options:** An object with two supported properties, `filter` and `useFastget`. The filter property is a function accepting two arguments, the full path to an item and a boolean value which will be true if the item is a directory. The function is called for each item in the download path and should return true to include the item and false to exclude it in the download. The `useFastget` property is a boolean. If true, the `fastGet()` method will be used to transfer files. If `false` (the default), the slower but better supported `get()` mehtod is used. .
+-   **options:** An object with two supported properties, `filter` and `useFastget`. The filter property is a function accepting two arguments, the full path to an item and a boolean value which will be true if the item is a directory. The function is called for each item in the download path and should return true to include the item and false to exclude it in the download. The `useFastget` property is a boolean. If true, the `fastGet()` method will be used to transfer files. If `false` (the default), the slower but better supported `get()` method is used. .
 
 1.  Example
 
@@ -993,7 +993,7 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
 
 ### createReadStream(remotePath, options)) ==> stream object
 
-Returns a read stream object which is attached to the remote file specified by the `remotePath` argument. This is a low level method which just returns a read stream object. Client code is fully responsible for managing and releasing the resources associated with the stream once finished i.e. closing files, removing listeners etc.
+Returns a read stream object which is attached to the remote file specified by the `remotePath` argument. This is a low-level method which just returns a read stream object. Client code is fully responsible for managing and releasing the resources associated with the stream once finished i.e. closing files, removing listeners etc.
 
 -   **remotePath:** A remote file path specified as a string
 -   **options:** An options object. Supported properties are
@@ -1010,7 +1010,7 @@ Returns a read stream object which is attached to the remote file specified by t
 
 ### createWriteStream(remotePath, options) ==> stream object
 
-Returns a write stream object which is attached to the remote file specified in the `remotePath` argument. This is a low legvel function which just returns the stream object. Client code is fully responsible for managing that object, including closing any file descriptiors and removing listeners etc.
+Returns a write stream object which is attached to the remote file specified in the `remotePath` argument. This is a low-level function which just returns the stream object. Client code is fully responsible for managing that object, including closing any file descriptiors and removing listeners etc.
 
 -   **remotePath:** Path to the remote file specified as a string
 -   **options:** An object containing stream options. Supported properties include
@@ -1025,10 +1025,10 @@ Returns a write stream object which is attached to the remote file specified in 
 
 ### rcopy(srcPath, dstPath) ==> string
 
-Perfrom a remote file copy. The file identified by the `srcPath` argument will be copied to the file specified as the `dstPath` argument. The directory where `dstPath` will be placed must exist, but the actual file must not i.e. no overwrites allowed.
+Perform a remote file copy. The file identified by the `srcPath` argument will be copied to the file specified as the `dstPath` argument. The directory where `dstPath` will be placed must exist, but the actual file must not i.e. no overwrites allowed.
 
 -   **srcPath:** Path to remote file to be copied specified as a string
--   **dstPath:** Path to where the copy will be creaeted specified as a string
+-   **dstPath:** Path to where the copy will be created specified as a string
 
 
 <a id="org9ffad87"></a>
@@ -1094,7 +1094,7 @@ One way to determine whether an issue you are encountering is due to `ssh2-sftp-
 
 ## Issues with `fastPut()` and `fastGet()` Methods
 
-The `fastPut()` and `fastGet()` methods are known to be somewhat dependent on SFTP server capabilities. Some SFTP servers just do not work correctly with concurrent connections and some are known to have issues with negotiating packet sizes. These issues can sometimes be resolved by tweaking the options supplied to the methods, such as setting number of concurrent connections or a psecific packet size.
+The `fastPut()` and `fastGet()` methods are known to be somewhat dependent on SFTP server capabilities. Some SFTP servers just do not work correctly with concurrent connections and some are known to have issues with negotiating packet sizes. These issues can sometimes be resolved by tweaking the options supplied to the methods, such as setting number of concurrent connections or a specific packet size.
 
 To see an example of the type of issues you can observe with `fastPut()` or `fastGet()`, have a look at [issue 407](https://github.com/theophilusx/ssh2-sftp-client/issues/407), which describes the experiences of one user. Bottom line, when it works, it tends to work well and be significantly faster than using just `get()` or `put()`. However, when developing code to run against different SFTP servers, especially where you are unable to test against each server, you are likely better off just using `get()` and `put()` or structuring your code so that users can select which method to use (this is what `ssh2-sftp-client` does - for example, see the `!downloadDir()` and `uploadDir()` methods.
 
@@ -1105,15 +1105,15 @@ To see an example of the type of issues you can observe with `fastPut()` or `fas
 
 One of the challenges in providing a Promise based API over a module like SSH2, which is event based is how to ensure events are handled appropriately. The challenge is due to the synchronous nature of events. You cannot use `try/catch` for events because you have no way of knowing when the event might fire. For example, it could easily fire after your `try/catch` block as completed execution.
 
-Things become even more complicated once you mix in Promises. When you define a promise, you have to methods which can be called to fulfil a promise, `resolve` and `reject`. Only one can be called - once you call `resolve`, you cannot call `reject` (well, you can call it, but it won't have any impact on the fulfilment status of the promise). The problem arises when an event, for exmaple an `error` event is fired either after you have resolved a promise or possibly in-between promises. If you don't catch the `error` event, your script will likely crash with an `uncaught exception` error.
+Things become even more complicated once you mix in Promises. When you define a promise, you have to methods which can be called to fulfil a promise, `resolve` and `reject`. Only one can be called - once you call `resolve`, you cannot call `reject` (well, you can call it, but it won't have any impact on the fulfilment status of the promise). The problem arises when an event, for example an `error` event is fired either after you have resolved a promise or possibly in-between promises. If you don't catch the `error` event, your script will likely crash with an `uncaught exception` error.
 
 To make matters worse, some servers, particularly servers running on a Windows platform, will raise multiple errors for the same error *event*. For example, when you attempt to connect with a bad username or password, you will get a `All authentication methods have failed` exception. However, under Windows, you will also get a `Connection reset by peer` exception. If we reject the connect promise based on the authentication failure exception, what do we do with the `reset by peer` exception? More critically, what will handle that exception given the promise has already been fulfilled and completed? To make matters worse, it seems that Windows based servers also raise an error event for *non-errors*. For example, when you call the `end()` method, the connection is closed. On windows, this also results in a *connection reset by peer* error. While it could be argued that the remote server resetting the connection after receiving a disconnect request is not an error, it doesn't change the fact that one is raised and we need to somehow deal with it.
 
-To handle this, `ssh2-sftp-client` implements a couple of strategies. Firstly, when you call one of the module's methods, it adds `error`, `end` and `close` event listeners which will call the `reject` moethod on the enclosing promise. It also keeps track of whether an error has been handled and if it has, it ignores any subsequent errors until the promise ends. Typically, the first error caught has the most relevant information and any subsequent error events are less critical or informative, so ignoring them has no negative impact. Provided one of the events is raised before the promise is fulfilled, these handlers will consume the event and deal with it appropriately.
+To handle this, `ssh2-sftp-client` implements a couple of strategies. Firstly, when you call one of the module's methods, it adds `error`, `end` and `close` event listeners which will call the `reject` method on the enclosing promise. It also keeps track of whether an error has been handled and if it has, it ignores any subsequent errors until the promise ends. Typically, the first error caught has the most relevant information and any subsequent error events are less critical or informative, so ignoring them has no negative impact. Provided one of the events is raised before the promise is fulfilled, these handlers will consume the event and deal with it appropriately.
 
 In testing, it was found that in some situations, particularly during connect operations, subsequent errors fired with a small delay. This prevents the errors from being handled by the event handlers associated with the connect promise. To deal with this, a small 500ms delay has been added to the connect() method, which effectively delays the removal of the event handlers until all events have been caught.
 
-The other area where additional events are fired is during the end() call. To deal with these events, the `end()` method setus up listeners which will simply ignore additional `error`, `end` and `close` events. It is assumed that once you have called `end()` you really only care about any main error which occurs and no longer care about other errors that may be raised as the connection is terminated.
+The other area where additional events are fired is during the end() call. To deal with these events, the `end()` method sets up listeners which will simply ignore additional `error`, `end` and `close` events. It is assumed that once you have called `end()` you really only care about any main error which occurs and no longer care about other errors that may be raised as the connection is terminated.
 
 In addition to the promise based event handlers, `ssh2-sftp-client` also implements global event handlers which will catch any `error`, `end` or `close` events. Essentially, these global handlers only reset the `sftp` property of the client object, effectively ensuring any subsequent calls are rejected and in the case of an error, send the error to the console.
 
@@ -1295,7 +1295,7 @@ client.connect({
 
 Some users have encountered the error 'Timeout while waiting for handshake' or 'Handshake failed, no matching client->server ciphers. This is often due to the client not having the correct configuration for the transport layer algorithms used by ssh2. One of the connect options provided by the ssh2 module is `algorithm`, which is an object that allows you to explicitly set the key exchange, ciphers, hmac and compression algorithms as well as server host key used to establish the initial secure connection. See the SSH2 documentation for details. Getting these parameters correct usually resolves the issue.
 
-When encountering this type of problem, one worthwhile approach is to use openSSH's CLI sftp program with the `-v` switch to raise loggin levels. This will show you what algorithms the CLI is using. You can then use this information to match the names with the accepted algorithm names documented in the `ssh2` README to set the properties in the `algorithms` object.
+When encountering this type of problem, one worthwhile approach is to use openSSH's CLI sftp program with the `-v` switch to raise logging levels. This will show you what algorithms the CLI is using. You can then use this information to match the names with the accepted algorithm names documented in the `ssh2` README to set the properties in the `algorithms` object.
 
 
 <a id="orge773153"></a>
@@ -1375,14 +1375,14 @@ The second directory is the validation directory. I have some very simple script
 
 ## Common Errors
 
-There are some common errors people tend to make when using Promises or Asyc/Await. These are by far the most common problem found in issues logged against this module. Please check for some of these before logging your issue.
+There are some common errors people tend to make when using Promises or Async/Await. These are by far the most common problem found in issues logged against this module. Please check for some of these before logging your issue.
 
 
 <a id="org41486a0"></a>
 
 ### Not returning the promise in a `then()` block
 
-All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
+All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchronously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
 
 ```javascript
 sftp.connect(config)
@@ -1481,7 +1481,7 @@ async function doSftp() {
 
 Another common error is to try and use a try/catch block to catch event signals, such as an error event. In general, you cannot use try/catch blocks for asynchronous code and expect errors to be caught by the `catch` block. Handling errors in asynchronous code is one of the key reasons we now have the Promise and async/await frameworks.
 
-The basic problem is that the try/catch block will have completed execution before the asynchronous code has completed. If the asynchronous code has not compleed, then there is a potential for it to raise an error. However, as the try/catch block has already completed, there is no *catch* waiting to catch the error. It will bubble up and probably result in your script exiting with an uncaught exception error.
+The basic problem is that the try/catch block will have completed execution before the asynchronous code has completed. If the asynchronous code has not completed, then there is a potential for it to raise an error. However, as the try/catch block has already completed, there is no *catch* waiting to catch the error. It will bubble up and probably result in your script exiting with an uncaught exception error.
 
 Error events are essentially asynchronous code. You don't know when such events will fire. Therefore, you cannot use a try/catch block to catch such event errors. Even creating an error handler which then throws an exception won't help as the key problem is that your try/catch block has already executed. There are a number of alternative ways to deal with this situation. However, the key symptom is that you see occasional uncaught error exceptions that cause your script to exit abnormally despite having try/catch blocks in your script. What you need to do is look at your code and find where errors are raised asynchronously and use an event handler or some other mechanism to manage any errors raised.
 
@@ -1490,7 +1490,7 @@ Error events are essentially asynchronous code. You don't know when such events 
 
 ### Server Differences
 
-Not all SFTP servers are the same. Like most standards, the SFTP protocol has some level of interpretation and allows different levels of compliance. This means there can be differences in behaviour between different servers and code which works with one server will not work the same with another. For example, the value returned by *realpath* for non-existent objects can differ significantly. Some servers will throw an error for a particular operation while others will just return null, some servers support concurrent operations (such as used by fastGet/fastPut) while others will not and of course, the text of error messages can vary significantly. In particular, we have noticed significant differences across different platforms. It is therefore advisable to do comprehensive testing when the SFTP server is moved to a new platform. This includes moving from to a cloud based service even if the underlying platform remains the same. I have noticed that some cloud platforms can generate unexpected events, possibly related to additional functionality or features associated with the cloud implementation. For example, it appears SFTP servers running under Azure will generate an error event when the connection is closed even when the client has requested the connection be terminated. The same SFTP server running natively on Windows does not appear to exhibit such behaviour.
+Not all SFTP servers are the same. Like most standards, the SFTP protocol has some level of interpretation and allows different levels of compliance. This means there can be differences in behaviour between different servers and code which works with one server will not work the same with another. For example, the value returned by *realpath* for non-existent objects can differ significantly. Some servers will throw an error for a particular operation while others will just return null, some servers support concurrent operations (such as used by fastGet/fastPut) while others will not and of course, the text of error messages can vary significantly. In particular, we have noticed significant differences across different platforms. It is therefore advisable to do comprehensive testing when the SFTP server is moved to a new platform. This includes moving from to a cloud-based service even if the underlying platform remains the same. I have noticed that some cloud platforms can generate unexpected events, possibly related to additional functionality or features associated with the cloud implementation. For example, it appears SFTP servers running under Azure will generate an error event when the connection is closed even when the client has requested the connection be terminated. The same SFTP server running natively on Windows does not appear to exhibit such behaviour.
 
 
 <a id="org2bfd976"></a>
