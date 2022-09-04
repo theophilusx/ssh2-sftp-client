@@ -1,4 +1,8 @@
 * Change Logging
+** v9.0.4
+  - Fix issue with connect promise not handling corrupted private keys in a clean
+    way. Previously, the promise would not resolve and no error would be reported.
+     
 ** v9.0.3
 
   - Fix issue with end() method test for active sftp connection. Previous test was

@@ -9,13 +9,16 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v9.0.2*.
+Current stable release is *v9.0.4*.
 
-Code has been tested against Node versions 14.19.1, 16.15.0 and 18.1.0
+Code has been tested against Node versions 14.20.0, 16.17.2 and 18.8.0
 
 Node versions < 14.x are not supported. 
 
 ** Version 9.x Changes
+  - Fix bug in ~connect()~ method when private key data was corrupted. The method was not
+    handling errors fro corrupted ssh private keys and would hang indefinitely without
+    reporting any error. Now reports that it was unable to parse the private key. 
   - Fix bug in ~end()~ method where it was possible for the module to attempt calling
     the underlying ssh2 ~end()~ method when ssh2 has not been initialised. This could
     lead to undefined reference errors.
