@@ -30,11 +30,11 @@ Node versions < 14.x are not supported.
     promises. Previously, an end or close event would cause an error to be raised or a
     promise to be rejected if the event was deemed to be /unexpected/. However,
     classification of events as being unexpected was unreliable and didn't add much real
-    value. Both these handlers will now invalidate the sftp connection object and log that
+    value. Both these handlers will now invalidate the SFTP connection object and log that
     the event fired and nothing else.
   - Changed when event handled flags are reset. Now they are reset after a new set of
     temporary listeners are added.
-  - Don't throw an error when calling end() if there is no active sftp connection. It does
+  - Don't throw an error when calling end() if there is no active SFTP connection. It does
     no harm to call end() when there is no connection, so no need to raise an error.
   - Use nullish coalescing when setting retry parameters instead of or'ing with
     defaults. Allows setting values to 0.  
@@ -60,20 +60,20 @@ Node versions < 14.x are not supported.
     select which directories and files to be transferred. The 3rd argument is
     now an options object with two supported properties, ~filter~ and ~useFastput~
     (for ~uploadDir()~) or ~useFastget~ (for ~downloadDir()~). If ~useFastput~ is true,
-    the ~fastPut()~ method will be pused to upload files. If ~false~ or missing, the
+    the ~fastPut()~ method will be used to upload files. If ~false~ or missing, the
     slower, but better supported, ~put()~ method will be used. Likewise, the
     ~useFastget~ options can be set to ~true~ to use the ~fastGet()~ method for
-    donwloading files, otherwise the slower, but more reliable, ~get()~ method
+    downloading files, otherwise the slower, but more reliable, ~get()~ method
     will be used.
-  - The ~uploadDir()~ and ~downloadDir()~ methods now use asynchrounous processes to
+  - The ~uploadDir()~ and ~downloadDir()~ methods now use asynchronous processes to
     upload/download files. This should result in improved performance for these
     two methods.
   - New Methods: Two new methods, ~createWriteStream()~ and ~createReadStream()~
     have been added. These methods will return a stream object connected to a
-    remote file on the ~sftp~ server. Client code is responsible for managing
+    remote file on the ~SFTP~ server. Client code is responsible for managing
     these stream objects. This includes adding any necessary event listeners and
     disposing of the objects once finished with them.
-  - Refactoring of Listeners: The library manages temporary listeners in order
+  - Re-factoring of Listeners: The library manages temporary listeners in order
     to provide a way to catch events and processes them inside a ~Promise~
     context. Previously, every method added its own set of temporary listeners.
     However, this could result in multiple sets of listeners being added,
@@ -87,7 +87,7 @@ Node versions < 14.x are not supported.
 * Installation
 
 #+begin_src shell
-npm install ssh2-sftp-client
+  npm install ssh2-sftp-client
 #+end_src
 
 * Basic Usage
@@ -154,7 +154,7 @@ All the methods will return a Promise, except for ~on()~ and
    more robust.
 
    When specifying file paths, ensure to include a full path i.e. include the
-   remote filename. Don't expect the module to append the local file name to the
+   remote file name. Don't expect the module to append the local file name to the
    path you provide. For example, the following will not work
 
    #+begin_src javascript
@@ -162,7 +162,7 @@ All the methods will return a Promise, except for ~on()~ and
    #+end_src
 
    will not result in the file ~test.txt~ being copied to
-   ~/remote/dir/test.txt~. You need to specify the target filename as well e.g.
+   ~/remote/dir/test.txt~. You need to specify the target file name as well e.g.
 
    #+begin_src javascript
      client.put('/home/fred/test.txt', '/remote/dir/test.txt');
@@ -827,11 +827,11 @@ necessary permissions to modify the remote file.
 This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8.
 The advantage of this version of rename over standard SFTP rename is that it is
 an atomic operation and will allow renaming a resource where the destination
-name exists. The POSIX rename will also work on some filesystems which do not
+name exists. The POSIX rename will also work on some file systems which do not
 support standard SFTP rename because they don't support the system hardlink()
 call. The POSIX rename extension is available on all openSSH servers from 4.8
 and some other implementations. This is an extension to the standard SFTP
-protocol and therefore is not supported on all sSFTP servers.
+protocol and therefore is not supported on all sftp servers.
 
 - fromPath :: string. Path to existing file to be renamed.
 - toPath :: string. Path for new name. If it already exists, it will be replaced
@@ -1004,7 +1004,7 @@ required. All sub directories within ~srcDir~ will also be copied. Any existing
 files in the local path will be overwritten. No files in the local path will be
 deleted.
 
-The method also emites ~download~ events to provide a way to monitor download
+The method also emits ~download~ events to provide a way to monitor download
 progress. The download event listener is called with one argument, an object
 with two properties, source and destination. The source property is the path to
 the remote file that has been downloaded and the destination is the local path
@@ -1033,7 +1033,7 @@ services.
   function is called for each item in the download path and should return true
   to include the item and false to exclude it in the download. The ~useFastget~
   property is a boolean. If true, the ~fastGet()~ method will be used to transfer
-  files. If ~false~ (the default), the slower but better supported ~get()~ mehtod is
+  files. If ~false~ (the default), the slower but better supported ~get()~ method is
   used. .
   
 **** Example
@@ -1101,19 +1101,19 @@ services.
     - autoClose :: defaults to true. If set to false, client code is responsible
       for closing file descriptors when finished
     - start :: Default 0. Position to start reading bytes from (inclusive)
-    - end :: Postion to stop reading bytes (inclusive). 
+    - end :: Position to stop reading bytes (inclusive). 
 
 *** createWriteStream(remotePath, options) ==> stream object
 
    Returns a write stream object which is attached to the remote file specified
-   in the ~remotePath~ argument. This is a low legvel function which just returns
+   in the ~remotePath~ argument. This is a low level function which just returns
    the stream object. Client code is fully responsible for managing that object,
-   including closing any file descriptiors and removing listeners etc.
+   including closing any file descriptors and removing listeners etc.
 
    - remotePath :: Path to the remote file specified as a string
    - options :: An object containing stream options. Supported properties include 
      - flags :: default 'w'
-     - encoding :: defulat null
+     - encoding :: default null
      - mode :: 0o666
      - autoClose :: true 
      - start :: Byte position to start writing from (inclusive). May require
@@ -1121,13 +1121,13 @@ services.
 
 *** rcopy(srcPath, dstPath) ==> string
 
-   Perfrom a remote file copy. The file identified by the ~srcPath~ argument will
+   Perform a remote file copy. The file identified by the ~srcPath~ argument will
    be copied to the file specified as the ~dstPath~ argument. The directory where
    ~dstPath~ will be placed must exist, but the actual file must not i.e. no
    overwrites allowed. 
 
    - srcPath :: Path to remote file to be copied specified as a string
-   - dstPath :: Path to where the copy will be creaeted specified as a string
+   - dstPath :: Path to where the copy will be created specified as a string
 
 *** end() ==> boolean
 
@@ -1181,7 +1181,7 @@ the ~end()~ method automatically removes all listeners from the client object.
    All SFTP servers and platforms are not equal. Some facilities provided by
    ~ssh2-sftp-client~ either depend on capabilities of the remote server or the
    underlying capabilities of the remote server platform. As an example,
-   consider ~chmod()~. This command depends on a remote filesystem which
+   consider ~chmod()~. This command depends on a remote file system which
    implements the 'nix' concept of users and groups. The /win32/ platform does
    not have the same concept of users and groups, so ~chmod()~ will not behave
    in the same way.
@@ -1203,7 +1203,7 @@ the ~end()~ method automatically removes all listeners from the client object.
    concurrent connections and some are known to have issues with negotiating
    packet sizes. These issues can sometimes be resolved by tweaking the options
    supplied to the methods, such as setting number of concurrent connections or
-   a psecific packet size.
+   a specific packet size.
 
    To see an example of the type of issues you can observe with ~fastPut()~ or
    ~fastGet()~, have a look at [[https://github.com/theophilusx/ssh2-sftp-client/issues/407][issue 407]], which describes the experiences of one
@@ -1229,7 +1229,7 @@ the ~end()~ method automatically removes all listeners from the client object.
    =resolve= and =reject=. Only one can be called - once you call =resolve=, you
    cannot call =reject= (well, you can call it, but it won't have any impact on
    the fulfilment status of the promise). The problem arises when an event, for
-   exmaple an =error= event is fired either after you have resolved a promise or
+   example an =error= event is fired either after you have resolved a promise or
    possibly in-between promises. If you don't catch the =error= event, your
    script will likely crash with an =uncaught exception= error.
 
@@ -1251,7 +1251,7 @@ the ~end()~ method automatically removes all listeners from the client object.
 
    To handle this, =ssh2-sftp-client= implements a couple of strategies.
    Firstly, when you call one of the module's methods, it adds =error=, =end=
-   and =close= event listeners which will call the =reject= moethod on the
+   and =close= event listeners which will call the =reject= method on the
    enclosing promise. It also keeps track of whether an error has been handled
    and if it has, it ignores any subsequent errors until the promise ends.
    Typically, the first error caught has the most relevant information and any
@@ -1268,7 +1268,7 @@ the ~end()~ method automatically removes all listeners from the client object.
    until all events have been caught.
 
    The other area where additional events are fired is during the end() call. To
-   deal with these events, the =end()= method setus up listeners which will
+   deal with these events, the =end()= method sets up listeners which will
    simply ignore additional =error=, =end= and =close= events. It is assumed
    that once you have called =end()= you really only care about any main error
    which occurs and no longer care about other errors that may be raised as the
@@ -1353,7 +1353,7 @@ openSSH is =10:30:60=, so you really just need to have enough delay to ensure
 that the 1st connection has completed authentication before the 11th connection
 is attempted.
 
-** How can I pass writable stream as dst for get method?
+** How can I pass writeable stream as dst for get method?
 
 If the dst argument passed to the get method is a writeable stream, the remote
 file will be piped into that writeable. If the writeable you pass in is a
@@ -1498,7 +1498,7 @@ documentation for details. Getting these parameters correct usually resolves the
 issue.
 
 When encountering this type of problem, one worthwhile approach is to use
-openSSH's CLI sftp program with the =-v= switch to raise loggin levels. This
+openSSH's CLI sftp program with the =-v= switch to raise logging levels. This
 will show you what algorithms the CLI is using. You can then use this
 information to match the names with the accepted algorithm names documented in
 the =ssh2= README to set the properties in the =algorithms= object.
@@ -1606,7 +1606,7 @@ the ~ssh2-sftp-client~ wrapper module.
 ** Common Errors
 
    There are some common errors people tend to make when using Promises or
-   Asyc/Await. These are by far the most common problem found in issues logged
+   Async/Await. These are by far the most common problem found in issues logged
    against this module. Please check for some of these before logging your
    issue.
 
@@ -1746,7 +1746,7 @@ the ~ssh2-sftp-client~ wrapper module.
 
     The basic problem is that the try/catch block will have completed execution
     before the asynchronous code has completed. If the asynchronous code has not
-    compleed, then there is a potential for it to raise an error. However, as
+    completed, then there is a potential for it to raise an error. However, as
     the try/catch block has already completed, there is no /catch/ waiting to
     catch the error. It will bubble up and probably result in your script
     exiting with an uncaught exception error.
