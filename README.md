@@ -93,18 +93,12 @@ Node versions < 14.x are not supported.
 # Installation<a id="sec-2"></a>
 
 ```shell
-
-npm
-
 npm install ssh2-sftp-client
 ```
 
 # Basic Usage<a id="sec-3"></a>
 
 ```javascript
-
-let
-
 let Client = require('ssh2-sftp-client');
 let sftp = new Client();
 
@@ -141,27 +135,18 @@ There is a small performance hit for using `./` and `../` as the module must que
 When specifying file paths, ensure to include a full path i.e. include the remote file name. Don't expect the module to append the local file name to the path you provide. For example, the following will not work
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir');
 ```
 
 will not result in the file `test.txt` being copied to `/remote/dir/test.txt`. You need to specify the target file name as well e.g.
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir/test.txt');
 ```
 
 Note that the remote file name does not have to be the same as the local file name. The following works fine;
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir/test-copy.txt');
 ```
 
@@ -180,9 +165,6 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
 2.  Example Use
 
     ```javascript
-    
-    'use
-    
     'use strict';
     
     const Client = require('ssh2-sftp-client');
@@ -219,9 +201,6 @@ Connect to an sftp server. Full documentation for connection options is availabl
     The `retries`, `retry_factor` and `retry_minTimeout` options are not part of the SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what is used to enable retrying of sftp connection attempts. See the documentation for that package for an explanation of these values.
     
     ```javascript
-    
-    //
-    
     // common options
     
     let commonOpts {
@@ -266,10 +245,6 @@ Connect to an sftp server. Full documentation for connection options is availabl
 2.  Example Use
 
     ```javascript
-    
-    sftp.connect({
-    
-    
     sftp.connect({
       host: example.com,
       port: 22,
@@ -288,9 +263,6 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 1.  Example Use
 
     ```javascript
-    
-    const
-    
     const Client = require('ssh2-sftp-client');
     
     const config = {
@@ -335,10 +307,7 @@ Tests to see if remote file or directory exists. Returns type of remote object i
 
 1.  Example Use
 
-    ```javascript
-    
-    const
-    
+    ```javascript   
     const Client = require('ssh2-sftp-client');
     
     const config = {
@@ -375,10 +344,7 @@ Returns the attributes associated with the object pointed to by `path`.
 
     The `stat()` method returns an object with the following properties;
     
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let stats = {
       mode: 33279, // integer representing type and permissions
       uid: 1000, // user ID
@@ -399,9 +365,6 @@ Returns the attributes associated with the object pointed to by `path`.
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     
     client.connect(config)
@@ -433,10 +396,7 @@ In general, if you're going to pass in a string as the destination, you are bett
 
     The `options` argument can be used to pass options to the underlying streams and pipe call used by this method. The argument is an object with three possible properties, `readStreamOptions`, `writeStreamOptions` and `pipeOptions`. The values for each of these properties should be an object containing the required options. For example, possible read stream and pipe options could be defined as
     
-    ```javascript
-    
-    let
-    
+    ```javascript   
     let options = {
       readStreamOptions: {
         flags: 'r',
@@ -455,10 +415,7 @@ In general, if you're going to pass in a string as the destination, you are bett
 
 2.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let client = new Client();
     
     let remotePath = '/remote/server/path/file.txt';
@@ -500,10 +457,7 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
 
 2.  Sample Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript   
     let client = new Client();
     let remotePath = '/server/path/file.txt';
     let localPath = '/local/path/file.txt';
@@ -546,10 +500,7 @@ Upload data from local system to remote server. If the `src` argument is a strin
 
 2.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let client = new Client();
     
     let data = fs.createReadStream('/path/to/local/file.txt');
@@ -591,10 +542,7 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
 
 2.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let localFile = '/path/to/file.txt';
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
@@ -635,10 +583,7 @@ Append the `input` data to an existing remote file. There is no integrity checki
 
 2.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let remotePath = '/path/to/remote/file.txt';
     let client = new Client();
     
@@ -663,10 +608,7 @@ Create a new directory. If the recursive flag is set to true, the method will cr
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript   
     let remoteDir = '/path/to/new/dir';
     let client = new Client();
     
@@ -693,10 +635,7 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let remoteDir = '/path/to/remote/dir';
     let client = new Client();
     
@@ -722,10 +661,7 @@ Delete a file on the remote server.
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
     
@@ -750,10 +686,7 @@ Rename a file or directory from `fromPath` to `toPath`. You must have the necess
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let from = '/remote/path/to/old.txt';
     let to = '/remote/path/to/new.txt';
     let client = new Client();
@@ -778,9 +711,6 @@ This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8. T
 -   **toPath:** string. Path for new name. If it already exists, it will be replaced by file specified in fromPath
 
 ```javascript
-
-let
-
 let from = '/remote/path/to/old.txt';
 let to = '/remote/path/to/new.txt';
 let client = new Client();
@@ -806,10 +736,7 @@ Change the mode (read, write or execute permissions) of a remote file or directo
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let path = '/path/to/remote/file.txt';
     let newMode = 0o644;  // rw-r-r
     let client = new Client();
@@ -857,9 +784,6 @@ The `useFastput` option is a boolean option. If `true`, the method will use the 
 1.  Example
 
     ```javascript
-    
-    
-    
          'use strict';
     
          // Example of using the uploadDir() method to upload a directory
@@ -923,10 +847,7 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
 
 1.  Example
 
-    ```javascript
-    
-    'use
-    
+    ```javascript   
     'use strict';
     
     // Example of using the downloadDir() method to upload a directory
@@ -1011,10 +932,7 @@ Ends the current client session, releasing the client socket and associated reso
 
 1.  Example Use
 
-    ```javascript
-    
-    let
-    
+    ```javascript    
     let client = new Client();
     
     client.connect(config)
@@ -1110,9 +1028,6 @@ If the dst argument passed to the get method is a writeable stream, the remote f
 The writeable stream can be any type of write stream. For example, the below code will convert all the characters in the remote file to upper case before it is saved to the local file system. This could just as easily be something like a gunzip stream from `zlib`, enabling you to decompress remote zipped files as you bring them across before saving to local file system.
 
 ```javascript
-
-'use
-
 'use strict';
 
 // Example of using a writeable with get to retrieve a file.
@@ -1169,9 +1084,6 @@ There are a couple of ways to do this. Essentially, you want to setup SSH keys a
 One solution, provided by @KalleVuorjoki is to use the SSH agent process. **Note**: SSH<sub>AUTH</sub><sub>SOCK</sub> is normally created by your OS when you load the ssh-agent as part of the login session.
 
 ```javascript
-
-let
-
 let sftp = new Client();
 sftp.connect({
   host: 'YOUR-HOST',
@@ -1186,9 +1098,6 @@ sftp.connect({
 Another alternative is to just pass in the SSH key directly as part of the configuration.
 
 ```javascript
-
-let
-
 let sftp = new Client();
 sftp.connect({
   host: 'YOUR-HOST',
@@ -1205,9 +1114,6 @@ sftp.connect({
 This solution was provided by @jmorino.
 
 ```javascript
-
-import
-
 import { SocksClient } from 'socks';
 import SFTPClient from 'ssh2-sftp-client';
 
@@ -1247,17 +1153,6 @@ When encountering this type of problem, one worthwhile approach is to use openSS
 If you want to limit the amount of bandwidth used during upload/download of data, you can use a stream to limit throughput. The following example was provided by *kennylbj*. Note that there is a caveat that we must set the `autoClose` flag to false to avoid calling an extra `_read()` on a closed stream that may cause \_get Permission Denied error in ssh2-streams.
 
 ```javascript
-
-
-
-
-
-
-
-
-
-
-
         const Throttle = require('throttle');
         const progress = require('progress-stream');
 
@@ -1321,9 +1216,6 @@ There are some common errors people tend to make when using Promises or Async/Aw
 All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     sftp.fastGet('foo.txt', 'bar.txt');
@@ -1338,9 +1230,6 @@ sftp.connect(config)
 In the above code, the `sftp.end()` method will almost certainly be called before `sftp.fastGet()` has been fulfilled (unless the *foo.txt* file is really small!). In fact, the whole promise chain will complete and exit even before the `sftp.end()` call has been fulfilled. The correct code would be something like
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.fastGet('foo.txt', 'bar.txt');
@@ -1361,9 +1250,6 @@ A common symptom of this type of error is for file uploads or download to fail t
 Another common error is to mix Promise chains and async/await calls. This is rarely a great idea. While you can do this, it tends to create complicated and difficult to maintain code. Select one approach and stick with it. Both approaches are functionally equivalent, so there is no reason to mix up the two paradigms. My personal preference would be to use async/await as I think that is more *natural* for most developers. For example, the following is more complex and difficult to follow than necessary (and has a bug!)
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.cwd();
@@ -1386,9 +1272,6 @@ The main bug in the above code is the `then()` block is not returning the Promis
 Using async/await inside the promise chain has created unnecessary complexity and leads to incorrect assumptions regarding how the code will execute. A quick glance at the code is likely to give the impression that execution will wait for the `sftp.fastGet()` call to be fulfilled before continuing. This is not the case. The code would be more clearly expressed as either
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.cwd();
@@ -1405,9 +1288,6 @@ sftp.connect(config)
 **or, using async/await**
 
 ```javascript
-
-
-
 async function doSftp() {
   try {
     let sftp = await sftp.connect(conf);
@@ -1445,7 +1325,6 @@ If you are going to try and perform concurrent operations, you need to test exte
 You can add a `debug` property to the config object passed in to `connect()` to turn on debugging. This will generate quite a lot of output. The value of the property should be a function which accepts a single string argument. For example;
 
 ```javascript
-
 config.debug
 
 config.debug = msg => {
@@ -1457,11 +1336,7 @@ config.debug = msg => {
 Enabling debugging can generate a lot of output. If you use console.error() as the output (as in the example above), you can redirect the output to a file using shell redirection e.g.
 
 ```shell
-
-node
-
 node script.js 2> debug.log
-
 ```
 
 If you just want to see debug messages from `ssh2-sftp-client` and exclude debug messages from the underlying `ssh2` and `ssh2-streams` modules, you can filter based on messages which start with 'CLIENT' e.g.
