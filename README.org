@@ -250,11 +250,11 @@ for that package for an explanation of these values.
     privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
     passphrase: 'a pass phrase', // string - For an encrypted private key
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
-    strictVendor: true // boolean - Performs a strict server vendor check
-    debug: myDebug // function - Set this to a function that receives a single
+    strictVendor: true, // boolean - Performs a strict server vendor check
+    debug: myDebug, // function - Set this to a function that receives a single
                   // string argument to get detailed (local) debug information.
-    retries: 2 // integer. Number of times to retry connecting
-    retry_factor: 2 // integer. Time factor used to calculate time between retries
+    retries: 2, // integer. Number of times to retry connecting
+    retry_factor: 2, // integer. Time factor used to calculate time between retries
     retry_minTimeout: 2000 // integer. Minimum timeout between attempts
   };
 
