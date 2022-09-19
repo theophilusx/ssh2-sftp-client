@@ -1730,7 +1730,7 @@ the ~ssh2-sftp-client~ wrapper module.
          await sftp.fastGet(`${d}/foo.txt`, 'bat.txt');
        } catch (e) {
          console.error(e.message);
-       } finally () {
+       } finally {
          await sftp.end();
        }
      }
