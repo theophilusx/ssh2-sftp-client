@@ -15,11 +15,10 @@ const config = {
 const sftp = new Client();
 
 let remotePath = process.argv[2];
-let re = new RegExp(process.argv[3]);
 
 async function main() {
   await sftp.connect(config);
-  let fileList = await sftp.list(remotePath, re);
+  let fileList = await sftp.list(remotePath);
   console.log(fileList);
   await sftp.end();
 }
