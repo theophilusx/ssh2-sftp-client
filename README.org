@@ -250,12 +250,12 @@ for that package for an explanation of these values.
     privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
     passphrase: 'a pass phrase', // string - For an encrypted private key
     readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
-    strictVendor: true // boolean - Performs a strict server vendor check
-    debug: myDebug // function - Set this to a function that receives a single
+    strictVendor: true, // boolean - Performs a strict server vendor check
+    debug: myDebug,// function - Set this to a function that receives a single
                   // string argument to get detailed (local) debug information.
-    retries: 2 // integer. Number of times to retry connecting
-    retry_factor: 2 // integer. Time factor used to calculate time between retries
-    retry_minTimeout: 2000 // integer. Minimum timeout between attempts
+    retries: 2, // integer. Number of times to retry connecting
+    retry_factor: 2, // integer. Time factor used to calculate time between retries
+    retry_minTimeout: 2000, // integer. Minimum timeout between attempts
   };
 
   // rarely used options
@@ -336,19 +336,19 @@ The objects in the array returned by ~list()~ have the following properties;
 
 #+begin_src javascript
   {
-    type: // file type(-, d, l)
-    name: // file name
-    size: // file size
-    modifyTime: // file timestamp of modified time
-    accessTime: // file timestamp of access time
+    type: '-', // file type(-, d, l)
+    name: 'example.txt', // file name
+    size: 43, // file size
+    modifyTime: 1675645360000, // file timestamp of modified time
+    accessTime: 1675645360000, // file timestamp of access time
     rights: {
-      user:
-      group:
-      other:
+      user: 'rw',
+      group: 'r',
+      other: 'r',
     },
-    owner: // user ID
-    group: // group ID
-    longname: // like ls -l line
+    owner: 1000, // user ID
+    group: 1000, // group ID
+    longname: '-rw-r--r--  1 fred  fred  43 Feb 6 12:02 exaple.txt', // like ls -l line
   }
 #+end_src
 
@@ -1730,7 +1730,7 @@ the ~ssh2-sftp-client~ wrapper module.
          await sftp.fastGet(`${d}/foo.txt`, 'bat.txt');
        } catch (e) {
          console.error(e.message);
-       } finally () {
+       } finally {
          await sftp.end();
        }
      }

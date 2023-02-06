@@ -1,65 +1,68 @@
-- [Overview](#sec-1)
-  - [Version 9.x Changes](#sec-1-1)
-- [Installation](#sec-2)
-- [Basic Usage](#sec-3)
-- [Documentation](#sec-4)
-  - [Specifying Paths](#sec-4-1)
-  - [Methods](#sec-4-2)
-    - [new SftpClient(name) ===> SFTP client object](#sec-4-2-1)
-    - [connect(config) ===> SFTP object](#sec-4-2-2)
-    - [list(path, filter) ==> Array[object]](#sec-4-2-3)
-    - [exists(path) ==> boolean](#sec-4-2-4)
-    - [stat(path) ==> object](#sec-4-2-5)
-    - [get(path, dst, options) ==> String|Stream|Buffer](#sec-4-2-6)
-    - [fastGet(remotePath, localPath, options) ===> string](#sec-4-2-7)
-    - [put(src, remotePath, options) ==> string](#sec-4-2-8)
-    - [fastPut(localPath, remotePath, options) ==> string](#sec-4-2-9)
-    - [append(input, remotePath, options) ==> string](#sec-4-2-10)
-    - [mkdir(path, recursive) ==> string](#sec-4-2-11)
-    - [rmdir(path, recursive) ==> string](#sec-4-2-12)
-    - [delete(path, noErrorOK) ==> string](#sec-4-2-13)
-    - [rename(fromPath, toPath) ==> string](#sec-4-2-14)
-    - [posixRename(fromPath, toPath) ==> string](#sec-4-2-15)
-    - [chmod(path, mode) ==> string](#sec-4-2-16)
-    - [realPath(path) ===> string](#sec-4-2-17)
-    - [cwd() ==> string](#sec-4-2-18)
-    - [uploadDir(srcDir, dstDir, options) ==> string](#sec-4-2-19)
-    - [downloadDir(srcDir, dstDir, options) ==> string](#sec-4-2-20)
-    - [createReadStream(remotePath, options)) ==> stream object](#sec-4-2-21)
-    - [createWriteStream(remotePath, options) ==> stream object](#sec-4-2-22)
-    - [rcopy(srcPath, dstPath) ==> string](#sec-4-2-23)
-    - [end() ==> boolean](#sec-4-2-24)
-    - [Add and Remove Listeners](#sec-4-2-25)
-- [Platform Quirks & Warnings](#sec-5)
-  - [Server Capabilities](#sec-5-1)
-  - [Issues with `fastPut()` and `fastGet()` Methods](#sec-5-2)
-  - [Promises, Events & Managing Exceptions](#sec-5-3)
-    - [Adding Custom Handlers](#sec-5-3-1)
-  - [Windows Based Servers](#sec-5-4)
-  - [Don't Re-use SftpClient Objects](#sec-5-5)
-- [FAQ](#sec-6)
-  - [Remote server drops connections with only an end event](#sec-6-1)
-  - [How can I pass writeable stream as dst for get method?](#sec-6-2)
-  - [How can I upload files without having to specify a password?](#sec-6-3)
-  - [How can I connect through a Socks Proxy](#sec-6-4)
-  - [Timeout while waiting for handshake or handshake errors](#sec-6-5)
-  - [How can I limit upload/download speed](#sec-6-6)
-  - [Connection hangs or fails for larger files](#sec-6-7)
-- [Examples](#sec-7)
-- [Troubleshooting](#sec-8)
-  - [Common Errors](#sec-8-1)
-    - [Not returning the promise in a `then()` block](#sec-8-1-1)
-    - [Mixing Promise Chains and Async/Await](#sec-8-1-2)
-    - [Try/catch and Error Handlers](#sec-8-1-3)
-    - [Server Differences](#sec-8-1-4)
-    - [Avoid Concurrent Operations](#sec-8-1-5)
-  - [Debugging Support](#sec-8-2)
-- [Logging Issues](#sec-9)
-- [Pull Requests](#sec-10)
-- [Contributors](#sec-11)
+- [Overview](#org64dfd28)
+  - [Version 9.x Changes](#orgad0f63b)
+- [Installation](#org5b2b2c4)
+- [Basic Usage](#org04c004f)
+- [Documentation](#org783241d)
+  - [Specifying Paths](#org9027daa)
+  - [Methods](#orgc71ab5f)
+    - [new SftpClient(name) ===> SFTP client object](#org52ac97a)
+    - [connect(config) ===> SFTP object](#org5d6c21f)
+    - [list(path, filter) ==> Array[object]](#org2a5262e)
+    - [exists(path) ==> boolean](#orgbde6eb3)
+    - [stat(path) ==> object](#org3a865ac)
+    - [get(path, dst, options) ==> String|Stream|Buffer](#org1ea6207)
+    - [fastGet(remotePath, localPath, options) ===> string](#org4527f8f)
+    - [put(src, remotePath, options) ==> string](#org878eee3)
+    - [fastPut(localPath, remotePath, options) ==> string](#org6b78761)
+    - [append(input, remotePath, options) ==> string](#org1ebf5c7)
+    - [mkdir(path, recursive) ==> string](#orgb9ad69b)
+    - [rmdir(path, recursive) ==> string](#org970f6a7)
+    - [delete(path, noErrorOK) ==> string](#orgab3ef31)
+    - [rename(fromPath, toPath) ==> string](#orgd12f24f)
+    - [posixRename(fromPath, toPath) ==> string](#orgbcae460)
+    - [chmod(path, mode) ==> string](#orgce9ecef)
+    - [realPath(path) ===> string](#org5fb1107)
+    - [cwd() ==> string](#org2cc29e8)
+    - [uploadDir(srcDir, dstDir, options) ==> string](#orgcfedae5)
+    - [downloadDir(srcDir, dstDir, options) ==> string](#orgaec866b)
+    - [createReadStream(remotePath, options)) ==> stream object](#orga212b3a)
+    - [createWriteStream(remotePath, options) ==> stream object](#org513350b)
+    - [rcopy(srcPath, dstPath) ==> string](#orgadad81d)
+    - [end() ==> boolean](#org3f3dcf7)
+    - [Add and Remove Listeners](#orgb995117)
+- [Platform Quirks & Warnings](#org3008d7f)
+  - [Server Capabilities](#orga842b7f)
+  - [Issues with `fastPut()` and `fastGet()` Methods](#org6030512)
+  - [Promises, Events & Managing Exceptions](#org1365c98)
+    - [Adding Custom Handlers](#orgc55a08d)
+  - [Windows Based Servers](#orgdb40703)
+  - [Don't Re-use SftpClient Objects](#org7b96c42)
+- [FAQ](#org9fd7ed4)
+  - [Remote server drops connections with only an end event](#org742f8d9)
+  - [How can I pass writeable stream as dst for get method?](#org7a28c25)
+  - [How can I upload files without having to specify a password?](#orgb21b24c)
+  - [How can I connect through a Socks Proxy](#org644bf6e)
+  - [Timeout while waiting for handshake or handshake errors](#org5ebed72)
+  - [How can I limit upload/download speed](#org207fd95)
+  - [Connection hangs or fails for larger files](#org0fb45a9)
+- [Examples](#orgcb7da82)
+- [Troubleshooting](#org39ccbca)
+  - [Common Errors](#org9705ef4)
+    - [Not returning the promise in a `then()` block](#org08c996e)
+    - [Mixing Promise Chains and Async/Await](#orgc2c6ef5)
+    - [Try/catch and Error Handlers](#orgc650b50)
+    - [Server Differences](#org3c5ed1e)
+    - [Avoid Concurrent Operations](#orga781242)
+  - [Debugging Support](#org9c6e0c9)
+- [Logging Issues](#orgc38de53)
+- [Pull Requests](#org8774071)
+- [Contributors](#org379c637)
 
 
-# Overview<a id="sec-1"></a>
+
+<a id="org64dfd28"></a>
+
+# Overview
 
 an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ssh2) which provides a high level convenience abstraction as well as a Promise based API.
 
@@ -71,7 +74,10 @@ Code has been tested against Node versions 14.20.0, 16.17.2 and 18.8.0
 
 Node versions < 14.x are not supported.
 
-## Version 9.x Changes<a id="sec-1-1"></a>
+
+<a id="orgad0f63b"></a>
+
+## Version 9.x Changes
 
 -   Fix bug in `connect()` method when private key data was corrupted. The method was not handling errors fro corrupted ssh private keys and would hang indefinitely without reporting any error. Now reports that it was unable to parse the private key.
 -   Fix bug in `end()` method where it was possible for the module to attempt calling the underlying ssh2 `end()` method when ssh2 has not been initialised. This could lead to undefined reference errors.
@@ -90,21 +96,21 @@ Node versions < 14.x are not supported.
 -   New method: Added `rcopy()` method to perform a remote copy of a file on the remote SFTP server.
 -   Bumped ssh2 version to 1.11.0
 
-# Installation<a id="sec-2"></a>
+
+<a id="org5b2b2c4"></a>
+
+# Installation
 
 ```shell
-
-npm
-
 npm install ssh2-sftp-client
 ```
 
-# Basic Usage<a id="sec-3"></a>
+
+<a id="org04c004f"></a>
+
+# Basic Usage
 
 ```javascript
-
-let
-
 let Client = require('ssh2-sftp-client');
 let sftp = new Client();
 
@@ -122,13 +128,19 @@ sftp.connect({
 });
 ```
 
-# Documentation<a id="sec-4"></a>
+
+<a id="org783241d"></a>
+
+# Documentation
 
 The connection options are the same as those offered by the underlying SSH2 module. For full details, please see [SSH2 client methods](https://github.com/mscdex/ssh2#user-content-client-methods)
 
 All the methods will return a Promise, except for `on()` and `removeListener()`, which are typically only used in special use cases.
 
-## Specifying Paths<a id="sec-4-1"></a>
+
+<a id="org9027daa"></a>
+
+## Specifying Paths
 
 The convention with both FTP and SFTP is that paths are specified using a 'nix' style i.e. use `/` as the path separator. This means that even if your SFTP server is running on a win32 platform, you should use `/` instead of `\` as the path separator. For example, for a win32 path of `C:\Users\fred` you would actually use `/C:/Users/fred`. If your win32 server does not support the 'nix' path convention, you can try setting the `remotePathSep` property of the `SftpClient` object to the path separator of your remote server. This **might** work, but has not been tested. Please let me know if you need to do this and provide details of the SFTP server so that I can try to create an appropriate environment and adjust things as necessary. At this point, I'm not aware of any win32 based SFTP servers which do not support the 'nix' path convention.
 
@@ -141,35 +153,32 @@ There is a small performance hit for using `./` and `../` as the module must que
 When specifying file paths, ensure to include a full path i.e. include the remote file name. Don't expect the module to append the local file name to the path you provide. For example, the following will not work
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir');
 ```
 
 will not result in the file `test.txt` being copied to `/remote/dir/test.txt`. You need to specify the target file name as well e.g.
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir/test.txt');
 ```
 
 Note that the remote file name does not have to be the same as the local file name. The following works fine;
 
 ```javascript
-
-
-
 client.put('/home/fred/test.txt', '/remote/dir/test-copy.txt');
 ```
 
 This will copy the local file `test.txt` to the remote file `test-copy.txt` in the directory `/remote/dir`.
 
-## Methods<a id="sec-4-2"></a>
 
-### new SftpClient(name) ===> SFTP client object<a id="sec-4-2-1"></a>
+<a id="orgc71ab5f"></a>
+
+## Methods
+
+
+<a id="org52ac97a"></a>
+
+### new SftpClient(name) ===> SFTP client object
 
 Constructor to create a new `ssh2-sftp-client` object. An optional `name` string can be provided, which will be used in error messages to help identify which client has thrown the error.
 
@@ -180,9 +189,6 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
 2.  Example Use
 
     ```javascript
-    
-    'use
-    
     'use strict';
     
     const Client = require('ssh2-sftp-client');
@@ -208,7 +214,10 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
       });
     ```
 
-### connect(config) ===> SFTP object<a id="sec-4-2-2"></a>
+
+<a id="org5d6c21f"></a>
+
+### connect(config) ===> SFTP object
 
 Connect to an sftp server. Full documentation for connection options is available [here](https://github.com/mscdex/ssh2#user-content-client-methods)
 
@@ -219,9 +228,6 @@ Connect to an sftp server. Full documentation for connection options is availabl
     The `retries`, `retry_factor` and `retry_minTimeout` options are not part of the SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what is used to enable retrying of sftp connection attempts. See the documentation for that package for an explanation of these values.
     
     ```javascript
-    
-    //
-    
     // common options
     
     let commonOpts {
@@ -235,12 +241,12 @@ Connect to an sftp server. Full documentation for connection options is availabl
       privateKey: fs.readFileSync('/path/to/key'), // Buffer or string that contains
       passphrase: 'a pass phrase', // string - For an encrypted private key
       readyTimeout: 20000, // integer How long (in ms) to wait for the SSH handshake
-      strictVendor: true // boolean - Performs a strict server vendor check
-      debug: myDebug // function - Set this to a function that receives a single
+      strictVendor: true, // boolean - Performs a strict server vendor check
+      debug: myDebug,// function - Set this to a function that receives a single
                     // string argument to get detailed (local) debug information.
-      retries: 2 // integer. Number of times to retry connecting
-      retry_factor: 2 // integer. Time factor used to calculate time between retries
-      retry_minTimeout: 2000 // integer. Minimum timeout between attempts
+      retries: 2, // integer. Number of times to retry connecting
+      retry_factor: 2, // integer. Time factor used to calculate time between retries
+      retry_minTimeout: 2000, // integer. Minimum timeout between attempts
     };
     
     // rarely used options
@@ -266,10 +272,6 @@ Connect to an sftp server. Full documentation for connection options is availabl
 2.  Example Use
 
     ```javascript
-    
-    sftp.connect({
-    
-    
     sftp.connect({
       host: example.com,
       port: 22,
@@ -278,7 +280,10 @@ Connect to an sftp server. Full documentation for connection options is availabl
     });
     ```
 
-### list(path, filter) ==> Array[object]<a id="sec-4-2-3"></a>
+
+<a id="org2a5262e"></a>
+
+### list(path, filter) ==> Array[object]
 
 Retrieves a directory listing. This method returns a Promise, which once realised, returns an array of objects representing items in the remote directory.
 
@@ -288,9 +293,6 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 1.  Example Use
 
     ```javascript
-    
-    const
-    
     const Client = require('ssh2-sftp-client');
     
     const config = {
@@ -321,24 +323,34 @@ Retrieves a directory listing. This method returns a Promise, which once realise
 
     The objects in the array returned by `list()` have the following properties;
     
-    ```nillangnilswitchesnilflags
-    nilbody
-    #+END_SRC
-    
-    ***
-    nilbody
+    ```javascript
+    {
+      type: '-', // file type(-, d, l)
+      name: 'example.txt', // file name
+      size: 43, // file size
+      modifyTime: 1675645360000, // file timestamp of modified time
+      accessTime: 1675645360000, // file timestamp of access time
+      rights: {
+        user: 'rw',
+        group: 'r',
+        other: 'r',
+      },
+      owner: 1000, // user ID
+      group: 1000, // group ID
+      longname: '-rw-r--r--  1 fred  fred  43 Feb 6 12:02 exaple.txt', // like ls -l line
+    }
     ```
 
-### exists(path) ==> boolean<a id="sec-4-2-4"></a>
+
+<a id="orgbde6eb3"></a>
+
+### exists(path) ==> boolean
 
 Tests to see if remote file or directory exists. Returns type of remote object if it exists or false if it does not.
 
 1.  Example Use
 
     ```javascript
-    
-    const
-    
     const Client = require('ssh2-sftp-client');
     
     const config = {
@@ -365,7 +377,10 @@ Tests to see if remote file or directory exists. Returns type of remote object i
       });
     ```
 
-### stat(path) ==> object<a id="sec-4-2-5"></a>
+
+<a id="org3a865ac"></a>
+
+### stat(path) ==> object
 
 Returns the attributes associated with the object pointed to by `path`.
 
@@ -376,9 +391,6 @@ Returns the attributes associated with the object pointed to by `path`.
     The `stat()` method returns an object with the following properties;
     
     ```javascript
-    
-    let
-    
     let stats = {
       mode: 33279, // integer representing type and permissions
       uid: 1000, // user ID
@@ -399,9 +411,6 @@ Returns the attributes associated with the object pointed to by `path`.
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     
     client.connect(config)
@@ -419,7 +428,10 @@ Returns the attributes associated with the object pointed to by `path`.
       });
     ```
 
-### get(path, dst, options) ==> String|Stream|Buffer<a id="sec-4-2-6"></a>
+
+<a id="org1ea6207"></a>
+
+### get(path, dst, options) ==> String|Stream|Buffer
 
 Retrieve a file from a remote SFTP server. The `dst` argument defines the destination and can be either a string, a stream object or undefined. If it is a string, it is interpreted as the path to a location on the local file system (path should include the file name). If it is a stream object, the remote data is passed to it via a call to pipe(). If `dst` is undefined, the method will put the data into a buffer and return that buffer when the Promise is resolved. If `dst` is defined, it is returned when the Promise is resolved.
 
@@ -434,9 +446,6 @@ In general, if you're going to pass in a string as the destination, you are bett
     The `options` argument can be used to pass options to the underlying streams and pipe call used by this method. The argument is an object with three possible properties, `readStreamOptions`, `writeStreamOptions` and `pipeOptions`. The values for each of these properties should be an object containing the required options. For example, possible read stream and pipe options could be defined as
     
     ```javascript
-    
-    let
-    
     let options = {
       readStreamOptions: {
         flags: 'r',
@@ -456,9 +465,6 @@ In general, if you're going to pass in a string as the destination, you are bett
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     
     let remotePath = '/remote/server/path/file.txt';
@@ -478,7 +484,10 @@ In general, if you're going to pass in a string as the destination, you are bett
     
     -   **Tip:** See examples file in the Git repository for more examples. You can pass any writeable stream in as the destination. For example, if you pass in `zlib.createGunzip()` writeable stream, you can both download and decompress a gzip file 'on the fly'.
 
-### fastGet(remotePath, localPath, options) ===> string<a id="sec-4-2-7"></a>
+
+<a id="org4527f8f"></a>
+
+### fastGet(remotePath, localPath, options) ===> string
 
 Downloads a file at remotePath to localPath using parallel reads for faster throughput. This is the simplest method if you just want to download a file.
 
@@ -488,12 +497,13 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
 
 1.  Options
 
-    ```nillangnilswitchesnilflags
-    nilbody
-    #+END_SRC
-    
-    -
-    nilbody
+    ```javascript
+    {
+      concurrency: 64, // integer. Number of concurrent reads to use
+      chunkSize: 32768, // integer. Size of each read in bytes
+      step: function(total_transferred, chunk, total) // callback called each time a
+                                                      // chunk is transferred
+    }
     ```
     
     -   **Warning:** Some servers do not respond correctly to requests to alter chunk size. This can result in lost or corrupted data.
@@ -501,9 +511,6 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
 2.  Sample Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     let remotePath = '/server/path/file.txt';
     let localPath = '/local/path/file.txt';
@@ -520,7 +527,10 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
       });
     ```
 
-### put(src, remotePath, options) ==> string<a id="sec-4-2-8"></a>
+
+<a id="org878eee3"></a>
+
+### put(src, remotePath, options) ==> string
 
 Upload data from local system to remote server. If the `src` argument is a string, it is interpreted as a local file path to be used for the data to transfer. If the `src` argument is a buffer, the contents of the buffer are copied to the remote file and if it is a readable stream, the contents of that stream are piped to the `remotePath` on the server.
 
@@ -532,12 +542,13 @@ Upload data from local system to remote server. If the `src` argument is a strin
 
     The options object supports three properties, `readStreamOptions`, `writeStreamOptions` and `pipeOptions`. The value for each property should be an object with options as properties and their associated values representing the option value. For example, you might use the following to set `writeStream` options.
     
-    ```nillangnilswitchesnilflags
-    nilbody
-    #+END_SRC
-    
-    The
-    nilbody
+    ```javascript
+    {
+      writeStreamOptions: {
+        flags: 'w',  // w - write and a - append
+        encoding: null, // use null for binary files
+        mode: 0o666, // mode to use for created file (rwx)
+    }}
     ```
     
     The most common options to use are mode and encoding. The values shown above are the defaults. You do not have to set encoding to utf-8 for text files, null is fine for all file types. However, using utf-8 encoding for binary files will often result in data corruption.
@@ -547,9 +558,6 @@ Upload data from local system to remote server. If the `src` argument is a strin
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     
     let data = fs.createReadStream('/path/to/local/file.txt');
@@ -569,7 +577,10 @@ Upload data from local system to remote server. If the `src` argument is a strin
     
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
-### fastPut(localPath, remotePath, options) ==> string<a id="sec-4-2-9"></a>
+
+<a id="org6b78761"></a>
+
+### fastPut(localPath, remotePath, options) ==> string
 
 Uploads the data in file at `localPath` to a new file on remote server at `remotePath` using concurrency. The options object allows tweaking of the fast put process.
 
@@ -579,12 +590,14 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
 
 1.  Options
 
-    ```nillangnilswitchesnilflags
-    nilbody
-    #+END_SRC
-    
-    -
-    nilbody
+    ```javascript
+    {
+      concurrency: 64, // integer. Number of concurrent reads
+      chunkSize: 32768, // integer. Size of each read in bytes
+      mode: 0o755, // mixed. Integer or string representing the file mode to set
+      step: function(total_transferred, chunk, total) // function. Called every time
+      // a part of a file was transferred
+    }
     ```
     
     -   **Warning:** There have been reports that some SFTP servers will not honour requests for non-default chunk sizes. This can result in data loss or corruption.
@@ -592,9 +605,6 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let localFile = '/path/to/file.txt';
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
@@ -611,7 +621,10 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
       });
     ```
 
-### append(input, remotePath, options) ==> string<a id="sec-4-2-10"></a>
+
+<a id="org1ebf5c7"></a>
+
+### append(input, remotePath, options) ==> string
 
 Append the `input` data to an existing remote file. There is no integrity checking performed apart from normal writeStream checks. This function simply opens a writeStream on the remote file in append mode and writes the data passed in to the file.
 
@@ -623,12 +636,13 @@ Append the `input` data to an existing remote file. There is no integrity checki
 
     The following options are supported;
     
-    ```nillangnilswitchesnilflags
-    nilbody
-    #+END_SRC
-    
-    The
-    nilbody
+    ```javascript
+    {
+      flags: 'a',  // w - write and a - append
+      encoding: null, // use null for binary files
+      mode: 0o666, // mode to use for created file (rwx)
+      autoClose: true // automatically close the write stream when finished
+    }
     ```
     
     The most common options to use are mode and encoding. The values shown above are the defaults. You do not have to set encoding to utf-8 for text files, null is fine for all file types. Generally, I would not attempt to append binary files.
@@ -636,9 +650,6 @@ Append the `input` data to an existing remote file. There is no integrity checki
 2.  Example Use
 
     ```javascript
-    
-    let
-    
     let remotePath = '/path/to/remote/file.txt';
     let client = new Client();
     
@@ -654,7 +665,10 @@ Append the `input` data to an existing remote file. There is no integrity checki
       });
     ```
 
-### mkdir(path, recursive) ==> string<a id="sec-4-2-11"></a>
+
+<a id="orgb9ad69b"></a>
+
+### mkdir(path, recursive) ==> string
 
 Create a new directory. If the recursive flag is set to true, the method will create any directories in the path which do not already exist. Recursive flag defaults to false.
 
@@ -664,9 +678,6 @@ Create a new directory. If the recursive flag is set to true, the method will cr
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let remoteDir = '/path/to/new/dir';
     let client = new Client();
     
@@ -682,7 +693,10 @@ Create a new directory. If the recursive flag is set to true, the method will cr
       });
     ```
 
-### rmdir(path, recursive) ==> string<a id="sec-4-2-12"></a>
+
+<a id="org970f6a7"></a>
+
+### rmdir(path, recursive) ==> string
 
 Remove a directory. If removing a directory and recursive flag is set to `true`, the specified directory and all sub-directories and files will be deleted. If set to false and the directory has sub-directories or files, the action will fail.
 
@@ -694,9 +708,6 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let remoteDir = '/path/to/remote/dir';
     let client = new Client();
     
@@ -712,7 +723,10 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
       });
     ```
 
-### delete(path, noErrorOK) ==> string<a id="sec-4-2-13"></a>
+
+<a id="orgab3ef31"></a>
+
+### delete(path, noErrorOK) ==> string
 
 Delete a file on the remote server.
 
@@ -723,9 +737,6 @@ Delete a file on the remote server.
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let remoteFile = '/path/to/remote/file.txt';
     let client = new Client();
     
@@ -741,7 +752,10 @@ Delete a file on the remote server.
       });
     ```
 
-### rename(fromPath, toPath) ==> string<a id="sec-4-2-14"></a>
+
+<a id="orgd12f24f"></a>
+
+### rename(fromPath, toPath) ==> string
 
 Rename a file or directory from `fromPath` to `toPath`. You must have the necessary permissions to modify the remote file.
 
@@ -751,9 +765,6 @@ Rename a file or directory from `fromPath` to `toPath`. You must have the necess
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let from = '/remote/path/to/old.txt';
     let to = '/remote/path/to/new.txt';
     let client = new Client();
@@ -770,7 +781,10 @@ Rename a file or directory from `fromPath` to `toPath`. You must have the necess
       });
     ```
 
-### posixRename(fromPath, toPath) ==> string<a id="sec-4-2-15"></a>
+
+<a id="orgbcae460"></a>
+
+### posixRename(fromPath, toPath) ==> string
 
 This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8. The advantage of this version of rename over standard SFTP rename is that it is an atomic operation and will allow renaming a resource where the destination name exists. The POSIX rename will also work on some file systems which do not support standard SFTP rename because they don't support the system hardlink() call. The POSIX rename extension is available on all openSSH servers from 4.8 and some other implementations. This is an extension to the standard SFTP protocol and therefore is not supported on all sftp servers.
 
@@ -778,9 +792,6 @@ This method uses the openssh POSIX rename extension introduced in OpenSSH 4.8. T
 -   **toPath:** string. Path for new name. If it already exists, it will be replaced by file specified in fromPath
 
 ```javascript
-
-let
-
 let from = '/remote/path/to/old.txt';
 let to = '/remote/path/to/new.txt';
 let client = new Client();
@@ -797,7 +808,10 @@ client.connect(config)
   });
 ```
 
-### chmod(path, mode) ==> string<a id="sec-4-2-16"></a>
+
+<a id="orgce9ecef"></a>
+
+### chmod(path, mode) ==> string
 
 Change the mode (read, write or execute permissions) of a remote file or directory.
 
@@ -807,9 +821,6 @@ Change the mode (read, write or execute permissions) of a remote file or directo
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let path = '/path/to/remote/file.txt';
     let newMode = 0o644;  // rw-r-r
     let client = new Client();
@@ -826,7 +837,10 @@ Change the mode (read, write or execute permissions) of a remote file or directo
       });
     ```
 
-### realPath(path) ===> string<a id="sec-4-2-17"></a>
+
+<a id="org5fb1107"></a>
+
+### realPath(path) ===> string
 
 Converts a relative path to an absolute path on the remote server. This method is mainly used internally to resolve remote path names.
 
@@ -834,11 +848,17 @@ Converts a relative path to an absolute path on the remote server. This method i
 
 -   **path:** A file path, either relative or absolute. Can handle '.' and '..', but does not expand '~'.
 
-### cwd() ==> string<a id="sec-4-2-18"></a>
+
+<a id="org2cc29e8"></a>
+
+### cwd() ==> string
 
 Returns what the server believes is the current remote working directory.
 
-### uploadDir(srcDir, dstDir, options) ==> string<a id="sec-4-2-19"></a>
+
+<a id="orgcfedae5"></a>
+
+### uploadDir(srcDir, dstDir, options) ==> string
 
 Upload the directory specified by `srcDir` to the remote directory specified by `dstDir`. The `dstDir` will be created if necessary. Any sub directories within `srcDir` will also be uploaded. Any existing files in the remote path will be overwritten.
 
@@ -857,57 +877,57 @@ The `useFastput` option is a boolean option. If `true`, the method will use the 
 1.  Example
 
     ```javascript
+    'use strict';
     
+    // Example of using the uploadDir() method to upload a directory
+    // to a remote SFTP server
     
+    const path = require('path');
+    const SftpClient = require('../src/index');
     
-         'use strict';
+    const dotenvPath = path.join(__dirname, '..', '.env');
+    require('dotenv').config({path: dotenvPath});
     
-         // Example of using the uploadDir() method to upload a directory
-         // to a remote SFTP server
+    const config = {
+      host: process.env.SFTP_SERVER,
+      username: process.env.SFTP_USER,
+      password: process.env.SFTP_PASSWORD,
+      port: process.env.SFTP_PORT || 22
+    };
     
-         const path = require('path');
-         const SftpClient = require('../src/index');
+    async function main() {
+      const client = new SftpClient('upload-test');
+      const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
+      const dst = '/home/tim/upload-test';
     
-         const dotenvPath = path.join(__dirname, '..', '.env');
-         require('dotenv').config({path: dotenvPath});
+      try {
+        await client.connect(config);
+        client.on('upload', info => {
+          console.log(`Listener: Uploaded ${info.source}`);
+        });
+        let rslt = await client.uploadDir(src, dst);
+        return rslt;
+      } catch (err) {
+        console.error(err);
+      } finally {
+        client.end();
+      }
+    }
     
-         const config = {
-           host: process.env.SFTP_SERVER,
-           username: process.env.SFTP_USER,
-           password: process.env.SFTP_PASSWORD,
-           port: process.env.SFTP_PORT || 22
-         };
-    
-         async function main() {
-           const client = new SftpClient('upload-test');
-           const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
-           const dst = '/home/tim/upload-test';
-    
-           try {
-             await client.connect(config);
-             client.on('upload', info => {
-               console.log(`Listener: Uploaded ${info.source}`);
-             });
-             let rslt = await client.uploadDir(src, dst);
-             return rslt;
-           } catch (err) {
-             console.error(err);
-           } finally {
-             client.end();
-           }
-         }
-    
-         main()
-           .then(msg => {
-             console.log(msg);
-           })
-           .catch(err => {
-             console.log(`main error: ${err.message}`);
-           });
+    main()
+      .then(msg => {
+        console.log(msg);
+      })
+      .catch(err => {
+        console.log(`main error: ${err.message}`);
+      });
     
     ```
 
-### downloadDir(srcDir, dstDir, options) ==> string<a id="sec-4-2-20"></a>
+
+<a id="orgaec866b"></a>
+
+### downloadDir(srcDir, dstDir, options) ==> string
 
 Download the remote directory specified by `srcDir` to the local file system directory specified by `dstDir`. The `dstDir` directory will be created if required. All sub directories within `srcDir` will also be copied. Any existing files in the local path will be overwritten. No files in the local path will be deleted.
 
@@ -924,9 +944,6 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
 1.  Example
 
     ```javascript
-    
-    'use
-    
     'use strict';
     
     // Example of using the downloadDir() method to upload a directory
@@ -972,7 +989,10 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
     
     ```
 
-### createReadStream(remotePath, options)) ==> stream object<a id="sec-4-2-21"></a>
+
+<a id="orga212b3a"></a>
+
+### createReadStream(remotePath, options)) ==> stream object
 
 Returns a read stream object which is attached to the remote file specified by the `remotePath` argument. This is a low level method which just returns a read stream object. Client code is fully responsible for managing and releasing the resources associated with the stream once finished i.e. closing files, removing listeners etc.
 
@@ -986,7 +1006,10 @@ Returns a read stream object which is attached to the remote file specified by t
     -   **start:** Default 0. Position to start reading bytes from (inclusive)
     -   **end:** Position to stop reading bytes (inclusive).
 
-### createWriteStream(remotePath, options) ==> stream object<a id="sec-4-2-22"></a>
+
+<a id="org513350b"></a>
+
+### createWriteStream(remotePath, options) ==> stream object
 
 Returns a write stream object which is attached to the remote file specified in the `remotePath` argument. This is a low level function which just returns the stream object. Client code is fully responsible for managing that object, including closing any file descriptors and removing listeners etc.
 
@@ -998,23 +1021,26 @@ Returns a write stream object which is attached to the remote file specified in 
     -   **autoClose:** true
     -   **start:** Byte position to start writing from (inclusive). May require changing flag to 'r+'.
 
-### rcopy(srcPath, dstPath) ==> string<a id="sec-4-2-23"></a>
+
+<a id="orgadad81d"></a>
+
+### rcopy(srcPath, dstPath) ==> string
 
 Perform a remote file copy. The file identified by the `srcPath` argument will be copied to the file specified as the `dstPath` argument. The directory where `dstPath` will be placed must exist, but the actual file must not i.e. no overwrites allowed.
 
 -   **srcPath:** Path to remote file to be copied specified as a string
 -   **dstPath:** Path to where the copy will be created specified as a string
 
-### end() ==> boolean<a id="sec-4-2-24"></a>
+
+<a id="org3f3dcf7"></a>
+
+### end() ==> boolean
 
 Ends the current client session, releasing the client socket and associated resources. This function also removes all listeners associated with the client.
 
 1.  Example Use
 
     ```javascript
-    
-    let
-    
     let client = new Client();
     
     client.connect(config)
@@ -1029,7 +1055,10 @@ Ends the current client session, releasing the client socket and associated reso
       });
     ```
 
-### Add and Remove Listeners<a id="sec-4-2-25"></a>
+
+<a id="orgb995117"></a>
+
+### Add and Remove Listeners
 
 Although normally not required, you can add and remove custom listeners on the ssh2 client object. This object supports a number of events, but only a few of them have any meaning in the context of SFTP. These are
 
@@ -1047,21 +1076,33 @@ Although normally not required, you can add and remove custom listeners on the s
 
     Removes the specified listener from the event specified in eventType. Note that the `end()` method automatically removes all listeners from the client object.
 
-# Platform Quirks & Warnings<a id="sec-5"></a>
 
-## Server Capabilities<a id="sec-5-1"></a>
+<a id="org3008d7f"></a>
+
+# Platform Quirks & Warnings
+
+
+<a id="orga842b7f"></a>
+
+## Server Capabilities
 
 All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-sftp-client` either depend on capabilities of the remote server or the underlying capabilities of the remote server platform. As an example, consider `chmod()`. This command depends on a remote file system which implements the 'nix' concept of users and groups. The *win32* platform does not have the same concept of users and groups, so `chmod()` will not behave in the same way.
 
 One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc. You want to use a CLI program which does as little as possible.
 
-## Issues with `fastPut()` and `fastGet()` Methods<a id="sec-5-2"></a>
+
+<a id="org6030512"></a>
+
+## Issues with `fastPut()` and `fastGet()` Methods
 
 The `fastPut()` and `fastGet()` methods are known to be somewhat dependent on SFTP server capabilities. Some SFTP servers just do not work correctly with concurrent connections and some are known to have issues with negotiating packet sizes. These issues can sometimes be resolved by tweaking the options supplied to the methods, such as setting number of concurrent connections or a specific packet size.
 
 To see an example of the type of issues you can observe with `fastPut()` or `fastGet()`, have a look at [issue 407](https://github.com/theophilusx/ssh2-sftp-client/issues/407), which describes the experiences of one user. Bottom line, when it works, it tends to work well and be significantly faster than using just `get()` or `put()`. However, when developing code to run against different SFTP servers, especially where you are unable to test against each server, you are likely better off just using `get()` and `put()` or structuring your code so that users can select which method to use (this is what `ssh2-sftp-client` does - for example, see the `!downloadDir()` and `uploadDir()` methods.
 
-## Promises, Events & Managing Exceptions<a id="sec-5-3"></a>
+
+<a id="org1365c98"></a>
+
+## Promises, Events & Managing Exceptions
 
 One of the challenges in providing a Promise based API over a module like SSH2, which is event based is how to ensure events are handled appropriately. The challenge is due to the synchronous nature of events. You cannot use `try/catch` for events because you have no way of knowing when the event might fire. For example, it could easily fire after your `try/catch` block as completed execution.
 
@@ -1077,25 +1118,40 @@ The other area where additional events are fired is during the end() call. To de
 
 In addition to the promise based event handlers, `ssh2-sftp-client` also implements global event handlers which will catch any `error`, `end` or `close` events. Essentially, these global handlers only reset the `sftp` property of the client object, effectively ensuring any subsequent calls are rejected and in the case of an error, send the error to the console.
 
-### Adding Custom Handlers<a id="sec-5-3-1"></a>
+
+<a id="orgc55a08d"></a>
+
+### Adding Custom Handlers
 
 While the above strategies appear to work for the majority of use cases, there are always going to be edge cases which require more flexible or powerful event handling. To support this, the `on()` and `removeListener()` methods are provided. Any event listener added using the `on()` method will be added at the beginning of the list of handlers for that event, ensuring it will be called before any global or promise local events. See the documentation for the `on()` method for details.
 
-## Windows Based Servers<a id="sec-5-4"></a>
+
+<a id="orgdb40703"></a>
+
+## Windows Based Servers
 
 It appears that when the sftp server is running on Windows, a *ECONNRESET* error signal is raised when the end() method is called. Unfortunately, this signal is raised after a considerable delay. This means we cannot remove the error handler used in the end() promise as otherwise you will get an uncaught exception error. Leaving the handler in place, even though we will ignore this error, solves that issue, but unfortunately introduces a new problem. Because we are not removing the listener, if you re-use the client object for subsequent connections, an additional error handler will be added. If this happens more than 11 times, you will eventually see the Node warning about a possible memory leak. This is because node monitors the number of error handlers and if it sees more than 11 added to an object, it assumes there is a problem and generates the warning.
 
 The best way to avoid this issue is to not re-use client objects. Always generate a new sftp client object for each new connection.
 
-## Don't Re-use SftpClient Objects<a id="sec-5-5"></a>
+
+<a id="org7b96c42"></a>
+
+## Don't Re-use SftpClient Objects
 
 Due to an issue with *ECONNRESET* error signals when connecting to Windows based SFTP servers, it is not possible to remove the error handler in the end() method. This means that if you re-use the SftpClient object for multiple connections e.g. calling connect(), then end(), then connect() etc, you run the risk of multiple error handlers being added to the SftpClient object. After 11 handlers have been added, Node will generate a possible memory leak warning.
 
 To avoid this problem, don't re-use SftpClient objects. Generate a new SftpClient object for each connection. You can perform multiple actions with a single connection e.g. upload multiple files, download multiple files etc, but after you have called end(), you should not try to re-use the object with a further connect() call. Create a new object instead.
 
-# FAQ<a id="sec-6"></a>
 
-## Remote server drops connections with only an end event<a id="sec-6-1"></a>
+<a id="org9fd7ed4"></a>
+
+# FAQ
+
+
+<a id="org742f8d9"></a>
+
+## Remote server drops connections with only an end event
 
 Many SFTP servers have rate limiting protection which will drop connections once a limit has been reached. In particular, openSSH has the setting `MaxStartups`, which can be a tuple of the form `max:drop:full` where `max` is the maximum allowed unauthenticated connections, `drop` is a percentage value which specifies percentage of connections to be dropped once `max` connections has been reached and `full` is the number of connections at which point all subsequent connections will be dropped. e.g. `10:30:60` means allow up to 10 unauthenticated connections after which drop 30% of connection attempts until reaching 60 unauthenticated connections, at which time, drop all attempts.
 
@@ -1103,16 +1159,16 @@ Clients first make an unauthenticated connection to the SFTP server to begin neg
 
 One way to avoid this type of issue is to add a delay between connection attempts. It does not need to be a very long delay - just sufficient to permit the previous connection to be authenticated. In fact, the default setting for openSSH is `10:30:60`, so you really just need to have enough delay to ensure that the 1st connection has completed authentication before the 11th connection is attempted.
 
-## How can I pass writeable stream as dst for get method?<a id="sec-6-2"></a>
+
+<a id="org7a28c25"></a>
+
+## How can I pass writeable stream as dst for get method?
 
 If the dst argument passed to the get method is a writeable stream, the remote file will be piped into that writeable. If the writeable you pass in is a writeable stream created with `fs.createWriteStream()`, the data will be written to the file specified in the constructor call to `createWriteStream()`.
 
 The writeable stream can be any type of write stream. For example, the below code will convert all the characters in the remote file to upper case before it is saved to the local file system. This could just as easily be something like a gunzip stream from `zlib`, enabling you to decompress remote zipped files as you bring them across before saving to local file system.
 
 ```javascript
-
-'use
-
 'use strict';
 
 // Example of using a writeable with get to retrieve a file.
@@ -1162,16 +1218,16 @@ sftp
   });
 ```
 
-## How can I upload files without having to specify a password?<a id="sec-6-3"></a>
+
+<a id="orgb21b24c"></a>
+
+## How can I upload files without having to specify a password?
 
 There are a couple of ways to do this. Essentially, you want to setup SSH keys and use these for authentication to the remote server.
 
 One solution, provided by @KalleVuorjoki is to use the SSH agent process. **Note**: SSH<sub>AUTH</sub><sub>SOCK</sub> is normally created by your OS when you load the ssh-agent as part of the login session.
 
 ```javascript
-
-let
-
 let sftp = new Client();
 sftp.connect({
   host: 'YOUR-HOST',
@@ -1186,9 +1242,6 @@ sftp.connect({
 Another alternative is to just pass in the SSH key directly as part of the configuration.
 
 ```javascript
-
-let
-
 let sftp = new Client();
 sftp.connect({
   host: 'YOUR-HOST',
@@ -1200,14 +1253,14 @@ sftp.connect({
 }
 ```
 
-## How can I connect through a Socks Proxy<a id="sec-6-4"></a>
+
+<a id="org644bf6e"></a>
+
+## How can I connect through a Socks Proxy
 
 This solution was provided by @jmorino.
 
 ```javascript
-
-import
-
 import { SocksClient } from 'socks';
 import SFTPClient from 'ssh2-sftp-client';
 
@@ -1236,59 +1289,59 @@ client.connect({
 // client is connected
 ```
 
-## Timeout while waiting for handshake or handshake errors<a id="sec-6-5"></a>
+
+<a id="org5ebed72"></a>
+
+## Timeout while waiting for handshake or handshake errors
 
 Some users have encountered the error 'Timeout while waiting for handshake' or 'Handshake failed, no matching client->server ciphers. This is often due to the client not having the correct configuration for the transport layer algorithms used by ssh2. One of the connect options provided by the ssh2 module is `algorithm`, which is an object that allows you to explicitly set the key exchange, ciphers, hmac and compression algorithms as well as server host key used to establish the initial secure connection. See the SSH2 documentation for details. Getting these parameters correct usually resolves the issue.
 
 When encountering this type of problem, one worthwhile approach is to use openSSH's CLI sftp program with the `-v` switch to raise logging levels. This will show you what algorithms the CLI is using. You can then use this information to match the names with the accepted algorithm names documented in the `ssh2` README to set the properties in the `algorithms` object.
 
-## How can I limit upload/download speed<a id="sec-6-6"></a>
+
+<a id="org207fd95"></a>
+
+## How can I limit upload/download speed
 
 If you want to limit the amount of bandwidth used during upload/download of data, you can use a stream to limit throughput. The following example was provided by *kennylbj*. Note that there is a caveat that we must set the `autoClose` flag to false to avoid calling an extra `_read()` on a closed stream that may cause \_get Permission Denied error in ssh2-streams.
 
 ```javascript
 
 
+const Throttle = require('throttle');
+const progress = require('progress-stream');
 
+// limit download speed
+const throttleStream = new Throttle(config.throttle);
 
+// download progress stream
+const progressStream = progress({
+  length: fileSize,
+  time: 500,
+});
+progressStream.on('progress', (progress) => {
+  console.log(progress.percentage.toFixed(2));
+});
 
+const outStream = createWriteStream(localPath);
 
+// pipe streams together
+throttleStream.pipe(progressStream).pipe(outStream);
 
-
-
-
-
-        const Throttle = require('throttle');
-        const progress = require('progress-stream');
-
-        // limit download speed
-        const throttleStream = new Throttle(config.throttle);
-
-        // download progress stream
-        const progressStream = progress({
-          length: fileSize,
-          time: 500,
-        });
-        progressStream.on('progress', (progress) => {
-          console.log(progress.percentage.toFixed(2));
-        });
-
-        const outStream = createWriteStream(localPath);
-
-        // pipe streams together
-        throttleStream.pipe(progressStream).pipe(outStream);
-
-        try {
-          // set autoClose to false
-          await client.get(remotePath, throttleStream, { autoClose: false });
-        } catch (e) {
-          console.log('sftp error', e);
-        } finally {
-          await client.end();
-        }
+try {
+  // set autoClose to false
+  await client.get(remotePath, throttleStream, { autoClose: false });
+} catch (e) {
+  console.log('sftp error', e);
+} finally {
+  await client.end();
+}
 ```
 
-## Connection hangs or fails for larger files<a id="sec-6-7"></a>
+
+<a id="org0fb45a9"></a>
+
+## Connection hangs or fails for larger files
 
 This was contributed by Ladislav Jacho. Thanks.
 
@@ -1296,11 +1349,17 @@ A symptom of this issue is that you are able to upload small files, but uploadin
 
 For more explanation, see [issue #342](https://github.com/theophilusx/ssh2-sftp-client/issues/342).
 
-# Examples<a id="sec-7"></a>
+
+<a id="orgcb7da82"></a>
+
+# Examples
 
 I have started collecting example scripts in the example directory of the repository. These are mainly scripts I have put together in order to investigate issues or provide samples for users. They are not robust, lack adequate error handling and may contain errors. However, I think they are still useful for helping developers see how the module and API can be used.
 
-# Troubleshooting<a id="sec-8"></a>
+
+<a id="org39ccbca"></a>
+
+# Troubleshooting
 
 The `ssh2-sftp-client` module is essentially a wrapper around the `ssh2` and `ssh2-streams` modules, providing a higher level `promise` based API. When you run into issues, it is important to try and determine where the issue lies - either in the ssh2-sftp-client module or the underlying `ssh2` and `ssh2-streams` modules. One way to do this is to first identify a minimal reproducible example which reproduces the issue. Once you have that, try to replicate the functionality just using the `ssh2` and `ssh2-streams` modules. If the issue still occurs, then you can be fairly confident it is something related to those later 2 modules and therefore and issue which should be referred to the maintainer of that module.
 
@@ -1312,18 +1371,21 @@ Note also that in the repository there are two useful directories. The first is 
 
 The second directory is the validation directory. I have some very simple scripts in this directory which perform basic tasks using only the `ssh2` modules (no `ssh2-sftp-client` module). These can be useful when trying to determine if the issue is with the underlying `ssh2` module or the `ssh2-sftp-client` wrapper module.
 
-## Common Errors<a id="sec-8-1"></a>
+
+<a id="org9705ef4"></a>
+
+## Common Errors
 
 There are some common errors people tend to make when using Promises or Async/Await. These are by far the most common problem found in issues logged against this module. Please check for some of these before logging your issue.
 
-### Not returning the promise in a `then()` block<a id="sec-8-1-1"></a>
+
+<a id="org08c996e"></a>
+
+### Not returning the promise in a `then()` block
 
 All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     sftp.fastGet('foo.txt', 'bar.txt');
@@ -1338,9 +1400,6 @@ sftp.connect(config)
 In the above code, the `sftp.end()` method will almost certainly be called before `sftp.fastGet()` has been fulfilled (unless the *foo.txt* file is really small!). In fact, the whole promise chain will complete and exit even before the `sftp.end()` call has been fulfilled. The correct code would be something like
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.fastGet('foo.txt', 'bar.txt');
@@ -1356,14 +1415,14 @@ Note the `return` statements. These ensure that the Promise returned by the clie
 
 A common symptom of this type of error is for file uploads or download to fail to complete or for data in those files to be truncated. What is happening is that the connection is being ended before the transfer has completed.
 
-### Mixing Promise Chains and Async/Await<a id="sec-8-1-2"></a>
+
+<a id="orgc2c6ef5"></a>
+
+### Mixing Promise Chains and Async/Await
 
 Another common error is to mix Promise chains and async/await calls. This is rarely a great idea. While you can do this, it tends to create complicated and difficult to maintain code. Select one approach and stick with it. Both approaches are functionally equivalent, so there is no reason to mix up the two paradigms. My personal preference would be to use async/await as I think that is more *natural* for most developers. For example, the following is more complex and difficult to follow than necessary (and has a bug!)
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.cwd();
@@ -1386,9 +1445,6 @@ The main bug in the above code is the `then()` block is not returning the Promis
 Using async/await inside the promise chain has created unnecessary complexity and leads to incorrect assumptions regarding how the code will execute. A quick glance at the code is likely to give the impression that execution will wait for the `sftp.fastGet()` call to be fulfilled before continuing. This is not the case. The code would be more clearly expressed as either
 
 ```javascript
-
-
-
 sftp.connect(config)
   .then(() => {
     return sftp.cwd();
@@ -1405,9 +1461,6 @@ sftp.connect(config)
 **or, using async/await**
 
 ```javascript
-
-
-
 async function doSftp() {
   try {
     let sftp = await sftp.connect(conf);
@@ -1416,13 +1469,16 @@ async function doSftp() {
     await sftp.fastGet(`${d}/foo.txt`, 'bat.txt');
   } catch (e) {
     console.error(e.message);
-  } finally () {
+  } finally {
     await sftp.end();
   }
 }
 ```
 
-### Try/catch and Error Handlers<a id="sec-8-1-3"></a>
+
+<a id="orgc650b50"></a>
+
+### Try/catch and Error Handlers
 
 Another common error is to try and use a try/catch block to catch event signals, such as an error event. In general, you cannot use try/catch blocks for asynchronous code and expect errors to be caught by the `catch` block. Handling errors in asynchronous code is one of the key reasons we now have the Promise and async/await frameworks.
 
@@ -1430,24 +1486,30 @@ The basic problem is that the try/catch block will have completed execution befo
 
 Error events are essentially asynchronous code. You don't know when such events will fire. Therefore, you cannot use a try/catch block to catch such event errors. Even creating an error handler which then throws an exception won't help as the key problem is that your try/catch block has already executed. There are a number of alternative ways to deal with this situation. However, the key symptom is that you see occasional uncaught error exceptions that cause your script to exit abnormally despite having try/catch blocks in your script. What you need to do is look at your code and find where errors are raised asynchronously and use an event handler or some other mechanism to manage any errors raised.
 
-### Server Differences<a id="sec-8-1-4"></a>
+
+<a id="org3c5ed1e"></a>
+
+### Server Differences
 
 Not all SFTP servers are the same. Like most standards, the SFTP protocol has some level of interpretation and allows different levels of compliance. This means there can be differences in behaviour between different servers and code which works with one server will not work the same with another. For example, the value returned by *realpath* for non-existent objects can differ significantly. Some servers will throw an error for a particular operation while others will just return null, some servers support concurrent operations (such as used by fastGet/fastPut) while others will not and of course, the text of error messages can vary significantly. In particular, we have noticed significant differences across different platforms. It is therefore advisable to do comprehensive testing when the SFTP server is moved to a new platform. This includes moving from to a cloud based service even if the underlying platform remains the same. I have noticed that some cloud platforms can generate unexpected events, possibly related to additional functionality or features associated with the cloud implementation. For example, it appears SFTP servers running under Azure will generate an error event when the connection is closed even when the client has requested the connection be terminated. The same SFTP server running natively on Windows does not appear to exhibit such behaviour.
 
-### Avoid Concurrent Operations<a id="sec-8-1-5"></a>
+
+<a id="orga781242"></a>
+
+### Avoid Concurrent Operations
 
 Technically, SFTP should be able to perform multiple operations concurrently. As node is single threaded, what we a really talking about is running multiple execution contexts as a pool where node will switch contexts when each context is blocked due to things like waiting on network data etc. However, I have found this to be extremely unreliable and of very little benefit from a performance perspective. My recommendation is to therefore avoid executing multiple requests over the same connection in parallel (for example, generating multiple `get()` promises and using something like `Promise.all()` to resolve them.
 
 If you are going to try and perform concurrent operations, you need to test extensively and ensure you are using data which is large enough that context switching does occur (i.e. the request is not completed in a single run). Some SFTP servers will handle concurrent operations better than others.
 
-## Debugging Support<a id="sec-8-2"></a>
+
+<a id="org9c6e0c9"></a>
+
+## Debugging Support
 
 You can add a `debug` property to the config object passed in to `connect()` to turn on debugging. This will generate quite a lot of output. The value of the property should be a function which accepts a single string argument. For example;
 
 ```javascript
-
-config.debug
-
 config.debug = msg => {
   console.error(msg);
 };
@@ -1457,23 +1519,26 @@ config.debug = msg => {
 Enabling debugging can generate a lot of output. If you use console.error() as the output (as in the example above), you can redirect the output to a file using shell redirection e.g.
 
 ```shell
-
-node
-
 node script.js 2> debug.log
 
 ```
 
 If you just want to see debug messages from `ssh2-sftp-client` and exclude debug messages from the underlying `ssh2` and `ssh2-streams` modules, you can filter based on messages which start with 'CLIENT' e.g.
 
-```nillangnilswitchesnilflags
-nilbody
-#+END_SRC
-*
-nilbody
+```javascript
+{
+  debug: (msg) => {
+    if (msg.startsWith('CLIENT')) {
+      console.error(msg);
+    }
+  }
+}
 ```
 
-# Logging Issues<a id="sec-9"></a>
+
+<a id="orgc38de53"></a>
+
+# Logging Issues
 
 Please log an issue for all bugs, questions, feature and enhancement requests. Please ensure you include the module version, node version and platform.
 
@@ -1487,7 +1552,10 @@ I am happy to try and help diagnose and fix any issues you encounter while using
 
 Perhaps the best assistance is a minimal reproducible example of the issue. Once the issue can be readily reproduced, it can usually be fixed very quickly.
 
-# Pull Requests<a id="sec-10"></a>
+
+<a id="org8774071"></a>
+
+# Pull Requests
 
 Pull requests are always welcomed. However, please ensure your changes pass all tests and if you're adding a new feature, that tests for that feature are included. Likewise, for new features or enhancements, please include any relevant documentation updates.
 
@@ -1499,7 +1567,10 @@ This module will adopt a standard semantic versioning policy. Please indicate in
 -   **Minor:** Minor change, enhancement or new feature which does not change existing API and will not break existing client code.
 -   **Bug Fix:** No change to functionality or features. Simple fix of an existing bug.
 
-# Contributors<a id="sec-11"></a>
+
+<a id="org379c637"></a>
+
+# Contributors
 
 This module was initially written by jyu213. On August 23rd, 2019, theophilusx took over responsibility for maintaining this module. A number of other people have contributed to this module, but until now, this was not tracked. My intention is to credit anyone who contributes going forward.
 
