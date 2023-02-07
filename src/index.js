@@ -499,10 +499,9 @@ class SftpClient {
     let rdr, wtr;
     return new Promise((resolve, reject) => {
       opts = {
-        ...opts,
-        readStreamOptions: { autoClose: true },
-        writeStreamOptions: { autoClose: true },
-        pipeOptions: { end: true },
+        readStreamOptions: { ...opts?.readStreamOptions, autoClose: true },
+        writeStreamOptions: { ...opts?.writeStreamOptions, autoClose: true},
+        pipeOptions: { ...opts?.pipeOptions, end: true },
       };
       rdr = this.sftp.createReadStream(rPath, opts.readStreamOptions);
       rdr.once('error', (err) => {
@@ -698,10 +697,9 @@ class SftpClient {
     let wtr, rdr;
     return new Promise((resolve, reject) => {
       opts = {
-        ...opts,
-        readStreamOptions: { autoClose: true },
-        writeStreamOptions: { autoClose: true },
-        pipeOptions: { end: true },
+        readStreamOptions: { ...opts?.readStreamOptions, autoClose: true },
+        writeStreamOptions: { ...opts?.writeStreamOptions, autoClose: true },
+        pipeOptions: { ...opts?.pipeOptions, end: true },
       };
       wtr = this.sftp.createWriteStream(rPath, opts.writeStreamOptions);
       wtr.once('error', (err) => {
