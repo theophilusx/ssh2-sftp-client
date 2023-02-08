@@ -308,20 +308,22 @@ class SftpClient {
   }
 
   /**
-   * Retrieves attributes for path
+   * Retrieves attributes for path using cmd, which is either
+   * this.sftp.stat or this.sftp.lstat
    *
+   * @param {Function} cmd - either this.sftp.stat or this.sftp.lstat
    * @param {String} remotePath - a string containing the path to a file
    * @return {Promise<Object>} stats - attributes info
    */
-  _stat(aPath) {
+  _xstat(cmd, aPath) {
     return new Promise((resolve, reject) => {
-      this.debugMsg(`_stat: ${aPath}`);
+      this.debugMsg(`_xstat: ${aPath}`);
       this.sftp.stat(aPath, (err, stats) => {
         if (err) {
           if (err.code === 2 || err.code === 4) {
-            reject(this.fmtError(`No such file: ${aPath}`, '_stat', errorCode.notexist));
+            reject(this.fmtError(`No such file: ${aPath}`, '_xstat', errorCode.notexist));
           } else {
-            reject(this.fmtError(`${err.message} ${aPath}`, '_stat', err.code));
+            reject(this.fmtError(`${err.message} ${aPath}`, '_xstat', err.code));
           }
         } else {
           const result = {
@@ -339,24 +341,63 @@ class SftpClient {
             isFIFO: stats.isFIFO(),
             isSocket: stats.isSocket(),
           };
-          this.debugMsg('_stat: stats <- ', result);
+          this.debugMsg('_xstat: stats <- ', result);
           resolve(result);
         }
       });
     });
   }
 
+  /*
+   * Use the stat command to obtain attributes associated with a remote path.
+   * THe difference between stat and lstat is that stat, in the case of symbolic
+   * links, will return the attributes associated with the target of the link. With
+   * lstat, attributes associated with the symbolic link rather than the target are
+   * returned.
+   *
+   * @param {String} remotePath - path to an object on the remote server
+   * @return {Promise<Object>} stats - attributes info
+   *
+   */
   async stat(remotePath) {
     let listeners;
+    let command = this.sftp.stat;
     try {
       listeners = addTempListeners(this, 'stat');
       haveConnection(this, 'stat');
       const absPath = await normalizeRemotePath(this, remotePath);
-      return await this._stat(absPath);
+      return await this._xstat(command, absPath);
     } catch (err) {
       throw err.custom ? err : this.fmtError(err, 'stat', err.code);
     } finally {
       removeTempListeners(this, listeners, 'stat');
+    }
+  }
+
+
+  /*
+   * Use the lstat command to obtain attributes associated with a remote path.
+   * THe difference between stat and lstat is that stat, in the case of symbolic
+   * links, will return the attributes associated with the target of the link. With
+   * lstat, attributes associated with the symbolic link rather than the target are
+   * returned.
+   *
+   * @param {String} remotePath - path to an object on the remote server
+   * @return {Promise<Object>} stats - attributes info
+   *
+   */
+  async lstat(remotePath) {
+    let listeners;
+    let command = this.sftp.lstat;
+    try {
+      listeners = addTempListeners(this, 'lstat');
+      haveConnection(this, 'lstat');
+      const absPath = await normalizeRemotePath(this, remotePath);
+      return await this._xstat(command, absPath);
+    } catch (err) {
+      throw err.custom ? err : this.fmtError(err, 'lstat', err.code);
+    } finally {
+      removeTempListeners(this, listeners, 'lstat');
     }
   }
 
@@ -375,7 +416,7 @@ class SftpClient {
     try {
       const absPath = await normalizeRemotePath(this, rPath);
       this.debugMsg(`exists: ${rPath} -> ${absPath}`);
-      const info = await this._stat(absPath);
+      const info = await this._xstat(this.sftp.stat, absPath);
       this.debugMsg('exists: <- ', info);
       if (info.isDirectory) {
         this.debugMsg(`exists: ${rPath} = d`);
