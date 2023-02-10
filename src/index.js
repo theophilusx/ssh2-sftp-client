@@ -744,7 +744,7 @@ class SftpClient {
       };
       wtr = this.sftp.createWriteStream(rPath, opts.writeStreamOptions);
       wtr.once('error', (err) => {
-        reject(this.fmtError(`${err.message} ${rPath}`, 'put', err.code));
+        reject(this.fmtError(`Write stream error: ${err.message} ${rPath}`, '_put', err.code));
       });
       wtr.once('close', () => {
         resolve(`Uploaded data stream to ${rPath}`);
@@ -760,7 +760,7 @@ class SftpClient {
         rdr.once('error', (err) => {
           reject(
             this.fmtError(
-              `${err.message} ${typeof lPath === 'string' ? lPath : '<stream>'}`,
+              `Read stream error: ${err.message} ${typeof lPath === 'string' ? lPath : '<stream>'}`,
               '_put',
               err.code
             )
@@ -788,7 +788,7 @@ class SftpClient {
       }
       return await this._put(localSrc, remotePath, options);
     } catch (e) {
-      throw e.custom ? e : this.fmtError(e.message, 'put', e.code);
+      throw e.custom ? e : this.fmtError(`Re-thrown: ${e.message}`, 'put', e.code);
     } finally {
       removeTempListeners(this, listeners, 'put');
     }
