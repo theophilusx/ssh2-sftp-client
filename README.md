@@ -273,7 +273,7 @@ Connect to an sftp server. Full documentation for connection options is availabl
 
     ```javascript
     sftp.connect({
-      host: example.com,
+      host: 'example.com',
       port: 22,
       username: 'donald',
       password: 'youarefired'
@@ -302,7 +302,7 @@ Retrieves a directory listing. This method returns a Promise, which once realise
       password: 'my-secret'
     };
     
-    let sftp = new Client;
+    let sftp = new Client();
     
     sftp.connect(config)
       .then(() => {
@@ -360,7 +360,7 @@ Tests to see if remote file or directory exists. Returns type of remote object i
       password: 'my-secret'
     };
     
-    let sftp = new Client;
+    let sftp = new Client();
     
     sftp.connect(config)
       .then(() => {
