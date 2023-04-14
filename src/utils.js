@@ -239,10 +239,10 @@ async function normalizeRemotePath(client, aPath) {
   try {
     if (aPath.startsWith('..')) {
       const root = await client.realPath('..');
-      return root + client.remotePathSep + aPath.slice(3);
+      return `${root}/${aPath.slice(3)}`;
     } else if (aPath.startsWith('.')) {
       const root = await client.realPath('.');
-      return root + client.remotePathSep + aPath.slice(2);
+      return `${root}/${aPath.slice(2)}`;
     }
     return aPath;
   } catch (err) {
