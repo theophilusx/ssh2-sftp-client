@@ -987,7 +987,7 @@ class SftpClient {
       this.debugMsg(`rmdir: dir = ${remoteDir} recursive = ${recursive}`);
       let absPath = await normalizeRemotePath(this, remoteDir);
       let existStatus = await this.exists(absPath);
-      this.debugMsg(`rmdir: existStatus = ${existStatus}`);
+      this.debugMsg(`rmdir: ${absPath} existStatus = ${existStatus}`);
       if (!existStatus) {
         throw this.fmtError(
           `Bad Path: ${remoteDir}: No such directory`,
@@ -1003,21 +1003,24 @@ class SftpClient {
         );
       }
       if (!recursive) {
+        this.debugMsg('rmdir: non-recursive - just try to remove it');
         return await _rmdir(absPath);
       }
       let listing = await this.list(absPath);
-      this.debugMsg(`rmdir: listing = ${listing}`);
+      this.debugMsg(`rmdir: listing count = ${listing.length}`);
       if (!listing.length) {
+        this.debugMsg('rmdir: No sub dir or files, just rmdir');
         return await _rmdir(absPath);
       }
       let fileList = listing.filter((i) => i.type !== 'd');
-      this.debugMsg(`rmdir: fileList = ${fileList}`);
+      this.debugMsg(`rmdir: dir content files to remove = ${fileList.length}`);
       let dirList = listing.filter((i) => i.type === 'd');
-      this.debugMsg(`rmdir: dirList = ${dirList}`);
+      this.debugMsg(`rmdir: sub-directories to remove = ${dirList.length}`);
       await _delFiles(absPath, fileList);
       for (const d of dirList) {
         await this.rmdir(`${absPath}/${d.name}`, true);
       }
+      await _rmdir(absPath);
       return 'Successfully removed directory';
     } catch (err) {
       throw err.custom
