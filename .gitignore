@@ -25,3 +25,7 @@ package.json-prod
 coverage
 .nyc_output
 debug.log
+.dir-locals.el
+deno.json
+id_ed25519*
+test/testData
