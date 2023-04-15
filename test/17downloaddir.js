@@ -4,7 +4,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-onst { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
+const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
 const fs = require('fs');
 const { basename } = require('path');
 
