@@ -16,6 +16,7 @@ Code has been tested against Node versions 14.20.0, 16.17.2 and 18.8.0
 Node versions < 14.x are not supported. 
 
 ** Version 9.x Changes
+
   - Fix bug in ~connect()~ method when private key data was corrupted. The method was not
     handling errors fro corrupted ssh private keys and would hang indefinitely without
     reporting any error. Now reports that it was unable to parse the private key. 
@@ -282,7 +283,7 @@ for that package for an explanation of these values.
 
 #+begin_src javascript
   sftp.connect({
-    host: example.com,
+    host: 'example.com',
     port: 22,
     username: 'donald',
     password: 'youarefired'
@@ -313,7 +314,7 @@ directory.
     password: 'my-secret'
   };
 
-  let sftp = new Client;
+  let sftp = new Client();
 
   sftp.connect(config)
     .then(() => {
@@ -369,7 +370,7 @@ if it exists or false if it does not.
     password: 'my-secret'
   };
 
-  let sftp = new Client;
+  let sftp = new Client();
 
   sftp.connect(config)
     .then(() => {
@@ -1176,6 +1177,7 @@ Removes the specified listener from the event specified in eventType. Note that
 the ~end()~ method automatically removes all listeners from the client object.
 
 * Platform Quirks & Warnings
+
 ** Server Capabilities
 
    All SFTP servers and platforms are not equal. Some facilities provided by
@@ -1544,6 +1546,7 @@ the =ssh2= README to set the properties in the =algorithms= object.
        await client.end();
      }
    #+end_src
+
 ** Connection hangs or fails for larger files
 
  This was contributed by Ladislav Jacho. Thanks. 
@@ -1836,6 +1839,7 @@ based on messages which start with 'CLIENT' e.g.
     }
   }
 #+end_src
+
 * Logging Issues
 
 Please log an issue for all bugs, questions, feature and enhancement
@@ -1880,8 +1884,10 @@ your pull request what level of change it represents i.e.
 
 - Major :: Change to API or major change in functionality which will require an
            increase in major version number.
+
 - Minor :: Minor change, enhancement or new feature which does not change
            existing API and will not break existing client code.
+
 - Bug Fix :: No change to functionality or features. Simple fix of an existing
              bug.
 
@@ -1912,4 +1918,5 @@ Thanks to the following for their contributions -
 - Maik Marschner :: Contributed fix for connect() not returning sftp object.
   Also included test to check for this regression in future.
 - cakemasher :: Contributed fix for removeTempListeners().
+  
   
