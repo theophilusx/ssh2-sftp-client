@@ -173,6 +173,7 @@ describe('Test endListener', function () {
   beforeEach(function () {
     client.errorHandled = false;
     client.endCalled = false;
+    client.endHandled = false;
     client.tempListeners = [];
   });
 
@@ -183,6 +184,14 @@ describe('Test endListener', function () {
   //   };
   //   return expect(fn).to.throw(/Unexpected end event/);
   // });
+
+  it('endListener error', function () {
+    let handler = utils.endListener(client, 'TestA');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
 
   it('endListener no error 1', function () {
     client.errorHandled = true;
@@ -196,6 +205,15 @@ describe('Test endListener', function () {
   it('endListener no error 2', function () {
     client.endHandled = true;
     let handler = utils.endListener(client, 'Test7');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
+
+  it('endListener no error 3', function () {
+    client.endCalled = true;
+    let handler = utils.endListener(client, 'Test8');
     let fn = () => {
       handler();
     };
@@ -215,6 +233,8 @@ describe('closeHandler tests', function () {
   beforeEach(function () {
     client.closeHandled = false;
     client.endCalled = false;
+    client.endHandled = false;
+    client.errorHandled = false;
     client.tempListeners = [];
   });
 
@@ -225,6 +245,14 @@ describe('closeHandler tests', function () {
   //   };
   //   return expect(fn).to.throw('Unexpected close event raised');
   // });
+
+  it('closeHandler unhandled', function () {
+    let handler = utils.closeListener(client, 'TestB');
+    let fn = () => {
+      handler();
+    };
+    return expect(fn).to.not.throw();
+  });
 
   it('closeHandler not throw 1', function () {
     let handler = utils.closeListener(client, 'Test9');
@@ -242,6 +270,46 @@ describe('closeHandler tests', function () {
       handler();
     };
     return expect(fn).to.not.throw();
+  });
+});
+
+describe('Add/Remove temp listeners', function () {
+  const client = new sftp('add-remove-listener-test');
+  let listeners = null;
+
+  beforeEach(function () {
+    if (listeners) {
+      utils.removeTempListeners(client, listeners, 'tl-test');
+      listeners = null;
+    }
+  });
+
+  it('add temp listeners', function () {
+    listeners = utils.addTempListeners(client, 'tl-test');
+    expect(listeners).to.be.an('object');
+    return expect(listeners).to.have.all.keys('end', 'close', 'error');
+  });
+
+  it('remove temp listeners', function () {
+    listeners = utils.addTempListeners(client, 'tl-test');
+    let endCount = client.client.listenerCount('end');
+    let closeCount = client.client.listenerCount('close');
+    let errorCount = client.client.listenerCount('error');
+    expect(endCount).to.equal(2);
+    expect(closeCount).to.equal(2);
+    expect(errorCount).to.equal(2);
+    utils.removeTempListeners(client, listeners, 'tl-test');
+    listeners = null;
+    expect(client.client.listenerCount('end')).to.equal(endCount - 1);
+    expect(client.client.listenerCount('close')).to.equal(closeCount - 1);
+    return expect(client.client.listenerCount('error')).to.equal(errorCount - 1);
+  });
+
+  it('bad listener array test', function () {
+    let fn = () => {
+      utils.removeTempListeners(client, null, 'tl-test');
+    };
+    return expect(fn).to.throw(Error);
   });
 });
 
@@ -379,5 +447,22 @@ describe('hasConnection tests', function () {
       utils.haveConnection(client, 'Test3', reject);
     });
     return expect(p).to.be.rejectedWith(/No SFTP connection/);
+  });
+});
+
+describe('normalize path', function () {
+  it('test normalizepath wiht no connection', function () {
+    let client = new sftp('testing');
+    return expect(utils.normalizeRemotePath(client, '.')).to.eventually.be.rejected;
+  });
+});
+
+describe('sleep', function () {
+  it('sleep ok', async function () {
+    return expect(utils.sleep(10)).to.eventually.equal(true);
+  });
+
+  it('sleep error', async function () {
+    return expect(utils.sleep('bad value')).to.be.rejected;
   });
 });
