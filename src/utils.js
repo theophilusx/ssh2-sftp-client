@@ -277,9 +277,13 @@ function haveConnection(client, name, reject) {
 function sleep(ms) {
   return new Promise((resolve, reject) => {
     try {
-      setTimeout(() => {
-        resolve(true);
-      }, ms);
+      if (isNaN(ms) || ms < 0) {
+        reject('Argument must be  anumber >= 0');
+      } else {
+        setTimeout(() => {
+          resolve(true);
+        }, ms);
+      }
     } catch (err) {
       reject(err);
     }
