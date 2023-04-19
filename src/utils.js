@@ -28,6 +28,18 @@ function errorListener(client, name, reject) {
   return fn;
 }
 
+function globalListener(client, evt) {
+  return () => {
+    if (client.endCalled || client.errorHandled || client.closeHandled) {
+      // we are processing an expected event handled elsewhere
+      client.debugMsg(`Global ${evt} event: Ignoring expected and handled event`);
+    } else {
+      client.debugMsg(`Global ${evt} event: Handling unexpected event`);
+      client.sftp = undefined;
+    }
+  };
+}
+
 function endListener(client, name, reject) {
   const fn = function () {
     client.sftp = undefined;
@@ -291,6 +303,7 @@ function sleep(ms) {
 }
 
 module.exports = {
+  globalListener,
   errorListener,
   endListener,
   closeListener,

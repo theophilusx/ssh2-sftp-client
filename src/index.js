@@ -6,6 +6,7 @@ const concat = require('concat-stream');
 const promiseRetry = require('promise-retry');
 const { join, parse } = require('path');
 const {
+  globalListener,
   addTempListeners,
   removeTempListeners,
   haveConnection,
@@ -29,38 +30,9 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.debug = undefined;
 
-    this.client.on('close', () => {
-      if (this.endCalled || this.errorHandled || this.closeHandled) {
-        // we are processing an expected end event or close event handled elsewhere
-        this.debugMsg('Global: Ignoring handled close event');
-      } else {
-        this.debugMsg('Global: Handling unexpected close event');
-        this.sftp = undefined;
-      }
-    });
-
-    this.client.on('end', () => {
-      if (this.endCalled || this.errorHandled || this.endHandled) {
-        // end event expected or handled elsewhere
-        this.debugMsg('Global: Ignoring hanlded end event');
-      } else {
-        this.debugMsg('Global: Handling unexpected end event');
-        this.sftp = undefined;
-      }
-    });
-
-    this.client.on('error', (err) => {
-      if (this.endCalled || this.errorHandled) {
-        // error event expected or handled elsewhere
-        this.debugMsg(`Global: Ignoring handled error: ${err.message}`);
-      } else {
-        this.debugMsg(`Global; Handling unexpected error; ${err.message}`);
-        this.sftp = undefined;
-        console.log(
-          `ssh2-sftp-client: Unexpected error: ${err.message}. Error code: ${err.code}`
-        );
-      }
-    });
+    this.client.on('close', globalListener(this, 'close'));
+    this.client.on('end', globalListener(this, 'end'));
+    this.client.on('error', globalListener(this, 'error'));
   }
 
   debugMsg(msg, obj) {
@@ -1526,7 +1498,7 @@ class SftpClient {
         resolve(true);
       };
       this.on('close', endCloseHandler);
-      if (this.client.sftp) {
+      if (this.sftp) {
         this.client.end();
       } else {
         // no actual connection exists - just resolve

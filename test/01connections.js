@@ -156,3 +156,22 @@ describe('contest-7: Connect and disconnect', function () {
     ).to.be.rejectedWith(/An existing SFTP connection is already defined/);
   });
 });
+
+describe('end test', function () {
+  it('normal end call', function () {
+    const client = new Client('contest-9');
+    const baseConfig = { ...config };
+    delete baseConfig.privateKey;
+    delete baseConfig.passphrase;
+    return expect(
+      client.connect(baseConfig).then(() => {
+        return client.end();
+      })
+    ).to.eventually.equal(true);
+  });
+
+  it('end when not connected', function () {
+    const client = new Client('contest-10');
+    return expect(client.end()).to.eventually.equal(true);
+  });
+});
