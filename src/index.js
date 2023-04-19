@@ -146,7 +146,6 @@ class SftpClient {
         if (err) {
           reject(this.fmtError(err, 'getSftpChannel', err.code));
         } else {
-          this.debugMsg('getSftpChannel: SFTP channel established');
           this.sftp = sftp;
           resolve(sftp);
         }
