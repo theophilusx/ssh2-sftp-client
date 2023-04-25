@@ -9,82 +9,21 @@ convenience abstraction as well as a Promise based API.
 Documentation on the methods and available options in the underlying modules can
 be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
 
-Current stable release is *v9.0.4*.
+Current stable release is *v9.1.0.
 
-Code has been tested against Node versions 14.20.0, 16.17.2 and 18.8.0
+Code has been tested against Node versions 14.21.3, 16.19.1, 18.16.0 and 20.0.0
 
 Node versions < 14.x are not supported. 
 
-** Version 9.x Changes
+** Version 9.1.0 Changes
 
-  - Fix bug in ~connect()~ method when private key data was corrupted. The method was not
-    handling errors fro corrupted ssh private keys and would hang indefinitely without
-    reporting any error. Now reports that it was unable to parse the private key. 
-  - Fix bug in ~end()~ method where it was possible for the module to attempt calling
-    the underlying ssh2 ~end()~ method when ssh2 has not been initialised. This could
-    lead to undefined reference errors.
-  - Fix bug in ~get()~ method where supplied destination streams were not close, creating
-    a possible resource leak. If the remote file did not exist, the method would return
-    an error, but failed to close any passed in stream supplied as the destination for
-    the data in the ~get()~ call.    
-  - Change the default end and close handlers not to throw error or reject
-    promises. Previously, an end or close event would cause an error to be raised or a
-    promise to be rejected if the event was deemed to be /unexpected/. However,
-    classification of events as being unexpected was unreliable and didn't add much real
-    value. Both these handlers will now invalidate the SFTP connection object and log that
-    the event fired and nothing else.
-  - Changed when event handled flags are reset. Now they are reset after a new set of
-    temporary listeners are added.
-  - Don't throw an error when calling end() if there is no active SFTP connection. It does
-    no harm to call end() when there is no connection, so no need to raise an error.
-  - Use nullish coalescing when setting retry parameters instead of or'ing with
-    defaults. Allows setting values to 0.  
-  - *Breaking Change*: This version uses syntax not supported in node versions
-    prior to v14. Therefore, node versions less than v14 will not work.
-  - *Breaking Change*: This ~list()~ method no longer accepts a regular expression
-    for filtering the entries to be returned. You can now specify a filter
-    function instead. The function is called for each item in the list of items
-    to be returned, passing in the item object as its only argument.
-    Essentially, this is just a call to ~Array.filter()~, so the filter function
-    should behave in the same way i.e. return true for items to be retained and
-    false for those to be dropped.
-  - *Breaking Change*: The ability to set ~autoClose~ on read and write streams and
-    the ability to set ~end~ on ~pipe~ operations has been removed. These options
-    caused confusion for users and were too easy to get wrong, plus it made the
-    methods overly complicated. For those use-cases where you want to control
-    streams at a low level, two new methods have been added, ~createReadStream()~ and
-    ~createWriteStream()~. However, it should be noted that client code is 100%
-    responsible for managing streams obtained using these methods. Use at your
-    own risk!
-  - *Breaking Change*: The 3rd argument to ~uploadDir()~ and ~downloadDir()~ methods
-    has been change. Previously, the argument was a filter function used to
-    select which directories and files to be transferred. The 3rd argument is
-    now an options object with two supported properties, ~filter~ and ~useFastput~
-    (for ~uploadDir()~) or ~useFastget~ (for ~downloadDir()~). If ~useFastput~ is true,
-    the ~fastPut()~ method will be used to upload files. If ~false~ or missing, the
-    slower, but better supported, ~put()~ method will be used. Likewise, the
-    ~useFastget~ options can be set to ~true~ to use the ~fastGet()~ method for
-    downloading files, otherwise the slower, but more reliable, ~get()~ method
-    will be used.
-  - The ~uploadDir()~ and ~downloadDir()~ methods now use asynchronous processes to
-    upload/download files. This should result in improved performance for these
-    two methods.
-  - New Methods: Two new methods, ~createWriteStream()~ and ~createReadStream()~
-    have been added. These methods will return a stream object connected to a
-    remote file on the ~SFTP~ server. Client code is responsible for managing
-    these stream objects. This includes adding any necessary event listeners and
-    disposing of the objects once finished with them.
-  - Re-factoring of Listeners: The library manages temporary listeners in order
-    to provide a way to catch events and processes them inside a ~Promise~
-    context. Previously, every method added its own set of temporary listeners.
-    However, this could result in multiple sets of listeners being added,
-    especially for methods which call other methods as part of their processing
-    e.g. ~rmdir(),~ ~uploadDir()~ and ~dowqnloadDir()~. To avoid this, /internal only/
-    versions of each method have been created. These internal methods use an
-    /underscore/ ~_~ prefix. Client code should not use these methods directly. 
-  - New method: Added ~rcopy()~ method to perform a remote copy of a file on the remote SFTP server. 
-  - Bumped ssh2 version to 1.11.0
-
+- Added lstat() method
+- Fixed bug in option hadnling which was preventing setting file mode in get() and put()
+  methods
+- Fixed bug where a loss of network connections between establishment of the connection
+  and calling various sftp methods was not handled and could result in an event causing
+  the node process to exit with an error.
+   
 * Installation
 
 #+begin_src shell
@@ -93,7 +32,7 @@ Node versions < 14.x are not supported.
 
 * Basic Usage
 
-#+begin_src javascript
+#+begin_src js
   let Client = require('ssh2-sftp-client');
   let sftp = new Client();
 
@@ -1560,6 +1499,13 @@ the =ssh2= README to set the properties in the =algorithms= object.
  
  For more explanation, see [[https://github.com/theophilusx/ssh2-sftp-client/issues/342][issue #342]].
  
+** Typescript definition file out of date
+
+This project does not use Typescript. However, typescript definition files are provided by
+other 3rd parties. Sometimes, these definition files have not stayed up-to-date with the
+current version of this module. If you encounter this issue, you need to report it to the
+party responsible for the definition file, not this project.
+
 * Examples
 
 I have started collecting example scripts in the example directory of the
