@@ -1160,7 +1160,7 @@ class SftpClient {
    * boolean value. When true, the 'fastPut()' method will be used to upload files. Default
    * is to use the slower, but more supported 'put()' method.
    *
-   * @returns {Promise<String>}
+   * @returns {Promise<Array>}
    */
   async uploadDir(srcDir, dstDir, options) {
     const getRemoteStatus = async (dstDir) => {
@@ -1214,7 +1214,7 @@ class SftpClient {
             this.debugMsg(`uploadFiles: File ignored: ${f.name} not a regular file`);
           }
         }
-        resolve(uploads);
+        resolve(Promise.all(uploads));
       })
         .then((pList) => {
           return Promise.all(pList);
@@ -1278,7 +1278,7 @@ class SftpClient {
    * is for a directory. If the function returns true, the item will be
    * downloaded and excluded if teh function returns false.
    *
-   * @returns {Promise<String>}
+   * @returns {Promise<Array>}
    */
   async downloadDir(srcDir, dstDir, options = { filter: null, useFastget: false }) {
     const _getDownloadList = async (srcDir, filter) => {
@@ -1333,6 +1333,7 @@ class SftpClient {
           } else {
             pList.push(this.get(src, dst, false));
           }
+          this.client.emit('download', { source: src, destination: dst });
         }
         return resolve(Promise.all(pList));
       }).finally(() => {
