@@ -33,4 +33,6 @@ CHANGELOG.org
 .dir-local.el
 id_ed25519 
 id_ed25519.pub
+.dir-locals.el
+deno.json
 
