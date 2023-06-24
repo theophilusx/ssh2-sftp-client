@@ -1353,7 +1353,7 @@ class SftpClient {
       for (const d of dirDownloads) {
         let src = `${srcDir}/${d.name}`;
         let dst = join(dstDir, d.name);
-        await this.downloadDir(src, dst);
+        await this.downloadDir(src, dst, options);
       }
       return `${srcDir} downloaded to ${dstDir}`;
     } catch (err) {
