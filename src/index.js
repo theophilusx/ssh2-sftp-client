@@ -16,9 +16,10 @@ const {
   haveLocalCreate,
 } = require('./utils');
 const { errorCode } = require('./constants');
+const pLimit = require('p-limit');
 
 class SftpClient {
-  constructor(clientName) {
+  constructor(clientName, concurrencyLimit = 4) {
     this.version = '9.0.4';
     this.client = new Client();
     this.sftp = undefined;
@@ -29,6 +30,7 @@ class SftpClient {
     this.endHandled = false;
     this.remotePlatform = 'unix';
     this.debug = undefined;
+    this.promiseLimit = pLimit(concurrencyLimit);
 
     this.client.on('close', globalListener(this, 'close'));
     this.client.on('end', globalListener(this, 'end'));
@@ -1197,7 +1199,7 @@ class SftpClient {
 
     const uploadFiles = (srcDir, dstDir, fileList, useFastput) => {
       let listeners;
-      return new Promise((resolve, reject) => {
+      return this.promiseLimit(() => new Promise((resolve, reject) => {
         listeners = addTempListeners(this, 'uploadFiles', reject);
         let uploads = [];
         for (const f of fileList) {
@@ -1215,7 +1217,7 @@ class SftpClient {
           }
         }
         resolve(Promise.all(uploads));
-      })
+      }))
         .then((pList) => {
           return Promise.all(pList);
         })
@@ -1322,7 +1324,7 @@ class SftpClient {
 
     const _downloadFiles = (remotePath, localPath, fileList, useFastget) => {
       let listeners;
-      return new Promise((resolve, reject) => {
+      return this.promiseLimit(() => new Promise((resolve, reject) => {
         listeners = addTempListeners(this, '_downloadFIles', reject);
         let pList = [];
         for (const f of fileList) {
@@ -1336,7 +1338,7 @@ class SftpClient {
           this.client.emit('download', { source: src, destination: dst });
         }
         return resolve(Promise.all(pList));
-      }).finally(() => {
+      })).finally(() => {
         removeTempListeners(this, listeners, '_downloadFiles');
       });
     };
