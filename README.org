@@ -1397,6 +1397,8 @@ configuration.
 
 This solution was provided by @jmorino.
 
+When a SOCKS 5 client is connected it must be ingested by ssh2-sftp-client immediately, otherwise a timeout occurs.
+
 #+begin_src javascript
   import { SocksClient } from 'socks';
   import SFTPClient from 'ssh2-sftp-client';
@@ -1405,7 +1407,7 @@ This solution was provided by @jmorino.
   const port = 22; // default SSH/SFTP port on remote server
 
   // connect to SOCKS 5 proxy
-  const { socks } = await SocksClient.createConnection({
+  const { socket } = await SocksClient.createConnection({
     proxy: {
       host: 'my.proxy', // proxy hostname
       port: 1080, // proxy port
@@ -1418,9 +1420,8 @@ This solution was provided by @jmorino.
   const client = new SFTPClient();
   client.connect({
     host,
-    sock: socks.socket, // pass the socket to proxy here (see ssh2 doc)
-    username: '.....',
-    privateKey: '.....'
+    sock: socket, // pass the socket to proxy here (see ssh2 doc)
+    // other config options
   })
 
   // client is connected
