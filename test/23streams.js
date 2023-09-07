@@ -1,10 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-const {
-  config,
-  getConnection,
-  makeLocalPath,
-} = require('./hooks/global-hooks');
+const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
 const fs = require('fs');
 const chaiAsPromised = require('chai-as-promised');
 
@@ -75,7 +71,7 @@ describe('create write stream tests', function () {
   });
 
   after('write stream test clenaup', async function () {
-    sftp.delete(`${config.sftpUrl}/stream-t3.txt`);
+    await sftp.delete(`${config.sftpUrl}/stream-t3.txt`);
     await sftp.end();
     return true;
   });
