@@ -51,6 +51,6 @@
   "dependencies": {
     "concat-stream": "^2.0.0",
     "promise-retry": "^2.0.1",
-    "ssh2": "^1.12.0"
+    "ssh2": "^1.14.0"
   }
 }
