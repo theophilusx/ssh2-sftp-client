@@ -30,14 +30,14 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "chai": "^4.3.6",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "checksum": "^1.0.0",
     "dotenv": "^16.0.0",
-    "eslint": "^8.17.0",
+    "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-mocha": "^10.0.3",
+    "eslint-plugin-mocha": "^10.2.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-unicorn": "^48.0.1",
@@ -46,7 +46,7 @@
     "nyc": "^15.1.0",
     "prettier": "^3.0.3",
     "through2": "^4.0.2",
-    "winston": "^3.6.0"
+    "winston": "^3.11.0"
   },
   "dependencies": {
     "concat-stream": "^2.0.0",
