@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { errorCode } = require('./constants');
+const fs = require("fs");
+const path = require("path");
+const { errorCode } = require("./constants");
 
 /**
  * Simple default error listener. Will reformat the error message and
@@ -32,7 +32,9 @@ function globalListener(client, evt) {
   return () => {
     if (client.endCalled || client.errorHandled || client.closeHandled) {
       // we are processing an expected event handled elsewhere
-      client.debugMsg(`Global ${evt} event: Ignoring expected and handled event`);
+      client.debugMsg(
+        `Global ${evt} event: Ignoring expected and handled event`,
+      );
     } else {
       client.debugMsg(`Global ${evt} event: Handling unexpected event`);
       client.sftp = undefined;
@@ -40,7 +42,7 @@ function globalListener(client, evt) {
   };
 }
 
-function endListener(client, name, reject) {
+function endListener(client, name, _reject) {
   const fn = function () {
     client.sftp = undefined;
     if (client.endCalled || client.endHandled || client.errorHandled) {
@@ -62,7 +64,7 @@ function endListener(client, name, reject) {
   return fn;
 }
 
-function closeListener(client, name, reject) {
+function closeListener(client, name, _reject) {
   const fn = function () {
     client.sftp = undefined;
     if (
@@ -95,18 +97,18 @@ function addTempListeners(client, name, reject) {
     close: closeListener(client, name, reject),
     error: errorListener(client, name, reject),
   };
-  client.on('end', listeners.end);
-  client.on('close', listeners.close);
-  client.on('error', listeners.error);
+  client.on("end", listeners.end);
+  client.on("close", listeners.close);
+  client.on("error", listeners.error);
   client._resetEventFlags();
   return listeners;
 }
 
 function removeTempListeners(client, listeners, name) {
   try {
-    client.removeListener('end', listeners.end);
-    client.removeListener('close', listeners.close);
-    client.removeListener('error', listeners.error);
+    client.removeListener("end", listeners.end);
+    client.removeListener("close", listeners.close);
+    client.removeListener("error", listeners.error);
   } catch (err) {
     throw new Error(`${name}: Error removing temp listeners: ${err.message}`);
   }
@@ -129,11 +131,13 @@ function localExists(filePath) {
   if (!stats) {
     return false;
   } else if (stats.isDirectory()) {
-    return 'd';
+    return "d";
   } else if (stats.isFile()) {
-    return '-';
+    return "-";
   } else {
-    const err = new Error(`Bad path: ${filePath}: target must be a file or directory`);
+    const err = new Error(
+      `Bad path: ${filePath}: target must be a file or directory`,
+    );
     err.code = errorCode.badPath;
     throw err;
   }
@@ -155,9 +159,10 @@ function localExists(filePath) {
  * @param {string} mode = access mode - either 'r' or 'w'. Defaults to 'r'
  * @returns {Object} with properties status, type, details and code
  */
-function haveLocalAccess(filePath, mode = 'r') {
-  const accessMode =
-    fs.constants.F_OK | (mode === 'w') ? fs.constants.W_OK : fs.constants.R_OK;
+function haveLocalAccess(filePath, mode = "r") {
+  const accessMode = fs.constants.F_OK | (mode === "w")
+    ? fs.constants.W_OK
+    : fs.constants.R_OK;
 
   try {
     fs.accessSync(filePath, accessMode);
@@ -165,7 +170,7 @@ function haveLocalAccess(filePath, mode = 'r') {
     return {
       status: true,
       type: type,
-      details: 'access OK',
+      details: "access OK",
       code: 0,
     };
   } catch (err) {
@@ -174,21 +179,21 @@ function haveLocalAccess(filePath, mode = 'r') {
         return {
           status: false,
           type: null,
-          details: 'not exist',
+          details: "not exist",
           code: -2,
         };
       case -13:
         return {
           status: false,
           type: localExists(filePath),
-          details: 'permission denied',
+          details: "permission denied",
           code: -13,
         };
       case -20:
         return {
           status: false,
           type: null,
-          details: 'parent not a directory',
+          details: "parent not a directory",
         };
       default:
         return {
@@ -210,8 +215,8 @@ function haveLocalAccess(filePath, mode = 'r') {
  * @returns {Object} Object with properties status, type, destils and code
  */
 function haveLocalCreate(filePath) {
-  const { status, details, type } = haveLocalAccess(filePath, 'w');
-  if (!status && details === 'permission denied') {
+  const { status, details, type } = haveLocalAccess(filePath, "w");
+  if (!status && details === "permission denied") {
     //throw new Error(`Bad path: ${filePath}: permission denied`);
     return {
       status,
@@ -220,8 +225,8 @@ function haveLocalCreate(filePath) {
     };
   } else if (!status) {
     const dirPath = path.dirname(filePath);
-    const localCheck = haveLocalAccess(dirPath, 'w');
-    if (localCheck.status && localCheck.type !== 'd') {
+    const localCheck = haveLocalAccess(dirPath, "w");
+    if (localCheck.status && localCheck.type !== "d") {
       //throw new Error(`Bad path: ${dirPath}: not a directory`);
       return {
         status: false,
@@ -238,7 +243,7 @@ function haveLocalCreate(filePath) {
     } else {
       return {
         status: true,
-        details: 'access OK',
+        details: "access OK",
         type: null,
         code: 0,
       };
@@ -249,11 +254,11 @@ function haveLocalCreate(filePath) {
 
 async function normalizeRemotePath(client, aPath) {
   try {
-    if (aPath.startsWith('..')) {
-      const root = await client.realPath('..');
+    if (aPath.startsWith("..")) {
+      const root = await client.realPath("..");
       return `${root}/${aPath.slice(3)}`;
-    } else if (aPath.startsWith('.')) {
-      const root = await client.realPath('.');
+    } else if (aPath.startsWith(".")) {
+      const root = await client.realPath(".");
       return `${root}/${aPath.slice(2)}`;
     }
     return aPath;
@@ -290,7 +295,7 @@ function sleep(ms) {
   return new Promise((resolve, reject) => {
     try {
       if (isNaN(ms) || ms < 0) {
-        reject('Argument must be  anumber >= 0');
+        reject("Argument must be  anumber >= 0");
       } else {
         setTimeout(() => {
           resolve(true);
