@@ -190,7 +190,7 @@ class SftpClient {
       }
       const retryOpts = {
         retries: config.retries ?? 1,
-        factor: config.factor ?? 2,
+        factor: config.retry_factor ?? 2,
         minTimeout: config.retry_minTimeout ?? 25000,
       };
       await promiseRetry(retryOpts, async (retry, attempt) => {
