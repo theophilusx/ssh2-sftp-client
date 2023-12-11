@@ -307,6 +307,19 @@ function sleep(ms) {
   });
 }
 
+function partition(input, size) {
+  let output = [];
+
+  if (size < 1) {
+    throw new Error('Partition size must be greater than zero');
+  }
+
+  for (let i=0; i < input.length; i += size) {
+    output[output.length] = input.slice(i, i + size);
+  }
+  return output;
+}
+
 module.exports = {
   globalListener,
   errorListener,
@@ -320,4 +333,5 @@ module.exports = {
   localExists,
   haveConnection,
   sleep,
+  partition,
 };

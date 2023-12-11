@@ -466,3 +466,42 @@ describe('sleep', function () {
     return expect(utils.sleep('bad value')).to.be.rejected;
   });
 });
+
+describe('partitoin', function() {
+  let i = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let i2 = [0, 1, 2, 3, 4];
+  
+  it('partiton normal array', function() {
+    let o = utils.partition(i, 2);
+    expect(o.length).to.equal(5);
+    expect(o[0]).to.eql([0, 1]);
+    return expect(o[4]).to.eql([8, 9]);
+  });
+
+  it('partiton odd array', function() {
+    let o = utils.partition(i2, 2);
+    expect(o.length).to.equal(3);
+    expect(o[0]).to.eql([0, 1]);
+    return expect(o[2]).to.eql([4]);
+  })
+
+  it('partiotn 0 size', function() {
+    let fn = () => {
+      utils.partition(i, 0); 
+    };
+    return expect(fn).to.throw(/Partition size must be greater than zero/)
+  });
+
+  it('partition size 1', function() {
+    let o = utils.partition(i2, 1);
+    expect(o.length).to.equal(5);
+    expect(o[0]).to.eql([0]);
+    return expect(o[4]).to.eql([4]);
+  });
+
+  it('partitoin same size as input', function() {
+    let o = utils.partition(i2, i2.length);
+    expect(o.length).to.equal(1);
+    return expect(o[0]).to.eql(i2);
+  });
+});
