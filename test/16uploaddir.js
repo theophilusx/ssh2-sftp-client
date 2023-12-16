@@ -5,7 +5,7 @@ const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
-const { basename } = require('path');
+const { basename } = require('node:path');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -23,10 +23,15 @@ describe('uploadDir tests', function () {
   });
 
   after('UploadDir tests clenaup hook', async function () {
-    let remotePath = `${config.sftpUrl}/upload-test2`;
-    await sftp.rmdir(remotePath, true);
-    await sftp.end();
-    return true;
+    try {
+      let remotePath = `${config.sftpUrl}/upload-test2`;
+      await sftp.rmdir(remotePath, true);
+      await sftp.end();
+      return true;
+    } catch (e) {
+      console.log(`Cleanup hook: ${e.message}`);
+      return true;
+    }
   });
 
   it('Upload directory', async function () {
@@ -130,7 +135,7 @@ describe('Partial file upload', function () {
     let localDir = makeLocalPath(config.localUrl, 'upload-src');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(sftp.uploadDir(localDir, remoteDir)).to.eventually.equal(
-      `${localDir} uploaded to ${remoteDir}`
+      `${localDir} uploaded to ${remoteDir}`,
     );
   });
 
@@ -168,7 +173,7 @@ describe('Uploaddir bad path tests', function () {
     let localDir = makeLocalPath(config.localUrl, 'test-file1.txt');
     let remoteDir = `${config.sftpUrl}/upload-test`;
     return expect(sftp.uploadDir(localDir, remoteDir)).to.be.rejectedWith(
-      /not a directory/
+      /not a directory/,
     );
   });
 
