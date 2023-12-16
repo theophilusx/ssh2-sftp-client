@@ -7,7 +7,7 @@
       "prettier"],
   "rules": {
     "no-console": 0,
-    "quotes": ["error", "single"],
+    "quotes": [1, "single"],
     "unicorn/prefer-module": 0,
     "unicorn/import-style": 0,
     "unicorn/prevent-abbreviations": 0,
