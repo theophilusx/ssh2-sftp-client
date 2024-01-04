@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
-const fs = require('fs');
+const fs = require('node:fs');
 const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
@@ -14,7 +14,7 @@ describe('create read stream tests', function () {
     await sftp.fastPut(
       makeLocalPath(config.localUrl, 'test-file1.txt'),
       `${config.sftpUrl}/stream-read.txt`,
-      { encoding: 'utf8' }
+      { encoding: 'utf8' },
     );
     return true;
   });
@@ -22,6 +22,7 @@ describe('create read stream tests', function () {
   after('stream test cleanup', async function () {
     await sftp.delete(`${config.sftpUrl}/stream-read.txt`);
     fs.unlinkSync(`${config.localUrl}/stream-t1.txt`);
+    fs.unlinkSync(`${config.localUrl}/stream-t2.txt`);
     await sftp.end();
     return true;
   });
@@ -38,7 +39,7 @@ describe('create read stream tests', function () {
           resolve('Data stream complete');
         });
         rs.pipe(ws);
-      })
+      }),
     ).to.eventually.equal('Data stream complete');
   });
 
@@ -57,7 +58,7 @@ describe('create read stream tests', function () {
           resolve('Data stream complete');
         });
         rs.pipe(ws);
-      })
+      }),
     ).to.eventually.equal('Data stream complete');
   });
 });
@@ -91,7 +92,7 @@ describe('create write stream tests', function () {
           resolve('Data streamed to remote file');
         });
         rs.pipe(ws);
-      })
+      }),
     ).to.eventually.equal('Data streamed to remote file');
   });
 });

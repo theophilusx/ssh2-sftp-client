@@ -5,21 +5,17 @@ const fs = require('fs');
 
 async function getSetup(client, sftpUrl, localUrl) {
   try {
-    await client.put(
-      Buffer.from('Get promise test'),
-      sftpUrl + '/get-promise.txt',
-      {
-        encoding: 'utf8',
-      }
-    );
+    await client.put(Buffer.from('Get promise test'), sftpUrl + '/get-promise.txt', {
+      encoding: 'utf8',
+    });
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
       sftpUrl + '/get-large.txt',
-      { encoding: 'utf8' }
+      { encoding: 'utf8' },
     );
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file2.txt.gz'),
-      sftpUrl + '/get-gzip.txt.gz'
+      sftpUrl + '/get-gzip.txt.gz',
     );
     let noPermDir = makeLocalPath(localUrl, 'no-perm-dir');
     fs.mkdirSync(noPermDir);
@@ -43,6 +39,7 @@ async function getCleanup(client, sftpUrl, localUrl) {
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative2-gzip.txt.gz'));
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative3-gzip.txt.gz'));
     fs.unlinkSync(makeLocalPath(localUrl, 'get-relative4-gzip.txt.gz'));
+    fs.unlinkSync(makeLocalPath(localUrl, 'get-a-file.txt'));
     let noPermDir = makeLocalPath(localUrl, 'no-perm-dir');
     fs.chmodSync(noPermDir, 0o666);
     fs.rmdirSync(noPermDir);

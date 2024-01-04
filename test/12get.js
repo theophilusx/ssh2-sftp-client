@@ -4,8 +4,8 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const fs = require('fs');
-const zlib = require('zlib');
+const fs = require('node:fs');
+const zlib = require('node:zlib');
 const { config, getConnection } = require('./hooks/global-hooks');
 const { getSetup, getCleanup } = require('./hooks/get-hooks');
 const { makeLocalPath, lastRemoteDir } = require('./hooks/global-hooks');
@@ -81,7 +81,7 @@ describe('get() method tests', function () {
 
   it('get non-existent file is rejected', function () {
     return expect(sftp.get(config.sftpUrl + '/file-not-exist.md')).to.be.rejectedWith(
-      'No such file'
+      'No such file',
     );
   });
 
@@ -94,12 +94,10 @@ describe('get() method tests', function () {
     try {
       await sftp.get(`${config.sftpUrl}/file-not-exist.md`, out);
     } catch (err) {
+      let errRE = /get: No such file/;
+      expect(errRE.test(err.message)).to.be.true;
       return expect(out.destroyed).to.be.true;
     }
-    expect(sftp.get(`${config.sftpUrl}/file-not-exist.md`, out)).to.be.rejectedWith(
-      'No such file'
-    );
-    return expect(out.destroyed).to.be.true;
   });
 
   it('get with relative remote path 1', async function () {
