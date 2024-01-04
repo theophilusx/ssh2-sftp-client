@@ -30,7 +30,7 @@ class SftpClient {
     this.endHandled = false;
     this.remotePlatform = 'unix';
     this.debug = undefined;
-    this.promiseLimit = 4;
+    this.promiseLimit = 10;
 
     this.client.on('close', globalListener(this, 'close'));
     this.client.on('end', globalListener(this, 'end'));
@@ -179,7 +179,7 @@ class SftpClient {
         this.debugMsg('connect: Debugging turned on');
         this.debugMsg(`ssh2-sftp-client Version: ${this.version} `, process.versions);
       }
-      this.promiseLimit = config.promiseLimit ?? 4;
+      this.promiseLimit = config.promiseLimit ?? 10;
       if (this.sftp) {
         throw this.fmtError(
           'An existing SFTP connection is already defined',
