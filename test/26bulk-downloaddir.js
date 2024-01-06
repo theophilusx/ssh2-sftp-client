@@ -193,15 +193,6 @@ describe('Download dir with bad targets', function () {
     return true;
   });
 
-  // afterEach('download test cleanup', async function () {
-  //   try {
-  //     await fs.rm(downloadTestDir, { recursive: true });
-  //   } catch (e) {
-  //     console.log(`downloaddir test cleanup error: ${e.message}`);
-  //     return true;
-  //   }
-  // });
-
   it('Bad src directory', async function () {
     let remoteDir = `${config.sftpUrl}/no-such-dir`;
     return expect(sftp.downloadDir(remoteDir, downloadTestDir)).to.be.rejectedWith(
