@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks');
 const fs = require('node:fs/promises');
-const { basename } = require('node:path');
+const Client = require('../src/index.js');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -97,7 +97,7 @@ describe('Download directory with get', function () {
   });
 });
 
-describe('Download directory with get', function () {
+describe('Download directory with fastGet', function () {
   let sftp;
 
   before('Download directory setup hook', async function () {
@@ -211,5 +211,178 @@ describe('Download dir with bad targets', function () {
     return expect(sftp.downloadDir(remoteBulkData, noPermDir)).to.be.rejectedWith(
       /Bad path/,
     );
+  });
+});
+
+describe('Download with various promise limits', function () {
+  let sftp;
+
+  before('Download directory setup hook', async function () {
+    sftp = await getConnection();
+    await sftp.uploadDir(localBulkData, remoteBulkData);
+    await fs.mkdir(noPermDir, { recursive: true });
+    await fs.chmod(noPermDir, 0o111);
+    return true;
+  });
+
+  after('download directory clenaup hook', async function () {
+    await fs.chmod(noPermDir, 0o666);
+    await fs.rm(noPermDir, { recursive: true });
+    await sftp.rmdir(remoteBulkData, { recursive: true });
+    await sftp.end();
+    return true;
+  });
+
+  afterEach('download test cleanup', async function () {
+    try {
+      await fs.rm(downloadTestDir, { recursive: true });
+    } catch (e) {
+      console.log(`downloaddir test cleanup error: ${e.message}`);
+      return true;
+    }
+  });
+
+  it('Download directory w/ promise limit = 1', async function () {
+    let cfg = { ...config, promiseLimit: 1 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
+  });
+
+  it('Download directory w/ promise limit = 10', async function () {
+    let cfg = { ...config, promiseLimit: 10 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
+  });
+
+  it('Download directory w/ promise limit = 20', async function () {
+    let cfg = { ...config, promiseLimit: 20 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
+  });
+
+  it('Download directory w/ promise limit = 40', async function () {
+    let cfg = { ...config, promiseLimit: 40 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
+  });
+
+  it('Download directory w/ promise limit = 80', async function () {
+    let cfg = { ...config, promiseLimit: 80 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
+  });
+
+  it('Download directory w/ promise limit = 160', async function () {
+    let cfg = { ...config, promiseLimit: 160 };
+    let client = new Client();
+    await client.connect(cfg);
+    const resp = await client.downloadDir(remoteBulkData, downloadTestDir);
+    expect(resp).to.equal(`${remoteBulkData} downloaded to ${downloadTestDir}`);
+    await client.end();
+    const dirList = await fs.readdir(downloadTestDir, { withFileTypes: true });
+    const files1 = dirList.filter((e) => e.isFile());
+    const dirs1 = dirList.filter((e) => e.isDirectory());
+    expect(files1.length).to.equal(100);
+    expect(dirs1.length).to.equal(4);
+    const dirList2 = await fs.readdir(subDir, { withFileTypes: true });
+    const files2 = dirList2.filter((e) => e.isFile());
+    const dirs2 = dirList2.filter((e) => e.isDirectory());
+    expect(files2.length).to.equal(100);
+    expect(dirs2.length).to.equal(3);
+    const dirList3 = await fs.readdir(subSubDir, { withFileTypes: true });
+    const files3 = dirList3.filter((e) => e.isFile());
+    const dirs3 = dirList3.filter((e) => e.isDirectory());
+    expect(files3.length).to.equal(100);
+    return expect(dirs3.length).to.equal(0), { withFileTypes: true };
   });
 });

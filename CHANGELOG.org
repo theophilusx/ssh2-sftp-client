@@ -1,4 +1,8 @@
 * Change Logging
+** v10.0.0
+  - Add promise limit control for downloadDir/uploadDir
+  - Bumped to depend on ssh2 1.15.0
+  - Fix some typos in init parameter names
 ** v9.0.4
   - Fix issue with connect promise not handling corrupted private keys in a clean
     way. Previously, the promise would not resolve and no error would be reported.

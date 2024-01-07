@@ -7,22 +7,33 @@ an SFTP client for node.js, a wrapper around [[https://github.com/mscdex/ssh2][S
 convenience abstraction as well as a Promise based API.
 
 Documentation on the methods and available options in the underlying modules can
-be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages.
+be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As this module is really just a wrapper around the
+~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
+repository. 
 
-Current stable release is *v9.1.0.
+Current stable release is *v10.0.0.
 
-Code has been tested against Node versions 14.21.3, 16.19.1, 18.16.0 and 20.0.0
+Code has been tested against Node versions 16.20.2, 18.18.2, 20.10.0 and 21.5.0. However,
+only versions from v18 are actively supported. It should also be noted that a significant
+performance improvement has been observed with versions >= 18. Version v16 is
+significantly slower. 
 
-Node versions < 14.x are not supported. 
+Node versions < 16.x are not supported. 
 
-** Version 9.1.0 Changes
+** Version 10.0.0 Changes
 
-- Added lstat() method
-- Fixed bug in option hadnling which was preventing setting file mode in get() and put()
-  methods
-- Fixed bug where a loss of network connections between establishment of the connection
-  and calling various sftp methods was not handled and could result in an event causing
-  the node process to exit with an error.
+- The main change in this version is adding of limits on the number of promises which can
+  be active at the same time. Version 9.1.0 extended the use of multiple promises to
+  improve performance with downloadDir() and uploadDir(). However, for directories with
+  really large numbers of files, this often resulted in an error because the methods would
+  try to create more concurrent promises than was possible given available resources. This
+  issue has been fixed by adding a new property called ~promiseLimit~, which is limited to
+  10 by default. A new configuration property, ~promiseLimit~, is now available for setting
+  the maximum number of concurrent promises the downloadDir()/uploadDir() methods will
+  create when downloading or uploading directory trees.
+
+ - Various minor documentation fixes and some minor fixes for typos in option property
+   names.
    
 * Installation
 
@@ -53,10 +64,20 @@ Node versions < 14.x are not supported.
 * Documentation
 
 The connection options are the same as those offered by the underlying SSH2
-module. For full details, please see [[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]
+module, with just a couple of additional properties added to tweak the ~retry~ parameters,
+add a ~debug~ function and set the ~promiseLimit~ property. For full details on the other
+properties, please see [[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]. In particular, see the ~ssh2~ documentation for
+details relating to setting various key exchange and encryption/signing algorithms used as
+part of the ssh2 protocol.
 
-All the methods will return a Promise, except for ~on()~ and
-~removeListener()~, which are typically only used in special use cases.
+All the methods will return a Promise, except for ~on(), ~removeListener()~, ~createReadStream~
+and ~createWriteStream~, which are typically only used in special use cases.
+
+Note that I don't use Typescript and I don't maintain any typescript definition
+files. There are some typescript type definition files for this module, but they are
+maintained separately and have nothing to do with this project. Therefore, please do not
+log any issues arising from the use of these definition files with this project. Instead,
+refer your issues to the maintainers of those modules.
 
 ** Specifying Paths
 
@@ -117,7 +138,7 @@ All the methods will return a Promise, except for ~on()~ and
 
    This will copy the local file ~test.txt~ to the remote file ~test-copy.txt~
    in the directory ~/remote/dir~.
-
+   
 ** Methods
 
 *** new SftpClient(name) ===> SFTP client object
@@ -176,6 +197,19 @@ SSH2 module. These are part of the configuration for the [[https://www.npmjs.com
 is used to enable retrying of sftp connection attempts. See the documentation
 for that package for an explanation of these values.
 
+The ~promiseLimit~ is another option which is not part of the ~ssh2~ module and is specific to
+~ssh2-sftp-client~. It is a property used to limit the maximum number of concurrent promises
+possible when either downloading or uploading a directory tree using the ~downloadDir()~ or
+~uploadDir()~ methods. The default setting for this property is 10. *NOTE*: bigger doe snot
+mean better. Many factors can affect what is the ideal setting for ~promiseLimit~. If it is
+too large, any benefits are lost while node spends time switching contexts and/or withi
+the overheads associated with creating and cleaning up promises. Lots of factors can
+affect what the setting should be, including size of files, number of files, speed of
+network, version of node, capabilities of remote sftp server etc. A setting of 10 seems to
+be a reasonably good default and should be adequate for most use cases. However, if you
+feel it needs to be changed, I highly recommend that you benchmark different values to
+work out what is the best maximum size before you begin to see a performance drop off.
+
 #+begin_src javascript
   // common options
 
@@ -196,6 +230,7 @@ for that package for an explanation of these values.
     retries: 2, // integer. Number of times to retry connecting
     retry_factor: 2, // integer. Time factor used to calculate time between retries
     retry_minTimeout: 2000, // integer. Minimum timeout between attempts
+    promiseLimit: 10, // max concurrent promises for downloadDir/uploadDir
   };
 
   // rarely used options
@@ -448,6 +483,12 @@ this for binary files to avoid data corruption.
 
 Downloads a file at remotePath to localPath using parallel reads for faster
 throughput. This is the simplest method if you just want to download a file.
+However, fastGet functionality depends heavily on remote sftp server capabilities and not
+all servers have the concurrency support required. See the Platform Quirks & Warnings
+section of this README.
+
+Bottom line, when it works, it tends to work reliably. However, for many servers, it
+simply won't work or will result in truncated/corrupted data. 
 
 - remotePath :: String. Path to the remote file to download
 - localPath :: String. Path on local file system for the downloaded file. The
@@ -557,7 +598,14 @@ resolved.
 *** fastPut(localPath, remotePath, options) ==> string
 
 Uploads the data in file at ~localPath~ to a new file on remote server at
-~remotePath~ using concurrency. The options object allows tweaking of the fast put process.
+~remotePath~ using concurrency. The options object allows tweaking of the fast put
+process. Note that this functionality is heavily dependent on the capabilities of the
+remote sftp server, which must support the concurrency operations used by this
+method. This is not part of the standard and therefore is not available in all sftp
+servers. See the Platform Quirks & Warnings for more details.
+
+Bottom line, when it works, it tends to work well. However, when it doesn't work, it may
+fail completely or it may result in truncated or corrupted data transfers. 
 
 - localPath :: string. Path to local file to upload
 - remotePath :: string. Path to remote file to create

@@ -564,6 +564,10 @@ class SftpClient {
    * Downloads a file at remotePath to localPath using parallel reads
    * for faster throughput.
    *
+   * WARNING: The functionality of fastGet is heavily dependent on the capabilities
+   * of the remote SFTP server. Not all sftp server support or fully support this
+   * functionality. See the Platform Quirks & Warnings section of the README.
+   *
    * @param {String} remotePath
    * @param {String} localPath
    * @param {Object} options
@@ -618,6 +622,10 @@ class SftpClient {
    *
    * See 'fastPut' at
    * https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
+   *
+   * WARNING: The fastPut functionality is heavily dependent on the capabilities of
+   * the remote sftp server. Many sftp servers do not support or do not fully support this
+   * functionality. See the Platform Quirks & Warnings section of the README for more details.
    *
    * @param {String} localPath - path to local file to put
    * @param {String} remotePath - destination path for put file

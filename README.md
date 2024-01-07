@@ -1,91 +1,90 @@
-- [Overview](#orgd72cafd)
-  - [Version 9.1.0 Changes](#org9aa6de9)
-- [Installation](#orgfa343ca)
-- [Basic Usage](#org4ac2087)
-- [Documentation](#orgd23cd4f)
-  - [Specifying Paths](#org0cb332c)
-  - [Methods](#org67943d5)
-    - [new SftpClient(name) ===> SFTP client object](#orgc12cc98)
-    - [connect(config) ===> SFTP object](#org93b5103)
-    - [list(path, filter) ==> Array[object]](#org330e94d)
-    - [exists(path) ==> boolean](#orgb3e6094)
-    - [stat(path) ==> object](#org2b25315)
-    - [get(path, dst, options) ==> String|Stream|Buffer](#org252a716)
-    - [fastGet(remotePath, localPath, options) ===> string](#org5edb596)
-    - [put(src, remotePath, options) ==> string](#org99d1b64)
-    - [fastPut(localPath, remotePath, options) ==> string](#orgdce84b4)
-    - [append(input, remotePath, options) ==> string](#org86b6dd8)
-    - [mkdir(path, recursive) ==> string](#orga867f75)
-    - [rmdir(path, recursive) ==> string](#org893c3d4)
-    - [delete(path, noErrorOK) ==> string](#org877ca9f)
-    - [rename(fromPath, toPath) ==> string](#orgc41333c)
-    - [posixRename(fromPath, toPath) ==> string](#org9493ebc)
-    - [chmod(path, mode) ==> string](#orgf78d430)
-    - [realPath(path) ===> string](#orgf15a5df)
-    - [cwd() ==> string](#org2f554a8)
-    - [uploadDir(srcDir, dstDir, options) ==> string](#orge085c95)
-    - [downloadDir(srcDir, dstDir, options) ==> string](#orgd7cebbc)
-    - [createReadStream(remotePath, options)) ==> stream object](#orgc133c2f)
-    - [createWriteStream(remotePath, options) ==> stream object](#org44e3122)
-    - [rcopy(srcPath, dstPath) ==> string](#org3394196)
-    - [end() ==> boolean](#org5f0471c)
-    - [Add and Remove Listeners](#orga12e63e)
-- [Platform Quirks & Warnings](#org3cbc095)
-  - [Server Capabilities](#orge04f28e)
-  - [Issues with `fastPut()` and `fastGet()` Methods](#orgc96002e)
-  - [Promises, Events & Managing Exceptions](#org955a771)
-    - [Adding Custom Handlers](#org8f7b2d0)
-  - [Windows Based Servers](#orge15889c)
-  - [Don't Re-use SftpClient Objects](#orgb38b894)
-- [FAQ](#org1e76649)
-  - [Remote server drops connections with only an end event](#orge3e4159)
-  - [How can I pass writeable stream as dst for get method?](#org77ed2d3)
-  - [How can I upload files without having to specify a password?](#orgad09bd5)
-  - [How can I connect through a Socks Proxy](#org175d696)
-  - [Timeout while waiting for handshake or handshake errors](#orgd310a6a)
-  - [How can I limit upload/download speed](#org5a0faa2)
-  - [Connection hangs or fails for larger files](#orgffe3a3c)
-  - [Typescript definition file out of date](#org390645f)
-- [Examples](#orgce20a25)
-- [Troubleshooting](#org31d0059)
-  - [Common Errors](#orgf1c2f29)
-    - [Not returning the promise in a `then()` block](#org14ab27b)
-    - [Mixing Promise Chains and Async/Await](#org6c257e3)
-    - [Try/catch and Error Handlers](#org765b1b2)
-    - [Server Differences](#orge67d910)
-    - [Avoid Concurrent Operations](#org734662f)
-  - [Debugging Support](#org658f3d6)
-- [Logging Issues](#orgb0fbb63)
-- [Pull Requests](#orgc22fdba)
-- [Contributors](#org7bb6675)
+- [Overview](#org4821cd9)
+  - [Version 10.0.0 Changes](#org196e8b6)
+- [Installation](#orgeac23df)
+- [Basic Usage](#orgda0ed58)
+- [Documentation](#orgd0ca540)
+  - [Specifying Paths](#orgabfbdff)
+  - [Methods](#org35528cc)
+    - [new SftpClient(name) ===> SFTP client object](#org6d917af)
+    - [connect(config) ===> SFTP object](#org3ca98bb)
+    - [list(path, filter) ==> Array[object]](#org067b5c0)
+    - [exists(path) ==> boolean](#orgfde631c)
+    - [stat(path) ==> object](#orge6ccca9)
+    - [get(path, dst, options) ==> String|Stream|Buffer](#org63cf95f)
+    - [fastGet(remotePath, localPath, options) ===> string](#orga32496c)
+    - [put(src, remotePath, options) ==> string](#org6bdfd59)
+    - [fastPut(localPath, remotePath, options) ==> string](#org4296214)
+    - [append(input, remotePath, options) ==> string](#org01aa427)
+    - [mkdir(path, recursive) ==> string](#orge74ab72)
+    - [rmdir(path, recursive) ==> string](#org2692b91)
+    - [delete(path, noErrorOK) ==> string](#org59254a5)
+    - [rename(fromPath, toPath) ==> string](#org287873a)
+    - [posixRename(fromPath, toPath) ==> string](#orgb7290ba)
+    - [chmod(path, mode) ==> string](#org0e57abe)
+    - [realPath(path) ===> string](#org52444ca)
+    - [cwd() ==> string](#org34966e3)
+    - [uploadDir(srcDir, dstDir, options) ==> string](#org5c58fad)
+    - [downloadDir(srcDir, dstDir, options) ==> string](#orgb346779)
+    - [createReadStream(remotePath, options)) ==> stream object](#orga0edaaf)
+    - [createWriteStream(remotePath, options) ==> stream object](#org7287ad7)
+    - [rcopy(srcPath, dstPath) ==> string](#org4b84e95)
+    - [end() ==> boolean](#org6af9411)
+    - [Add and Remove Listeners](#org79d7176)
+- [Platform Quirks & Warnings](#org8815934)
+  - [Server Capabilities](#orgcf08239)
+  - [Issues with `fastPut()` and `fastGet()` Methods](#org92f1dc4)
+  - [Promises, Events & Managing Exceptions](#org27f104a)
+    - [Adding Custom Handlers](#orgd903953)
+  - [Windows Based Servers](#orged5ee01)
+  - [Don't Re-use SftpClient Objects](#orgfafec91)
+- [FAQ](#orgbe306ce)
+  - [Remote server drops connections with only an end event](#org9377d69)
+  - [How can I pass writeable stream as dst for get method?](#org0cf3ed0)
+  - [How can I upload files without having to specify a password?](#org14d1415)
+  - [How can I connect through a Socks Proxy](#org118bb9f)
+  - [Timeout while waiting for handshake or handshake errors](#orgc720a77)
+  - [How can I limit upload/download speed](#orge322728)
+  - [Connection hangs or fails for larger files](#org4164c6c)
+  - [Typescript definition file out of date](#orgd28c1e8)
+- [Examples](#orgfab3156)
+- [Troubleshooting](#orga11079b)
+  - [Common Errors](#org0372c41)
+    - [Not returning the promise in a `then()` block](#org0d8dc85)
+    - [Mixing Promise Chains and Async/Await](#org199b814)
+    - [Try/catch and Error Handlers](#org46e5412)
+    - [Server Differences](#org8a2ebba)
+    - [Avoid Concurrent Operations](#org24c4235)
+  - [Debugging Support](#org1d067af)
+- [Logging Issues](#orgdc52f71)
+- [Pull Requests](#orge4e0c24)
+- [Contributors](#org7f7c9a1)
 
 
 
-<a id="orgd72cafd"></a>
+<a id="org4821cd9"></a>
 
 # Overview
 
 an SFTP client for node.js, a wrapper around [SSH2](https://github.com/mscdex/ssh2) which provides a high level convenience abstraction as well as a Promise based API.
 
-Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages.
+Documentation on the methods and available options in the underlying modules can be found on the [SSH2](https://github.com/mscdex/ssh2) project pages. As this module is really just a wrapper around the `ssh2` module, you will find lots of useful information, tips and examples in the `ssh2` repository.
 
-Current stable release is \*v9.1.0.
+Current stable release is \*v10.0.0.
 
-Code has been tested against Node versions 14.21.3, 16.19.1, 18.16.0 and 20.0.0
+Code has been tested against Node versions 16.20.2, 18.18.2, 20.10.0 and 21.5.0. However, only versions from v18 are actively supported. It should also be noted that a significant performance improvement has been observed with versions >= 18. Version v16 is significantly slower.
 
-Node versions < 14.x are not supported.
-
-
-<a id="org9aa6de9"></a>
-
-## Version 9.1.0 Changes
-
--   Added lstat() method
--   Fixed bug in option hadnling which was preventing setting file mode in get() and put() methods
--   Fixed bug where a loss of network connections between establishment of the connection and calling various sftp methods was not handled and could result in an event causing the node process to exit with an error.
+Node versions < 16.x are not supported.
 
 
-<a id="orgfa343ca"></a>
+<a id="org196e8b6"></a>
+
+## Version 10.0.0 Changes
+
+-   The main change in this version is adding of limits on the number of promises which can be active at the same time. Version 9.1.0 extended the use of multiple promises to improve performance with downloadDir() and uploadDir(). However, for directories with really large numbers of files, this often resulted in an error because the methods would try to create more concurrent promises than was possible given available resources. This issue has been fixed by adding a new property called `promiseLimit`, which is limited to 10 by default. A new configuration property, `promiseLimit`, is now available for setting the maximum number of concurrent promises the downloadDir()/uploadDir() methods will create when downloading or uploading directory trees.
+    -   Various minor documentation fixes and some minor fixes for typos in option property names.
+
+
+<a id="orgeac23df"></a>
 
 # Installation
 
@@ -94,7 +93,7 @@ npm install ssh2-sftp-client
 ```
 
 
-<a id="org4ac2087"></a>
+<a id="orgda0ed58"></a>
 
 # Basic Usage
 
@@ -117,16 +116,18 @@ sftp.connect({
 ```
 
 
-<a id="orgd23cd4f"></a>
+<a id="orgd0ca540"></a>
 
 # Documentation
 
-The connection options are the same as those offered by the underlying SSH2 module. For full details, please see [SSH2 client methods](https://github.com/mscdex/ssh2#user-content-client-methods)
+The connection options are the same as those offered by the underlying SSH2 module, with just a couple of additional properties added to tweak the `retry` parameters, add a `debug` function and set the `promiseLimit` property. For full details on the other properties, please see [SSH2 client methods](https://github.com/mscdex/ssh2#user-content-client-methods). In particular, see the `ssh2` documentation for details relating to setting various key exchange and encryption/signing algorithms used as part of the ssh2 protocol.
 
-All the methods will return a Promise, except for `on()` and `removeListener()`, which are typically only used in special use cases.
+All the methods will return a Promise, except for `on(), ~removeListener()`, `createReadStream` and `createWriteStream`, which are typically only used in special use cases.
+
+Note that I don't use Typescript and I don't maintain any typescript definition files. There are some typescript type definition files for this module, but they are maintained separately and have nothing to do with this project. Therefore, please do not log any issues arising from the use of these definition files with this project. Instead, refer your issues to the maintainers of those modules.
 
 
-<a id="org0cb332c"></a>
+<a id="orgabfbdff"></a>
 
 ## Specifying Paths
 
@@ -159,12 +160,12 @@ client.put('/home/fred/test.txt', '/remote/dir/test-copy.txt');
 This will copy the local file `test.txt` to the remote file `test-copy.txt` in the directory `/remote/dir`.
 
 
-<a id="org67943d5"></a>
+<a id="org35528cc"></a>
 
 ## Methods
 
 
-<a id="orgc12cc98"></a>
+<a id="org6d917af"></a>
 
 ### new SftpClient(name) ===> SFTP client object
 
@@ -203,7 +204,7 @@ Constructor to create a new `ssh2-sftp-client` object. An optional `name` string
     ```
 
 
-<a id="org93b5103"></a>
+<a id="org3ca98bb"></a>
 
 ### connect(config) ===> SFTP object
 
@@ -214,6 +215,8 @@ Connect to an sftp server. Full documentation for connection options is availabl
     This module is based on the excellent [SSH2](https://github.com/mscdex/ssh2#client) module. That module is a general SSH2 client and server library and provides much more functionality than just SFTP connectivity. Many of the connect options provided by that module are less relevant for SFTP connections. It is recommended you keep the config options to the minimum needed and stick to the options listed in the `commonOpts` below.
     
     The `retries`, `retry_factor` and `retry_minTimeout` options are not part of the SSH2 module. These are part of the configuration for the [retry](https://www.npmjs.com/package/retry) package and what is used to enable retrying of sftp connection attempts. See the documentation for that package for an explanation of these values.
+    
+    The `promiseLimit` is another option which is not part of the `ssh2` module and is specific to `ssh2-sftp-client`. It is a property used to limit the maximum number of concurrent promises possible when either downloading or uploading a directory tree using the `downloadDir()` or `uploadDir()` methods. The default setting for this property is 10. **NOTE**: bigger doe snot mean better. Many factors can affect what is the ideal setting for `promiseLimit`. If it is too large, any benefits are lost while node spends time switching contexts and/or withi the overheads associated with creating and cleaning up promises. Lots of factors can affect what the setting should be, including size of files, number of files, speed of network, version of node, capabilities of remote sftp server etc. A setting of 10 seems to be a reasonably good default and should be adequate for most use cases. However, if you feel it needs to be changed, I highly recommend that you benchmark different values to work out what is the best maximum size before you begin to see a performance drop off.
     
     ```javascript
     // common options
@@ -235,6 +238,7 @@ Connect to an sftp server. Full documentation for connection options is availabl
       retries: 2, // integer. Number of times to retry connecting
       retry_factor: 2, // integer. Time factor used to calculate time between retries
       retry_minTimeout: 2000, // integer. Minimum timeout between attempts
+      promiseLimit: 10, // max concurrent promises for downloadDir/uploadDir
     };
     
     // rarely used options
@@ -269,7 +273,7 @@ Connect to an sftp server. Full documentation for connection options is availabl
     ```
 
 
-<a id="org330e94d"></a>
+<a id="org067b5c0"></a>
 
 ### list(path, filter) ==> Array[object]
 
@@ -330,7 +334,7 @@ Retrieves a directory listing. This method returns a Promise, which once realise
     ```
 
 
-<a id="orgb3e6094"></a>
+<a id="orgfde631c"></a>
 
 ### exists(path) ==> boolean
 
@@ -366,7 +370,7 @@ Tests to see if remote file or directory exists. Returns type of remote object i
     ```
 
 
-<a id="org2b25315"></a>
+<a id="orge6ccca9"></a>
 
 ### stat(path) ==> object
 
@@ -417,7 +421,7 @@ Returns the attributes associated with the object pointed to by `path`.
     ```
 
 
-<a id="org252a716"></a>
+<a id="org63cf95f"></a>
 
 ### get(path, dst, options) ==> String|Stream|Buffer
 
@@ -473,11 +477,13 @@ In general, if you're going to pass in a string as the destination, you are bett
     -   **Tip:** See examples file in the Git repository for more examples. You can pass any writeable stream in as the destination. For example, if you pass in `zlib.createGunzip()` writeable stream, you can both download and decompress a gzip file 'on the fly'.
 
 
-<a id="org5edb596"></a>
+<a id="orga32496c"></a>
 
 ### fastGet(remotePath, localPath, options) ===> string
 
-Downloads a file at remotePath to localPath using parallel reads for faster throughput. This is the simplest method if you just want to download a file.
+Downloads a file at remotePath to localPath using parallel reads for faster throughput. This is the simplest method if you just want to download a file. However, fastGet functionality depends heavily on remote sftp server capabilities and not all servers have the concurrency support required. See the Platform Quirks & Warnings section of this README.
+
+Bottom line, when it works, it tends to work reliably. However, for many servers, it simply won't work or will result in truncated/corrupted data.
 
 -   **remotePath:** String. Path to the remote file to download
 -   **localPath:** String. Path on local file system for the downloaded file. The local path should include the filename to use for saving the file.
@@ -516,7 +522,7 @@ Downloads a file at remotePath to localPath using parallel reads for faster thro
     ```
 
 
-<a id="org99d1b64"></a>
+<a id="org6bdfd59"></a>
 
 ### put(src, remotePath, options) ==> string
 
@@ -566,11 +572,13 @@ Upload data from local system to remote server. If the `src` argument is a strin
     -   **Tip:** If the src argument is a path string, consider just using `fastPut()`.
 
 
-<a id="orgdce84b4"></a>
+<a id="org4296214"></a>
 
 ### fastPut(localPath, remotePath, options) ==> string
 
-Uploads the data in file at `localPath` to a new file on remote server at `remotePath` using concurrency. The options object allows tweaking of the fast put process.
+Uploads the data in file at `localPath` to a new file on remote server at `remotePath` using concurrency. The options object allows tweaking of the fast put process. Note that this functionality is heavily dependent on the capabilities of the remote sftp server, which must support the concurrency operations used by this method. This is not part of the standard and therefore is not available in all sftp servers. See the Platform Quirks & Warnings for more details.
+
+Bottom line, when it works, it tends to work well. However, when it doesn't work, it may fail completely or it may result in truncated or corrupted data transfers.
 
 -   **localPath:** string. Path to local file to upload
 -   **remotePath:** string. Path to remote file to create
@@ -610,7 +618,7 @@ Uploads the data in file at `localPath` to a new file on remote server at `remot
     ```
 
 
-<a id="org86b6dd8"></a>
+<a id="org01aa427"></a>
 
 ### append(input, remotePath, options) ==> string
 
@@ -654,7 +662,7 @@ Append the `input` data to an existing remote file. There is no integrity checki
     ```
 
 
-<a id="orga867f75"></a>
+<a id="orge74ab72"></a>
 
 ### mkdir(path, recursive) ==> string
 
@@ -682,7 +690,7 @@ Create a new directory. If the recursive flag is set to true, the method will cr
     ```
 
 
-<a id="org893c3d4"></a>
+<a id="org2692b91"></a>
 
 ### rmdir(path, recursive) ==> string
 
@@ -712,7 +720,7 @@ Remove a directory. If removing a directory and recursive flag is set to `true`,
     ```
 
 
-<a id="org877ca9f"></a>
+<a id="org59254a5"></a>
 
 ### delete(path, noErrorOK) ==> string
 
@@ -741,7 +749,7 @@ Delete a file on the remote server.
     ```
 
 
-<a id="orgc41333c"></a>
+<a id="org287873a"></a>
 
 ### rename(fromPath, toPath) ==> string
 
@@ -770,7 +778,7 @@ Rename a file or directory from `fromPath` to `toPath`. You must have the necess
     ```
 
 
-<a id="org9493ebc"></a>
+<a id="orgb7290ba"></a>
 
 ### posixRename(fromPath, toPath) ==> string
 
@@ -797,7 +805,7 @@ client.connect(config)
 ```
 
 
-<a id="orgf78d430"></a>
+<a id="org0e57abe"></a>
 
 ### chmod(path, mode) ==> string
 
@@ -826,7 +834,7 @@ Change the mode (read, write or execute permissions) of a remote file or directo
     ```
 
 
-<a id="orgf15a5df"></a>
+<a id="org52444ca"></a>
 
 ### realPath(path) ===> string
 
@@ -837,14 +845,14 @@ Converts a relative path to an absolute path on the remote server. This method i
 -   **path:** A file path, either relative or absolute. Can handle '.' and '..', but does not expand '~'.
 
 
-<a id="org2f554a8"></a>
+<a id="org34966e3"></a>
 
 ### cwd() ==> string
 
 Returns what the server believes is the current remote working directory.
 
 
-<a id="orge085c95"></a>
+<a id="org5c58fad"></a>
 
 ### uploadDir(srcDir, dstDir, options) ==> string
 
@@ -913,7 +921,7 @@ The `useFastput` option is a boolean option. If `true`, the method will use the 
     ```
 
 
-<a id="orgd7cebbc"></a>
+<a id="orgb346779"></a>
 
 ### downloadDir(srcDir, dstDir, options) ==> string
 
@@ -978,7 +986,7 @@ If the `useFastget` property is set to `true`, the method will use `fastGet()` t
     ```
 
 
-<a id="orgc133c2f"></a>
+<a id="orga0edaaf"></a>
 
 ### createReadStream(remotePath, options)) ==> stream object
 
@@ -995,7 +1003,7 @@ Returns a read stream object which is attached to the remote file specified by t
     -   **end:** Position to stop reading bytes (inclusive).
 
 
-<a id="org44e3122"></a>
+<a id="org7287ad7"></a>
 
 ### createWriteStream(remotePath, options) ==> stream object
 
@@ -1010,7 +1018,7 @@ Returns a write stream object which is attached to the remote file specified in 
     -   **start:** Byte position to start writing from (inclusive). May require changing flag to 'r+'.
 
 
-<a id="org3394196"></a>
+<a id="org4b84e95"></a>
 
 ### rcopy(srcPath, dstPath) ==> string
 
@@ -1020,7 +1028,7 @@ Perform a remote file copy. The file identified by the `srcPath` argument will b
 -   **dstPath:** Path to where the copy will be created specified as a string
 
 
-<a id="org5f0471c"></a>
+<a id="org6af9411"></a>
 
 ### end() ==> boolean
 
@@ -1044,7 +1052,7 @@ Ends the current client session, releasing the client socket and associated reso
     ```
 
 
-<a id="orga12e63e"></a>
+<a id="org79d7176"></a>
 
 ### Add and Remove Listeners
 
@@ -1065,12 +1073,12 @@ Although normally not required, you can add and remove custom listeners on the s
     Removes the specified listener from the event specified in eventType. Note that the `end()` method automatically removes all listeners from the client object.
 
 
-<a id="org3cbc095"></a>
+<a id="org8815934"></a>
 
 # Platform Quirks & Warnings
 
 
-<a id="orge04f28e"></a>
+<a id="orgcf08239"></a>
 
 ## Server Capabilities
 
@@ -1079,7 +1087,7 @@ All SFTP servers and platforms are not equal. Some facilities provided by `ssh2-
 One way to determine whether an issue you are encountering is due to `ssh2-sftp-client` or due to the remote server or server platform is to use a simple CLI sftp program, such as openSSH's sftp command. If you observe the same behaviour using plain `sftp` on the command line, the issue is likely due to server or remote platform limitations. Note that you should not use a GUI sftp client, like `Filezilla` or `winSCP` as such GUI programs often attempt to hide these server and platform incompatibilities and will take additional steps to simulate missing functionality etc. You want to use a CLI program which does as little as possible.
 
 
-<a id="orgc96002e"></a>
+<a id="org92f1dc4"></a>
 
 ## Issues with `fastPut()` and `fastGet()` Methods
 
@@ -1088,7 +1096,7 @@ The `fastPut()` and `fastGet()` methods are known to be somewhat dependent on SF
 To see an example of the type of issues you can observe with `fastPut()` or `fastGet()`, have a look at [issue 407](https://github.com/theophilusx/ssh2-sftp-client/issues/407), which describes the experiences of one user. Bottom line, when it works, it tends to work well and be significantly faster than using just `get()` or `put()`. However, when developing code to run against different SFTP servers, especially where you are unable to test against each server, you are likely better off just using `get()` and `put()` or structuring your code so that users can select which method to use (this is what `ssh2-sftp-client` does - for example, see the `!downloadDir()` and `uploadDir()` methods.
 
 
-<a id="org955a771"></a>
+<a id="org27f104a"></a>
 
 ## Promises, Events & Managing Exceptions
 
@@ -1107,14 +1115,14 @@ The other area where additional events are fired is during the end() call. To de
 In addition to the promise based event handlers, `ssh2-sftp-client` also implements global event handlers which will catch any `error`, `end` or `close` events. Essentially, these global handlers only reset the `sftp` property of the client object, effectively ensuring any subsequent calls are rejected and in the case of an error, send the error to the console.
 
 
-<a id="org8f7b2d0"></a>
+<a id="orgd903953"></a>
 
 ### Adding Custom Handlers
 
 While the above strategies appear to work for the majority of use cases, there are always going to be edge cases which require more flexible or powerful event handling. To support this, the `on()` and `removeListener()` methods are provided. Any event listener added using the `on()` method will be added at the beginning of the list of handlers for that event, ensuring it will be called before any global or promise local events. See the documentation for the `on()` method for details.
 
 
-<a id="orge15889c"></a>
+<a id="orged5ee01"></a>
 
 ## Windows Based Servers
 
@@ -1123,7 +1131,7 @@ It appears that when the sftp server is running on Windows, a *ECONNRESET* error
 The best way to avoid this issue is to not re-use client objects. Always generate a new sftp client object for each new connection.
 
 
-<a id="orgb38b894"></a>
+<a id="orgfafec91"></a>
 
 ## Don't Re-use SftpClient Objects
 
@@ -1132,12 +1140,12 @@ Due to an issue with *ECONNRESET* error signals when connecting to Windows based
 To avoid this problem, don't re-use SftpClient objects. Generate a new SftpClient object for each connection. You can perform multiple actions with a single connection e.g. upload multiple files, download multiple files etc, but after you have called end(), you should not try to re-use the object with a further connect() call. Create a new object instead.
 
 
-<a id="org1e76649"></a>
+<a id="orgbe306ce"></a>
 
 # FAQ
 
 
-<a id="orge3e4159"></a>
+<a id="org9377d69"></a>
 
 ## Remote server drops connections with only an end event
 
@@ -1148,7 +1156,7 @@ Clients first make an unauthenticated connection to the SFTP server to begin neg
 One way to avoid this type of issue is to add a delay between connection attempts. It does not need to be a very long delay - just sufficient to permit the previous connection to be authenticated. In fact, the default setting for openSSH is `10:30:60`, so you really just need to have enough delay to ensure that the 1st connection has completed authentication before the 11th connection is attempted.
 
 
-<a id="org77ed2d3"></a>
+<a id="org0cf3ed0"></a>
 
 ## How can I pass writeable stream as dst for get method?
 
@@ -1207,7 +1215,7 @@ sftp
 ```
 
 
-<a id="orgad09bd5"></a>
+<a id="org14d1415"></a>
 
 ## How can I upload files without having to specify a password?
 
@@ -1242,11 +1250,13 @@ sftp.connect({
 ```
 
 
-<a id="org175d696"></a>
+<a id="org118bb9f"></a>
 
 ## How can I connect through a Socks Proxy
 
 This solution was provided by @jmorino.
+
+When a SOCKS 5 client is connected it must be ingested by ssh2-sftp-client immediately, otherwise a timeout occurs.
 
 ```javascript
 import { SocksClient } from 'socks';
@@ -1256,7 +1266,7 @@ const host = 'my-sftp-server.net';
 const port = 22; // default SSH/SFTP port on remote server
 
 // connect to SOCKS 5 proxy
-const { socks } = await SocksClient.createConnection({
+const { socket } = await SocksClient.createConnection({
   proxy: {
     host: 'my.proxy', // proxy hostname
     port: 1080, // proxy port
@@ -1269,16 +1279,15 @@ const { socks } = await SocksClient.createConnection({
 const client = new SFTPClient();
 client.connect({
   host,
-  sock: socks.socket, // pass the socket to proxy here (see ssh2 doc)
-  username: '.....',
-  privateKey: '.....'
+  sock: socket, // pass the socket to proxy here (see ssh2 doc)
+  // other config options
 })
 
 // client is connected
 ```
 
 
-<a id="orgd310a6a"></a>
+<a id="orgc720a77"></a>
 
 ## Timeout while waiting for handshake or handshake errors
 
@@ -1287,7 +1296,7 @@ Some users have encountered the error 'Timeout while waiting for handshake' or '
 When encountering this type of problem, one worthwhile approach is to use openSSH's CLI sftp program with the `-v` switch to raise logging levels. This will show you what algorithms the CLI is using. You can then use this information to match the names with the accepted algorithm names documented in the `ssh2` README to set the properties in the `algorithms` object.
 
 
-<a id="org5a0faa2"></a>
+<a id="orge322728"></a>
 
 ## How can I limit upload/download speed
 
@@ -1327,7 +1336,7 @@ try {
 ```
 
 
-<a id="orgffe3a3c"></a>
+<a id="org4164c6c"></a>
 
 ## Connection hangs or fails for larger files
 
@@ -1338,21 +1347,21 @@ A symptom of this issue is that you are able to upload small files, but uploadin
 For more explanation, see [issue #342](https://github.com/theophilusx/ssh2-sftp-client/issues/342).
 
 
-<a id="org390645f"></a>
+<a id="orgd28c1e8"></a>
 
 ## Typescript definition file out of date
 
 This project does not use Typescript. However, typescript definition files are provided by other 3rd parties. Sometimes, these definition files have not stayed up-to-date with the current version of this module. If you encounter this issue, you need to report it to the party responsible for the definition file, not this project.
 
 
-<a id="orgce20a25"></a>
+<a id="orgfab3156"></a>
 
 # Examples
 
 I have started collecting example scripts in the example directory of the repository. These are mainly scripts I have put together in order to investigate issues or provide samples for users. They are not robust, lack adequate error handling and may contain errors. However, I think they are still useful for helping developers see how the module and API can be used.
 
 
-<a id="org31d0059"></a>
+<a id="orga11079b"></a>
 
 # Troubleshooting
 
@@ -1367,14 +1376,14 @@ Note also that in the repository there are two useful directories. The first is 
 The second directory is the validation directory. I have some very simple scripts in this directory which perform basic tasks using only the `ssh2` modules (no `ssh2-sftp-client` module). These can be useful when trying to determine if the issue is with the underlying `ssh2` module or the `ssh2-sftp-client` wrapper module.
 
 
-<a id="orgf1c2f29"></a>
+<a id="org0372c41"></a>
 
 ## Common Errors
 
 There are some common errors people tend to make when using Promises or Async/Await. These are by far the most common problem found in issues logged against this module. Please check for some of these before logging your issue.
 
 
-<a id="org14ab27b"></a>
+<a id="org0d8dc85"></a>
 
 ### Not returning the promise in a `then()` block
 
@@ -1411,7 +1420,7 @@ Note the `return` statements. These ensure that the Promise returned by the clie
 A common symptom of this type of error is for file uploads or download to fail to complete or for data in those files to be truncated. What is happening is that the connection is being ended before the transfer has completed.
 
 
-<a id="org6c257e3"></a>
+<a id="org199b814"></a>
 
 ### Mixing Promise Chains and Async/Await
 
@@ -1471,7 +1480,7 @@ async function doSftp() {
 ```
 
 
-<a id="org765b1b2"></a>
+<a id="org46e5412"></a>
 
 ### Try/catch and Error Handlers
 
@@ -1482,14 +1491,14 @@ The basic problem is that the try/catch block will have completed execution befo
 Error events are essentially asynchronous code. You don't know when such events will fire. Therefore, you cannot use a try/catch block to catch such event errors. Even creating an error handler which then throws an exception won't help as the key problem is that your try/catch block has already executed. There are a number of alternative ways to deal with this situation. However, the key symptom is that you see occasional uncaught error exceptions that cause your script to exit abnormally despite having try/catch blocks in your script. What you need to do is look at your code and find where errors are raised asynchronously and use an event handler or some other mechanism to manage any errors raised.
 
 
-<a id="orge67d910"></a>
+<a id="org8a2ebba"></a>
 
 ### Server Differences
 
 Not all SFTP servers are the same. Like most standards, the SFTP protocol has some level of interpretation and allows different levels of compliance. This means there can be differences in behaviour between different servers and code which works with one server will not work the same with another. For example, the value returned by *realpath* for non-existent objects can differ significantly. Some servers will throw an error for a particular operation while others will just return null, some servers support concurrent operations (such as used by fastGet/fastPut) while others will not and of course, the text of error messages can vary significantly. In particular, we have noticed significant differences across different platforms. It is therefore advisable to do comprehensive testing when the SFTP server is moved to a new platform. This includes moving from to a cloud based service even if the underlying platform remains the same. I have noticed that some cloud platforms can generate unexpected events, possibly related to additional functionality or features associated with the cloud implementation. For example, it appears SFTP servers running under Azure will generate an error event when the connection is closed even when the client has requested the connection be terminated. The same SFTP server running natively on Windows does not appear to exhibit such behaviour.
 
 
-<a id="org734662f"></a>
+<a id="org24c4235"></a>
 
 ### Avoid Concurrent Operations
 
@@ -1498,7 +1507,7 @@ Technically, SFTP should be able to perform multiple operations concurrently. As
 If you are going to try and perform concurrent operations, you need to test extensively and ensure you are using data which is large enough that context switching does occur (i.e. the request is not completed in a single run). Some SFTP servers will handle concurrent operations better than others.
 
 
-<a id="org658f3d6"></a>
+<a id="org1d067af"></a>
 
 ## Debugging Support
 
@@ -1531,7 +1540,7 @@ If you just want to see debug messages from `ssh2-sftp-client` and exclude debug
 ```
 
 
-<a id="orgb0fbb63"></a>
+<a id="orgdc52f71"></a>
 
 # Logging Issues
 
@@ -1548,7 +1557,7 @@ I am happy to try and help diagnose and fix any issues you encounter while using
 Perhaps the best assistance is a minimal reproducible example of the issue. Once the issue can be readily reproduced, it can usually be fixed very quickly.
 
 
-<a id="orgc22fdba"></a>
+<a id="orge4e0c24"></a>
 
 # Pull Requests
 
@@ -1565,7 +1574,7 @@ This module will adopt a standard semantic versioning policy. Please indicate in
 -   **Bug Fix:** No change to functionality or features. Simple fix of an existing bug.
 
 
-<a id="org7bb6675"></a>
+<a id="org7f7c9a1"></a>
 
 # Contributors
 
