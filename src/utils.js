@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const { errorCode } = require("./constants");
+const fs = require('node:fs');
+const path = require('node:path');
+const { errorCode } = require('./constants');
 
 /**
  * Simple default error listener. Will reformat the error message and
@@ -32,9 +32,7 @@ function globalListener(client, evt) {
   return () => {
     if (client.endCalled || client.errorHandled || client.closeHandled) {
       // we are processing an expected event handled elsewhere
-      client.debugMsg(
-        `Global ${evt} event: Ignoring expected and handled event`,
-      );
+      client.debugMsg(`Global ${evt} event: Ignoring expected and handled event`);
     } else {
       client.debugMsg(`Global ${evt} event: Handling unexpected event`);
       client.sftp = undefined;
@@ -42,29 +40,21 @@ function globalListener(client, evt) {
   };
 }
 
-function endListener(client, name, _reject) {
+function endListener(client, name) {
   const fn = function () {
     client.sftp = undefined;
     if (client.endCalled || client.endHandled || client.errorHandled) {
       // end event already handled - ignore
-      client.debugMsg(`${name} endListener - ignoring handled error`);
+      client.debugMsg(`${name} endListener - handled end event`);
       return;
     }
     client.endHandled = true;
-    client.debugMsg(`${name} Unexpected end event - ignoring`);
-    // Don't reject/throw error, just log it and move on
-    // after invalidating the connection
-    // const err = new Error(`${name} Unexpected end event raised`);
-    // if (reject) {
-    //   reject(err);
-    // } else {
-    //   throw err;
-    // }
+    client.debugMsg(`${name} Unexpected end event`);
   };
   return fn;
 }
 
-function closeListener(client, name, _reject) {
+function closeListener(client, name) {
   const fn = function () {
     client.sftp = undefined;
     if (
@@ -74,41 +64,33 @@ function closeListener(client, name, _reject) {
       client.endHandled
     ) {
       // handled or expected close event - ignore
-      client.debugMsg(`${name} closeListener - ignoring handled error`);
+      client.debugMsg(`${name} closeListener - handled close event`);
       return;
     }
     client.closeHandled = true;
-    client.debugMsg(`${name} Unexpected close event raised - ignoring`);
-    // Don't throw/reject on close events. Just invalidate the connection
-    // and move on.
-    // const err = new Error(`${name}: Unexpected close event raised`);
-    // if (reject) {
-    //   reject(err);
-    // } else {
-    //   throw err;
-    // }
+    client.debugMsg(`${name} Unexpected close event`);
   };
   return fn;
 }
 
 function addTempListeners(client, name, reject) {
   const listeners = {
-    end: endListener(client, name, reject),
-    close: closeListener(client, name, reject),
+    end: endListener(client, name),
+    close: closeListener(client, name),
     error: errorListener(client, name, reject),
   };
-  client.on("end", listeners.end);
-  client.on("close", listeners.close);
-  client.on("error", listeners.error);
+  client.on('end', listeners.end);
+  client.on('close', listeners.close);
+  client.on('error', listeners.error);
   client._resetEventFlags();
   return listeners;
 }
 
 function removeTempListeners(client, listeners, name) {
   try {
-    client.removeListener("end", listeners.end);
-    client.removeListener("close", listeners.close);
-    client.removeListener("error", listeners.error);
+    client.removeListener('end', listeners.end);
+    client.removeListener('close', listeners.close);
+    client.removeListener('error', listeners.error);
   } catch (err) {
     throw new Error(`${name}: Error removing temp listeners: ${err.message}`);
   }
@@ -131,13 +113,11 @@ function localExists(filePath) {
   if (!stats) {
     return false;
   } else if (stats.isDirectory()) {
-    return "d";
+    return 'd';
   } else if (stats.isFile()) {
-    return "-";
+    return '-';
   } else {
-    const err = new Error(
-      `Bad path: ${filePath}: target must be a file or directory`,
-    );
+    const err = new Error(`Bad path: ${filePath}: target must be a file or directory`);
     err.code = errorCode.badPath;
     throw err;
   }
@@ -159,10 +139,9 @@ function localExists(filePath) {
  * @param {string} mode = access mode - either 'r' or 'w'. Defaults to 'r'
  * @returns {Object} with properties status, type, details and code
  */
-function haveLocalAccess(filePath, mode = "r") {
-  const accessMode = fs.constants.F_OK | (mode === "w")
-    ? fs.constants.W_OK
-    : fs.constants.R_OK;
+function haveLocalAccess(filePath, mode = 'r') {
+  const accessMode =
+    fs.constants.F_OK | (mode === 'w') ? fs.constants.W_OK : fs.constants.R_OK;
 
   try {
     fs.accessSync(filePath, accessMode);
@@ -170,37 +149,41 @@ function haveLocalAccess(filePath, mode = "r") {
     return {
       status: true,
       type: type,
-      details: "access OK",
+      details: 'access OK',
       code: 0,
     };
   } catch (err) {
     switch (err.errno) {
-      case -2:
+      case -2: {
         return {
           status: false,
           type: null,
-          details: "not exist",
+          details: 'not exist',
           code: -2,
         };
-      case -13:
+      }
+      case -13: {
         return {
           status: false,
           type: localExists(filePath),
-          details: "permission denied",
+          details: 'permission denied',
           code: -13,
         };
-      case -20:
+      }
+      case -20: {
         return {
           status: false,
           type: null,
-          details: "parent not a directory",
+          details: 'parent not a directory',
         };
-      default:
+      }
+      default: {
         return {
           status: false,
           type: null,
           details: err.message,
         };
+      }
     }
   }
 }
@@ -215,50 +198,53 @@ function haveLocalAccess(filePath, mode = "r") {
  * @returns {Object} Object with properties status, type, destils and code
  */
 function haveLocalCreate(filePath) {
-  const { status, details, type } = haveLocalAccess(filePath, "w");
-  if (!status && details === "permission denied") {
-    //throw new Error(`Bad path: ${filePath}: permission denied`);
-    return {
-      status,
-      details,
-      type,
-    };
-  } else if (!status) {
-    const dirPath = path.dirname(filePath);
-    const localCheck = haveLocalAccess(dirPath, "w");
-    if (localCheck.status && localCheck.type !== "d") {
-      //throw new Error(`Bad path: ${dirPath}: not a directory`);
+  const { status, details, type } = haveLocalAccess(filePath, 'w');
+  if (!status) {
+    // filePath does not exist. Can we create it?
+    if (details === 'permission denied') {
+      // don't have permission
       return {
-        status: false,
-        details: `${dirPath}: not a directory`,
-        type: null,
+        status,
+        details,
+        type,
       };
-    } else if (!localCheck.status) {
-      //throw new Error(`Bad path: ${dirPath}: ${localCheck.details}`);
+    }
+    // to create it, parent must be directory and writeable
+    const dirPath = path.dirname(filePath);
+    const localCheck = haveLocalAccess(dirPath, 'w');
+    if (!localCheck.status) {
+      // no access to parent directory
       return {
         status: localCheck.status,
         details: `${dirPath}: ${localCheck.details}`,
         type: null,
       };
-    } else {
+    }
+    // exists, is it a directory?
+    if (localCheck.type !== 'd') {
       return {
-        status: true,
-        details: "access OK",
+        status: false,
+        details: `${dirPath}: not a directory`,
         type: null,
-        code: 0,
       };
     }
+    return {
+      status: true,
+      details: 'access OK',
+      type: null,
+      code: 0,
+    };
   }
   return { status, details, type };
 }
 
 async function normalizeRemotePath(client, aPath) {
   try {
-    if (aPath.startsWith("..")) {
-      const root = await client.realPath("..");
+    if (aPath.startsWith('..')) {
+      const root = await client.realPath('..');
       return `${root}/${aPath.slice(3)}`;
-    } else if (aPath.startsWith(".")) {
-      const root = await client.realPath(".");
+    } else if (aPath.startsWith('.')) {
+      const root = await client.realPath('.');
       return `${root}/${aPath.slice(2)}`;
     }
     return aPath;
@@ -294,8 +280,8 @@ function haveConnection(client, name, reject) {
 function sleep(ms) {
   return new Promise((resolve, reject) => {
     try {
-      if (isNaN(ms) || ms < 0) {
-        reject("Argument must be  anumber >= 0");
+      if (Number.isNaN(Number.parseInt(ms)) || ms < 0) {
+        reject('Argument must be a number >= 0');
       } else {
         setTimeout(() => {
           resolve(true);
@@ -314,7 +300,7 @@ function partition(input, size) {
     throw new Error('Partition size must be greater than zero');
   }
 
-  for (let i=0; i < input.length; i += size) {
+  for (let i = 0; i < input.length; i += size) {
     output[output.length] = input.slice(i, i + size);
   }
   return output;
