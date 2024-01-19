@@ -10,7 +10,7 @@ const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const utils = require('../src/utils');
 const { config, getConnection, closeConnection } = require('./hooks/global-hooks');
-const fs = require('fs');
+const fs = require('node:fs');
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -52,7 +52,7 @@ describe('fmtError() tests', function () {
 
   it('fmtError handles custom error 1', function () {
     return expect(
-      client.fmtError(client.fmtError('Original Error', 'someMethod'), 'top')
+      client.fmtError(client.fmtError('Original Error', 'someMethod'), 'top'),
     ).to.containSubset({
       message: 'top->someMethod: Original Error',
       code: 'ERR_GENERIC_CLIENT',
@@ -306,10 +306,9 @@ describe('Add/Remove temp listeners', function () {
   });
 
   it('bad listener array test', function () {
-    let fn = () => {
+    return expect(() => {
       utils.removeTempListeners(client, null, 'tl-test');
-    };
-    return expect(fn).to.throw(Error);
+    }).to.throw(Error);
   });
 });
 
@@ -317,7 +316,7 @@ describe('localExists tests', function () {
   before('setup', function () {
     fs.symlinkSync(
       `${config.localUrl}/test-file1.txt`,
-      `${config.localUrl}/test-file1-link.txt`
+      `${config.localUrl}/test-file1-link.txt`,
     );
   });
 
@@ -346,31 +345,31 @@ describe('localExists tests', function () {
 describe('haveLocalAccess tests', function () {
   it('have local read access', function () {
     return expect(
-      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`).status
+      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`).status,
     ).to.equal(true);
   });
 
   it('have local writ4e access', function () {
     return expect(
-      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`, 'w').status
+      utils.haveLocalAccess(`${config.localUrl}/test-file1.txt`, 'w').status,
     ).to.equal(true);
   });
 
   it('not have local read access', function () {
     return expect(
-      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`).status
+      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`).status,
     ).to.equal(false);
   });
 
   it('not have local write access', function () {
     return expect(
-      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`, 'w').status
+      utils.haveLocalAccess(`${config.localUrl}/no-access.txt`, 'w').status,
     ).to.equal(false);
   });
 
   it('not exist local access', function () {
     return expect(
-      utils.haveLocalAccess(`${config.localUrl}/not-exist.txt`).status
+      utils.haveLocalAccess(`${config.localUrl}/not-exist.txt`).status,
     ).to.equal(false);
   });
 });
@@ -378,7 +377,7 @@ describe('haveLocalAccess tests', function () {
 describe('haveLocalCreate tests', function () {
   it('local create with file', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt`).status
+      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt`).status,
     ).to.equal(true);
   });
 
@@ -388,31 +387,31 @@ describe('haveLocalCreate tests', function () {
 
   it('local create with non-existing file', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/no-exist.txt`).status
+      utils.haveLocalCreate(`${config.localUrl}/no-exist.txt`).status,
     ).to.equal(true);
   });
 
   it('local create with no permission', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/no-access.txt`).details
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt`).details,
     ).to.equal('permission denied');
   });
 
   it('local create bad dir 1', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/bar/foo.txt`).status
+      utils.haveLocalCreate(`${config.localUrl}/bar/foo.txt`).status,
     ).to.equal(false);
   });
 
   it('local create bad dir 2', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/no-access.txt/foo.txt`).status
+      utils.haveLocalCreate(`${config.localUrl}/no-access.txt/foo.txt`).status,
     ).to.equal(false);
   });
 
   it('local create bad dir 3', function () {
     return expect(
-      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt/foo.txt`).status
+      utils.haveLocalCreate(`${config.localUrl}/test-file1.txt/foo.txt`).status,
     ).to.equal(false);
   });
 });
@@ -462,44 +461,43 @@ describe('sleep', function () {
     return expect(utils.sleep(10)).to.eventually.equal(true);
   });
 
-  it('sleep error', async function () {
+  it('sleep error', function () {
     return expect(utils.sleep('bad value')).to.be.rejected;
   });
 });
 
-describe('partitoin', function() {
+describe('partitoin', function () {
   let i = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   let i2 = [0, 1, 2, 3, 4];
-  
-  it('partiton normal array', function() {
+
+  it('partiton normal array', function () {
     let o = utils.partition(i, 2);
     expect(o.length).to.equal(5);
     expect(o[0]).to.eql([0, 1]);
     return expect(o[4]).to.eql([8, 9]);
   });
 
-  it('partiton odd array', function() {
+  it('partiton odd array', function () {
     let o = utils.partition(i2, 2);
     expect(o.length).to.equal(3);
     expect(o[0]).to.eql([0, 1]);
     return expect(o[2]).to.eql([4]);
-  })
-
-  it('partiotn 0 size', function() {
-    let fn = () => {
-      utils.partition(i, 0); 
-    };
-    return expect(fn).to.throw(/Partition size must be greater than zero/)
   });
 
-  it('partition size 1', function() {
+  it('partiotn 0 size', function () {
+    return expect(() => {
+      utils.partition(i, 0);
+    }).to.throw(/Partition size must be greater than zero/);
+  });
+
+  it('partition size 1', function () {
     let o = utils.partition(i2, 1);
     expect(o.length).to.equal(5);
     expect(o[0]).to.eql([0]);
     return expect(o[4]).to.eql([4]);
   });
 
-  it('partitoin same size as input', function() {
+  it('partitoin same size as input', function () {
     let o = utils.partition(i2, i2.length);
     expect(o.length).to.equal(1);
     return expect(o[0]).to.eql(i2);
