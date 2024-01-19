@@ -23,13 +23,14 @@
   },
   "plugins": ["promise", "node", "unicorn"],
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2021,
     "ecmaFeatures": {
       "impliedStrict": true
     }
   },
   "env": {
     "es6": true,
+    "commonjs": true,
     "node": true,
     "mocha": true
   }
