@@ -31,7 +31,6 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.debug = undefined;
     this.promiseLimit = 10;
-
     this.client.on('close', globalListener(this, 'close'));
     this.client.on('end', globalListener(this, 'end'));
     this.client.on('error', globalListener(this, 'error'));
@@ -598,7 +597,7 @@ class SftpClient {
     try {
       const ftype = await this.exists(remotePath);
       if (ftype !== '-') {
-        const msg = `${!ftype ? 'No such file ' : 'Not a regular file'} ${remotePath}`;
+        const msg = `${ftype ? 'Not a regular file' : 'No such file '} ${remotePath}`;
         throw this.fmtError(msg, 'fastGet', errorCode.badPath);
       }
       const localCheck = haveLocalCreate(localPath);
