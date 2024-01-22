@@ -20,6 +20,9 @@ significantly slower.
 
 Node versions < 16.x are not supported. 
 
+If you find this module useful and you would like to support the on-going maintenance and
+support of users, please consider making a small [[https://square.link/u/gB2kSdkY?src=embed][donation]].
+
 ** Version 10.0.0 Changes
 
 - The main change in this version is adding of limits on the number of promises which can
