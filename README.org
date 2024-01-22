@@ -11,7 +11,7 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As this 
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v10.0.2
+Current stable release is *v10.0.3
 
 Code has been tested against Node versions 16.20.2, 18.18.2, 20.10.0 and 21.5.0. However,
 only versions from v18 are actively supported. It should also be noted that a significant

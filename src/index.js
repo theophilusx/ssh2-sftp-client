@@ -20,7 +20,7 @@ const { errorCode } = require('./constants');
 
 class SftpClient {
   constructor(clientName) {
-    this.version = '10.0.2';
+    this.version = '10.0.3';
     this.client = new Client();
     this.sftp = undefined;
     this.clientName = clientName || 'sftp';
