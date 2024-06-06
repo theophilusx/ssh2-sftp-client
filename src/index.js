@@ -826,7 +826,7 @@ class SftpClient {
           errorCode.badPath,
         );
       }
-      await this._append(input, remotePath, options);
+      return await this._append(input, remotePath, options);
     } catch (e) {
       throw e.custom ? e : this.fmtError(e.message, 'append', e.code);
     }
