@@ -989,7 +989,7 @@ remote SFTP server will result in failures.
 
 *** downloadDir(srcDir, dstDir, options) ==> string
 
-Download the remote directory specified by ~srcDir~ to the local file system
+Download the content of the remote directory specified by ~srcDir~ to the local file system
 directory specified by ~dstDir~. The ~dstDir~ directory will be created if
 required. All sub directories within ~srcDir~ will also be copied. Any existing
 files in the local path will be overwritten. No files in the local path will be
