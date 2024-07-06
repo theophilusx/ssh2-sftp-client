@@ -713,6 +713,9 @@ class SftpClient {
       if (haveConnection(this, '_put', reject)) {
         wtr = this.sftp.createWriteStream(rPath, opts.writeStreamOptions);
         wtr.once('error', (err) => {
+          if (typeof lPath === 'string' && !rdr.destroyed) {
+            rdr.destroy();
+          }
           reject(
             this.fmtError(
               `Write stream error: ${err.message} ${rPath}`,
