@@ -1,4 +1,20 @@
 * Change Logging
+** v11.0.0
+  - Fix append() to ensure it returns a value
+  - Improve consistency in handling streams. Any stream created within the module
+    is managed by the module i.e. will be destroyed when no longer required. Streams
+    passed in via method arguments are left for client code to manage i.e. this module
+    will not destroy them once it is finished with them. The two exceptions to this are
+    streams created via calls to the sftp.createReadStream() and sftp.crweateWriteStream()
+    methods. Streams returned by calls to these methods are left to be managed by client
+    code. This includes ensuring they are destroyed oncve finished with.
+  - Stripped out most calls to debugMsg() to reduce size and improve performance. As JS is
+    not compiled, adding/removing debugging calls during debug sessions is trivial, so
+    lets not leave them in when not necessary.
+  - Begin migration to ES modules from commonJs. Most devs seem more at home with import
+    rather than require. Prefer to just keep single method for consistency and not habe to
+    think is this backend or frontend - is just JS.
+  
 ** v10.0.0
   - Add promise limit control for downloadDir/uploadDir
   - Bumped to depend on ssh2 1.15.0
