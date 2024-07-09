@@ -14,7 +14,7 @@ env-win
 env-mac
 env-localhost
 .eslintrc.js
-.mocharc.js
+.mocharc.cjs
 .indium.json
 .tern-port
 test-env-template

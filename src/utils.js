@@ -1,6 +1,6 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const { errorCode } = require('./constants');
+import { statSync, constants, accessSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { errorCode } from './constants.js';
 
 /**
  * Simple default error listener. Will reformat the error message and
@@ -109,7 +109,7 @@ function removeTempListeners(client, listeners, name) {
  * @returns {string | boolean} returns a string for object type if it exists, false otherwise
  */
 function localExists(filePath) {
-  const stats = fs.statSync(filePath, { throwIfNoEntry: false });
+  const stats = statSync(filePath, { throwIfNoEntry: false });
   if (!stats) {
     return false;
   } else if (stats.isDirectory()) {
@@ -140,11 +140,10 @@ function localExists(filePath) {
  * @returns {Object} with properties status, type, details and code
  */
 function haveLocalAccess(filePath, mode = 'r') {
-  const accessMode =
-    fs.constants.F_OK | (mode === 'w') ? fs.constants.W_OK : fs.constants.R_OK;
+  const accessMode = constants.F_OK | (mode === 'w') ? constants.W_OK : constants.R_OK;
 
   try {
-    fs.accessSync(filePath, accessMode);
+    accessSync(filePath, accessMode);
     const type = localExists(filePath);
     return {
       status: true,
@@ -210,7 +209,7 @@ function haveLocalCreate(filePath) {
       };
     }
     // to create it, parent must be directory and writeable
-    const dirPath = path.dirname(filePath);
+    const dirPath = dirname(filePath);
     const localCheck = haveLocalAccess(dirPath, 'w');
     if (!localCheck.status) {
       // no access to parent directory
@@ -306,7 +305,7 @@ function partition(input, size) {
   return output;
 }
 
-module.exports = {
+export {
   globalListener,
   errorListener,
   endListener,
