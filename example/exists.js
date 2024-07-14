@@ -6,7 +6,6 @@ const dotenvPath = new URL('../.env', import.meta.url);
 import dotenv from 'dotenv';
 dotenv.config({ path: dotenvPath });
 
-import path from 'node:path';
 import Client from '../src/index.js';
 
 const config = {

@@ -59,10 +59,28 @@ also shows API usage.
 
 * Scripts
 
-| Name            | Description                                               |
-|-----------------+-----------------------------------------------------------|
-| buffer-put.js   | Using sftp.put() with a buffer as input                   |
-| buffer-test.js  | Async/await example of sftp.put() with a buffwer as input |
-| bulk-fastget.js | Use sftp.fastGet() to download a file multiple times      |
-| bulk-fastput.js | Use sftp.fastPut() to upload a file multiple times        |
-|                 |                                                           |
+| Name                   | Description                                                  |
+|------------------------+--------------------------------------------------------------|
+| buffer-put.js          | Using sftp.put() with a buffer as input                      |
+| buffer-test.js         | Async/await example of sftp.put() with a buffwer as input    |
+| bulk-fastget.js        | Use sftp.fastGet() to download a file multiple times         |
+| bulk-fastput.js        | Use sftp.fastPut() to upload a file multiple times           |
+| bulk-get.js            | Downloads a file multiple times for testing purposes         |
+| downloadDir.js         | Example directory download using downloadDir()               |
+| exists.js              | Tests to see if remote object exists and whether is a        |
+|                        | file or directory                                            |
+| fastget.js             | Downloads a file using fastGet()                             |
+| fastput.js             | Uploads a file using fastPut()                               |
+| sftp-config-example.js | Simple example of configuring the sftp connection            |
+| get-stream.js          | Uses a pass through stream to send downloaded data to stdout |
+| get-writeable.js       | Reads data and converts it 'on the fly' as downloaded        |
+|                        | and writes  result to a file                                 |
+| large-buffer.js        | Using a buffer of data as input for sftp.put()               |
+| listing-with-key.js    | Simple directory listing using ssh key for access            |
+| list.js                | Simple remote directory listing                              |
+| mkdir.js               | Create a remote directory                                    |
+| multiple-get2.js       | Download multiple files in parallel                          |
+| multiple-get.js        | Download multiple files in serial                            |
+| realpath.js            | Use sftp.realpath() to get remote path                       |
+| upload-stream.js       | Upload data using a stream for input                         |
+| uploadDir.js           | Upload directory using the sftp.uploadDir() method           |
