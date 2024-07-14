@@ -41,6 +41,7 @@ node script.js <args>
 It may be necessary to look at the scripts to determine if they expect any
 command line arguments. 
 
+
 ** Warning
 
 This scripts are simple examples. They are not robust and may not even be
@@ -51,3 +52,17 @@ regarding use of the ~ssh2-sftp-client~ module.
 If you find bugs or problems with any of these examples, feel free to submit
 pull requests which fix the issue. Likewise, if you comeup with something that
 you feel others might find useful, feel free to submit it for inclusion. 
+
+An additional source of information and examples can also be found in the tests
+directory. The code in that directory show how many aspects of the API are tested, which
+also shows API usage.
+
+* Scripts
+
+| Name            | Description                                               |
+|-----------------+-----------------------------------------------------------|
+| buffer-put.js   | Using sftp.put() with a buffer as input                   |
+| buffer-test.js  | Async/await example of sftp.put() with a buffwer as input |
+| bulk-fastget.js | Use sftp.fastGet() to download a file multiple times      |
+| bulk-fastput.js | Use sftp.fastPut() to upload a file multiple times        |
+|                 |                                                           |

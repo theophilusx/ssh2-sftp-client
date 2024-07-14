@@ -1,28 +1,29 @@
 'use strict';
 
-const path = require('path');
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({path: dotenvPath});
-const Client = require('../src/index');
+// Simple script which just display a directory listing for a
+// remote sftp directory specified on the command line
+
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
+
+const Client = require('../src/index.js');
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
-const sftp = new Client();
-
-let remotePath = process.argv[2];
-
-async function main() {
+try {
+  const sftp = new Client();
+  const remotePath = process.argv[2];
   await sftp.connect(config);
-  let fileList = await sftp.list(remotePath);
-  console.log(fileList);
+  const fileList = await sftp.list(remotePath);
+  console.dir(fileList);
   await sftp.end();
+  console.log('script finished');
+} catch (err) {
+  console.error(err);
 }
-
-main().catch((e) => {
-  console.error(e.message);
-});

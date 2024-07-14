@@ -7,12 +7,12 @@
  * passing the readStream to put(). You could just pass the buffer directly.
  * We are using the ReadStream just for demonstration purposes
  */
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
 
-const Readable = require('stream').Readable;
-const path = require('path');
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const Client = require('../src/index');
+import { Readable } from 'node:stream';
+import Client from '../src/index';
 
 const config = {
   host: process.env.SFTP_SERVER,

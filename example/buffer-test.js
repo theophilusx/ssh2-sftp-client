@@ -1,9 +1,11 @@
 'use strict';
 
-const path = require('path');
-const sftp = require('../src/index');
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({path: dotenvPath});
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
+
+import { join } from 'node:path';
+import sftp from '../src/index.js';
 
 const getConnection = async (config) => {
   let client;
@@ -24,7 +26,7 @@ const putBuffer = async (client, size, remotePath) => {
 
   try {
     let bufSize = 1024 * size;
-    let remoteFile = path.join(remotePath, `${bufSize}data.txt`);
+    let remoteFile = join(remotePath, `${bufSize}data.txt`);
     console.log(`Uploading buffer of ${bufSize} bytes to ${remoteFile}`);
     rslt = await client.put(Buffer.alloc(bufSize), remoteFile);
     console.log(`buffer of size ${bufSize} uploaded`);
@@ -44,7 +46,7 @@ const main = async () => {
       host: process.env.SFTP_SERVER,
       username: process.env.SFTP_USER,
       password: process.env.SFTP_PASSWORD,
-      port: process.env.SFTP_PORT || 22
+      port: process.env.SFTP_PORT || 22,
     };
     client = await getConnection(config);
     let listing1 = await client.list(remotePath);

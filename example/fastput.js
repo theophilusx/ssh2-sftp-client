@@ -1,16 +1,17 @@
 'use strict';
 
-const path = require('path');
-const SftpClient = require('../src/index');
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
 
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({path: dotenvPath});
+import { join } from 'node:path';
+import SftpClient from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 async function putFiles(client, src, dst) {
@@ -32,13 +33,10 @@ async function main() {
     await client.connect(config);
     await putFiles(client, srcDir, dstDir);
     for (let f of ['file1', 'file2']) {
+      await client.put(join(src, `${f}.txt`), `${dst}${client.remotePathSep}${f}.txt`);
       await client.put(
-        path.join(src, `${f}.txt`),
-        `${dst}${client.remotePathSep}${f}.txt`
-      );
-      await client.put(
-        path.join(src, 'empty-file.txt'),
-        `${dst}${client.remotePathSep}${f}.fin`
+        join(src, 'empty-file.txt'),
+        `${dst}${client.remotePathSep}${f}.fin`,
       );
     }
   } catch (err) {
@@ -48,6 +46,8 @@ async function main() {
   }
 }
 
-main().then(() => {
-  console.log('script complete');
-});
+try {
+  await main();
+} catch (err) {
+  console.log(err);
+}

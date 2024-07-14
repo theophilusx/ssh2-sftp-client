@@ -1,8 +1,12 @@
 'use strict';
 
-const path = require('path');
-const Client = require('../src/index');
-const moment = require('moment');
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
+
+import { join } from 'node:path';
+import Client from '../src/index.js';
+import moment from 'moment';
 
 // simple script used mainly for testing purposes. will download a file
 // multiple times and store it locally (with a different suffix for each one).
@@ -10,17 +14,13 @@ const moment = require('moment');
 // testing for unreliable networks etc. This version uses fastGet() to do the
 // download
 
-const dotenvPath = path.join(__dirname, '..', '.env');
-
-require('dotenv').config({path: dotenvPath});
-
 const client = new Client();
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 async function uploadTest(remotePath, localPath, repeat) {
@@ -28,7 +28,7 @@ async function uploadTest(remotePath, localPath, repeat) {
     console.log(`Uploading file ${localPath} ${repeat} times`);
     await client.connect(config);
     for (let i = 0; i < repeat; i++) {
-      let remoteFile = path.join(remotePath, `test-file.${i}`);
+      let remoteFile = join(remotePath, `test-file.${i}`);
       console.log(`Uploading to ${remoteFile}`);
       await client.fastPut(localPath, remoteFile);
     }

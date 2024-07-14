@@ -1,41 +1,35 @@
 'use strict';
 
-const path = require('path');
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
 
-const dotenvPath = path.join(__dirname, '..', '.env');
-
-require('dotenv').config({path: dotenvPath});
-
-const Client = require('../src/index');
-const path = require('path');
-
-const client = new Client();
+import { join } from 'path';
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
-async function downloadAll(remotePath, localPath) {
+const client = new Client();
+
+try {
   console.log(`Downloading files from ${remotePath}`);
   await client.connect(config);
-  let listings = await client.list(remotePath, 'wftpserver*');
+  let listings = await client.list(remotePath);
+  // BEWARE! array methods like forEach are NOT async/await safe!
   for (let item of listings) {
-    let remoteFile = path.join(remotePath, item.name);
-    let localFile = path.join(localPath, item.name);
+    let remoteFile = join(remotePath, item.name);
+    let localFile = join(localPath, item.name);
     console.log(`Remote: ${remoteFile} Local: ${localFile}`);
-    let res = await client.fastGet(remoteFile, localFile);
+    let res = await client.get(remoteFile, localFile);
     console.log(`${res} downloaded`);
   }
+} catch (err) {
+  console.error(err);
+} finally {
   await client.end();
 }
-
-downloadAll('/home/tim/testDownload', '/tmp')
-  .then(() => {
-    console.log('all files downloaded');
-  })
-  .catch(err => {
-    console.log(`An error occured: ${err.message}`);
-  });

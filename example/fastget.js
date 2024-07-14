@@ -1,10 +1,10 @@
 'use strict';
 
-const path = require('path');
-const SftpClient = require('../src/index');
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
 
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
+import SftpClient from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,
@@ -39,6 +39,8 @@ async function main() {
   }
 }
 
-main().then(() => {
-  console.log('script complete');
-});
+try {
+  await main();
+} catch (err) {
+  console.log(err);
+}

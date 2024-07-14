@@ -1,19 +1,19 @@
 'use strict';
 
-// Example of using the downloadDir() method to upload a directory
-// to a remote SFTP server
+// Example of using the downloadDir() method to download a directory
+// from a remote SFTP server to a local directory
 
-const path = require('path');
-const SftpClient = require('../src/index');
+const dotenvPath = new URL('../.env', import.meta.url);
+import dotenv from 'dotenv';
+dotenv.config({ path: dotenvPath });
 
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({path: dotenvPath});
+import SftpClient from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22
+  port: process.env.SFTP_PORT || 22,
 };
 
 async function main() {
@@ -23,7 +23,7 @@ async function main() {
 
   try {
     await client.connect(config);
-    client.on('download', info => {
+    client.on('download', (info) => {
       console.log(`Listener: Download ${info.source}`);
     });
     let rslt = await client.downloadDir(src, dst);
@@ -33,10 +33,8 @@ async function main() {
   }
 }
 
-main()
-  .then(msg => {
-    console.log(msg);
-  })
-  .catch(err => {
-    console.log(`main error: ${err.message}`);
-  });
+try {
+  await main();
+} catch (err) {
+  console.error(err);
+}
