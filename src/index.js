@@ -222,6 +222,7 @@ class SftpClient {
         }
       });
       const sftp = await this.getSftpChannel();
+      this.endCalled = false;
       return sftp;
     } catch (err) {
       this.end();
@@ -1524,7 +1525,6 @@ class SftpClient {
     }).finally(() => {
       removeTempListeners(this, listeners, 'end');
       this.removeListener('close', endCloseHandler);
-      this.endCalled = false;
     });
   }
 }

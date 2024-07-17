@@ -198,10 +198,10 @@ describe('20utils C: Test endListener', function () {
     let fn = () => {
       handler();
     };
-    return expect(fn).to.not.throw();
+    return expect(fn).to.throw();
   });
 
-  it('endListener no error 1', function () {
+  it('endListener error 1', function () {
     client.errorHandled = true;
     let handler = endListener(client, 'Test6');
     let fn = () => {
@@ -259,7 +259,7 @@ describe('20utils D: closeHandler tests', function () {
     let fn = () => {
       handler();
     };
-    return expect(fn).to.not.throw();
+    return expect(fn).to.throw();
   });
 
   it('closeHandler not throw 1', function () {

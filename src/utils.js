@@ -2,6 +2,53 @@ import { statSync, constants, accessSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { errorCode } from './constants.js';
 
+function eventHandled(client) {
+  if (client.errorHandled || client.endHandled || client.closeHandled) {
+    return true;
+  }
+  return false;
+}
+
+function globalListener(client, evt) {
+  if (evt === 'error') {
+    return (err) => {
+      if (client.endCalled || eventHandled(client)) {
+        // processing expected or already handled event
+        client.debugMsg(`Global error event: Ignoring handled error ${err.message}`);
+        return;
+      }
+      client.errorHandled = true;
+      const newError = new Error(`Global error event: ${err.message}`);
+      newError.code = err.code;
+      throw newError;
+    };
+  }
+  if (evt === 'end') {
+    return () => {
+      if (client.endCalled || eventHandled(client)) {
+        // already handled or expected event
+        client.debugMsg('Global end event: Ignoring handled end event');
+        return;
+      }
+      client.endHandled = true;
+      const newError = new Error('Global end event: Unexpected end event caught');
+      newError.code = errorCode.ERR_GENERIC_CLIENT;
+      client.sftp = undefined;
+      throw newError;
+    };
+  }
+  return () => {
+    if (client.endCalled || eventHandled(client)) {
+      // we are processing an expected event handled elsewhere
+      client.debugMsg('Global event: Ignoring already handled event');
+    } else {
+      client.debugMsg('Global event: Unexpected close event');
+      client.closeHandled = true;
+      client.sftp = undefined;
+    }
+  };
+}
+
 /**
  * Simple default error listener. Will reformat the error message and
  * throw a new error.
@@ -11,7 +58,7 @@ import { errorCode } from './constants.js';
  */
 function errorListener(client, name, reject) {
   const fn = (err) => {
-    if (client.endCalled || client.errorHandled) {
+    if (client.endCalled || eventHandled(client)) {
       // error already handled or expected - ignore
       client.debugMsg(`${name} errorListener - ignoring handled error`);
       return;
@@ -28,55 +75,52 @@ function errorListener(client, name, reject) {
   return fn;
 }
 
-function globalListener(client, evt) {
-  return () => {
-    if (client.endCalled || client.errorHandled || client.closeHandled) {
-      // we are processing an expected event handled elsewhere
-      client.debugMsg(`Global ${evt} event: Ignoring expected and handled event`);
-    } else {
-      client.debugMsg(`Global ${evt} event: Handling unexpected event`);
-      client.sftp = undefined;
-    }
-  };
-}
-
-function endListener(client, name) {
+function endListener(client, name, reject) {
   const fn = function () {
     client.sftp = undefined;
-    if (client.endCalled || client.endHandled || client.errorHandled) {
+    if (client.endCalled || eventHandled(client)) {
       // end event already handled - ignore
       client.debugMsg(`${name} endListener - handled end event`);
       return;
     }
     client.endHandled = true;
     client.debugMsg(`${name} Unexpected end event`);
+    const newError = new Error(`${name}: Unexpected end event`);
+    newError.code = errorCode.ERR_GENERIC_CLIENT;
+    if (reject) {
+      reject(newError);
+    } else {
+      throw newError;
+    }
   };
   return fn;
 }
 
-function closeListener(client, name) {
+function closeListener(client, name, reject) {
   const fn = function () {
     client.sftp = undefined;
-    if (
-      client.endCalled ||
-      client.closeHandled ||
-      client.errorHandled ||
-      client.endHandled
-    ) {
+    if (client.endCalled || eventHandled(client)) {
       // handled or expected close event - ignore
       client.debugMsg(`${name} closeListener - handled close event`);
       return;
     }
     client.closeHandled = true;
     client.debugMsg(`${name} Unexpected close event`);
+    const newError = new Error(`${name}: Unexpected close event`);
+    newError.code = errorCode.ERR_GENERIC_CLIENT;
+    if (reject) {
+      reject(newError);
+    } else {
+      throw newError;
+    }
   };
   return fn;
 }
 
 function addTempListeners(client, name, reject) {
   const listeners = {
-    end: endListener(client, name),
-    close: closeListener(client, name),
+    end: endListener(client, name, reject),
+    close: closeListener(client, name, reject),
     error: errorListener(client, name, reject),
   };
   client.on('end', listeners.end);
