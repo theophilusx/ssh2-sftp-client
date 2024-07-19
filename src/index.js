@@ -23,7 +23,7 @@ import {
 } from './utils.js';
 import { errorCode } from './constants.js';
 
-class SftpClient {
+export class SftpClient {
   constructor(clientName) {
     this.version = '10.0.3';
     this.client = new Client();
@@ -1528,5 +1528,3 @@ class SftpClient {
     });
   }
 }
-
-export default SftpClient;
