@@ -9,42 +9,43 @@ function eventHandled(client) {
   return false;
 }
 
-function globalListener(client, evt) {
+function globalListener(client, evt, eventCallbacks) {
   if (evt === 'error') {
     return (err) => {
-      if (client.endCalled || eventHandled(client)) {
-        // processing expected or already handled event
+      if (client.errorHandled) {
         client.debugMsg(`Global error event: Ignoring handled error ${err.message}`);
         return;
       }
+      client.debugMsg(`Global error event: ${err.message}`);
       client.errorHandled = true;
-      const newError = new Error(`Global error event: ${err.message}`);
-      newError.code = err.code;
-      throw newError;
+      if (eventCallbacks?.error) {
+        eventCallbacks.error(err);
+      }
     };
   }
   if (evt === 'end') {
     return () => {
-      if (client.endCalled || eventHandled(client)) {
-        // already handled or expected event
+      if (client.endCalled || client.endHandled) {
         client.debugMsg('Global end event: Ignoring handled end event');
         return;
       }
+      client.debugMsg('Global end event: Handling end event');
       client.endHandled = true;
-      const newError = new Error('Global end event: Unexpected end event caught');
-      newError.code = errorCode.ERR_GENERIC_CLIENT;
-      client.sftp = undefined;
-      throw newError;
+      if (eventCallbacks?.end) {
+        eventCallbacks.end();
+      }
     };
   }
   return () => {
-    if (client.endCalled || eventHandled(client)) {
-      // we are processing an expected event handled elsewhere
-      client.debugMsg('Global event: Ignoring already handled event');
+    if (client.endCalled || client.closeHandled) {
+      client.debugMsg('Global close event: Ignoring handled close event');
     } else {
-      client.debugMsg('Global event: Unexpected close event');
+      client.debugMsg('Global close event: Handling close event');
       client.closeHandled = true;
       client.sftp = undefined;
+      if (eventCallbacks?.close) {
+        eventCallbacks.close();
+      }
     }
   };
 }
@@ -57,12 +58,13 @@ function globalListener(client, evt) {
  * @throws {Error} Throws new error
  */
 function errorListener(client, name, reject) {
-  const fn = (err) => {
-    if (client.endCalled || eventHandled(client)) {
+  const fn = function (err) {
+    if (eventHandled(client)) {
       // error already handled or expected - ignore
-      client.debugMsg(`${name} errorListener - ignoring handled error`);
+      client.debugMsg(`${name} errorListener - ignoring handled error ${err.message}`);
       return;
     }
+    client.debugMsg(`${name} errorListener - handling error ${err.message}`);
     client.errorHandled = true;
     const newError = new Error(`${name}: ${err.message}`);
     newError.code = err.code;
@@ -80,11 +82,11 @@ function endListener(client, name, reject) {
     client.sftp = undefined;
     if (client.endCalled || eventHandled(client)) {
       // end event already handled - ignore
-      client.debugMsg(`${name} endListener - handled end event`);
+      client.debugMsg(`${name} endListener - ignoring handled end event`);
       return;
     }
     client.endHandled = true;
-    client.debugMsg(`${name} Unexpected end event`);
+    client.debugMsg(`${name} endListener - handling unexpected end event`);
     const newError = new Error(`${name}: Unexpected end event`);
     newError.code = errorCode.ERR_GENERIC_CLIENT;
     if (reject) {
@@ -101,11 +103,11 @@ function closeListener(client, name, reject) {
     client.sftp = undefined;
     if (client.endCalled || eventHandled(client)) {
       // handled or expected close event - ignore
-      client.debugMsg(`${name} closeListener - handled close event`);
+      client.debugMsg(`${name} closeListener - ignoring handled close event`);
       return;
     }
     client.closeHandled = true;
-    client.debugMsg(`${name} Unexpected close event`);
+    client.debugMsg(`${name} closeListener - handling unexpected close event`);
     const newError = new Error(`${name}: Unexpected close event`);
     newError.code = errorCode.ERR_GENERIC_CLIENT;
     if (reject) {

@@ -30,9 +30,14 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.debug = undefined;
     this.promiseLimit = 10;
-    this.client.on('close', globalListener(this, 'close'));
-    this.client.on('end', globalListener(this, 'end'));
-    this.client.on('error', globalListener(this, 'error'));
+    this.eventCallbacks = {
+      error: (err) => console.error(`Global error listener: ${err.message}`),
+      end: () => console.log('Global end listener: end event raised'),
+      close: () => console.log('Global close listener: close event raised'),
+    };
+    this.client.on('close', globalListener(this, 'close', this.eventCallbacks));
+    this.client.on('end', globalListener(this, 'end', this.eventCallbacks));
+    this.client.on('error', globalListener(this, 'error', this.eventCallbacks));
   }
 
   debugMsg(msg, obj) {
@@ -1510,6 +1515,7 @@ class SftpClient {
       };
       this.on('close', endCloseHandler);
       if (this.sftp) {
+        this.debugMsg('end: Ending SFTP connection');
         this.client.end();
       } else {
         // no actual connection exists - just resolve
