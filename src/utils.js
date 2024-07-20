@@ -1,6 +1,6 @@
-import { statSync, constants, accessSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { errorCode } from './constants.js';
+const { statSync, constants, accessSync } = require('node:fs');
+const { dirname } = require('node:path');
+const { errorCode } = require('./constants.js');
 
 function eventHandled(client) {
   if (client.errorHandled || client.endHandled || client.closeHandled) {
@@ -349,7 +349,7 @@ function partition(input, size) {
   return output;
 }
 
-export {
+module.exports = {
   globalListener,
   errorListener,
   endListener,

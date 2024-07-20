@@ -1,16 +1,10 @@
 'use strict';
-
-import { Client } from 'ssh2';
-import {
-  createWriteStream as _createWriteStream,
-  createReadStream as _createReadStream,
-  readdirSync,
-  mkdirSync,
-} from 'node:fs';
-import concat from 'concat-stream';
-import promiseRetry from 'promise-retry';
-import { join, parse } from 'node:path';
-import {
+const { Client } = require('ssh2');
+const fs = require('node:fs');
+const concat = require('concat-stream');
+const promiseRetry = require('promise-retry');
+const { join, parse } = require('node:path');
+const {
   globalListener,
   addTempListeners,
   removeTempListeners,
@@ -20,8 +14,8 @@ import {
   haveLocalAccess,
   haveLocalCreate,
   partition,
-} from './utils.js';
-import { errorCode } from './constants.js';
+} = require('./utils');
+const { errorCode } = require('./constants');
 
 class SftpClient {
   constructor(clientName) {
@@ -514,7 +508,7 @@ class SftpClient {
           this.debugMsg(`get called with file path destination ${dst}`);
           const localCheck = haveLocalCreate(dst);
           if (localCheck.status) {
-            wtr = _createWriteStream(dst, options.writeStreamOptions);
+            wtr = fs.createWriteStream(dst, options.writeStreamOptions);
           } else {
             reject(
               this.fmtError(
@@ -730,7 +724,7 @@ class SftpClient {
         } else {
           if (typeof lPath === 'string') {
             this.debugMsg('put source is string path');
-            rdr = _createReadStream(lPath, opts.readStreamOptions);
+            rdr = fs.createReadStream(lPath, opts.readStreamOptions);
           } else {
             this.debugMsg('put source is a stream');
             rdr = lPath;
@@ -1245,7 +1239,7 @@ class SftpClient {
       if (!remoteStatus) {
         await this._mkdir(remoteDir, true);
       }
-      let dirEntries = readdirSync(srcDir, {
+      let dirEntries = fs.readdirSync(srcDir, {
         encoding: 'utf8',
         withFileTypes: true,
       });
@@ -1312,7 +1306,7 @@ class SftpClient {
             localCheck.code,
           );
         } else if (localCheck.status && !localCheck.type) {
-          mkdirSync(dst, { recursive: true });
+          fs.mkdirSync(dst, { recursive: true });
         } else if (localCheck.status && localCheck.type !== 'd') {
           throw this.fmtError(
             `Bad path: ${dstDir}: not a directory`,
@@ -1529,6 +1523,4 @@ class SftpClient {
   }
 }
 
-export {
-  SftpClient
-}
+module.exports = SftpClient;
