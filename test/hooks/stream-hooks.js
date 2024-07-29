@@ -1,6 +1,6 @@
 'use strict';
 
-const { makeLocalPath } = require('./global-hooks');
+const { makeLocalPath } = require('./global-hooks.js');
 const fs = require('fs');
 
 async function streamSetup(client, sftpUrl, localUrl) {
@@ -8,7 +8,7 @@ async function streamSetup(client, sftpUrl, localUrl) {
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
       `${sftpUrl}/stream-read.txt`,
-      { encoding: 'utf8' }
+      { encoding: 'utf8' },
     );
   } catch (err) {
     throw new Error(`streamSetup: ${err.message}`);

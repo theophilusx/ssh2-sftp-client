@@ -34,8 +34,8 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "chai": "^5.1.1",
-    "chai-as-promised": "^8.0.0",
+    "chai": "^4.5.0",
+    "chai-as-promised": "^7.1.2",
     "chai-subset": "^1.6.0",
     "checksum": "^1.0.0",
     "dotenv": "^16.0.0",
