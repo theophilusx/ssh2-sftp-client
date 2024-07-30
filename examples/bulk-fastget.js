@@ -1,25 +1,24 @@
-'use strict';
+// simple script used mainly for testing purposes. will download a file
+// multiple times and store it locally (with a different suffix for each one).
+// Idea is to run 100 or 1000 times. Useful for getting some network stats and
+// testing for unreliable networks etc. This version uses fastGet() to do the
+// download
 
-// simple script used for testing purposes. Will download a file from
-// a remote SFTP server multiple i.e. 1000 times. Saves the file locally
-// Can set the source file, destination directory and repeat count on the
-// command line. This version uses get() as the download method.
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const { argv, env, exit } = require('node:process');
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import { join } from 'node:path';
-import Client from '../src/index.js';
-import moment from 'moment';
+const Client = require('../src/index');
+const moment = require('moment');
 
 const client = new Client();
 
 const config = {
-  host: process.env.SFTP_SERVER,
-  username: process.env.SFTP_USER,
-  password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22,
+  host: env.SFTP_SERVER,
+  username: env.SFTP_USER,
+  password: env.SFTP_PASSWORD,
+  port: env.SFTP_PORT || 22,
 };
 
 async function downloadTest(remoteFilePath, localDir, repeat) {
@@ -29,7 +28,7 @@ async function downloadTest(remoteFilePath, localDir, repeat) {
     for (let i = 0; i < repeat; i++) {
       let localFile = join(localDir, `test-file.${i}`);
       console.log(`Downloading to ${localFile}`);
-      await client.get(remoteFilePath, localFile);
+      await client.fastGet(remoteFilePath, localFile);
     }
     console.log('Donwload test complete');
   } catch (err) {
@@ -39,9 +38,18 @@ async function downloadTest(remoteFilePath, localDir, repeat) {
   }
 }
 
-const srcFile = process.argv[2];
-const dstDir = process.argv[3];
-const repeatTimes = parseInt(process.argv[4]);
+if (argv.length !== 5) {
+  console.log('Wrong # args');
+  console.log('Usage: node ./bulk-fastget.js <remote path> <destination dir> <repeat>');
+  console.log(
+    '\nwhere:\n\tremote path = file path for download\n\tdestination directory\n\trepeat count',
+  );
+  exit(1);
+}
+
+const srcFile = argv[2];
+const dstDir = argv[3];
+const repeatTimes = parseInt(argv[4]);
 const start = moment();
 
 async function main() {

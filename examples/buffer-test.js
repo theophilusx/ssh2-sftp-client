@@ -1,11 +1,10 @@
 'use strict';
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import { join } from 'node:path';
-import sftp from '../src/index.js';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const sftp = require('../src/index');
+const { argv, env, exit } = require('node:process');
 
 const getConnection = async (config) => {
   let client;
@@ -18,6 +17,7 @@ const getConnection = async (config) => {
     return client;
   } catch (err) {
     console.error(err.message);
+    exit(1);
   }
 };
 
@@ -33,6 +33,7 @@ const putBuffer = async (client, size, remotePath) => {
     return rslt;
   } catch (err) {
     console.error(err.message);
+    exit(1);
   }
 };
 
@@ -40,18 +41,30 @@ const main = async () => {
   let client;
 
   try {
-    let size = parseInt(process.argv[2]);
-    let remotePath = process.argv[3];
+    if (argv.length < 4) {
+      console.log('Wrong # args');
+      console.log('Usage: node ./buffer-test.js <size> <remote path>');
+      console.log('\nwhere:\n\tsize = data size\n\tremote path = remote directory path');
+      exit(1);
+    }
+    let size = parseInt(argv[2]);
+    let remotePath = argv[3];
     let config = {
-      host: process.env.SFTP_SERVER,
-      username: process.env.SFTP_USER,
-      password: process.env.SFTP_PASSWORD,
-      port: process.env.SFTP_PORT || 22,
+      host: env.SFTP_SERVER,
+      username: env.SFTP_USER,
+      password: env.SFTP_PASSWORD,
+      port: env.SFTP_PORT || 22,
     };
     client = await getConnection(config);
-    let listing1 = await client.list(remotePath);
-    console.log(`Initial listing for ${remotePath}`);
-    console.dir(listing1);
+    console.log(`Check remote dir ${remotePath}`);
+    if (await client.exists(remotePath)) {
+      let listing1 = await client.list(remotePath);
+      console.log(`Initial listing for ${remotePath}`);
+      console.dir(listing1);
+    } else {
+      console.log('remote dir does not yet exists, will create');
+      await client.mkdir(remotePath);
+    }
     let result = await putBuffer(client, size, remotePath);
     console.log(`Result: ${result}`);
     let listing2 = await client.list(remotePath);

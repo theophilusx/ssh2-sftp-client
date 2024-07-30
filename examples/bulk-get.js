@@ -1,18 +1,13 @@
-'use strict';
+// simple script used for testing purposes. Will download a file from
+// a remote SFTP server multiple i.e. 1000 times. Saves the file locally
+// Can set the source file, destination directory and repeat count on the
+// command line. This version uses get() as the download method.
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import { join } from 'node:path';
-import Client from '../src/index.js';
-import moment from 'moment';
-
-// simple script used mainly for testing purposes. will download a file
-// multiple times and store it locally (with a different suffix for each one).
-// Idea is to run 100 or 1000 times. Useful for getting some network stats and
-// testing for unreliable networks etc. This version uses fastGet() to do the
-// download
+const { join } = require('path');
+const Client = require('../src/index');
+const moment = require('moment');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
 
 const client = new Client();
 
@@ -23,16 +18,16 @@ const config = {
   port: process.env.SFTP_PORT || 22,
 };
 
-async function uploadTest(remotePath, localPath, repeat) {
+async function downloadTest(remoteFilePath, localDir, repeat) {
   try {
-    console.log(`Uploading file ${localPath} ${repeat} times`);
+    console.log(`Downloading file ${remoteFilePath} ${repeat} times`);
     await client.connect(config);
     for (let i = 0; i < repeat; i++) {
-      let remoteFile = join(remotePath, `test-file.${i}`);
-      console.log(`Uploading to ${remoteFile}`);
-      await client.fastPut(localPath, remoteFile);
+      let localFile = join(localDir, `test-file.${i}`);
+      console.log(`Downloading to ${localFile}`);
+      await client.get(remoteFilePath, localFile);
     }
-    console.log('Upload test complete');
+    console.log('Donwload test complete');
   } catch (err) {
     console.error(`Error raised: ${err.message}`);
   } finally {
@@ -46,8 +41,8 @@ const repeatTimes = parseInt(process.argv[4]);
 const start = moment();
 
 async function main() {
-  console.log(`Test: Upload ${srcFile} ${repeatTimes} into ${dstDir}`);
-  await uploadTest(dstDir, srcFile, repeatTimes);
+  console.log(`Test: Download ${srcFile} ${repeatTimes} into ${dstDir}`);
+  await downloadTest(srcFile, dstDir, repeatTimes);
 }
 
 main()

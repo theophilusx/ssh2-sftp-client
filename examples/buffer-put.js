@@ -5,27 +5,36 @@
 // Expects at least 1 argument, name of remote file used as the target.
 // Optional second argument is a boolean flag used to turn on debugging.
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import Client from '../src/index.js';
+const path = require('node:path');
+const dotenvPath = path.join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const { argv, env, exit } = require('node:process');
+const Client = require('../src/index');
 
 const config = {
-  host: process.env.SFTP_SERVER,
-  username: process.env.SFTP_USER,
-  password: process.env.SFTP_PASSWORD,
-  port: process.env.SFTP_PORT || 22,
+  host: env.SFTP_SERVER,
+  username: env.SFTP_USER,
+  password: env.SFTP_PASSWORD,
+  port: env.SFTP_PORT || 22,
 };
+
+if (argv.length < 3) {
+  console.log('Wrong # args');
+  console.log('Usage: node ./buffer-put.js <remote path> [debug]');
+  console.log(
+    '\nwhere:\n\tremote path = file path for upload\n\tdebug = turn on debugging',
+  );
+  exit(1);
+}
 
 const sftp = new Client();
 
-let remote = process.argv[2];
-let debug = process.argv[3];
+let remote = argv[2];
+let debug = argv[3];
 
 if (debug) {
   config.debug = (msg) => {
-    console.error(msg);
+    console.log(msg);
   };
 }
 
