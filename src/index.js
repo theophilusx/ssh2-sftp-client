@@ -18,11 +18,18 @@ const {
 const { errorCode } = require('./constants');
 
 class SftpClient {
-  constructor(clientName) {
+  constructor(
+    clientName = 'sftp',
+    callbacks = {
+      error: (err) => console.error(`Global error listener: ${err.message}`),
+      end: () => console.log('Global end listener: end event raised'),
+      close: () => console.log('Global close listener: close event raised'),
+    },
+  ) {
     this.version = '10.0.3';
     this.client = new Client();
     this.sftp = undefined;
-    this.clientName = clientName || 'sftp';
+    this.clientName = clientName;
     this.endCalled = false;
     this.errorHandled = false;
     this.closeHandled = false;
@@ -30,11 +37,7 @@ class SftpClient {
     this.remotePlatform = 'unix';
     this.debug = undefined;
     this.promiseLimit = 10;
-    this.eventCallbacks = {
-      error: (err) => console.error(`Global error listener: ${err.message}`),
-      end: () => console.log('Global end listener: end event raised'),
-      close: () => console.log('Global close listener: close event raised'),
-    };
+    this.eventCallbacks = callbacks;
     this.client.on('close', globalListener(this, 'close', this.eventCallbacks));
     this.client.on('end', globalListener(this, 'end', this.eventCallbacks));
     this.client.on('error', globalListener(this, 'error', this.eventCallbacks));
