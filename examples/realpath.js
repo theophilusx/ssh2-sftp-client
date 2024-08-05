@@ -3,11 +3,10 @@
 // The 'realpath' functionality varies across sftp servers,
 // especdially with respect to handling '.' and '..'
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import Client from '../src/index.js';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const Client = require('../src/index.js');
 
 const client = new Client();
 const targetPath = process.argv[2];

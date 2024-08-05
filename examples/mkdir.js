@@ -3,11 +3,10 @@
 // sample mkdir use
 // Usage: node ./mkdir.js <remote dir path> [debug]
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import Client from '../src/index.js';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const Client = require('../src/index.js');
 
 const config = {
   host: process.env.SFTP_SERVER,

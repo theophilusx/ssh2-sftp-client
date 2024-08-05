@@ -4,12 +4,11 @@
 // to retrieve the file and then uses a pass through stream to pipe
 // the contents to standard out.
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import Client from '../src/index.js';
-import { PassThrough } from 'node:stream';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const Client = require('../src/index.js');
+const { PassThrough } = require('node:stream');
 
 const config = {
   host: process.env.SFTP_SERVER,

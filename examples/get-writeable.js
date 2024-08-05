@@ -3,11 +3,12 @@
 // Example of using a writeable with get to retrieve a file.
 // This code will read the remote file, convert all characters to upper case
 // and then save it to a local file
-
-import Client from '../src/index.js';
-import { join } from 'node:path';
-import { createWriteStream } from 'node:fs';
-import through from 'through2';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const Client = require('../src/index.js');
+const { createWriteStream } = require('node:fs');
+const through = require('through2');
 
 const config = {
   host: 'arch-vbox',

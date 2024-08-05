@@ -3,10 +3,9 @@
 // Simple script which just display a directory listing for a
 // remote sftp directory specified on the command line
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
 const Client = require('../src/index.js');
 
 const config = {

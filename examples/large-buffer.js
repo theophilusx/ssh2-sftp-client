@@ -4,12 +4,11 @@
 // Note that in most cases you are far better off using a stream rather than
 // a buffer.
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import { readFileSync } from 'node:fs';
-import Client from '../src/index.js';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const { readFileSync } = require('node:fs');
+const Client = require('../src/index.js');
 
 const config = {
   host: process.env.SFTP_SERVER,

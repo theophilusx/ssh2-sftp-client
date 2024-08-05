@@ -3,11 +3,10 @@
 // Example of using the downloadDir() method to download a directory
 // from a remote SFTP server to a local directory
 
-const dotenvPath = new URL('../.env', import.meta.url);
-import dotenv from 'dotenv';
-dotenv.config({ path: dotenvPath });
-
-import SftpClient from '../src/index.js';
+const { join } = require('node:path');
+const dotenvPath = join(__dirname, '..', '.env');
+require('dotenv').config({ path: dotenvPath });
+const SftpClient = require('../src/index.js');
 
 const config = {
   host: process.env.SFTP_SERVER,
