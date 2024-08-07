@@ -15,7 +15,8 @@ repository.
 Current stable release is *v11.0.0.
 
 Code has been tested against Node versions 18.20.4, 20.16.0 and 22.5.1. Node versions
-prior to v18.x are not supported. 
+prior to v18.x are not supported. Also note there is currently a deprecation warning when
+using node v22+. This is from the ~ssh2~ package and outside control of this package. 
 
 If you find this module useful and you would like to support the on-going maintenance and
 support of users, please consider making a small [[https://square.link/u/gB2kSdkY?src=embed][donation]].
@@ -24,19 +25,19 @@ support of users, please consider making a small [[https://square.link/u/gB2kSdk
 
 The main change in v11 concerns how the package manages events raised by the =ssh2= packagwe
 it depends on. Managing events within the context of asynchronous code as ocurs when
-us8ing promises is challenging . To understand some of the more subtle issues involved, it
+using promises is challenging. To understand some of the more subtle issues involved, it
 is recommended you read the [[https://nodejs.org/docs/latest/api/events.html#asynchronous-vs-synchronous][Asynchronous vs. synchronous]] and [[https://nodejs.org/docs/latest/api/events.html#error-events][Error events]] sections of the
 Events chapter from the node documentation.
 
-The previous versions of this package used a global event handler approach to manage
-events raised outside the execution of any promise being evaluated by methods in this
-package. However, this approach is problematic as all the global listeners can really do
-is raise an error and attempting to catch errors raised inside event handlers is extremely
-difficult to manage within client code. In version 11, this approach has been replaced by
-a mechanism whereby the client code can pass in application specific global handlers if
-desired. If no handlers are defined, default handlers will log the event and when
-necessary, invalidate any existing connection objects. See the [[Background]] section for
-details. 
+The previous versions of this package use a global event handler approach to manage events
+raised outside the execution of any promise. However, this approach is problematic as all
+the global listeners can really do is raise an error. Attempting to catch errors raised
+inside event handlers is extremely difficult to manage within client code because those
+errors are raised inside a separate asynchronous execution context. In version 11,
+this approach has been replaced by a mechanism whereby the client code can pass in
+application specific global handlers if desired. If no handlers are defined, default
+handlers will log the event and when necessary, invalidate any existing connection
+objects. See the [[Background]] section for details.
 
 ** Background
 
@@ -50,46 +51,45 @@ Wrapping an event based API with a promised based API comes with a number of
 challenges. In particular, efficiently and reliably managing events within the context of
 asynchrounous code execution. This package uses the following strategies;
 
-    - All direct interactions with the ~ssh2~ API are wrapped in a promise object. When the
-      API call succeeds, the promise will be sucessfully resulved. When an error occurs,
+    - All direct interactions with the ~ssh2~ API are wrapped in promise objects. When the
+      API call succeeds, the assoiated promise will be sucessfully resolved. When an error occurs,
       the promise is rejected.
 
-    - An error can be either due to a low level network error, such as a lost connection
+    - An error can either be due to a low level network error, such as a lost connection
       to the remote server or due to an operational error, such as a file not
-      existing or not having the appropriate permissions for acdcess.
+      existing or not having the appropriate permissions for access.
 
-    - Low level errors and network events, such as ending or closing of a socket
-      connection are communicated from the ~ssh~ package vi8a events. The ~ssh2-sftp-client~
-      package creates two groups of event handlers to respond to events emitted by the
-      ~ssh2~ package;
+    - Each of the available ~SftpClient~ methods wrap the method call inside a promise. In
+      crwating eacvh promise, the class adds temporary event listenrs for the error, end
+      and close events and links those liseners to the method's promise via it's ~reject()~
+      method. 
 
-          1. Temporary promise specific listeners for end, close and error events which
-             are created when a new promise object is defined and which are tied to the
-             promise via its reject method. If an error, end or close event is raised
-             while the promise is executing, the promise will be rejected. These listeners
-             are removed once the promise is fulfilled.
+    - If a promise is waiting to be fulfilled when either of the two types of errors
+      occurs, the error will be communicated back to client code via a rejected promise.
 
-          2. Global event listeners for end, close and error events. These listeners are
-             created when the ~SftpClient~ object is instantiated and will only be executed
-             if an end, close or error event is raised and is not handled by a
-             temporary promise listener. By default, the global listener will just log the
-             event and invalidate the connection object, preventing any further
-             operations until a new connection is established. It is also possible to set
-             applicatioln specific listeners via the ~SftpClient~ constructor.
+    - When the ~ssh2~ emitter raises an event outside the context of any promise, that event
+      will be handled by global event handlers. By default, these event handlers will log
+      the event and will invalidate any existing socket connection objects, preventing any
+      further API calls until a new connection is extablished.
 
+    - The ~SftpClient~ class constructor supports an optoinal second argument which is an
+      objedct whi8ch can have any of three properties representing event callbaqck
+      funct5ions which will be executed for each of the possible events error, end and
+      close.
+      
 The need for both global listeners and temporary promise listeners is because network end,
 close or error events can occur at any time, including in-betwseen API calls. During an
-API call, a promise is active and can be used to communicate events back to the calling
+API call, a promise is active and can be used to communicate event information back to the calling
 code via normal promise communication means i.e. async/await with try/catch or promise chain's then/catch
-mechanism. However, outside API calls, no promise exists and there is no standard reliable
+mechanism. However, outside API calls, no promise exists and there is no reliable
 mechanism to return error and other event information back to calling code. You cannot
 reliably use try/cdatch to catch errorsx thrown inside event listenrs as you lack control
 over when the listener code runs. Your try/catch block can easily complete before the
 error is raised as there is no equivalent /await/ type functionality in this situation.
 
 As there is no simple default way to return error and other event information back to the
-calling code, ~ssh2-sftp-client~ doesn't try to by default. Instead, the default action is
-to just log the event information and invbalidate any existing sftp connections This
+calling code, ~ssh2-sftp-client~ doesn't try to. Instead, the default action is
+to just log the event information and invalidate any existing sftp connections. This
 strategy is often sufficient for many use cases. For those cases where it isn't, client
 code can pass in end, close and/or error listener functions when instantiating the
 ~SftpClient~ object. If provided, these listners will be executed whenever the default

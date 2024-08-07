@@ -2,7 +2,7 @@
 .DS_Store
 tmp
 test
-example
+examples
 .env
 .prettierrc
 env-turing

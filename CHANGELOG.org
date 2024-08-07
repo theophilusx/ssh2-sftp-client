@@ -11,10 +11,13 @@
   - Stripped out most calls to debugMsg() to reduce size and improve performance. As JS is
     not compiled, adding/removing debugging calls during debug sessions is trivial, so
     lets not leave them in when not necessary.
-  - Begin migration to ES modules from commonJs. Most devs seem more at home with import
-    rather than require. Prefer to just keep single method for consistency and not habe to
-    think is this backend or frontend - is just JS.
-  
+  - *Breaking Change*. Global event listeners no longer throw errors. A new mechansm to
+    allow client code to pass in a custom error, end or close event listener has been
+    added in the class constructor. Note that most client code will not need to add custom
+    handlers as the default handlers will often be sufficient. Default handlers will log
+    the event and when necessary invalidate any existing sftp connection object,
+    preventing further API calls until a new connection is established.
+    
 ** v10.0.0
   - Add promise limit control for downloadDir/uploadDir
   - Bumped to depend on ssh2 1.15.0
