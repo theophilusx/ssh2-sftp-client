@@ -26,7 +26,7 @@ class SftpClient {
       close: () => console.log('Global close listener: close event raised'),
     },
   ) {
-    this.version = '10.0.3';
+    this.version = '11.0.0';
     this.client = new Client();
     this.sftp = undefined;
     this.clientName = clientName;
