@@ -90,7 +90,7 @@ The previous versions of this package use a global event handler approach to man
 
 ## Background
 
-In basic terms `ssh2-sftp-client` is a simple wrapper around the `ssh2` package which provides a promise base API for interacting with a remote SFTP server . The `ssh2` package provides an event based API for interacting with the `ssh` protcolo. The `ssh2-sftp-client` package uses the `sftp` subsystem of this protocol to implement the basic operations typically associated with an `sftp` client.
+In basic terms `ssh2-sftp-client` is a simple wrapper around the `ssh2` package which provides a promise base API for interacting with a remote SFTP server . The `ssh2` package provides an event based API for interacting with the `ssh` protocol. The `ssh2-sftp-client` package uses the `sftp` subsystem of this protocol to implement the basic operations typically associated with an `sftp` client.
 
 Wrapping an event based API with a promised based API comes with a number of challenges. In particular, efficiently and reliably managing events within the context of asynchrounous code execution. This package uses the following strategies;
 
