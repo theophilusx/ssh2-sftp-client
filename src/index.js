@@ -1408,7 +1408,7 @@ class SftpClient {
     } catch (err) {
       throw err.custom ? err : this.fmtError(err.message, 'createReadStream', err.code);
     } finally {
-      removeTempListeners(this, listeners, 'createReadStreame');
+      removeTempListeners(this, listeners, 'createReadStream');
     }
   }
 
