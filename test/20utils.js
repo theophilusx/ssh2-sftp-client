@@ -36,13 +36,6 @@ describe('20utils: fmtError() tests', function () {
     return expect(err.code).to.equal('error code');
   });
 
-  it('fmtError has retry count', function () {
-    return expect(client.fmtError('test msg', 'name', 'error code', 4)).to.containSubset({
-      message: 'name: test msg after 4 attempts',
-      code: 'error code',
-    });
-  });
-
   it('fmtError has default error code', function () {
     return expect(client.fmtError('test msg', 'nme').code).to.equal('ERR_GENERIC_CLIENT');
   });

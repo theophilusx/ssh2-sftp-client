@@ -2,7 +2,6 @@
 const { Client } = require('ssh2');
 const fs = require('node:fs');
 const concat = require('concat-stream');
-const promiseRetry = require('promise-retry');
 const { join, parse } = require('node:path');
 const {
   globalListener,
@@ -26,7 +25,7 @@ class SftpClient {
       close: () => console.log('Global close listener: close event raised'),
     },
   ) {
-    this.version = '11.0.0';
+    this.version = '12.0.0';
     this.client = new Client();
     this.sftp = undefined;
     this.clientName = clientName;
@@ -58,35 +57,32 @@ class SftpClient {
   fmtError(err, name = 'sftp', eCode, retryCount) {
     let msg = '';
     let code = '';
-    const retry = retryCount
-      ? ` after ${retryCount} ${retryCount > 1 ? 'attempts' : 'attempt'}`
-      : '';
 
     if (err === undefined) {
       msg = `${name}: Undefined error - probably a bug!`;
       code = errorCode.generic;
     } else if (typeof err === 'string') {
-      msg = `${name}: ${err}${retry}`;
+      msg = `${name}: ${err}`;
       code = eCode || errorCode.generic;
     } else if (err.custom) {
-      msg = `${name}->${err.message}${retry}`;
+      msg = `${name}->${err.message}`;
       code = err.code;
     } else {
       switch (err.code) {
         case 'ENOTFOUND': {
-          msg = `${name}: Address lookup failed for host${retry}`;
+          msg = `${name}: Address lookup failed for host`;
           break;
         }
         case 'ECONNREFUSED': {
-          msg = `${name}: Remote host refused connection${retry}`;
+          msg = `${name}: Remote host refused connection`;
           break;
         }
         case 'ECONNRESET': {
-          msg = `${name}: Remote host has reset the connection: ${err.message}${retry}`;
+          msg = `${name}: Remote host has reset the connection: ${err.message}`;
           break;
         }
         default: {
-          msg = `${name}: ${err.message}${retry}`;
+          msg = `${name}: ${err.message}`;
         }
       }
       code = err.code || errorCode.generic;
@@ -122,48 +118,6 @@ class SftpClient {
   }
 
   /**
-   * @async
-   *
-   * Create a new SFTP connection to a remote SFTP server
-   *
-   * @param {Object} config - an SFTP configuration object
-   *
-   * @return {Promise<Object>} which will resolve to an sftp client object
-   */
-  getConnection(config) {
-    let doReady, listeners;
-    return new Promise((resolve, reject) => {
-      listeners = addTempListeners(this, 'getConnection', reject);
-      doReady = () => {
-        resolve(true);
-      };
-      this.on('ready', doReady);
-      try {
-        this.client.connect(config);
-      } catch (err) {
-        reject(err);
-      }
-    }).finally(() => {
-      this.removeListener('ready', doReady);
-      removeTempListeners(this, listeners, 'getConnection');
-    });
-  }
-
-  getSftpChannel() {
-    return new Promise((resolve, reject) => {
-      this.client.sftp((err, sftp) => {
-        if (err) {
-          reject(this.fmtError(err, 'getSftpChannel', err.code));
-        } else {
-          this.sftp = sftp;
-          resolve(sftp);
-        }
-      });
-    });
-  }
-
-  /**
-   * @async
    *
    * Create a new SFTP connection to a remote SFTP server.
    * The connection options are the same as those offered
@@ -173,65 +127,49 @@ class SftpClient {
    *
    * @return {Promise<Object>} which will resolve to an sftp client object
    */
-  async connect(config) {
-    let listeners;
-
-    try {
-      listeners = addTempListeners(this, 'connect');
+  connect(config) {
+    let doReady, listeners;
+    return new Promise((resolve, reject) => {
+      listeners = addTempListeners(this, 'getConnection', reject);
       if (config.debug) {
         this.debug = config.debug;
         this.debugMsg('connect: Debugging turned on');
         this.debugMsg(`ssh2-sftp-client Version: ${this.version} `, process.versions);
       }
       this.promiseLimit = config.promiseLimit ?? 10;
-      if (this.sftp) {
-        throw this.fmtError(
-          'An existing SFTP connection is already defined',
-          'connect',
-          errorCode.connect,
-        );
-      }
-      const retryOpts = {
-        retries: config.retries ?? 1,
-        factor: config.retry_factor ?? 2,
-        minTimeout: config.retry_minTimeout ?? 25000,
-      };
-      await promiseRetry(retryOpts, async (retry, attempt) => {
-        try {
-          this.debugMsg(`connect: Connect attempt ${attempt}`);
-          await this.getConnection(config);
-        } catch (err) {
-          switch (err.code) {
-            case 'ENOTFOUND':
-            case 'ECONNREFUSED':
-            case 'ERR_SOCKET_BAD_PORT': {
-              throw err;
-            }
-            case undefined: {
-              if (
-                err.message.endsWith('All configured authentication methods failed') ||
-                err.message.startsWith('Cannot parse privateKey')
-              ) {
-                throw err;
-              }
-              retry(err);
-              break;
-            }
-            default: {
-              retry(err);
-            }
+
+      doReady = () => {
+        this.client.sftp((err, sftp) => {
+          if (err) {
+            reject(this.fmtError(err));
+          } else {
+            this.sftp = sftp;
+            resolve(sftp);
           }
+        });
+      };
+      this.on('ready', doReady);
+
+      try {
+        if (this.sftp) {
+          reject(
+            this.fmtError(
+              'An existing SFTP connection is already defined',
+              'connect',
+              errorCode.connect,
+            ),
+          );
+        } else {
+          this.client.connect(config);
         }
-      });
-      const sftp = await this.getSftpChannel();
-      this.endCalled = false;
-      return sftp;
-    } catch (err) {
-      this.end();
-      throw err.custom ? err : this.fmtError(err, 'connect');
-    } finally {
-      removeTempListeners(this, listeners, 'connect');
-    }
+      } catch (err) {
+        this.end();
+        reject(err);
+      }
+    }).finally(() => {
+      this.removeListener('ready', doReady);
+      removeTempListeners(this, listeners, 'getConnection');
+    });
   }
 
   /**

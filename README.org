@@ -12,32 +12,29 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v11.0.0.
+Current stable release is *v12.0.0.
 
-Code has been tested against Node versions 18.20.4, 20.16.0 and 22.5.1. Node versions
-prior to v18.x are not supported. Also note there is currently a deprecation warning when
-using node v22+. This is from the ~ssh2~ package and outside control of this package. 
+Code has been tested against Node versions 20.18.3, 22.14.0 and 23.8.0. Node versions
+prior to v20.x are not supported. 
 
 If you find this module useful and you would like to support the on-going maintenance and
 support of users, please consider making a small [[https://square.link/u/gB2kSdkY?src=embed][donation]].
 
-** Version 11.0.0 Changes
+** Version 12.0.0 Changes
 
-The main change in v11 concerns how the package manages events raised by the =ssh2= packagwe
-it depends on. Managing events within the context of asynchronous code as ocurs when
-using promises is challenging. To understand some of the more subtle issues involved, it
-is recommended you read the [[https://nodejs.org/docs/latest/api/events.html#asynchronous-vs-synchronous][Asynchronous vs. synchronous]] and [[https://nodejs.org/docs/latest/api/events.html#error-events][Error events]] sections of the
-Events chapter from the node documentation.
+The big and breaking change in this version is the removal of the connection retry
+code. This module no longer supports automatic connection retries when establishing the
+initial connection. This functionality was removed for a number of reasons. The main
+reasons are that it significantly complicated the connection handling code and error
+handling in particular and it was seldom useful. In most cases, if the cvonnection failed
+on thye first attempt, it would also fail in all subsequent attempts and often resulted in
+just extending the time to failure as multiple retries were attempted.
 
-The previous versions of this package use a global event handler approach to manage events
-raised outside the execution of any promise. However, this approach is problematic as all
-the global listeners can really do is raise an error. Attempting to catch errors raised
-inside event handlers is extremely difficult to manage within client code because those
-errors are raised inside a separate asynchronous execution context. In version 11,
-this approach has been replaced by a mechanism whereby the client code can pass in
-application specific global handlers if desired. If no handlers are defined, default
-handlers will log the event and when necessary, invalidate any existing connection
-objects. See the [[Background]] section for details.
+The other reason this functionality was removed is because if you really want it, it is
+fairly straight forward to create your own wrapper around the connect call which uses one
+of the mnay promise retry packages available. Doing this is significantly easier when you
+don't need to cater for all the variables available when making a connection i.e. strict
+host verification, ssh agents, keys, proxies etc. 
 
 ** Background
 
@@ -173,12 +170,12 @@ with no indication as to reason. This can make diagnosis and bug tracking frustr
 
 * Documentation
 
-The connection options are the same as those offered by the underlying SSH2
-module, with just a couple of additional properties added to tweak the ~retry~ parameters,
-add a ~debug~ function and set the ~promiseLimit~ property. For full details on the other
-properties, please see [[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]. In particular, see the ~ssh2~ documentation for
-details relating to setting various key exchange and encryption/signing algorithms used as
-part of the ssh2 protocol.
+The connection options are the same as those offered by the underlying SSH2 module, with
+just a couple of additional properties added to add a ~debug~ function and set the
+~promiseLimit~ property. For full details on the other properties, please see
+[[https://github.com/mscdex/ssh2#user-content-client-methods][SSH2 client methods]]. In
+particular, see the ~ssh2~ documentation for details relating to setting various key
+exchange and encryption/signing algorithms used as part of the ssh2 protocol.
 
 All the methods will return a Promise, except for ~on(), ~removeListener()~, ~createReadStream~
 and ~createWriteStream~, which are typically only used in special use cases.
@@ -302,23 +299,18 @@ available [[https://github.com/mscdex/ssh2#user-content-client-methods][here]]
 
 **** Connection Options
 
-This module is based on the excellent [[https://github.com/mscdex/ssh2#client][SSH2]] module. That module is a general SSH2
-client and server library and provides much more functionality than just SFTP
-connectivity. Many of the connect options provided by that module are less
-relevant for SFTP connections. It is recommended you keep the config options to
-the minimum needed and stick to the options listed in the ~commonOpts~ below.
+This module is based on the excellent [[https://github.com/mscdex/ssh2#client][SSH2]]
+module. That module is a general SSH2 client and server library and provides much more
+functionality than just SFTP connectivity. Many of the connect options provided by that
+module are less relevant for SFTP connections. It is recommended you keep the config
+options to the minimum needed and stick to the options listed in the ~commonOpts~ below.
 
-The ~retries~, ~retry_factor~ and ~retry_minTimeout~ options are not part of the
-SSH2 module. These are part of the configuration for the [[https://www.npmjs.com/package/retry][retry]] package and what
-is used to enable retrying of sftp connection attempts. See the documentation
-for that package for an explanation of these values.
-
-The ~promiseLimit~ is another option which is not part of the ~ssh2~ module and is specific to
+The ~promiseLimit~ is an option which is not part of the ~ssh2~ module and is specific to
 ~ssh2-sftp-client~. It is a property used to limit the maximum number of concurrent promises
 possible when either downloading or uploading a directory tree using the ~downloadDir()~ or
-~uploadDir()~ methods. The default setting for this property is 10. *NOTE*: bigger doe snot
+~uploadDir()~ methods. The default setting for this property is 10. *NOTE*: bigger does not
 mean better. Many factors can affect what is the ideal setting for ~promiseLimit~. If it is
-too large, any benefits are lost while node spends time switching contexts and/or withi
+too large, any benefits are lost while node spends time switching contexts and/or with
 the overheads associated with creating and cleaning up promises. Lots of factors can
 affect what the setting should be, including size of files, number of files, speed of
 network, version of node, capabilities of remote sftp server etc. A setting of 10 seems to
@@ -343,9 +335,6 @@ work out what is the best maximum size before you begin to see a performance dro
     strictVendor: true, // boolean - Performs a strict server vendor check
     debug: myDebug,// function - Set this to a function that receives a single
                   // string argument to get detailed (local) debug information.
-    retries: 2, // integer. Number of times to retry connecting
-    retry_factor: 2, // integer. Time factor used to calculate time between retries
-    retry_minTimeout: 2000, // integer. Minimum timeout between attempts
     promiseLimit: 10, // max concurrent promises for downloadDir/uploadDir
   };
 
