@@ -287,7 +287,7 @@ class SftpClient {
    * @param {Function} cmd - either this.sftp.stat or this.sftp.lstat
    * @param {String} remotePath - a string containing the path to a file
    * @param {Boolean} addListeners - (Optional) if true add event listeners. Default true.
-   * @return {Promise<Object>} stats - attributes info
+   * @return {Promise<Stats>} stats - attributes info
    */
   _xstat(cmd, aPath, addListeners = true) {
     let listeners;
@@ -333,7 +333,7 @@ class SftpClient {
     });
   }
 
-  /*
+  /**
    * Use the stat command to obtain attributes associated with a remote path.
    * THe difference between stat and lstat is that stat, in the case of symbolic
    * links, will return the attributes associated with the target of the link. With
@@ -341,7 +341,7 @@ class SftpClient {
    * returned.
    *
    * @param {String} remotePath - path to an object on the remote server
-   * @return {Promise<Object>} stats - attributes info
+   * @return {Promise<Stats>} stats - attributes info
    */
   async stat(remotePath) {
     try {
@@ -352,7 +352,7 @@ class SftpClient {
     }
   }
 
-  /*
+  /**
    * Use the lstat command to obtain attributes associated with a remote path.
    * THe difference between stat and lstat is that stat, in the case of symbolic
    * links, will return the attributes associated with the target of the link. With
@@ -360,7 +360,7 @@ class SftpClient {
    * returned.
    *
    * @param {String} remotePath - path to an object on the remote server
-   * @return {Promise<Object>} stats - attributes info
+   * @return {Promise<Stats>} stats - attributes info
    */
   async lstat(remotePath) {
     try {
