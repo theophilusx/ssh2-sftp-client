@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/theophilusx/ssh2-sftp-client"
+    "url": "git+https://github.com/theophilusx/ssh2-sftp-client.git"
   },
   "keywords": [
     "sftp",
