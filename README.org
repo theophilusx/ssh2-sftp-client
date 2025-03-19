@@ -466,6 +466,18 @@ if it exists or false if it does not.
     });
 #+end_src
 
+*** isConnected() ==> boolean
+
+Returns true if the client is connected to the remote server, false otherwise.
+
+**** Example Use
+
+#+begin_src javascript
+  if (!client.isConnected()) {
+    client.connect(config);
+  }
+#+end_src
+
 *** stat(path) ==> object
 
 Returns the attributes associated with the object pointed to by ~path~.

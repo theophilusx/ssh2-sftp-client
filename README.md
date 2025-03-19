@@ -10,6 +10,7 @@
     - [connect(config) ===> SFTP object](#org9fbbaaa)
     - [list(path, filter) ==> Array[object]](#org73f17ce)
     - [exists(path) ==> boolean](#org09b5d66)
+    - [isConnected() ==> boolean](#org5a3c8d1e)
     - [stat(path) ==> object](#org91f6b04)
     - [get(path, dst, options) ==> String|Stream|Buffer](#org78860d7)
     - [fastGet(remotePath, localPath, options) ===> string](#org075afe7)
@@ -406,6 +407,19 @@ Tests to see if remote file or directory exists. Returns type of remote object i
       });
     ```
 
+<a id="org5a3c8d1e"></a>
+
+### isConnected() ==> boolean
+
+Returns true if the client is connected to the remote server, false otherwise.
+
+1.  Example Use
+
+    ```javascript
+    if (!client.isConnected()) {
+      client.connect(config);
+    }
+    ```
 
 <a id="org91f6b04"></a>
 
