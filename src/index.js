@@ -290,6 +290,13 @@ class SftpClient {
     }
   }
 
+  /**
+   * Check simply if the client is connected to the remote server
+   * */
+  isConnected() {
+    return this.sftp !== undefined;
+  }
+
   /*
    * Use the lstat command to obtain attributes associated with a remote path.
    * THe difference between stat and lstat is that stat, in the case of symbolic
