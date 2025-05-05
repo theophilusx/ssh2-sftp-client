@@ -88,7 +88,7 @@ function endListener(client, name, reject) {
     client.endHandled = true;
     client.debugMsg(`${name} endListener - handling unexpected end event`);
     const newError = new Error(`${name}: Unexpected end event`);
-    newError.code = errorCode.ERR_GENERIC_CLIENT;
+    newError.code = errorCode.generic;
     if (reject) {
       reject(newError);
     } else {
@@ -109,7 +109,7 @@ function closeListener(client, name, reject) {
     client.closeHandled = true;
     client.debugMsg(`${name} closeListener - handling unexpected close event`);
     const newError = new Error(`${name}: Unexpected close event`);
-    newError.code = errorCode.ERR_GENERIC_CLIENT;
+    newError.code = errorCode.generic;
     if (reject) {
       reject(newError);
     } else {
