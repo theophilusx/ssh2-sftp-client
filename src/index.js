@@ -437,7 +437,7 @@ class SftpClient {
           pipeOptions: { ...options?.pipeOptions, end: true },
         };
         rdr = this.sftp.createReadStream(remotePath, options.readStreamOptions);
-        rdr.once('error', (err) => {
+        rdr.on('error', (err) => {
           if (dst && typeof dst === 'string' && wtr && !wtr.destroyed) {
             wtr.destroy();
           }
@@ -468,7 +468,7 @@ class SftpClient {
           this.debugMsg('get called with stream destination');
           wtr = dst;
         }
-        wtr.once('error', (err) => {
+        wtr.on('error', (err) => {
           reject(
             this.fmtError(
               `${err.message} ${typeof dst === 'string' ? dst : '<stream>'}`,
@@ -649,7 +649,7 @@ class SftpClient {
       };
       if (haveConnection(this, '_put', reject)) {
         wtr = this.sftp.createWriteStream(rPath, opts.writeStreamOptions);
-        wtr.once('error', (err) => {
+        wtr.on('error', (err) => {
           if (typeof lPath === 'string' && rdr && !rdr.destroyed) {
             rdr.destroy();
           }
@@ -675,7 +675,7 @@ class SftpClient {
             this.debugMsg('put source is a stream');
             rdr = lPath;
           }
-          rdr.once('error', (err) => {
+          rdr.on('error', (err) => {
             reject(
               this.fmtError(
                 `Read stream error: ${err.message} ${
