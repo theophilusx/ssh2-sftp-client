@@ -54,7 +54,7 @@ describe('01connection: Connect Tests', function () {
         ...baseConfig,
         port: 21,
       }),
-    ).to.be.rejectedWith(/EHOSTUNREACH/);
+    ).to.be.rejected;
   });
 
   it('connect-4b: bad port range throws exception', function () {

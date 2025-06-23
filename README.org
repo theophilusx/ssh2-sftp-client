@@ -12,9 +12,9 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v12.0.0.
+Current stable release is *v12.0.1.
 
-Code has been tested against Node versions 20.18.3, 22.14.0 and 23.8.0. Node versions
+Code has been tested against Node versions 20.19.2, 22.16.0, 23.11.1 and 24.2.0. Node versions
 prior to v20.x are not supported. 
 
 If you find this module useful and you would like to support the on-going maintenance and
@@ -26,30 +26,47 @@ The big and breaking change in this version is the removal of the connection ret
 code. This module no longer supports automatic connection retries when establishing the
 initial connection. This functionality was removed for a number of reasons. The main
 reasons are that it significantly complicated the connection handling code and error
-handling in particular and it was seldom useful. In most cases, if the cvonnection failed
-on thye first attempt, it would also fail in all subsequent attempts and often resulted in
+handling in particular and it was seldom useful. In most cases, if the connection failed
+on the first attempt, it would also fail in all subsequent attempts and often resulted in
 just extending the time to failure as multiple retries were attempted.
 
-The other reason this functionality was removed is because if you really want it, it is
-fairly straight forward to create your own wrapper around the connect call which uses one
-of the mnay promise retry packages available. Doing this is significantly easier when you
-don't need to cater for all the variables available when making a connection i.e. strict
-host verification, ssh agents, keys, proxies etc. 
+Another reason this functionality was removed is because if you really want it, it is
+straight forward to create your own wrapper around the connect call which uses one
+of the mnay promise retry packages available. It is much simpler to add a retry mechanism
+for a specific application than it is to implement a flexible solution which supports all
+possible combination of connection options, authentication methods, proxies etc.
 
+** Version 12.0.1 Changes
+
+  Bug Fixes
+
+  - Fix typo error in specification of generic error code in error handler. Typo was
+    causing an undefined symbol error.
+  - Fix bug in stream error handling. Read and write streams had an error handler defined
+    with 'once' rather than 'on'. This caused a bug when an API call caused more than one
+    error. For example, a network connectivity error would cause a stream timeout error
+    followed by a no response from remote host error when the error handler attempted to
+    cleanup and destroy the remote stream. The second error whould not be handled and
+    would bubble up to the  parent node process, which would then exit with an unhandled
+    exception error.
+  - Added calls to _resetEventFlags() to finally clauses to ensure event flags are reset
+    when temp listeners are removed. Without this change, global listeners would not fire
+    when they should after their has been an earlier handled error in the last API call. 
+    
 ** Background
 
 In basic terms =ssh2-sftp-client= is a simple wrapper around the =ssh2= package which provides
-a promise base API for interacting with a remote SFTP server . The =ssh2= package provides
+a promise based API for interacting with a remote SFTP server . The =ssh2= package provides
 an event based API for interacting with the ~ssh~ protocol. The ~ssh2-sftp-client~ package
 uses the ~sftp~ subsystem of this protocol to implement the basic operations typically
 associated with an ~sftp~ client.
 
-Wrapping an event based API with a promised based API comes with a number of
+Wrapping an event based API with a promise based API comes with a number of
 challenges. In particular, efficiently and reliably managing events within the context of
-asynchrounous code execution. This package uses the following strategies;
+asynchronous code execution. This package uses the following strategies;
 
     - All direct interactions with the ~ssh2~ API are wrapped in promise objects. When the
-      API call succeeds, the assoiated promise will be sucessfully resolved. When an error occurs,
+      API call succeeds, the associated promise will be successfully resolved. When an error occurs,
       the promise is rejected.
 
     - An error can either be due to a low level network error, such as a lost connection
@@ -57,30 +74,32 @@ asynchrounous code execution. This package uses the following strategies;
       existing or not having the appropriate permissions for access.
 
     - Each of the available ~SftpClient~ methods wrap the method call inside a promise. In
-      crwating eacvh promise, the class adds temporary event listenrs for the error, end
-      and close events and links those liseners to the method's promise via it's ~reject()~
+      creating each promise, the class adds temporary event listeners for the error, end
+      and close events and links those liseners to the method's promise via its ~reject()~
       method. 
 
-    - If a promise is waiting to be fulfilled when either of the two types of errors
-      occurs, the error will be communicated back to client code via a rejected promise.
+    - If a promise is waiting to be fulfilled when an error
+      occurs, the error will be communicated back to the client code via the rejected promise.
 
     - When the ~ssh2~ emitter raises an event outside the context of any promise, that event
       will be handled by global event handlers. By default, these event handlers will log
       the event and will invalidate any existing socket connection objects, preventing any
-      further API calls until a new connection is extablished.
+      further API calls until a new connection is established.
 
     - The ~SftpClient~ class constructor supports an optoinal second argument which is an
-      objedct whi8ch can have any of three properties representing event callbaqck
-      funct5ions which will be executed for each of the possible events error, end and
-      close.
+      objedct which can have any of the three properties error, end and close. The values
+      associated with these properties are callback functions that will be run if an error
+      event with?he same name as the property is raised and has not been handled by one of
+      the temporary event handlers. The error callback should have a single parameter, the
+      error raised by the event. The other callbacks have no arguments. 
       
 The need for both global listeners and temporary promise listeners is because network end,
-close or error events can occur at any time, including in-betwseen API calls. During an
+close or error events can occur at any time, including in-between API calls. During an
 API call, a promise is active and can be used to communicate event information back to the calling
-code via normal promise communication means i.e. async/await with try/catch or promise chain's then/catch
+code via normal promise communication channels i.e. async/await with try/catch or promise chain's then/catch
 mechanism. However, outside API calls, no promise exists and there is no reliable
 mechanism to return error and other event information back to calling code. You cannot
-reliably use try/cdatch to catch errorsx thrown inside event listenrs as you lack control
+reliably use try/cdatch to catch errors thrown inside event listenrs as you lack control
 over when the listener code runs. Your try/catch block can easily complete before the
 error is raised as there is no equivalent /await/ type functionality in this situation.
 
@@ -95,17 +114,17 @@ close or error event which is not handled by one of the temporary promise linked
 listeners.
 
 Version 11 of ~ssh2-sftp-client~ also changes the behaviour of the temporary promise linked
-/end/ and /close/ listeners. Prior to versioln 11, these listeners did not reject
+/end/ and /close/ listeners. Prior to version 11, these listeners did not reject
 promises. They would only invalidate the underlying ~ssh~ connection object. Only the /error/
 listener would actually reject the associated promise. This was done because you cannot
 guarantee the order in which events are responded to.
 
 In most cases, events will occur in the order /error/, /end/ and then /close/. The error event
 would contain details about the cause of the error while the end and close events just
-communicvate that these events have been raised. The normal flow would be
+communicate that these events have been raised. The normal flow would be
 
     - Error event occurs including error cause description. Listener catches event,
-      creates an error object and calls the associated promises reject function to reject
+      creates an error object and calls the associated promise's reject function to reject
       the promise. The calling process receives a rejected promise object.
 
     - End event occurs. The end listener catches the event and marks the connection object
@@ -114,11 +133,11 @@ communicvate that these events have been raised. The normal flow would be
       listener and you can only call one promise resolution function.
 
     - Close event occurs. This event means the socket connection has been closed. The
-      listener will ensure any connection information has been invalidated. Aga8in, ther
+      listener will ensure any connection information has been invalidated. Again, there
       is no need to call the reject method of the associated promise as it has already
       been called by the error listener.
 
-In some cases, no ende event is raised and you only get an error event followed by a close
+In some cases, no end event is raised and you only get an error event followed by a close
 event. In versions of ~ssh2-sftp-client~ prior to version 11, neither the end or the close
 listeners attempted to call the reject method of the associated promise. It was assumed
 that all sftp servers would raise an error event whenever a connection was unexpectedly
@@ -131,7 +150,7 @@ call gets rejected with a timeout error aftrer a significant delay.
 In order to handle the possible hanging issue in version 11, the temporary promise linked
 end and close listeners have been updated to always call the promise's reject function if
 they fire. While this works, it can cause a minor issue. As wse cannot gurantee the order
-in which events are resonded to by listeners, it is possible that either the end or close
+in which events are responded to by listeners, it is possible that either the end or close
 listener may be executed before the error listener. When this occurs, the promise is
 rejected, but the only information wse have at that point is that the promise wsas reject
 due to either an end or close event. We don't yet have any details regarding what error
