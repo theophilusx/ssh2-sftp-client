@@ -3,7 +3,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 const chaiSubset = require('chai-subset');
-const { getConnection } = require('./hooks/global-hooks.js');
+const { getConnection, logger } = require('./hooks/global-hooks.js');
 chai.use(chaiAsPromised);
 chai.use(chaiSubset);
 
@@ -51,7 +51,7 @@ Z/YRnRHqlatzbxH/44TcAAAAFnJoeXN3aWxsaWFtc0BNYWMubG9jYWwBAgMEBQYH
     });
 
     server.listen(2222, '0.0.0.0', () => {
-      console.log('SFTP Mock Server started on port 2222');
+      logger.debug('SFTP Mock Server started on port 2222');
       done();
     });
   })
@@ -73,7 +73,7 @@ Z/YRnRHqlatzbxH/44TcAAAAFnJoeXN3aWxsaWFtc0BNYWMubG9jYWwBAgMEBQYH
 
   after('destroy mock SSH server', function (done) {
     server.close(() => {
-      console.log('SFTP Mock Server destroyed');
+      logger.debug('SFTP Mock Server destroyed');
       done();
     })
   })

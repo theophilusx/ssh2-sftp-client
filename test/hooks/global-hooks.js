@@ -146,4 +146,5 @@ module.exports = {
   lastRemoteDir,
   getConnection,
   closeConnection,
+  logger
 };
