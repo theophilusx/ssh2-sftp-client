@@ -10,6 +10,7 @@ const config = {
   username: env.SFTP_USER,
   password: env.SFTP_PASSWORD,
   port: env.SFTP_PORT || 22,
+  keepaliveInterval: 20000,
 };
 
 async function main() {
