@@ -38,7 +38,7 @@ const config = {
   host: process.env.SFTP_SERVER,
   username: process.env.SFTP_USER,
   password: process.env.SFTP_PASSWORD,
-  privateKey: readFileSync(process.env.SFTP_KEY_FILE),
+  privateKey: process.env.SFTP_KEY_FILE ? readFileSync(process.env.SFTP_KEY_FILE) : null,
   passphrase: process.env.SFTP_KEY_PASSPHRASE,
   port: process.env.SFTP_PORT || 22,
   localUrl: process.env.LOCAL_URL,
@@ -84,9 +84,9 @@ const lastRemoteDir = (p) => {
 
 let con;
 
-async function getConnection() {
+async function getConnection(configOverride = {}) {
   try {
-    let baseConfig = { ...config };
+    let baseConfig = { ...config, ...configOverride };
     delete baseConfig.privateKey;
     delete baseConfig.passphrase;
     if (!con) {
@@ -146,4 +146,5 @@ module.exports = {
   lastRemoteDir,
   getConnection,
   closeConnection,
+  logger
 };

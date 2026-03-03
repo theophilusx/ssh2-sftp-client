@@ -64,6 +64,11 @@ function errorListener(client, name, reject) {
       client.debugMsg(`${name} errorListener - ignoring handled error ${err.message}`);
       return;
     }
+    // ignore ECONNRESET if end() has been called, as we can be confident that a reset connection is definitely dead
+    if (name === 'end' && client.endCalled && err.code === 'ECONNRESET') {
+      client.debugMsg(`${name} errorListener - ignoring ${err.message} on end`);
+      return;
+    }
     client.debugMsg(`${name} errorListener - handling error ${err.message}`);
     client.errorHandled = true;
     const newError = new Error(`${name}: ${err.message}`);
