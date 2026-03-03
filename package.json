@@ -38,7 +38,7 @@
     "chai-as-promised": "^7.1.2",
     "chai-subset": "^1.6.0",
     "checksum": "^1.0.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^17.3.1",
     "eslint": "^9.6.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-mocha": "^10.2.0",
