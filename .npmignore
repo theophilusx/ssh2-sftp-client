@@ -5,6 +5,7 @@ test
 examples
 .env
 .prettierrc
+env*
 env-turing
 env-turing2
 env-vbox
