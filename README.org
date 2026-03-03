@@ -87,9 +87,9 @@ asynchronous code execution. This package uses the following strategies;
       further API calls until a new connection is established.
 
     - The ~SftpClient~ class constructor supports an optoinal second argument which is an
-      objedct which can have any of the three properties error, end and close. The values
+      object which can have any of the three properties `error`, `end`, and `close`. The values
       associated with these properties are callback functions that will be run if an error
-      event with?he same name as the property is raised and has not been handled by one of
+      event with the same name as the property is raised and has not been handled by one of
       the temporary event handlers. The error callback should have a single parameter, the
       error raised by the event. The other callbacks have no arguments. 
       
