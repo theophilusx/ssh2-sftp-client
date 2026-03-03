@@ -12,10 +12,10 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v12.0.1.
+Current stable release is *v12.1.0.
 
-Code has been tested against Node versions 20.19.2, 22.16.0, 23.11.1 and 24.2.0. Node versions
-prior to v20.x are not supported. 
+Code has been tested against Node versions 24.14.0. Node versions prior to v20.x are not
+supported.
 
 If you find this module useful and you would like to support the on-going maintenance and
 support of users, please consider making a small [[https://square.link/u/gB2kSdkY?src=embed][donation]].
@@ -52,7 +52,14 @@ possible combination of connection options, authentication methods, proxies etc.
   - Added calls to _resetEventFlags() to finally clauses to ensure event flags are reset
     when temp listeners are removed. Without this change, global listeners would not fire
     when they should after their has been an earlier handled error in the last API call. 
-    
+** Version 12.1.0 Changes
+
+  The main change in this version is to address an issue with disconnect when accessing
+  Microsoft's SFTP server. Due to the way the Microsoft server implements closing of
+  connections, an exception is thrown even when there has been a legitimate request to end
+  the connection. The fix is to ignore this specific /error/ case. Thanks to @rhyswilliamsza
+  for the patch.
+  
 ** Background
 
 In basic terms =ssh2-sftp-client= is a simple wrapper around the =ssh2= package which provides
@@ -2037,5 +2044,6 @@ Thanks to the following for their contributions -
 - Maik Marschner :: Contributed fix for connect() not returning sftp object.
   Also included test to check for this regression in future.
 - cakemasher :: Contributed fix for removeTempListeners().
-  
+- rhyswilliamsza :: Contributed RST-on-END handling fix
+    
   
