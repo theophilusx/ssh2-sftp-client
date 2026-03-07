@@ -69,6 +69,9 @@ function errorListener(client, name, reject) {
       client.debugMsg(`${name} errorListener - ignoring ${err.message} on end`);
       return;
     }
+    if (err.code === 'ECONNRESET') {
+      client.sftp = undefined;
+    }
     client.debugMsg(`${name} errorListener - handling error ${err.message}`);
     client.errorHandled = true;
     const newError = new Error(`${name}: ${err.message}`);
