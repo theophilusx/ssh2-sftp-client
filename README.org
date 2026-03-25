@@ -12,7 +12,7 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v12.1.0.
+Current stable release is *v12.1.1.
 
 Code has been tested against Node versions 24.14.0. Node versions prior to v20.x are not
 supported.
@@ -60,6 +60,20 @@ possible combination of connection options, authentication methods, proxies etc.
   the connection. The fix is to ignore this specific /error/ case. Thanks to @rhyswilliamsza
   for the patch.
   
+** Version 12.1.1 Changes
+
+Just a minor bug fix for the error handlers. Ensure that the sftp object is invalidated
+after any ECONNRESET to ensure any further attempts to use the sftp connection fail
+immediately. Previously, there was an edge case where a connect abruptly closed by the
+remote server could result in either a long timeout error or a hanging promise which never
+fulfills or rejects. Now the internal sftp object is cleared whenever a ECONNRESET event
+occurs as this event indicates the remote server has closed the connection.
+
+Note that as ECONNRESET events are triggered by the remote server closing the connection,
+there is little error information the client can report. It is generally necessary to
+check the remote SFTP server logs in order to determine why the remote server closed the
+connection. 
+
 ** Background
 
 In basic terms =ssh2-sftp-client= is a simple wrapper around the =ssh2= package which provides
