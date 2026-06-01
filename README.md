@@ -1454,7 +1454,7 @@ There are some common errors people tend to make when using Promises or Async/Aw
 
 ### Not returning the promise in a `then()` block
 
-All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchrnously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
+All methods in `ssh2-sftp-client` return a Promise. This means methods are executed *asynchronously*. When you call a method inside the `then()` block of a promise chain, it is critical that you return the Promise that call generates. Failing to do this will result in the `then()` block completing and your code starting execution of the next `then()`, `catch()` or `finally()` block before your promise has been fulfilled. For example, the following will not do what you expect
 
 ```javascript
 sftp.connect(config)
