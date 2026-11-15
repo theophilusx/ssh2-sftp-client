@@ -27,8 +27,7 @@ mate-vbox
 validation
 debug.log
 coverage
-.nyc_output
-.nycrc.json
+.c8rc.json
 .eslintrc.json
 CHANGELOG.org
 .dir-local.el

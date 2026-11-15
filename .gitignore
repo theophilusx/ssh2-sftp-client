@@ -16,7 +16,6 @@ mate-vbox
 package.json-github
 package.json-prod
 coverage
-.nyc_output
 .dir-locals.el
 deno.json
 id_ed25519*

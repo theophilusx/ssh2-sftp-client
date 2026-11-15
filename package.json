@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "coverage": "nyc npm run test",
+    "coverage": "c8 npm test",
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\""
   },
   "engines": {
@@ -41,6 +41,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "c8": "^12.0.0",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "chai-subset": "^1.6.0",
@@ -55,7 +56,6 @@
     "globals": "^17.14.0",
     "mocha": "^12.0.3",
     "moment": "^2.29.1",
-    "nyc": "^17.0.0",
     "prettier": "^3.0.3",
     "through2": "^4.0.2",
     "winston": "^3.11.0"
