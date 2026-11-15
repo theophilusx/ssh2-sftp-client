@@ -1,5 +1,5 @@
 import SftpClient from '../../src/index.js';
-import { join } from 'node:path';
+import { join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import winston from 'winston';
@@ -125,12 +125,27 @@ async function getKeyConnection() {
 }
 
 /**
+ * Throw unless remotePath is strictly inside the configured test root
+ * (config.sftpUrl). Paths are normalised first, so `..` segments cannot
+ * escape the root, and the root itself is refused.
+ */
+function assertInsideTestRoot(remotePath) {
+  const root = posix.normalize(config.sftpUrl).replace(/\/+$/, '');
+  const target = posix.normalize(remotePath).replace(/\/+$/, '');
+  if (!root || root === '.' || !target.startsWith(`${root}/`)) {
+    throw new Error(`refusing to remove ${remotePath}: outside the test root ${config.sftpUrl}`);
+  }
+}
+
+/**
  * Remove a remote file or directory (recursively) if it exists, tolerating
  * leftover fixtures from an earlier failed run, including objects whose mode
  * was set to 000. Resolves true if something was removed, false if the path
- * did not exist.
+ * did not exist. Only paths inside config.sftpUrl are accepted. A symlink is
+ * unlinked without following it, so its target is left alone.
  */
 async function removeRemoteIfExists(client, remotePath) {
+  assertInsideTestRoot(remotePath);
   const type = await client.exists(remotePath);
   if (!type) {
     return false;
@@ -138,6 +153,8 @@ async function removeRemoteIfExists(client, remotePath) {
   if (type === 'd') {
     await client.chmod(remotePath, 0o777).catch(() => {});
     await client.rmdir(remotePath, true);
+  } else if (type === 'l') {
+    await client.delete(remotePath, true);
   } else {
     await client.chmod(remotePath, 0o700).catch(() => {});
     await client.delete(remotePath, true);

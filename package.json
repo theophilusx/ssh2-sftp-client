@@ -3,12 +3,20 @@
   "version": "13.0.0",
   "description": "ssh2 sftp client for node",
   "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     }
   },
+  "files": [
+    "src/index.js",
+    "src/utils.js",
+    "src/constants.js",
+    "src/index.d.ts"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theophilusx/ssh2-sftp-client.git"
