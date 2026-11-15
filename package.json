@@ -21,7 +21,8 @@
   "scripts": {
     "test": "mocha",
     "coverage": "c8 npm test",
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\""
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "types": "tsc -p test/types"
   },
   "engines": {
     "node": ">=22.12"
@@ -41,6 +42,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@types/node": "^22.20.5",
     "c8": "^12.0.0",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
@@ -58,9 +60,11 @@
     "moment": "^2.29.1",
     "prettier": "^3.0.3",
     "through2": "^4.0.2",
+    "typescript": "^7.0.2",
     "winston": "^3.11.0"
   },
   "dependencies": {
+    "@types/ssh2": "^1.15.6",
     "concat-stream": "^2.0.0",
     "ssh2": "^1.16.0"
   }
