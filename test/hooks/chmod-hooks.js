@@ -23,7 +23,7 @@ async function chmodCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   chmodSetup,
   chmodCleanup,
 };

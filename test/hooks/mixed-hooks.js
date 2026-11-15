@@ -1,4 +1,4 @@
-const { makeLocalPath, makeRemotePath } = require('./global-hooks');
+import { makeLocalPath, makeRemotePath } from './global-hooks.js';
 
 async function realpathSetup(client, sftpUrl, localUrl) {
   try {
@@ -111,7 +111,7 @@ async function statCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   realpathSetup,
   realpathCleanup,
   listSetup,

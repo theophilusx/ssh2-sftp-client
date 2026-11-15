@@ -1,11 +1,11 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-const chaiSubset = require('chai-subset');
-const checksum = require('checksum');
-const { file } = require('checksum');
-const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks.js');
-const { checksumCleanup } = require('./hooks/checksum-hooks.js');
+import chaiAsPromised from 'chai-as-promised';
+import chaiSubset from 'chai-subset';
+import checksum from 'checksum';
+const { file } = checksum;
+import { config, getConnection, makeLocalPath } from './hooks/global-hooks.js';
+import { checksumCleanup } from './hooks/checksum-hooks.js';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

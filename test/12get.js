@@ -1,16 +1,16 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
-const { createWriteStream, statSync } = require('node:fs');
-const { createGunzip } = require('node:zlib');
-const {
+import chaiSubset from 'chai-subset';
+import chaiAsPromised from 'chai-as-promised';
+import { createWriteStream, statSync } from 'node:fs';
+import { createGunzip } from 'node:zlib';
+import {
   config,
   getConnection,
   makeLocalPath,
   lastRemoteDir,
-} = require('./hooks/global-hooks.js');
-const { getSetup, getCleanup } = require('./hooks/get-hooks.js');
+} from './hooks/global-hooks.js';
+import { getSetup, getCleanup } from './hooks/get-hooks.js';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

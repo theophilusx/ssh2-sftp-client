@@ -1,10 +1,10 @@
-const dotenvPath = __dirname + '/../../.env';
-require('dotenv').config({ path: dotenvPath });
+import SftpClient from '../../src/index.js';
+import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import winston from 'winston';
+import dotenv from 'dotenv';
 
-const SftpClient = require('../../src/index.js');
-const { join } = require('node:path');
-const { readFileSync } = require('node:fs');
-const winston = require('winston');
+dotenv.config({ path: join(import.meta.dirname, '..', '..', '.env') });
 
 const logger = winston.createLogger({
   level: 'debug',
@@ -136,7 +136,7 @@ const closeConnection = async () => {
   }
 };
 
-module.exports = {
+export {
   hasListener,
   dumpListeners,
   config,

@@ -16,6 +16,6 @@ async function putCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   putCleanup,
 };

@@ -24,7 +24,7 @@ async function renameCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   renameSetup,
   renameCleanup,
 };

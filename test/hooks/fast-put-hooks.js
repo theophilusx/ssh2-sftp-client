@@ -1,5 +1,5 @@
-const { mkdirSync, rmdirSync } = require('node:fs');
-const { join } = require('node:path');
+import { mkdirSync, rmdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 function fastPutSetup(localUrl) {
   mkdirSync(join(localUrl, 'fp-dir'));
@@ -23,7 +23,7 @@ async function fastPutCleanup(client, sftpUrl, localUrl) {
   }
 }
 
-module.exports = {
+export {
   fastPutSetup,
   fastPutCleanup,
 };

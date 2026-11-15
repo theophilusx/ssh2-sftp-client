@@ -1,5 +1,5 @@
-const { unlinkSync } = require('node:fs');
-const { makeLocalPath } = require('./global-hooks.js');
+import { unlinkSync } from 'node:fs';
+import { makeLocalPath } from './global-hooks.js';
 
 async function checksumCleanup(client, sftpUrl, localUrl) {
   try {
@@ -14,6 +14,6 @@ async function checksumCleanup(client, sftpUrl, localUrl) {
   }
 }
 
-module.exports = {
+export {
   checksumCleanup,
 };

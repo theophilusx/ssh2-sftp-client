@@ -1,15 +1,15 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
-const { Readable } = require('node:stream');
-const {
+import chaiSubset from 'chai-subset';
+import chaiAsPromised from 'chai-as-promised';
+import { Readable } from 'node:stream';
+import {
   config,
   getConnection,
   makeLocalPath,
   lastRemoteDir,
-} = require('./hooks/global-hooks.js');
-const { appendSetup, appendCleanup } = require('./hooks/append-hooks.js');
+} from './hooks/global-hooks.js';
+import { appendSetup, appendCleanup } from './hooks/append-hooks.js';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

@@ -17,7 +17,4 @@ const targetType = {
   writeObj: 6,
 };
 
-module.exports = {
-  errorCode,
-  targetType,
-};
+export { errorCode, targetType };

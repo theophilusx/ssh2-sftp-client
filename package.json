@@ -1,8 +1,14 @@
 {
   "name": "ssh2-sftp-client",
-  "version": "12.1.1",
+  "version": "13.0.0",
   "description": "ssh2 sftp client for node",
-  "main": "src/index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theophilusx/ssh2-sftp-client.git"
@@ -18,7 +24,7 @@
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\""
   },
   "engines": {
-    "node": ">=18.20.4"
+    "node": ">=22.12"
   },
   "author": "Tim Cross",
   "email": "theophilusx@gmail.com",

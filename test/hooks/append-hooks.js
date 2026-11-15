@@ -32,7 +32,7 @@ async function appendCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   appendSetup,
   appendCleanup,
 };

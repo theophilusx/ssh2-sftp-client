@@ -1,9 +1,10 @@
-const { Server } = require('ssh2');
-const chai = require('chai');
+import ssh2 from 'ssh2';
+const { Server } = ssh2;
+import chai from 'chai';
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-const chaiSubset = require('chai-subset');
-const { getConnection, logger } = require('./hooks/global-hooks.js');
+import chaiAsPromised from 'chai-as-promised';
+import chaiSubset from 'chai-subset';
+import { getConnection, logger } from './hooks/global-hooks.js';
 chai.use(chaiAsPromised);
 chai.use(chaiSubset);
 

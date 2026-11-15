@@ -1,15 +1,15 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-const chaiSubset = require('chai-subset');
-const {
+import chaiAsPromised from 'chai-as-promised';
+import chaiSubset from 'chai-subset';
+import {
   config,
   getConnection,
   makeLocalPath,
   lastRemoteDir,
-} = require('./hooks/global-hooks.js');
-const { fastPutSetup, fastPutCleanup } = require('./hooks/fast-put-hooks.js');
-const { statSync } = require('node:fs');
+} from './hooks/global-hooks.js';
+import { fastPutSetup, fastPutCleanup } from './hooks/fast-put-hooks.js';
+import { statSync } from 'node:fs';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

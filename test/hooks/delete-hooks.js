@@ -15,6 +15,6 @@ async function deleteSetup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   deleteSetup,
 };

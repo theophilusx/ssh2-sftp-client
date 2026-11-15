@@ -1,5 +1,5 @@
-const { makeLocalPath } = require('./global-hooks.js');
-const { chmodSync } = require('node:fs');
+import { makeLocalPath } from './global-hooks.js';
+import { chmodSync } from 'node:fs';
 
 async function permissionSetup(client, sftpUrl, localUrl) {
   try {
@@ -35,7 +35,7 @@ async function permissionCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   permissionSetup,
   permissionCleanup,
 };

@@ -1,9 +1,8 @@
-'use strict';
-const { Client } = require('ssh2');
-const fs = require('node:fs');
-const concat = require('concat-stream');
-const { join, parse } = require('node:path');
-const {
+import { Client } from 'ssh2';
+import fs from 'node:fs';
+import concat from 'concat-stream';
+import { join, parse } from 'node:path';
+import {
   globalListener,
   addTempListeners,
   removeTempListeners,
@@ -13,8 +12,8 @@ const {
   haveLocalAccess,
   haveLocalCreate,
   partition,
-} = require('./utils');
-const { errorCode } = require('./constants');
+} from './utils.js';
+import { errorCode } from './constants.js';
 
 class SftpClient {
   constructor(
@@ -1485,4 +1484,5 @@ class SftpClient {
   }
 }
 
-module.exports = SftpClient;
+export default SftpClient;
+export { SftpClient as 'module.exports' };

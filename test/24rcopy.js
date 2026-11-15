@@ -1,7 +1,7 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks.js');
-const chaiAsPromised = require('chai-as-promised');
+import { config, getConnection, makeLocalPath } from './hooks/global-hooks.js';
+import chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
 

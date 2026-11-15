@@ -15,7 +15,7 @@ env-win
 env-mac
 env-localhost
 .eslintrc.js
-.mocharc.cjs
+.mocharc.js
 .indium.json
 .tern-port
 test-env-template
@@ -41,3 +41,6 @@ square-url.txt
 .claude
 CLAUDE.md
 
+eslint.config.js
+docs
+.superpowers

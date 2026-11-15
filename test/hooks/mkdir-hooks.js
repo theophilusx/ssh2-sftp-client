@@ -16,6 +16,6 @@ async function mkdirCleanup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   mkdirCleanup,
 };

@@ -1,9 +1,9 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
-const { config, getConnection, lastRemoteDir } = require('./hooks/global-hooks.js');
-const { renameSetup, renameCleanup } = require('./hooks/rename-hooks.js');
+import chaiSubset from 'chai-subset';
+import chaiAsPromised from 'chai-as-promised';
+import { config, getConnection, lastRemoteDir } from './hooks/global-hooks.js';
+import { renameSetup, renameCleanup } from './hooks/rename-hooks.js';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

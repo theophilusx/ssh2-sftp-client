@@ -1,7 +1,7 @@
 'use strict';
 
-const { makeLocalPath } = require('./global-hooks.js');
-const fs = require('fs');
+import { makeLocalPath } from './global-hooks.js';
+import fs from 'fs';
 
 async function streamSetup(client, sftpUrl, localUrl) {
   try {
@@ -26,7 +26,7 @@ async function streamCleanup(client, sftpUrl, localUrl) {
   }
 }
 
-module.exports = {
+export {
   streamSetup,
   streamCleanup,
 };

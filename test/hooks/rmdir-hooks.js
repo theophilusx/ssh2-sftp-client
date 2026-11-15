@@ -17,6 +17,6 @@ async function rmdirSetup(client, sftpUrl) {
   }
 }
 
-module.exports = {
+export {
   rmdirSetup,
 };

@@ -1,10 +1,10 @@
-const chai = require('chai');
+import chai from 'chai';
 const expect = chai.expect;
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
-const { config, getConnection, makeLocalPath } = require('./hooks/global-hooks.js');
-const { mkdir, chmod, rm, readdir } = require('node:fs/promises');
-const Client = require('../src/index.js');
+import chaiSubset from 'chai-subset';
+import chaiAsPromised from 'chai-as-promised';
+import { config, getConnection, makeLocalPath } from './hooks/global-hooks.js';
+import { mkdir, chmod, rm, readdir } from 'node:fs/promises';
+import Client from '../src/index.js';
 
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

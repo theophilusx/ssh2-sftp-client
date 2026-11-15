@@ -1,5 +1,5 @@
-const { makeLocalPath } = require('./global-hooks.js');
-const { unlinkSync } = require('node:fs');
+import { makeLocalPath } from './global-hooks.js';
+import { unlinkSync } from 'node:fs';
 
 async function fastGetSetup(client, sftpUrl, localUrl) {
   try {
@@ -49,7 +49,7 @@ async function fastGetCleanup(client, sftpUrl, localUrl) {
   }
 }
 
-module.exports = {
+export {
   fastGetSetup,
   fastGetCleanup,
 };
