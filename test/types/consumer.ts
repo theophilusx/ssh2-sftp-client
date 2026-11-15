@@ -58,3 +58,11 @@ async function main(): Promise<void> {
   void [real, cwd, isDir, ex, files, out, up, rs, ws, cp, ended];
 }
 void main;
+
+async function getOverloads(client: SftpClient): Promise<void> {
+  const noDst: Buffer = await client.get('/a');
+  const toPath: string = await client.get('/a', '/local/a');
+  const toStream: Writable = await client.get('/a', new Writable());
+  void [noDst, toPath, toStream];
+}
+void getOverloads;

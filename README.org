@@ -237,11 +237,10 @@ exchange and encryption/signing algorithms used as part of the ssh2 protocol.
 All the methods will return a Promise, except for ~on(), ~removeListener()~, ~createReadStream~
 and ~createWriteStream~, which are typically only used in special use cases.
 
-Note that I don't use Typescript and I don't maintain any typescript definition
-files. There are some typescript type definition files for this module, but they are
-maintained separately and have nothing to do with this project. Therefore, please do not
-log any issues arising from the use of these definition files with this project. Instead,
-refer your issues to the maintainers of those modules.
+TypeScript declarations are bundled with this package (since v13.0.0) and are used
+automatically. If you previously installed the third party =@types/ssh2-sftp-client=
+package, remove it. It describes an older version of the API and can conflict with the
+bundled declarations.
 
 ** Specifying Paths
 
@@ -1710,12 +1709,15 @@ the =ssh2= README to set the properties in the =algorithms= object.
  
  For more explanation, see [[https://github.com/theophilusx/ssh2-sftp-client/issues/342][issue #342]].
  
-** Typescript definition file out of date
+** Typescript definitions from older versions
 
-This project does not use Typescript. However, typescript definition files are provided by
-other 3rd parties. Sometimes, these definition files have not stayed up-to-date with the
-current version of this module. If you encounter this issue, you need to report it to the
-party responsible for the definition file, not this project.
+Before v13.0.0 this package did not include TypeScript declarations and they were provided
+by a third party package, =@types/ssh2-sftp-client=. Uninstall that package when upgrading
+to v13.0.0 or later. The declarations bundled with the package describe the current API
+and take its place.
+
+Under TypeScript's =module: node16= setting, ES-only packages cannot be loaded with
+=require()=. Use =nodenext= (or later), or a bundler resolution mode.
 
 * Examples
 

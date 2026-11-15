@@ -6,7 +6,12 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["consumer.ts"]
+  "include": [
+    "consumer.ts",
+    "consumer-cjs.cts"
+  ]
 }

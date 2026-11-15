@@ -120,9 +120,9 @@ declare class SftpClient {
   exists(remotePath: string): Promise<ExistsResult>;
   list(remotePath: string, filter?: ListFilter): Promise<FileInfo[]>;
 
-  get(remotePath: string, dst?: string, options?: GetOptions): Promise<string>;
-  get(remotePath: string, dst: Writable, options?: GetOptions): Promise<Writable>;
   get(remotePath: string, dst?: undefined, options?: GetOptions): Promise<Buffer>;
+  get(remotePath: string, dst: string, options?: GetOptions): Promise<string>;
+  get(remotePath: string, dst: Writable, options?: GetOptions): Promise<Writable>;
   get(remotePath: string, dst?: string | Writable, options?: GetOptions): Promise<string | Writable | Buffer>;
   fastGet(remotePath: string, localPath: string, options?: TransferOptions): Promise<string>;
   fastPut(localPath: string, remotePath: string, options?: TransferOptions): Promise<string>;
@@ -145,3 +145,6 @@ declare class SftpClient {
 }
 
 export default SftpClient;
+// The JS entry point also exports the class as 'module.exports', so CommonJS
+// consumers (and `import X = require()` in TypeScript) get the class itself.
+export { SftpClient as 'module.exports' };

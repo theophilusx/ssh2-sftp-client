@@ -1,6 +1,11 @@
 import chai from 'chai';
 const expect = chai.expect;
-import { config, getConnection, makeLocalPath } from './hooks/global-hooks.js';
+import {
+  config,
+  getConnection,
+  makeLocalPath,
+  removeRemoteIfExists,
+} from './hooks/global-hooks.js';
 import chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
@@ -8,9 +13,18 @@ chai.use(chaiAsPromised);
 describe('24rcopy: rcopy tests', function () {
   let sftp;
   const testSource = `${config.sftpUrl}/rcopy-test.txt`;
+  const fixtures = [
+    `${config.sftpUrl}/rcp-test`,
+    testSource,
+    `${config.sftpUrl}/rcp-1.txt`,
+    `${config.sftpUrl}/rcp-2.txt`,
+  ];
 
   before('rcopy test setup', async function () {
     sftp = await getConnection();
+    for (const f of fixtures) {
+      await removeRemoteIfExists(sftp, f);
+    }
     await sftp.fastPut(makeLocalPath(config.localUrl, 'test-file1.txt'), testSource, {
       encoding: 'utf8',
     });
@@ -19,10 +33,9 @@ describe('24rcopy: rcopy tests', function () {
   });
 
   after('rcopy test cleanup', async function () {
-    await sftp.rmdir(`${config.sftpUrl}/rcp-test`, true);
-    await sftp.delete(testSource);
-    await sftp.delete(`${config.sftpUrl}/rcp-1.txt`);
-    await sftp.delete(`${config.sftpUrl}/rcp-2.txt`);
+    for (const f of fixtures) {
+      await removeRemoteIfExists(sftp, f);
+    }
     await sftp.end();
   });
 
