@@ -1,8 +1,9 @@
-import { makeLocalPath } from './global-hooks.js';
+import { makeLocalPath, removeRemoteIfExists } from './global-hooks.js';
 import fs from 'node:fs';
 
 async function streamSetup(client, sftpUrl, localUrl) {
   try {
+    await streamCleanup(client, sftpUrl, localUrl);
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
       `${sftpUrl}/stream-read.txt`,
@@ -15,10 +16,10 @@ async function streamSetup(client, sftpUrl, localUrl) {
 
 async function streamCleanup(client, sftpUrl, localUrl) {
   try {
-    await client.delete(`${sftpUrl}/stream-read.txt`);
-    await client.delete(`${sftpUrl}/stream-t3.txt`);
-    fs.unlinkSync(`${localUrl}/stream-t1.txt`);
-    fs.unlinkSync(`${localUrl}/stream-t2.txt`);
+    await removeRemoteIfExists(client, `${sftpUrl}/stream-read.txt`);
+    await removeRemoteIfExists(client, `${sftpUrl}/stream-t3.txt`);
+    fs.rmSync(`${localUrl}/stream-t1.txt`, { force: true });
+    fs.rmSync(`${localUrl}/stream-t2.txt`, { force: true });
   } catch (err) {
     throw new Error(`streamCleanup: ${err.message}`);
   }

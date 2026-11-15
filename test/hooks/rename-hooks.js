@@ -1,5 +1,7 @@
+import { removeRemoteIfExists } from './global-hooks.js';
 async function renameSetup(client, sftpUrl) {
   try {
+    await renameCleanup(client, sftpUrl);
     await client.put(Buffer.from('Promise test file'), `${sftpUrl}/rename-promise.md`, {
       encoding: 'utf8',
     });
@@ -15,8 +17,8 @@ async function renameSetup(client, sftpUrl) {
 
 async function renameCleanup(client, sftpUrl) {
   try {
-    await client.delete(`${sftpUrl}/rename-relative4.md`, true);
-    await client.delete(`${sftpUrl}/rename-conflict.md`, true);
+    await removeRemoteIfExists(client, `${sftpUrl}/rename-relative4.md`);
+    await removeRemoteIfExists(client, `${sftpUrl}/rename-conflict.md`);
     return true;
   } catch (err) {
     console.error(`renameCleanup: ${err.message}`);

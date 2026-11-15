@@ -1,8 +1,9 @@
-import { makeLocalPath } from './global-hooks.js';
-import { unlinkSync } from 'node:fs';
+import { makeLocalPath, removeRemoteIfExists } from './global-hooks.js';
+import { rmSync } from 'node:fs';
 
 async function fastGetSetup(client, sftpUrl, localUrl) {
   try {
+    await fastGetCleanup(client, sftpUrl, localUrl);
     await client.put(
       Buffer.from('fastGet promise test'),
       sftpUrl + '/fastget-promise.txt',
@@ -29,19 +30,19 @@ async function fastGetSetup(client, sftpUrl, localUrl) {
 
 async function fastGetCleanup(client, sftpUrl, localUrl) {
   try {
-    await client.rmdir(`${sftpUrl}/fg-dir`);
-    await client.delete(sftpUrl + '/fastget-promise.txt');
-    await client.delete(sftpUrl + '/fastget-small.txt');
-    await client.delete(sftpUrl + '/fastget-large.txt');
-    await client.delete(sftpUrl + '/fastget-gzip.txt.gz');
-    unlinkSync(makeLocalPath(localUrl, 'fastget-promise.txt'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-small.txt'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-large.txt'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-gzip.txt.gz'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-relative1-gzip.txt.gz'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-relative2-gzip.txt.gz'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-relative3-gzip.txt.gz'));
-    unlinkSync(makeLocalPath(localUrl, 'fastget-relative4-gzip.txt.gz'));
+    await removeRemoteIfExists(client, `${sftpUrl}/fg-dir`);
+    await removeRemoteIfExists(client, sftpUrl + '/fastget-promise.txt');
+    await removeRemoteIfExists(client, sftpUrl + '/fastget-small.txt');
+    await removeRemoteIfExists(client, sftpUrl + '/fastget-large.txt');
+    await removeRemoteIfExists(client, sftpUrl + '/fastget-gzip.txt.gz');
+    rmSync(makeLocalPath(localUrl, 'fastget-promise.txt'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-small.txt'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-large.txt'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-gzip.txt.gz'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-relative1-gzip.txt.gz'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-relative2-gzip.txt.gz'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-relative3-gzip.txt.gz'), { force: true });
+    rmSync(makeLocalPath(localUrl, 'fastget-relative4-gzip.txt.gz'), { force: true });
     return true;
   } catch (err) {
     console.error(`fastGetCleanup: ${err.message}`);

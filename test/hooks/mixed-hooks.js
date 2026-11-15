@@ -1,7 +1,8 @@
-import { makeLocalPath, makeRemotePath } from './global-hooks.js';
+import { makeLocalPath, makeRemotePath, removeRemoteIfExists } from './global-hooks.js';
 
 async function realpathSetup(client, sftpUrl, localUrl) {
   try {
+    await realpathCleanup(client, sftpUrl, localUrl);
     await client.mkdir(makeRemotePath(sftpUrl, 'path-test-dir'));
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
@@ -19,7 +20,7 @@ async function realpathSetup(client, sftpUrl, localUrl) {
 
 async function realpathCleanup(client, sftpUrl) {
   try {
-    await client.rmdir(makeRemotePath(sftpUrl, 'path-test-dir'), true);
+    await removeRemoteIfExists(client, makeRemotePath(sftpUrl, 'path-test-dir'));
     return true;
   } catch (err) {
     throw new Error(`mixedClenaup: ${err.message}`);
@@ -28,6 +29,7 @@ async function realpathCleanup(client, sftpUrl) {
 
 async function listSetup(client, sftpUrl, localUrl) {
   try {
+    await listCleanup(client, sftpUrl, localUrl);
     await client.mkdir(`${sftpUrl}/list-test/dir1`, true);
     await client.mkdir(`${sftpUrl}/list-test/dir2/sub1`, true);
     await client.mkdir(`${sftpUrl}/list-test/empty`, true);
@@ -56,7 +58,7 @@ async function listSetup(client, sftpUrl, localUrl) {
 
 async function listCleanup(client, sftpUrl) {
   try {
-    await client.rmdir(`${sftpUrl}/list-test`, true);
+    await removeRemoteIfExists(client, `${sftpUrl}/list-test`);
     return true;
   } catch (err) {
     throw new Error(`listCleanup: ${err.message}`);
@@ -65,6 +67,7 @@ async function listCleanup(client, sftpUrl) {
 
 async function existSetup(client, sftpUrl, localUrl) {
   try {
+    await existCleanup(client, sftpUrl, localUrl);
     await client.mkdir(`${sftpUrl}/exist-test-dir`);
     await client.fastPut(
       makeLocalPath(localUrl, 'test-file1.txt'),
@@ -82,8 +85,8 @@ async function existSetup(client, sftpUrl, localUrl) {
 
 async function existCleanup(client, sftpUrl) {
   try {
-    await client.delete(`${sftpUrl}/exist-file.txt`, true);
-    await client.rmdir(`${sftpUrl}/exist-test-dir`, true);
+    await removeRemoteIfExists(client, `${sftpUrl}/exist-file.txt`);
+    await removeRemoteIfExists(client, `${sftpUrl}/exist-test-dir`);
     return true;
   } catch (err) {
     throw new Error(`existCleanup: ${err.message}`);
@@ -92,6 +95,7 @@ async function existCleanup(client, sftpUrl) {
 
 async function statSetup(client, sftpUrl) {
   try {
+    await statCleanup(client, sftpUrl);
     await client.put(Buffer.from('# Stat test data'), `${sftpUrl}/stat-test.md`, {
       encoding: 'utf8',
       mode: 0o777,
@@ -104,7 +108,7 @@ async function statSetup(client, sftpUrl) {
 
 async function statCleanup(client, sftpUrl) {
   try {
-    await client.delete(`${sftpUrl}/stat-test.md`, true);
+    await removeRemoteIfExists(client, `${sftpUrl}/stat-test.md`);
     return true;
   } catch (err) {
     throw new Error(`statCleanup: ${err.message}`);

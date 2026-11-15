@@ -124,6 +124,27 @@ async function getKeyConnection() {
   }
 }
 
+/**
+ * Remove a remote file or directory (recursively) if it exists, tolerating
+ * leftover fixtures from an earlier failed run, including objects whose mode
+ * was set to 000. Resolves true if something was removed, false if the path
+ * did not exist.
+ */
+async function removeRemoteIfExists(client, remotePath) {
+  const type = await client.exists(remotePath);
+  if (!type) {
+    return false;
+  }
+  if (type === 'd') {
+    await client.chmod(remotePath, 0o777).catch(() => {});
+    await client.rmdir(remotePath, true);
+  } else {
+    await client.chmod(remotePath, 0o700).catch(() => {});
+    await client.delete(remotePath, true);
+  }
+  return true;
+}
+
 const closeConnection = async () => {
   try {
     if (con) {
@@ -148,5 +169,6 @@ export {
   getConnection,
   getKeyConnection,
   closeConnection,
+  removeRemoteIfExists,
   logger
 };

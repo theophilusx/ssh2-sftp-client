@@ -1,5 +1,7 @@
+import { removeRemoteIfExists } from './global-hooks.js';
 async function appendSetup(client, sftpUrl) {
   try {
+    await appendCleanup(client, sftpUrl);
     await client.put(
       Buffer.from('# Promise test file'),
       `${sftpUrl}/append-promise-test.md`,
@@ -19,12 +21,12 @@ async function appendSetup(client, sftpUrl) {
 
 async function appendCleanup(client, sftpUrl) {
   try {
-    await client.delete(`${sftpUrl}/append-promise-test.md`);
-    await client.delete(`${sftpUrl}/append-test1.md`);
-    await client.delete(`${sftpUrl}/append-test2.txt`);
-    await client.delete(`${sftpUrl}/append-test3`);
-    await client.delete(`${sftpUrl}/append-new-file.txt`);
-    await client.rmdir(`${sftpUrl}/append-dir-test`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-promise-test.md`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-test1.md`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-test2.txt`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-test3`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-new-file.txt`);
+    await removeRemoteIfExists(client, `${sftpUrl}/append-dir-test`);
     return true;
   } catch (err) {
     console.error(`appendCleanup: ${err.message}`);
