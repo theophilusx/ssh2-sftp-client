@@ -12,10 +12,11 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v12.1.1.
+Current stable release is *v13.0.0*.
 
-Code has been tested against Node versions 24.14.0. Node versions prior to v20.x are not
-supported.
+Code has been tested against Node versions 22, 24 and 26. This module requires Node
+22.12.0 or later and is an ES module (ESM only). Node versions prior to 22.12.0 are not
+supported. See [[*Version 13.0.0 Changes][Version 13.0.0 Changes]] for upgrade information.
 
 If you find this module useful and you would like to support the on-going maintenance and
 support of users, please consider making a small [[https://square.link/u/gB2kSdkY?src=embed][donation]].
@@ -182,6 +183,22 @@ error information back to the caller. This means that in some circumstances, esp
 when working with some poorly behaved sftp servers, an sftp connection will be lost/closed
 with no indication as to reason. This can make diagnosis and bug tracking frustrating. 
 
+
+** Version 13.0.0 Changes
+
+This is a breaking release.
+
+- The package is now an ES module (ESM only). Use =import SftpClient from 'ssh2-sftp-client'=
+  in new code.
+- The minimum supported Node version is now 22.12.0. Node 18 and 20 are no longer supported.
+- Code which still uses CommonJS can keep using =const SftpClient = require('ssh2-sftp-client')=
+  on Node 22.12.0 and later, which can load ES modules with =require()=. The package
+  exports the class as =module.exports=, so existing =require()= code gets the class
+  itself and not a namespace object.
+- TypeScript declarations are now included with the package.
+- Development tooling changes (not visible to users of the package): the tests, examples and
+  lint config are ESM, coverage uses c8 and mocha is upgraded to v12.
+
 * Installation
 
 #+begin_src shell
@@ -191,7 +208,7 @@ with no indication as to reason. This can make diagnosis and bug tracking frustr
 * Basic Usage
 
 #+begin_src js
-  let Client = require('ssh2-sftp-client');
+  import Client from 'ssh2-sftp-client';
   let sftp = new Client();
 
   sftp.connect({
@@ -307,9 +324,7 @@ client has thrown the error.
 **** Example Use
 
 #+begin_src javascript
-  'use strict';
-
-  const Client = require('ssh2-sftp-client');
+  import Client from 'ssh2-sftp-client';
 
   const config = {
     host: 'example.com',
@@ -424,7 +439,7 @@ directory.
 **** Example Use
 
 #+begin_src javascript
-  const Client = require('ssh2-sftp-client');
+  import Client from 'ssh2-sftp-client';
 
   const config = {
     host: 'example.com',
@@ -480,7 +495,7 @@ if it exists or false if it does not.
 **** Example Use
 
 #+begin_src javascript
-  const Client = require('ssh2-sftp-client');
+  import Client from 'ssh2-sftp-client';
 
   const config = {
     host: 'example.com',
@@ -1087,11 +1102,12 @@ remote SFTP server will result in failures.
        // Example of using the uploadDir() method to upload a directory
        // to a remote SFTP server
 
-       const path = require('path');
-       const SftpClient = require('../src/index');
+       import path from 'node:path';
+       import dotenv from 'dotenv';
+       import SftpClient from '../src/index.js';
 
-       const dotenvPath = path.join(__dirname, '..', '.env');
-       require('dotenv').config({path: dotenvPath});
+       const dotenvPath = path.join(import.meta.dirname, '..', '.env');
+       dotenv.config({path: dotenvPath});
 
        const config = {
          host: process.env.SFTP_SERVER,
@@ -1102,7 +1118,7 @@ remote SFTP server will result in failures.
 
        async function main() {
          const client = new SftpClient('upload-test');
-         const src = path.join(__dirname, '..', 'test', 'testData', 'upload-src');
+         const src = path.join(import.meta.dirname, '..', 'test', 'testData', 'upload-src');
          const dst = '/home/tim/upload-test';
 
          try {
@@ -1177,11 +1193,12 @@ services.
   // Example of using the downloadDir() method to upload a directory
   // to a remote SFTP server
 
-  const path = require('path');
-  const SftpClient = require('../src/index');
+  import path from 'node:path';
+  import dotenv from 'dotenv';
+  import SftpClient from '../src/index.js';
 
-  const dotenvPath = path.join(__dirname, '..', '.env');
-  require('dotenv').config({path: dotenvPath});
+  const dotenvPath = path.join(import.meta.dirname, '..', '.env');
+  dotenv.config({path: dotenvPath});
 
   const config = {
     host: process.env.SFTP_SERVER,
@@ -1507,10 +1524,10 @@ bring them across before saving to local file system.
   // This code will read the remote file, convert all characters to upper case
   // and then save it to a local file
 
-  const Client = require('../src/index.js');
-  const path = require('path');
-  const fs = require('fs');
-  const through = require('through2');
+  import Client from '../src/index.js';
+  import path from 'node:path';
+  import fs from 'node:fs';
+  import through from 'through2';
 
   const config = {
     host: 'arch-vbox',
@@ -1538,7 +1555,7 @@ bring them across before saving to local file system.
       console.dir(data);
       let remoteFile = path.join(remoteDir, 'test.txt');
       let upperWtr = toupper();
-      let fileWtr = fs.createWriteStream(path.join(__dirname, 'loud-text.txt'));
+      let fileWtr = fs.createWriteStream(path.join(import.meta.dirname, 'loud-text.txt'));
       upperWtr.pipe(fileWtr);
       return sftp.get(remoteFile, upperWtr);
     })
@@ -1650,8 +1667,8 @@ the =ssh2= README to set the properties in the =algorithms= object.
    #+begin_src javascript
 
 
-     const Throttle = require('throttle');
-     const progress = require('progress-stream');
+     import Throttle from 'throttle';
+     import progress from 'progress-stream';
 
      // limit download speed
      const throttleStream = new Throttle(config.throttle);

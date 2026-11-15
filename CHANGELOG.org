@@ -1,4 +1,13 @@
 * Change Logging
+** v13.0.0
+  - *Breaking Change*. The package is now ESM only (=import SftpClient from 'ssh2-sftp-client'=).
+    CommonJS code can still use =require()= on Node 22.12.0 and later.
+  - *Breaking Change*. Minimum supported Node version is now 22.12.0. Node 18 and 20 are
+    end of life and no longer supported.
+  - Add TypeScript declarations.
+  - Tests, examples and lint config converted to ESM; coverage now uses c8; mocha upgraded to v12
+    (needed to run on Node 26).
+  - Test hooks no longer fail when data is left on the remote server by an earlier failed run.
 ** v11.0.0
   - Fix append() to ensure it returns a value
   - Improve consistency in handling streams. Any stream created within the module
