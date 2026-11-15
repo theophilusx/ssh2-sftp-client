@@ -1,13 +1,14 @@
+import dotenv from 'dotenv';
 'use stgrict';
 
 // Simple script to produce a directory listing of a remote sftp directory
 // with error checking and using a key and passphrase to control access.
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const { readFileSync } = require('node:fs');
-const Client = require('../src/index.js');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import { readFileSync } from 'node:fs';
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,

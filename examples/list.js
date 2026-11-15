@@ -1,12 +1,12 @@
-'use strict';
+import dotenv from 'dotenv';
 
 // Simple script which just display a directory listing for a
 // remote sftp directory specified on the command line
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const Client = require('../src/index.js');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,

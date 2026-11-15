@@ -1,4 +1,4 @@
-'use strict';
+import dotenv from 'dotenv';
 
 /**
  * This script demonstrates uploading data to a remote file using a stream.
@@ -7,11 +7,11 @@
  * passing the readStream to put(). You could just pass the buffer directly.
  * We are using the ReadStream just for demonstration purposes
  */
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const { Readable } = require('node:stream');
-const Client = require('../src/index');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import { Readable } from 'node:stream';
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,

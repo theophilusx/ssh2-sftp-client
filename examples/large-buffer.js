@@ -1,14 +1,14 @@
-'use strict';
+import dotenv from 'dotenv';
 
 // Example of using a buffer of data as the source data for a sftp.put().
 // Note that in most cases you are far better off using a stream rather than
 // a buffer.
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const { readFileSync } = require('node:fs');
-const Client = require('../src/index.js');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import { readFileSync } from 'node:fs';
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,

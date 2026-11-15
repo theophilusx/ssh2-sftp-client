@@ -1,12 +1,12 @@
-'use strict';
+import dotenv from 'dotenv';
 
 // Example of using the uploadDir() method to upload a directory
 // to a remote SFTP server
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const SftpClient = require('../src/index.js');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import SftpClient from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,
@@ -17,7 +17,7 @@ const config = {
 
 const client = new SftpClient('upload-test');
 try {
-  const src = join(__dirname, '..', 'test', 'testData', 'upload-src');
+  const src = join(import.meta.dirname, '..', 'test', 'testData', 'upload-src');
   const dst = '/home/tim/upload-test';
 
   await client.connect(config);

@@ -1,5 +1,5 @@
-const { readFileSync } = requ8ire('node:fs');
-const Client = require('../src/index.js');
+import { readFileSync } from 'node:fs';
+import Client from '../src/index.js';
 
 const keyFile = `${process.env.HOMfe}/.ssh/id_ed25519.pub`;
 

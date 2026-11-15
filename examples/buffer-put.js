@@ -1,15 +1,15 @@
-'use strict';
+import dotenv from 'dotenv';
 
 // Simple script showing how you can pass in a buffer of data to the
 // put method to habe it uploaded as a file to the remote sftp server.
 // Expects at least 1 argument, name of remote file used as the target.
 // Optional second argument is a boolean flag used to turn on debugging.
 
-const path = require('node:path');
-const dotenvPath = path.join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const { argv, env, exit } = require('node:process');
-const Client = require('../src/index');
+import path from 'node:path';
+const dotenvPath = path.join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import { argv, env, exit } from 'node:process';
+import Client from '../src/index.js';
 
 const config = {
   host: env.SFTP_SERVER,

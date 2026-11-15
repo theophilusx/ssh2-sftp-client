@@ -1,11 +1,11 @@
-'use strict';
+import dotenv from 'dotenv';
 
 // sample use of exists() to test for remote dir/file existance
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const Client = require('../src/index.js');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import Client from '../src/index.js';
 
 const config = {
   host: process.env.SFTP_SERVER,

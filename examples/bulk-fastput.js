@@ -1,14 +1,15 @@
+import dotenv from 'dotenv';
 // simple script used mainly for testing purposes. will download a file
 // multiple times and store it locally (with a different suffix for each one).
 // Idea is to run 100 or 1000 times. Useful for getting some network stats and
 // testing for unreliable networks etc. This version uses fastGet() to do the
 // download
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const Client = require('../src/index');
-const moment = require('moment');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import Client from '../src/index.js';
+import moment from 'moment';
 
 const client = new Client();
 

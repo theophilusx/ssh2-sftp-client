@@ -1,5 +1,5 @@
-const { argv, env, exit } = require('node:process');
-const Client = require('../src/index');
+import { argv, env, exit } from 'node:process';
+import Client from '../src/index.js';
 
 const config = {
   host: env.SFTP_SERVER,

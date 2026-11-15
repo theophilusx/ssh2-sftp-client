@@ -1,9 +1,10 @@
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const { argv, env, exit } = require('node:process');
-const Client = require('../src/index');
-const { createWriteStream } = require('node:fs');
+import dotenv from 'dotenv';
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import { argv, env, exit } from 'node:process';
+import Client from '../src/index.js';
+import { createWriteStream } from 'node:fs';
 
 const config = {
   host: env.SFTP_SERVER,

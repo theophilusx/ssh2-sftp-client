@@ -1,10 +1,10 @@
-'use strict';
+import dotenv from 'dotenv';
 
-const { join } = require('node:path');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
-const sftp = require('../src/index');
-const { argv, env, exit } = require('node:process');
+import { join } from 'node:path';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
+import sftp from '../src/index.js';
+import { argv, env, exit } from 'node:process';
 
 const getConnection = async (config) => {
   let client;

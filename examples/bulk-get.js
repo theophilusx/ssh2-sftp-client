@@ -1,13 +1,14 @@
+import dotenv from 'dotenv';
 // simple script used for testing purposes. Will download a file from
 // a remote SFTP server multiple i.e. 1000 times. Saves the file locally
 // Can set the source file, destination directory and repeat count on the
 // command line. This version uses get() as the download method.
 
-const { join } = require('path');
-const Client = require('../src/index');
-const moment = require('moment');
-const dotenvPath = join(__dirname, '..', '.env');
-require('dotenv').config({ path: dotenvPath });
+import { join } from 'path';
+import Client from '../src/index.js';
+import moment from 'moment';
+const dotenvPath = join(import.meta.dirname, '..', '.env');
+dotenv.config({ path: dotenvPath });
 
 const client = new Client();
 
