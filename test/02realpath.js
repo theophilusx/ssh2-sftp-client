@@ -1,7 +1,6 @@
 import chai from 'chai';
 const expect = chai.expect;
 import chaiAsPromised from 'chai-as-promised';
-import SftpClient from '../src/index.js';
 import { config, getConnection } from './hooks/global-hooks.js';
 
 chai.use(chaiAsPromised);

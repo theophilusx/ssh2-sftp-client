@@ -1,10 +1,11 @@
 import SftpClient from '../../src/index.js';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import winston from 'winston';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: join(import.meta.dirname, '..', '..', '.env') });
+dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
 
 const logger = winston.createLogger({
   level: 'debug',
@@ -145,6 +146,7 @@ export {
   splitRemotePath,
   lastRemoteDir,
   getConnection,
+  getKeyConnection,
   closeConnection,
   logger
 };

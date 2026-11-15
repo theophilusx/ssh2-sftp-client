@@ -119,7 +119,7 @@ describe('20utils B: errorListener', function () {
   });
 
   it('error is rejected', function () {
-    let p = new Promise((_, reject) => {
+    let p = new Promise((resolve, reject) => {
       let handler = errorListener(client, 'Test1', reject);
       let e = new Error('A plain error');
       e.code = 'GENERIC ERROR';
@@ -443,7 +443,7 @@ describe('20utils I: hasConnection tests', function () {
   });
 
   it('Promise rejected', function () {
-    let p = new Promise((_, reject) => {
+    let p = new Promise((resolve, reject) => {
       haveConnection(client, 'Test3', reject);
     });
     return expect(p).to.be.rejectedWith(/No SFTP connection/);

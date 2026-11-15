@@ -24,7 +24,7 @@ Z/YRnRHqlatzbxH/44TcAAAAFnJoeXN3aWxsaWFtc0BNYWMubG9jYWwBAgMEBQYH
     }, (client) => {
       // Force the socket to use resetAndDestroy on end() to trigger ECONNRESET for testing
       const socket = client._sock;
-      socket.end = function(...args) {
+      socket.end = function() {
         if (socket.resetAndDestroy) {
           socket.resetAndDestroy();
         }
@@ -35,15 +35,15 @@ Z/YRnRHqlatzbxH/44TcAAAAFnJoeXN3aWxsaWFtc0BNYWMubG9jYWwBAgMEBQYH
       });
 
       client.on('ready', () => {
-        client.on('session', (accept, reject) => {
+        client.on('session', (accept) => {
           const session = accept();
-          session.on('sftp', (accept, reject) => {
+          session.on('sftp', (accept) => {
             const sftp = accept();
             sftp.on('REALPATH', (reqId, path) => {
               const resultPath = path === '.' ? '/' : path;
               sftp.name(reqId, [{ filename: resultPath }]);
             });
-            sftp.on('STAT', (reqId, path) => {
+            sftp.on('STAT', (reqId) => {
               sftp.attrs(reqId, { mode: 0o755, size: 0, uid: 1000, gid: 1000 });
             });
           });

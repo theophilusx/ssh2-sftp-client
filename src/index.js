@@ -53,7 +53,7 @@ class SftpClient {
     }
   }
 
-  fmtError(err, name = 'sftp', eCode, retryCount) {
+  fmtError(err, name = 'sftp', eCode) {
     let msg = '';
     let code = '';
 

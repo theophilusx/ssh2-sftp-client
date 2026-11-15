@@ -1,7 +1,5 @@
-'use strict';
-
 import { makeLocalPath } from './global-hooks.js';
-import fs from 'fs';
+import fs from 'node:fs';
 
 async function streamSetup(client, sftpUrl, localUrl) {
   try {
