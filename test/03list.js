@@ -2,7 +2,7 @@ import chai from 'chai';
 const expect = chai.expect;
 import chaiAsPromised from 'chai-as-promised';
 import chaiSubset from 'chai-subset';
-import { config, getConnection } from './hooks/global-hooks.js';
+import { config, getConnection, removeRemoteIfExists } from './hooks/global-hooks.js';
 
 chai.use(chaiAsPromised);
 chai.use(chaiSubset);
@@ -10,12 +10,17 @@ chai.use(chaiSubset);
 describe('03list: list() method tests', function () {
   let sftp;
 
+  const emptyDir = `${config.sftpUrl}/list-empty-dir`;
+
   before('list() test setup hook', async function () {
     sftp = await getConnection();
+    await removeRemoteIfExists(sftp, emptyDir);
+    await sftp.mkdir(emptyDir);
     return true;
   });
 
   after('list() test cleanup hook', async function () {
+    await removeRemoteIfExists(sftp, emptyDir);
     await sftp.end();
     return true;
   });
@@ -27,7 +32,7 @@ describe('03list: list() method tests', function () {
   });
 
   it('list return for empty directory should be empty', function () {
-    return expect(sftp.list(config.sftpUrl)).to.become([]);
+    return expect(sftp.list(emptyDir)).to.become([]);
   });
 
   it('list non-existent directory rejected', function () {
@@ -43,7 +48,7 @@ describe('03list: list() method tests', function () {
   });
 
   it('list with relative path', async function () {
-    let data = await sftp.list('./testServer');
+    let data = await sftp.list('./testServer/list-empty-dir');
     return expect(data.length).to.equal(0);
   });
 
