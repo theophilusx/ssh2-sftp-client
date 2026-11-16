@@ -1,4 +1,20 @@
 * Change Logging
+** v13.0.1
+  - *Security fix* (path traversal, CWE-22). =downloadDir()= built local destination paths by
+    joining the destination directory with entry names exactly as reported by the remote
+    server, without checking for =..= or path separators. A malicious or compromised SFTP
+    server (or another user on a multi-tenant server) could return an entry such as
+    =../victim.txt= and cause a file outside the destination directory to be overwritten, in a
+    directory that already exists. This could lead to code execution on the client, for
+    example by overwriting =~/.ssh/authorized_keys= or a shell start-up file. Reported
+    privately. Versions 9.0.0 to 13.0.0 are affected. Only 13.x is patched; users of earlier
+    versions should upgrade.
+  - =downloadDir()= now treats remote entry names as untrusted. If any name is empty, is =.= or
+    =..=, or contains =/=, =\=, a NUL character or a drive prefix (e.g. =C:=), the call rejects
+    with =ERR_BAD_PATH= before anything is downloaded. A containment check on each local
+    destination path is applied as a second safeguard. Legitimate names such as =..hidden=
+    and =a..b= are unaffected.
+  - Add regression tests for the above (=test/32downloaddir-traversal.js=).
 ** v13.0.0
   - *Breaking Change*. The package is now ESM only (=import SftpClient from 'ssh2-sftp-client'=).
     CommonJS code can still use =require()= on Node 22.12.0 and later.
