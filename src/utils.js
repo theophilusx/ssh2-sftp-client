@@ -359,7 +359,29 @@ function partition(input, size) {
   return output;
 }
 
+/**
+ * Check that a name reported by a remote server for a directory entry is safe
+ * to use as a single path component when building a local path. Names are
+ * untrusted. Anything which could resolve outside the intended directory
+ * (empty, '.', '..', path separators of either style, NUL, drive prefixes)
+ * is rejected.
+ *
+ * @param {*} name - entry name as reported by the remote server
+ * @returns {Boolean} true if name is a safe single path component
+ */
+function isSafeEntryName(name) {
+  return (
+    typeof name === 'string' &&
+    name !== '' &&
+    name !== '.' &&
+    name !== '..' &&
+    !/[/\\\0]/.test(name) &&
+    !/^[A-Za-z]:/.test(name)
+  );
+}
+
 export {
+  isSafeEntryName,
   globalListener,
   errorListener,
   endListener,

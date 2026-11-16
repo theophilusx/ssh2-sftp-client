@@ -2,7 +2,7 @@ import { Client } from 'ssh2';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import concat from 'concat-stream';
-import { join, parse } from 'node:path';
+import { join, parse, relative, isAbsolute, sep } from 'node:path';
 import {
   globalListener,
   addTempListeners,
@@ -13,6 +13,7 @@ import {
   haveLocalAccess,
   haveLocalCreate,
   partition,
+  isSafeEntryName,
 } from './utils.js';
 import { errorCode } from './constants.js';
 
@@ -1281,6 +1282,19 @@ class SftpClient {
       }
     };
 
+    const localChild = (parent, name) => {
+      const child = join(parent, name);
+      const rel = relative(parent, child);
+      if (rel === '' || rel === '..' || rel.startsWith('..' + sep) || isAbsolute(rel)) {
+        throw this.fmtError(
+          `Bad path: ${JSON.stringify(name)} escapes ${parent}`,
+          'downloadDir',
+          errorCode.badPath,
+        );
+      }
+      return child;
+    };
+
     const downloadFiles = async (remotePath, localPath, fileList, useFastget) => {
       let listeners = addTempListeners(this, 'downloadFIles');
 
@@ -1288,7 +1302,7 @@ class SftpClient {
         const downloadList = [];
         for (const f of fileList) {
           const src = `${remotePath}/${f.name}`;
-          const dst = join(localPath, f.name);
+          const dst = localChild(localPath, f.name);
           downloadList.push([src, dst]);
         }
         const downloadGroups = partition(downloadList, this.promiseLimit);
@@ -1321,6 +1335,17 @@ class SftpClient {
     try {
       haveConnection(this, 'downloadDir');
       const downloadList = await getDownloadList(srcDir, options.filter);
+      // Names come from the remote server and are untrusted. Validate the whole
+      // listing before touching the local filesystem (CWE-22).
+      for (const item of downloadList) {
+        if (!isSafeEntryName(item.name)) {
+          throw this.fmtError(
+            `Bad path: unsafe entry name ${JSON.stringify(item.name)} in ${srcDir}`,
+            'downloadDir',
+            errorCode.badPath,
+          );
+        }
+      }
       prepareDestination(dstDir);
       const fileDownloads = downloadList.filter((i) => i.type !== 'd');
       if (fileDownloads.length) {
@@ -1329,7 +1354,7 @@ class SftpClient {
       const dirDownloads = downloadList.filter((i) => i.type === 'd');
       for (const d of dirDownloads) {
         const src = `${srcDir}/${d.name}`;
-        const dst = join(dstDir, d.name);
+        const dst = localChild(dstDir, d.name);
         await this.downloadDir(src, dst, options);
       }
       return `${srcDir} downloaded to ${dstDir}`;

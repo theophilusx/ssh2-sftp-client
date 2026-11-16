@@ -1155,6 +1155,12 @@ required. All sub directories within ~srcDir~ will also be copied. Any existing
 files in the local path will be overwritten. No files in the local path will be
 deleted.
 
+Names of remote directory entries are treated as untrusted. If a remote entry
+name is empty, is ~.~ or ~..~, or contains a path separator (~/~ or ~\~), a NUL
+character or a drive prefix (e.g. ~C:~), the method rejects with an error with
+code ~ERR_BAD_PATH~ before anything is downloaded. This prevents a malicious or
+compromised server from writing files outside ~dstDir~.
+
 The method also emits ~download~ events to provide a way to monitor download
 progress. The download event listener is called with one argument, an object
 with two properties, source and destination. The source property is the path to
