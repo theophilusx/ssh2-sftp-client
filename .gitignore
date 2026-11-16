@@ -25,3 +25,8 @@ CLAUDE.md
 *.dat
 square-*
 .superpowers
+docs/
+examples/bp1.txt
+examples/hero.zip
+examples/not-exist.txt
+
