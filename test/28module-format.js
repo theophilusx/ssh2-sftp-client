@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as chai from 'chai';
@@ -21,8 +22,17 @@ describe('Module format', function () {
   });
 
   it('loads via require() returning the class itself', function () {
-    const out = run("const C = require('./src/index.js'); console.log(typeof C, C.name)", false);
+    const out = run("const C = require('ssh2-sftp-client'); console.log(typeof C, C.name)", false);
     expect(out).to.equal('function SftpClient');
+  });
+
+  it('exposes a version that matches package.json', function () {
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    const out = run(
+      "import C from 'ssh2-sftp-client'; console.log(new C().version)",
+      true
+    );
+    expect(out).to.equal(pkg.version);
   });
 
   it('resolves the package name through the exports map', function () {

@@ -35,8 +35,8 @@ async function load() {
   const buffer1 = Buffer.from(str1, 'utf8');
   const buffer2 = Buffer.from(str2, 'utf8');
 
-  await sftp.append(buffer1, remotePath, { encoding: 'utf-8', flags: 'a' });
-  await sftp.append(buffer2, remotePath, { encoding: 'utf-8', flags: 'a' });
+  await sftp.append(buffer1, remotePath, { encoding: 'utf8', flags: 'a' });
+  await sftp.append(buffer2, remotePath, { encoding: 'utf8', flags: 'a' });
 }
 
 async function run() {

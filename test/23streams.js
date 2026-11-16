@@ -1,7 +1,12 @@
 import chai from 'chai';
 const expect = chai.expect;
-import { config, getConnection, makeLocalPath } from './hooks/global-hooks.js';
-import { unlinkSync, createWriteStream, createReadStream } from 'node:fs';
+import {
+  config,
+  getConnection,
+  makeLocalPath,
+  removeRemoteIfExists,
+} from './hooks/global-hooks.js';
+import { rmSync, createWriteStream, createReadStream } from 'node:fs';
 import chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
@@ -20,9 +25,9 @@ describe('23streams: create read stream tests', function () {
   });
 
   after('stream test cleanup', async function () {
-    await sftp.delete(`${config.sftpUrl}/stream-read.txt`);
-    unlinkSync(`${config.localUrl}/stream-t1.txt`);
-    unlinkSync(`${config.localUrl}/stream-t2.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/stream-read.txt`);
+    rmSync(`${config.localUrl}/stream-t1.txt`, { force: true });
+    rmSync(`${config.localUrl}/stream-t2.txt`, { force: true });
     await sftp.end();
     return true;
   });
@@ -72,7 +77,7 @@ describe('23streams B: create write stream tests', function () {
   });
 
   after('write stream test clenaup', async function () {
-    await sftp.delete(`${config.sftpUrl}/stream-t3.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/stream-t3.txt`);
     await sftp.end();
     return true;
   });

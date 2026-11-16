@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Script reads path to remote file on sftp server, uses sftp.get()
@@ -5,7 +6,7 @@ import dotenv from 'dotenv';
 // the contents to standard out.
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import Client from '../src/index.js';
 import { PassThrough } from 'node:stream';

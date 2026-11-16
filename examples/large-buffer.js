@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Example of using a buffer of data as the source data for a sftp.put().
@@ -5,7 +6,7 @@ import dotenv from 'dotenv';
 // a buffer.
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import { readFileSync } from 'node:fs';
 import Client from '../src/index.js';

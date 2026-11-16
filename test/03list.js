@@ -95,12 +95,12 @@ describe('03list B: list tests with filters', function () {
   });
 
   after('list() test cleanup hook', async function () {
-    await sftp.delete(`${config.sftpUrl}/foo1.txt`);
-    await sftp.delete(`${config.sftpUrl}/foo2.txt`);
-    await sftp.delete(`${config.sftpUrl}/bar1.txt`);
-    await sftp.delete(`${config.sftpUrl}/bar2.txt`);
-    await sftp.delete(`${config.sftpUrl}/baz1.txt`);
-    await sftp.delete(`${config.sftpUrl}/baz2.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/foo1.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/foo2.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/bar1.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/bar2.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/baz1.txt`);
+    await removeRemoteIfExists(sftp, `${config.sftpUrl}/baz2.txt`);
     await sftp.end();
     return true;
   });

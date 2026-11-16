@@ -1,5 +1,6 @@
 import type { Readable, ReadableOptions, Writable, WritableOptions } from 'node:stream';
 import type {
+  Client,
   ConnectConfig,
   ReadStream,
   ReadStreamOptions,
@@ -13,6 +14,12 @@ import type {
 export interface SftpConnectConfig extends ConnectConfig {
   /** Maximum number of concurrent promises used by uploadDir()/downloadDir(). Default 10. */
   promiseLimit?: number;
+}
+
+/** Payload of the 'upload' and 'download' events emitted by uploadDir()/downloadDir(). */
+export interface TransferEvent {
+  source: string;
+  destination: string;
 }
 
 export interface FileRights {
@@ -105,11 +112,25 @@ export interface SftpError extends Error {
 export type ExistsResult = false | 'd' | '-' | 'l';
 
 declare class SftpClient {
+  /** Module version, taken from package.json. */
+  version: string;
+  /** Name used to label debug messages. */
+  clientName: string;
+  /** The underlying ssh2 client. */
+  client: Client;
+  /** The ssh2 SFTP subsystem; undefined until connect() succeeds and after end(). */
+  sftp: SFTPWrapper | undefined;
+  /** Remote platform, 'unix' by default. */
+  remotePlatform: string;
+  /** Maximum concurrent operations for uploadDir()/downloadDir(). Default 10. */
+  promiseLimit: number;
+
   constructor(clientName?: string, callbacks?: GlobalCallbacks);
 
   connect(config: SftpConnectConfig): Promise<SFTPWrapper>;
   end(): Promise<boolean>;
 
+  on(eventType: 'upload' | 'download', callback: (info: TransferEvent) => void): void;
   on(eventType: string, callback: (...args: any[]) => void): void;
   removeListener(eventType: string, callback: (...args: any[]) => void): void;
 

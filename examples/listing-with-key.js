@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 'use stgrict';
 
@@ -5,7 +6,7 @@ import dotenv from 'dotenv';
 // with error checking and using a key and passphrase to control access.
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import { readFileSync } from 'node:fs';
 import Client from '../src/index.js';
@@ -29,7 +30,7 @@ try {
   console.log('Connected....');
   const dirExists = await sftp.exists(remoteDir);
   if (!dirExists) {
-    throw new Error(`Bad path: ${remotePath} does not exist`);
+    throw new Error(`Bad path: ${remoteDir} does not exist`);
   }
   if (dirExists && dirExists !== 'd') {
     throw new Error(`Bad path: ${remoteDir} exists, but is not a directory object`);

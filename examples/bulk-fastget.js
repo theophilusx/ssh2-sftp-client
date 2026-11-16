@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 // simple script used mainly for testing purposes. will download a file
 // multiple times and store it locally (with a different suffix for each one).
@@ -6,7 +7,7 @@ import dotenv from 'dotenv';
 // download
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import { argv, env, exit } from 'node:process';
 
@@ -50,7 +51,7 @@ if (argv.length !== 5) {
 
 const srcFile = argv[2];
 const dstDir = argv[3];
-const repeatTimes = parseInt(argv[4]);
+const repeatTimes = Number.parseInt(argv[4]);
 const start = moment();
 
 async function main() {

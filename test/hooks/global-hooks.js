@@ -10,7 +10,12 @@ dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
 const logger = winston.createLogger({
   level: 'debug',
   format: winston.format.simple(),
-  transports: [new winston.transports.File({ filename: 'debug.log', level: 'debug' })],
+  transports: [
+    new winston.transports.File({
+      filename: fileURLToPath(new URL('../../debug.log', import.meta.url)),
+      level: 'debug',
+    }),
+  ],
 });
 
 function hasListener(emitter, eventName, listenerName) {

@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Simple script which just display a directory listing for a
 // remote sftp directory specified on the command line
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import Client from '../src/index.js';
 

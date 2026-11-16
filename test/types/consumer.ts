@@ -1,5 +1,6 @@
 import { Readable, Writable } from 'node:stream';
 import SftpClient from 'ssh2-sftp-client';
+import type { Client as SSH2Client, SFTPWrapper } from 'ssh2';
 import type { FileInfo, FileStats, ListFilter } from 'ssh2-sftp-client';
 
 async function main(): Promise<void> {
@@ -66,3 +67,22 @@ async function getOverloads(client: SftpClient): Promise<void> {
   void [noDst, toPath, toStream];
 }
 void getOverloads;
+
+function propertiesAndEvents(client: SftpClient): void {
+  const name: string = client.clientName;
+  const platform: string = client.remotePlatform;
+  const limit: number = client.promiseLimit;
+  const version: string = client.version;
+  const raw: SSH2Client = client.client;
+  const wrapper: SFTPWrapper | undefined = client.sftp;
+  client.on('upload', (info) => {
+    const src: string = info.source;
+    const dst: string = info.destination;
+    void [src, dst];
+  });
+  client.on('download', (info) => void info.destination);
+  // @ts-expect-error clientName is a string
+  const bad: number = client.clientName;
+  void [name, platform, limit, version, raw, wrapper, bad];
+}
+void propertiesAndEvents;

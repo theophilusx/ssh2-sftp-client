@@ -1,6 +1,7 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import SftpClient from '../src/index.js';
 
@@ -30,10 +31,10 @@ async function main() {
     await client.connect(config);
     await putFiles(client, srcDir, dstDir);
     for (let f of ['file1', 'file2']) {
-      await client.put(join(src, `${f}.txt`), `${dst}${client.remotePathSep}${f}.txt`);
+      await client.put(join(srcDir, `${f}.txt`), `${dstDir}/${f}.txt`);
       await client.put(
-        join(src, 'empty-file.txt'),
-        `${dst}${client.remotePathSep}${f}.fin`,
+        join(srcDir, 'empty-file.txt'),
+        `${dstDir}/${f}.fin`,
       );
     }
   } catch (err) {

@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Example of using the uploadDir() method to upload a directory
 // to a remote SFTP server
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import SftpClient from '../src/index.js';
 
@@ -17,7 +18,7 @@ const config = {
 
 const client = new SftpClient('upload-test');
 try {
-  const src = join(import.meta.dirname, '..', 'test', 'testData', 'upload-src');
+  const src = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'test', 'testData', 'upload-src');
   const dst = '/home/tim/upload-test';
 
   await client.connect(config);

@@ -1,7 +1,8 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import sftp from '../src/index.js';
 import { argv, env, exit } from 'node:process';
@@ -47,7 +48,7 @@ const main = async () => {
       console.log('\nwhere:\n\tsize = data size\n\tremote path = remote directory path');
       exit(1);
     }
-    let size = parseInt(argv[2]);
+    let size = Number.parseInt(argv[2]);
     let remotePath = argv[3];
     let config = {
       host: env.SFTP_SERVER,

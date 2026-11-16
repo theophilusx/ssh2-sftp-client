@@ -5,6 +5,14 @@
   - *Breaking Change*. Minimum supported Node version is now 22.12.0. Node 18 and 20 are
     end of life and no longer supported.
   - Add TypeScript declarations.
+  - The package now has an =exports= map, so only the package name can be imported. Deep
+    imports (e.g. =ssh2-sftp-client/src/utils.js=) and =ssh2-sftp-client/package.json= are no
+    longer accessible.
+  - On Node 22.12.x, =require()= of the package prints an =ExperimentalWarning=.
+  - Fix =version= property, which still reported 12.0.1.
+  - TypeScript declarations cover the =clientName=, =client=, =sftp=, =remotePlatform=,
+    =promiseLimit= and =version= properties and the =upload=/=download= events.
+  - Lint now covers the examples; fixed undefined variables in several examples.
   - Tests, examples and lint config converted to ESM; coverage now uses c8; mocha upgraded to v12
     (needed to run on Node 26).
   - Test hooks no longer fail when data is left on the remote server by an earlier failed run.

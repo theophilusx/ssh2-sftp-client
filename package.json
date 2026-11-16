@@ -29,7 +29,7 @@
   "scripts": {
     "test": "mocha",
     "coverage": "c8 npm test",
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "lint": "eslint eslint.config.js \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
     "types": "tsc -p test/types"
   },
   "engines": {
@@ -77,7 +77,7 @@
     "ssh2": "^1.16.0"
   },
   "allowScripts": {
-    "ssh2@1.17.0": true,
+    "ssh2@1.16.0 || 1.17.0": true,
     "cpu-features@0.0.10": true
   }
 }

@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Example of using a writeable with get to retrieve a file.
 // This code will read the remote file, convert all characters to upper case
 // and then save it to a local file
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import Client from '../src/index.js';
 import { createWriteStream } from 'node:fs';

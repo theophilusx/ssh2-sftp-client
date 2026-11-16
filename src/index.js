@@ -1,5 +1,6 @@
 import { Client } from 'ssh2';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import concat from 'concat-stream';
 import { join, parse } from 'node:path';
 import {
@@ -15,6 +16,10 @@ import {
 } from './utils.js';
 import { errorCode } from './constants.js';
 
+const { version: packageVersion } = JSON.parse(
+  fs.readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+);
+
 class SftpClient {
   constructor(
     clientName = 'sftp',
@@ -24,7 +29,7 @@ class SftpClient {
       close: () => console.log('Global close listener: close event raised'),
     },
   ) {
-    this.version = '12.0.1';
+    this.version = packageVersion;
     this.client = new Client();
     this.sftp = undefined;
     this.clientName = clientName;

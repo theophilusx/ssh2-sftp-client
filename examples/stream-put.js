@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 /**
@@ -8,7 +9,7 @@ import dotenv from 'dotenv';
  * We are using the ReadStream just for demonstration purposes
  */
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import { Readable } from 'node:stream';
 import Client from '../src/index.js';

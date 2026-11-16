@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // The 'realpath' functionality varies across sftp servers,
 // especdially with respect to handling '.' and '..'
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import Client from '../src/index.js';
 

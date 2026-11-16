@@ -49,4 +49,17 @@ export default [
       'mocha/no-hooks-for-single-case': 0,
     },
   },
+  {
+    // Examples are illustrative scripts: promise chains and camelCase file names
+    // are intentional there, so only correctness rules apply.
+    files: ['examples/**/*.js'],
+    rules: {
+      'unicorn/prefer-top-level-await': 0,
+      'unicorn/filename-case': 0,
+      'promise/always-return': 0,
+      'promise/catch-or-return': 0,
+      'promise/no-return-in-finally': 0,
+      'unicorn/prefer-single-call': 0,
+    },
+  },
 ];

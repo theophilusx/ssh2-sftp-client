@@ -1,9 +1,10 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // sample use of exists() to test for remote dir/file existance
 
 import { join } from 'node:path';
-const dotenvPath = join(import.meta.dirname, '..', '.env');
+const dotenvPath = join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import Client from '../src/index.js';
 

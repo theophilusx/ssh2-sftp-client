@@ -194,7 +194,12 @@ This is a breaking release.
 - Code which still uses CommonJS can keep using =const SftpClient = require('ssh2-sftp-client')=
   on Node 22.12.0 and later, which can load ES modules with =require()=. The package
   exports the class as =module.exports=, so existing =require()= code gets the class
-  itself and not a namespace object.
+  itself and not a namespace object. On Node 22.12.x, =require()= of an ES module prints an
+  =ExperimentalWarning= to stderr the first time it is used. The warning is harmless. Use
+  =import= instead (or a newer Node release) to avoid it.
+- The package now has an =exports= map. Only the package name can be imported
+  (=ssh2-sftp-client=). Deep imports such as =ssh2-sftp-client/src/utils.js= and
+  =require('ssh2-sftp-client/package.json')= are no longer possible.
 - TypeScript declarations are now included with the package.
 - Development tooling changes (not visible to users of the package): the tests, examples and
   lint config are ESM, coverage uses c8 and mocha is upgraded to v12.

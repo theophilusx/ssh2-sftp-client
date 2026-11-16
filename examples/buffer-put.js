@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 // Simple script showing how you can pass in a buffer of data to the
@@ -6,7 +7,7 @@ import dotenv from 'dotenv';
 // Optional second argument is a boolean flag used to turn on debugging.
 
 import path from 'node:path';
-const dotenvPath = path.join(import.meta.dirname, '..', '.env');
+const dotenvPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', '.env');
 dotenv.config({ path: dotenvPath });
 import { argv, env, exit } from 'node:process';
 import Client from '../src/index.js';
