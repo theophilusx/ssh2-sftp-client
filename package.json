@@ -74,10 +74,10 @@
   "dependencies": {
     "@types/ssh2": "^1.15.6",
     "concat-stream": "^2.0.0",
-    "ssh2": "^1.16.0"
+    "ssh2": "^1.17.0"
   },
   "allowScripts": {
-    "ssh2@1.16.0 || 1.17.0": true,
+    "ssh2@1.17.0": true,
     "cpu-features@0.0.10": true
   }
 }
