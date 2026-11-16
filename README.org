@@ -12,7 +12,7 @@ be found on the [[https://github.com/mscdex/ssh2][SSH2]] project pages. As the s
 ~ssh2~ module, you will find lots of useful information, tips and examples in the ~ssh2~
 repository. 
 
-Current stable release is *v13.0.0*.
+Current stable release is *v13.0.1*.
 
 Code has been tested against Node versions 22, 24 and 26. This module requires Node
 22.12.0 or later and is an ES module (ESM only). Node versions prior to 22.12.0 are not
